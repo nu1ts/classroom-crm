@@ -6,7 +6,7 @@ export function renderLoginView() {
   return `
     <div class="w-full max-w-md mx-auto my-auto animate-fadeIn">
       <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-500 text-white font-extrabold text-2xl shadow-lg shadow-brand-500/30 mb-4">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-500 text-white font-extrabold text-2xl shadow-lg shadow-brand-500/30 mb-4 select-none">
           U
         </div>
         <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
@@ -21,6 +21,7 @@ export function renderLoginView() {
         <h2 class="text-lg font-bold text-slate-800 mb-6">
           Вход в систему
         </h2>
+
         <div id="login-error-box" class="hidden mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start space-x-2.5">
           <span class="flex-shrink-0 mt-0.5">${renderIcon('alert', 'w-4 h-4 text-rose-600')}</span>
           <span id="login-error-text">Неверный логин или пароль</span>
@@ -29,7 +30,7 @@ export function renderLoginView() {
         <form id="login-form" class="space-y-4" novalidate>
           <div>
             <label for="login-email" class="block text-xs font-semibold text-slate-700 mb-1.5">
-              Логин (электронная почта)
+              Логин
             </label>
             <input type="email" id="login-email" name="username"
                    placeholder="Введите логин"
@@ -47,8 +48,10 @@ export function renderLoginView() {
                      autocomplete="current-password"
                      class="w-full pl-3.5 pr-12 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors placeholder:text-slate-400 text-slate-800" />
               <button type="button" id="btn-toggle-password"
-                      title="Показать / скрыть пароль"
-                      class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-600 transition-colors">
+                      title="показать"
+                      aria-label="показать"
+                      data-action="toggle-password"
+                      class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-brand-600 transition-colors rounded-lg">
                 <span id="password-toggle-icon">
                   ${renderIcon('eye', 'w-4 h-4')}
                 </span>
@@ -66,7 +69,7 @@ export function renderLoginView() {
           <div class="text-center pt-2">
             <button type="button" id="btn-forgot-password"
                     class="text-xs text-brand-600 hover:text-brand-700 hover:underline font-medium">
-              Забыли пароль? Обратитесь к администратору школы
+              Забыли пароль?
             </button>
           </div>
         </form>
@@ -137,9 +140,13 @@ export function setupLoginListeners(onLoginSuccess) {
       const currentType = passwordInput.getAttribute('type');
       if (currentType === 'password') {
         passwordInput.setAttribute('type', 'text');
+        toggleBtn.setAttribute('title', 'скрыть');
+        toggleBtn.setAttribute('aria-label', 'скрыть');
         toggleIcon.innerHTML = renderIcon('eye-off', 'w-4 h-4 text-brand-600');
       } else {
         passwordInput.setAttribute('type', 'password');
+        toggleBtn.setAttribute('title', 'показать');
+        toggleBtn.setAttribute('aria-label', 'показать');
         toggleIcon.innerHTML = renderIcon('eye', 'w-4 h-4');
       }
     });
