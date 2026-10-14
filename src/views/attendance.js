@@ -350,19 +350,19 @@ export function renderAttendanceView(options = {}) {
       </div>
     </div>
 
-    <div id="modal-confirm-absence" class="fixed inset-0 z-50 !m-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
-      <div id="modal-confirm-dialog" class="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between mb-4 pb-2.5 border-b border-slate-100">
-          <div class="flex items-center space-x-2.5">
-            <div class="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center border border-brand-100">
-              ${renderIcon('check-square', 'w-4 h-4 text-brand-600')}
+    <div id="modal-confirm-absence" class="fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+      <div id="modal-confirm-dialog" class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center border border-brand-100 flex-shrink-0" style="width: 40px; height: 40px; min-width: 40px;">
+              ${renderIcon('check-square', 'w-5 h-5 text-brand-600')}
             </div>
             <div>
               <h3 class="text-sm font-bold text-slate-900">Подтверждение пропуска урока</h3>
               <p class="text-[11px] text-slate-500">Учёт уважительной причины и медицинских документов</p>
             </div>
           </div>
-          <button type="button" id="btn-close-confirm-x" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-lg transition-colors">
+          <button type="button" id="btn-close-confirm-x" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-xl transition-colors cursor-pointer">
             ${renderIcon('x', 'w-4 h-4')}
           </button>
         </div>
@@ -430,10 +430,10 @@ export function renderAttendanceView(options = {}) {
           </div>
 
           <div class="pt-2 flex items-center space-x-2.5">
-            <button type="button" id="btn-cancel-confirm" class="flex-1 py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors">
+            <button type="button" id="btn-cancel-confirm" class="flex-1 py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer">
               Отмена
             </button>
-            <button type="submit" class="flex-1 py-2 px-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-xs transition-colors">
+            <button type="submit" class="flex-1 py-2 px-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-xs transition-colors cursor-pointer">
               Подтвердить пропуск
             </button>
           </div>
@@ -509,6 +509,12 @@ export function setupAttendanceListeners(onNavigate) {
       if (e.target === modal) closeConfirmModal();
     });
   }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal && !modal.classList.contains('pointer-events-none')) {
+      closeConfirmModal();
+    }
+  });
 
   if (selectReasonType && blockDocFields) {
     selectReasonType.addEventListener('change', () => {

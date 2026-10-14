@@ -173,7 +173,7 @@ export function renderLoginView() {
     </div>
 
     <div id="modal-forgot-password"
-         class="fixed inset-0 w-screen h-screen bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-200 ease-out opacity-0 pointer-events-none">
+         class="fixed inset-0 w-screen h-screen bg-slate-900/50 backdrop-blur-sm !m-0 z-50 flex items-center justify-center p-4 transition-all duration-200 ease-out opacity-0 pointer-events-none">
       <div id="modal-forgot-dialog"
            class="bg-white rounded-2xl max-w-sm w-full p-6 sm:p-7 shadow-2xl border border-slate-100 transform transition-all duration-200 ease-out scale-95">
         <div class="flex items-center justify-between mb-3">
