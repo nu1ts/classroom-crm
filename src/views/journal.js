@@ -375,10 +375,11 @@ export function renderJournalView(options = {}) {
           </div>
         </div>
 
-        <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
-          <div class="flex flex-wrap items-center gap-3">
+        <div class="pt-3 border-t border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-xs text-slate-600">
+          <div class="flex items-center gap-2.5 flex-nowrap shrink-0">
+            <span class="inline-flex items-center text-[11px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap mr-0.5 select-none">Быстрые действия:</span>
             <button type="button" id="btn-toggle-highlight-unconfirmed"
-                    class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${highlightUnconfirmed ? 'bg-rose-50 text-rose-700 border-rose-300 ring-2 ring-rose-500/20' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300'}">
+                    class="inline-flex items-center h-9 space-x-2 px-3.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap shadow-2xs ${highlightUnconfirmed ? 'bg-rose-50 text-rose-700 border-rose-300 ring-2 ring-rose-500/20' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300'}">
               <span class="w-2 h-2 rounded-full ${highlightUnconfirmed ? 'bg-rose-600 animate-pulse' : 'bg-rose-400'}"></span>
               <span>Подсветить неподтверждённые («Н»)</span>
               <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold ${highlightUnconfirmed ? 'bg-rose-600 text-white' : 'bg-rose-100 text-rose-700'}">
@@ -387,48 +388,52 @@ export function renderJournalView(options = {}) {
             </button>
 
             <label for="check-only-entries"
-                   class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer select-none">
+                   class="inline-flex items-center h-9 space-x-2 px-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer select-none whitespace-nowrap shadow-2xs">
               <input type="checkbox" id="check-only-entries"
                      ${filterOnlyEntries ? 'checked' : ''}
-                     class="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer" />
-              <span class="font-medium text-slate-700">Показывать только записи</span>
+                     class="w-3.5 h-3.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer" />
+              <span class="font-medium text-slate-700 text-xs">Показывать только записи</span>
             </label>
-
-            <div class="h-4 w-px bg-slate-200 hidden md:block"></div>
-
-            <div class="flex flex-wrap items-center gap-2.5">
-              <span class="font-semibold text-slate-700">Обозначения:</span>
-              <div class="flex items-center space-x-1">
-                <span class="w-5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-emerald-50 text-emerald-800 border border-emerald-300">5</span>
-                <span class="w-5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-blue-50 text-blue-800 border border-blue-300">4</span>
-                <span class="w-5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-amber-50 text-amber-800 border border-amber-300">3</span>
-                <span class="w-5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-rose-50 text-rose-800 border border-rose-300">2</span>
-              </div>
-              <div class="h-3.5 w-px bg-slate-200"></div>
-              <div class="flex items-center space-x-1.5">
-                <span class="px-1.5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-indigo-50 text-indigo-700 border border-indigo-200">Б</span>
-                <span class="text-slate-500 text-[11px]">— уваж.</span>
-              </div>
-              <div class="h-3.5 w-px bg-slate-200"></div>
-              <div class="flex items-center space-x-1.5">
-                <span class="px-1.5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-rose-50 text-rose-700 border border-rose-300">Н</span>
-                <span class="text-slate-500 text-[11px]">— неуваж.</span>
-              </div>
-              <div class="h-3.5 w-px bg-slate-200"></div>
-              <div class="flex items-center space-x-1.5">
-                <span class="w-2 h-2 rounded-full bg-brand-500"></span>
-                <span class="text-slate-500 text-[11px]">— коммент.</span>
-              </div>
-            </div>
           </div>
 
-          <div class="text-[11px] text-slate-400 hidden xl:block">
-            Кликните на ячейку для просмотра деталей
+          <div class="inline-flex items-center h-9 gap-2.5 px-3.5 rounded-xl bg-slate-50/90 border border-slate-200/80 shadow-2xs whitespace-nowrap shrink-0 self-start md:self-auto">
+            <span class="text-[11px] font-semibold text-slate-500">Обозначения:</span>
+            <div class="flex items-center space-x-1">
+              <span class="legend-badge text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300" title="Оценка 5">5</span>
+              <span class="legend-badge text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-300" title="Оценка 4">4</span>
+              <span class="legend-badge text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-300" title="Оценка 3">3</span>
+              <span class="legend-badge text-[10px] font-bold bg-rose-50 text-rose-800 border border-rose-300" title="Оценка 2">2</span>
+            </div>
+            <div class="h-3.5 w-px bg-slate-200"></div>
+            <div class="flex items-center space-x-1">
+              <span class="legend-badge text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">Б</span>
+              <span class="text-slate-500 text-[11px]">— уваж.</span>
+            </div>
+            <div class="h-3.5 w-px bg-slate-200"></div>
+            <div class="flex items-center space-x-1">
+              <span class="legend-badge text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-300">Н</span>
+              <span class="text-slate-500 text-[11px]">— неуваж.</span>
+            </div>
+            <div class="h-3.5 w-px bg-slate-200"></div>
+            <div class="flex items-center space-x-1">
+              <span class="w-2 h-2 rounded-full bg-brand-500 ring-2 ring-white flex-shrink-0"></span>
+              <span class="text-slate-500 text-[11px]">— коммент.</span>
+            </div>
           </div>
         </div>
       </div>
 
       <style>
+        .legend-badge {
+          width: 20px !important;
+          height: 20px !important;
+          min-width: 20px !important;
+          flex-shrink: 0 !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          border-radius: 6px !important;
+        }
         .journal-highlight-mode .journal-cell-unconfirmed span {
           outline: 2px solid #e11d48 !important;
           outline-offset: 1px !important;
