@@ -1,5 +1,5 @@
 import { getDB, getCurrentUser } from './services/storage.js';
-import { router } from './router.js';
+import { router } from './router.js?v=2';
 
 getDB();
 

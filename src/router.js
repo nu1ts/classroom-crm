@@ -2,7 +2,7 @@ import { getCurrentUser } from './services/storage.js';
 import { isRouteAllowedForRole, getDefaultRouteForRole } from './config/navigation.js';
 import { renderLayout, setupLayoutListeners } from './components/layout.js';
 import { renderLoginView, setupLoginListeners } from './views/login.js';
-import { renderOverviewView } from './views/overview.js';
+import { renderOverviewView, setupOverviewListeners } from './views/overview.js?v=2';
 import { renderProfileView, setupProfileListeners } from './views/profile.js';
 import { renderForbiddenView } from './views/forbidden.js';
 import { renderPlaceholderView } from './views/placeholder.js';
@@ -16,7 +16,7 @@ const ROUTE_HANDLERS = {
   '#/overview': {
     title: 'Обзор класса',
     render: () => renderOverviewView(),
-    setup: () => { }
+    setup: (navigate) => setupOverviewListeners(navigate)
   },
   '#/students': {
     title: 'Ученики',

@@ -14,7 +14,8 @@
     "test:calc": "node ./src/mock/test-calculations.js",
     "test:nav": "node ./src/mock/test-navigation.js",
     "test:auth": "node ./src/mock/test-auth.js",
-    "test": "node ./src/mock/test-dataset.js && node ./src/mock/test-calculations.js && node ./src/mock/test-navigation.js && node ./src/mock/test-auth.js"
+    "test:overview": "node ./src/mock/test-overview.js",
+    "test": "node ./src/mock/test-dataset.js && node ./src/mock/test-calculations.js && node ./src/mock/test-navigation.js && node ./src/mock/test-auth.js && node ./src/mock/test-overview.js"
   },
   "repository": {
     "type": "git",
