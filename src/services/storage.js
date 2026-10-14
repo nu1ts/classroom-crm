@@ -136,7 +136,7 @@ function resetFailedAttempts(username) {
 
 export function login(rawUsername, password) {
   const username = (rawUsername || '').trim();
-  const pwd = password || '';
+  const pwd = (password || '').trim();
 
   if (!username || !pwd) {
     return { success: false, error: 'Заполните все поля' };
@@ -212,27 +212,31 @@ export function changePassword(userId, currentPassword, newPassword, confirmPass
     return { success: false, error: 'Пользователь не найден' };
   }
 
-  if (user.password !== currentPassword) {
+  const curPwd = (currentPassword || '').trim();
+  const newPwd = (newPassword || '').trim();
+  const confPwd = (confirmPassword || '').trim();
+
+  if (user.password !== curPwd) {
     return { success: false, error: 'Текущий пароль указан неверно' };
   }
 
-  if (!newPassword || newPassword.length < 8) {
+  if (!newPwd || newPwd.length < 8) {
     return { success: false, error: 'Новый пароль должен содержать не менее 8 символов' };
   }
 
-  const hasLower = /[a-zа-я]/.test(newPassword);
-  const hasUpper = /[A-ZА-Я]/.test(newPassword);
-  const hasDigit = /\d/.test(newPassword);
+  const hasLower = /[a-zа-я]/.test(newPwd);
+  const hasUpper = /[A-ZА-Я]/.test(newPwd);
+  const hasDigit = /\d/.test(newPwd);
 
   if (!hasLower || !hasUpper || !hasDigit) {
     return { success: false, error: 'Пароль должен содержать буквы в обоих регистрах и хотя бы одну цифру' };
   }
 
-  if (newPassword !== confirmPassword) {
+  if (newPwd !== confPwd) {
     return { success: false, error: 'Пароли не совпадают' };
   }
 
-  user.password = newPassword;
+  user.password = newPwd;
   saveDB(db);
 
   return { success: true, message: 'Пароль успешно изменён' };

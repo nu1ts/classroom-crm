@@ -272,9 +272,21 @@ export function setupLoginListeners(onLoginSuccess) {
 
   if (emailInput) {
     emailInput.addEventListener('input', clearError);
+    emailInput.addEventListener('blur', () => {
+      emailInput.value = emailInput.value.trim();
+    });
+    emailInput.addEventListener('change', () => {
+      emailInput.value = emailInput.value.trim();
+    });
   }
   if (passwordInput) {
     passwordInput.addEventListener('input', clearError);
+    passwordInput.addEventListener('blur', () => {
+      passwordInput.value = passwordInput.value.trim();
+    });
+    passwordInput.addEventListener('change', () => {
+      passwordInput.value = passwordInput.value.trim();
+    });
   }
 
   if (toggleBtn && passwordInput && toggleIcon) {
@@ -303,7 +315,9 @@ export function setupLoginListeners(onLoginSuccess) {
         return;
       }
 
-      const username = emailInput ? emailInput.value.trim() : '';
+      if (emailInput) emailInput.value = emailInput.value.trim();
+      if (passwordInput) passwordInput.value = passwordInput.value.trim();
+      const username = emailInput ? emailInput.value : '';
       const password = passwordInput ? passwordInput.value : '';
 
       if (!username || !password) {

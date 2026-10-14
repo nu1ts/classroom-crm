@@ -128,14 +128,29 @@ export function setupProfileListeners(onNavigate) {
   const confirmPwdInput = document.getElementById('pwd-confirm');
   const feedback = document.getElementById('password-feedback');
 
+  [currentPwdInput, newPwdInput, confirmPwdInput].forEach(inp => {
+    if (inp) {
+      inp.addEventListener('blur', () => {
+        inp.value = inp.value.trim();
+      });
+      inp.addEventListener('change', () => {
+        inp.value = inp.value.trim();
+      });
+    }
+  });
+
   if (form) {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
+      if (currentPwdInput) currentPwdInput.value = currentPwdInput.value.trim();
+      if (newPwdInput) newPwdInput.value = newPwdInput.value.trim();
+      if (confirmPwdInput) confirmPwdInput.value = confirmPwdInput.value.trim();
+
       const res = changePassword(
         user.id,
-        currentPwdInput.value,
-        newPwdInput.value,
-        confirmPwdInput.value
+        currentPwdInput ? currentPwdInput.value : '',
+        newPwdInput ? newPwdInput.value : '',
+        confirmPwdInput ? confirmPwdInput.value : ''
       );
 
       feedback.classList.remove('hidden', 'bg-rose-50', 'text-rose-700', 'border-rose-200', 'bg-emerald-50', 'text-emerald-700', 'border-emerald-200', 'border');

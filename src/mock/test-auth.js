@@ -113,10 +113,18 @@ clearSession();
   assert(login('', '').success === false, 'TC-AUTH-06: Оба поля пустые — отказ');
   assert(login('smirnova@school.ru', '').success === false, 'TC-AUTH-06: Пароль пустой — отказ');
   assert(login('', 'Test#2024').success === false, 'TC-AUTH-06: Логин пустой — отказ');
+  assert(login('   ', '   ').success === false, 'TC-AUTH-06: Пробельные поля — отказ');
+  assert(login('smirnova@school.ru', '   ').success === false, 'TC-AUTH-06: Пароль из одних пробелов — отказ');
+  assert(login('   ', 'Test#2024').success === false, 'TC-AUTH-06: Логин из одних пробелов — отказ');
 
   // Вход с пробелами вокруг логина
   const rSpaces = login('   smirnova@school.ru   ', 'Test#2024');
   assert(rSpaces.success === true, 'TC-AUTH-06: Пробелы вокруг логина успешно отсекаются');
+  logout();
+
+  // Вход с пробелами вокруг логина и пароля
+  const rBothSpaces = login('   smirnova@school.ru   ', '   Test#2024   ');
+  assert(rBothSpaces.success === true, 'TC-AUTH-06: Пробелы вокруг логина и пароля успешно отсекаются');
   logout();
 }
 
