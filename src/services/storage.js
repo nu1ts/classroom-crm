@@ -241,3 +241,74 @@ export function changePassword(userId, currentPassword, newPassword, confirmPass
 
   return { success: true, message: 'Пароль успешно изменён' };
 }
+
+/**
+ * Подтверждение пропуска урока (БП «Посещаемость: подтверждение пропусков»)
+ * @param {string} recordId ID записи посещаемости (или поиск по lessonId + studentId)
+ * @param {Object} data { status: 'excused' | 'unexcused', reason, document, confirmedBy }
+ */
+export function confirmAbsenceRecord(recordId, data = {}) {
+  const db = getDB();
+  const record = (db.attendance || []).find(a => a.id === recordId);
+  if (!record) {
+    return { success: false, error: 'Запись посещаемости не найдена' };
+  }
+
+  const isExcused = data.status === 'excused' || data.isExcused === true;
+  record.status = isExcused ? 'excused' : 'unexcused';
+  record.code = isExcused ? 'УП' : 'Н';
+  record.value = 'absent';
+  record.reason = data.reason || (isExcused ? 'Уважительная причина (справка / заявление)' : 'Неуважительная причина');
+  record.document = data.document || (isExcused ? 'Медицинская справка' : null);
+  record.confirmedBy = data.confirmedBy || 'Смирнова М. В.';
+  record.confirmedAt = new Date().toISOString();
+
+  if (db.meta) {
+    const q1LessonIds = new Set((db.lessons || []).filter(l => l.periodId === 'q1_2024').map(l => l.id));
+    db.meta.unconfirmedAbsencesCount = (db.attendance || []).filter(
+      a => a.status === 'unconfirmed' && a.value === 'absent' && q1LessonIds.has(a.lessonId)
+    ).length;
+  }
+
+  saveDB(db);
+  return { success: true, record };
+}
+
+/**
+ * Массовое подтверждение пропусков (например, за несколько уроков по одной справке)
+ */
+export function batchConfirmAbsences(recordIds, data = {}) {
+  const db = getDB();
+  const idsSet = new Set(recordIds);
+  let updatedCount = 0;
+
+  const isExcused = data.status === 'excused' || data.isExcused === true;
+  const reason = data.reason || (isExcused ? 'Уважительная причина (справка / заявление)' : 'Неуважительная причина');
+  const document = data.document || (isExcused ? 'Медицинская справка' : null);
+  const confirmedBy = data.confirmedBy || 'Смирнова М. В.';
+  const confirmedAt = new Date().toISOString();
+
+  (db.attendance || []).forEach(record => {
+    if (idsSet.has(record.id)) {
+      record.status = isExcused ? 'excused' : 'unexcused';
+      record.code = isExcused ? 'УП' : 'Н';
+      record.value = 'absent';
+      record.reason = reason;
+      record.document = document;
+      record.confirmedBy = confirmedBy;
+      record.confirmedAt = confirmedAt;
+      updatedCount++;
+    }
+  });
+
+  if (db.meta) {
+    const q1LessonIds = new Set((db.lessons || []).filter(l => l.periodId === 'q1_2024').map(l => l.id));
+    db.meta.unconfirmedAbsencesCount = (db.attendance || []).filter(
+      a => a.status === 'unconfirmed' && a.value === 'absent' && q1LessonIds.has(a.lessonId)
+    ).length;
+  }
+
+  saveDB(db);
+  return { success: true, updatedCount };
+}
+
