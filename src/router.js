@@ -6,7 +6,7 @@ import { renderOverviewView, setupOverviewListeners } from './views/overview.js?
 import { renderProfileView, setupProfileListeners } from './views/profile.js';
 import { renderForbiddenView } from './views/forbidden.js';
 import { renderPlaceholderView } from './views/placeholder.js';
-import { renderAttendanceView, setupAttendanceListeners } from './views/attendance.js?v=2';
+import { renderAttendanceView, setupAttendanceListeners } from './views/attendance.js?v=3';
 import { renderJournalView, setupJournalListeners } from './views/journal.js?v=31';
 
 const ROUTE_HANDLERS = {
