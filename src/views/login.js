@@ -1,12 +1,55 @@
 import { login, quickLoginAsRole } from '../services/storage.js';
 import { getDefaultRouteForRole } from '../config/navigation.js';
+import { isDevMode } from '../services/env.js';
 import { renderIcon } from '../components/icons.js';
 
 export function renderLoginView() {
+  const devModeActive = isDevMode();
+
+  let devQuickLoginHtml = '';
+  if (devModeActive) {
+    devQuickLoginHtml = `
+      <div class="mt-7 pt-5 border-t border-slate-100">
+        <div class="flex items-center justify-between mb-2.5">
+          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+            Быстрый вход
+          </span>
+          <span class="text-[10px] font-bold text-amber-700 bg-amber-100 border border-amber-200 px-1.5 py-0.5 rounded">
+            DEV MODE
+          </span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <button type="button" data-demo-role="teacher"
+                  class="demo-role-btn px-2.5 py-2 rounded-lg bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 text-slate-700 font-medium text-left transition-colors">
+            👩‍🏫 Классрук (7Б)
+          </button>
+          <button type="button" data-demo-role="subject_teacher"
+                  class="demo-role-btn px-2.5 py-2 rounded-lg bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 text-slate-700 font-medium text-left transition-colors">
+            📐 Предметник
+          </button>
+          <button type="button" data-demo-role="parent"
+                  class="demo-role-btn px-2.5 py-2 rounded-lg bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 text-slate-700 font-medium text-left transition-colors">
+            👨‍👦 Родитель
+          </button>
+          <button type="button" data-demo-role="student"
+                  class="demo-role-btn px-2.5 py-2 rounded-lg bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 text-slate-700 font-medium text-left transition-colors">
+            🎒 Ученик
+          </button>
+          <button type="button" data-demo-role="admin"
+                  class="demo-role-btn col-span-2 px-2.5 py-2 rounded-lg bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 text-slate-700 font-medium text-center transition-colors">
+            🛡️ Администратор школы
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
   return `
     <div class="w-full max-w-md mx-auto my-auto animate-fadeIn">
       <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-500 text-white font-extrabold text-2xl shadow-lg shadow-brand-500/30 mb-4 select-none">
+        <div id="login-brand-logo"
+             title="Томский государственный университет"
+             class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-500 text-white font-extrabold text-2xl shadow-lg shadow-brand-500/30 mb-4 select-none cursor-pointer hover:scale-105 transition-transform">
           U
         </div>
         <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
@@ -17,15 +60,11 @@ export function renderLoginView() {
         </p>
       </div>
 
-      <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200/80 p-8 sm:p-9">
+      <!-- Карточка входа с локальным модальным окном -->
+      <div id="login-card" class="relative overflow-hidden bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200/80 p-8 sm:p-9 transition-all duration-200">
         <h2 class="text-lg font-bold text-slate-800 mb-6">
           Вход в систему
         </h2>
-
-        <div id="login-error-box" class="hidden mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start space-x-2.5">
-          <span class="flex-shrink-0 mt-0.5">${renderIcon('alert', 'w-4 h-4 text-rose-600')}</span>
-          <span id="login-error-text">Неверный логин или пароль</span>
-        </div>
 
         <form id="login-form" class="space-y-4" novalidate>
           <div>
@@ -59,6 +98,14 @@ export function renderLoginView() {
             </div>
           </div>
 
+          <!-- Аккуратный анимированный блок ошибки -->
+          <div id="login-error-box" class="overflow-hidden transition-all duration-200 max-h-0 opacity-0 pointer-events-none mb-0">
+            <div class="py-2.5 px-3.5 rounded-xl bg-rose-50 border border-rose-200/80 text-rose-700 text-xs flex items-center space-x-2.5">
+              <span class="flex-shrink-0">${renderIcon('alert', 'w-4 h-4 text-rose-600')}</span>
+              <span id="login-error-text" class="font-medium leading-tight">Неверный логин или пароль</span>
+            </div>
+          </div>
+
           <div class="pt-2">
             <button type="submit" id="btn-login-submit"
                     class="w-full py-2.5 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-semibold text-sm shadow-md shadow-brand-500/25 transition-all duration-150">
@@ -74,52 +121,35 @@ export function renderLoginView() {
           </div>
         </form>
 
-        <div class="mt-8 pt-6 border-t border-slate-100">
-          <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2.5 text-center">
-            Быстрый вход для демонстрации ролей
-          </div>
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <button type="button" data-demo-role="teacher"
-                    class="demo-role-btn px-2.5 py-2 rounded-lg bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 text-slate-700 font-medium text-left transition-colors">
-              👩‍🏫 Классрук (7Б)
-            </button>
-            <button type="button" data-demo-role="subject_teacher"
-                    class="demo-role-btn px-2.5 py-2 rounded-lg bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 text-slate-700 font-medium text-left transition-colors">
-              📐 Предметник
-            </button>
-            <button type="button" data-demo-role="parent"
-                    class="demo-role-btn px-2.5 py-2 rounded-lg bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 text-slate-700 font-medium text-left transition-colors">
-              👨‍👦 Родитель
-            </button>
-            <button type="button" data-demo-role="student"
-                    class="demo-role-btn px-2.5 py-2 rounded-lg bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 text-slate-700 font-medium text-left transition-colors">
-              🎒 Ученик
-            </button>
-            <button type="button" data-demo-role="admin"
-                    class="demo-role-btn col-span-2 px-2.5 py-2 rounded-lg bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 text-slate-700 font-medium text-center transition-colors">
-              🛡️ Администратор школы
-            </button>
-          </div>
-        </div>
+        ${devQuickLoginHtml}
       </div>
+    </div>
 
-      <div id="modal-forgot-password" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
-          <h3 class="text-base font-bold text-slate-900 mb-2">Восстановление пароля</h3>
-          <p class="text-xs text-slate-600 leading-relaxed mb-4">
-            Самостоятельный сброс пароля недоступен из соображений безопасности.
-            Для сброса пароля обратитесь к администратору школы:
-          </p>
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-1 mb-5">
-            <div><span class="font-semibold">Администратор:</span> Никитин Пётр Алексеевич</div>
-            <div><span class="font-semibold">Email:</span> admin@school.ru</div>
-            <div><span class="font-semibold">Кабинет:</span> 201 (учительская)</div>
-          </div>
-          <button type="button" id="btn-close-modal-forgot"
-                  class="w-full py-2 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs transition-colors">
-            Понятно
+    <div id="modal-forgot-password"
+         class="fixed inset-0 w-screen h-screen bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-200 ease-out opacity-0 pointer-events-none">
+      <div id="modal-forgot-dialog"
+           class="bg-white rounded-2xl max-w-sm w-full p-6 sm:p-7 shadow-2xl border border-slate-100 transform transition-all duration-200 ease-out scale-95">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-base font-bold text-slate-900">Восстановление пароля</h3>
+          <button type="button" id="btn-close-modal-forgot-x"
+                  title="Закрыть"
+                  class="text-slate-400 hover:text-slate-600 p-1 rounded-lg transition-colors">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
+        <p class="text-xs text-slate-600 leading-relaxed mb-4">
+          Самостоятельный сброс пароля недоступен из соображений безопасности.
+          Для сброса пароля обратитесь к администратору школы:
+        </p>
+        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-1.5 mb-5">
+          <div><span class="font-semibold text-slate-900">Администратор:</span> Никитин Пётр Алексеевич</div>
+          <div><span class="font-semibold text-slate-900">Email:</span> admin@school.ru</div>
+          <div><span class="font-semibold text-slate-900">Кабинет:</span> 201 (учительская)</div>
+        </div>
+        <button type="button" id="btn-close-modal-forgot"
+                class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs transition-colors shadow-sm">
+          Понятно
+        </button>
       </div>
     </div>
   `;
@@ -127,12 +157,54 @@ export function renderLoginView() {
 
 export function setupLoginListeners(onLoginSuccess) {
   const form = document.getElementById('login-form');
+  const card = document.getElementById('login-card');
   const emailInput = document.getElementById('login-email');
   const passwordInput = document.getElementById('login-password');
   const errorBox = document.getElementById('login-error-box');
   const errorText = document.getElementById('login-error-text');
   const toggleBtn = document.getElementById('btn-toggle-password');
   const toggleIcon = document.getElementById('password-toggle-icon');
+
+  function clearError() {
+    if (errorBox) {
+      errorBox.classList.remove('max-h-16', 'opacity-100', 'pointer-events-auto', 'mb-3');
+      errorBox.classList.add('max-h-0', 'opacity-0', 'pointer-events-none', 'mb-0');
+    }
+    if (passwordInput) {
+      passwordInput.classList.remove('border-rose-400', 'ring-2', 'ring-rose-400/20');
+    }
+    if (emailInput) {
+      emailInput.classList.remove('border-rose-400', 'ring-2', 'ring-rose-400/20');
+    }
+  }
+
+  function showError(msg, field = 'password') {
+    if (errorBox && errorText) {
+      errorText.textContent = msg;
+      errorBox.classList.remove('max-h-0', 'opacity-0', 'pointer-events-none', 'mb-0');
+      errorBox.classList.add('max-h-16', 'opacity-100', 'pointer-events-auto', 'mb-3');
+    }
+
+    if (field === 'password' && passwordInput) {
+      passwordInput.classList.add('border-rose-400', 'ring-2', 'ring-rose-400/20');
+    } else if (field === 'both') {
+      if (emailInput) emailInput.classList.add('border-rose-400', 'ring-2', 'ring-rose-400/20');
+      if (passwordInput) passwordInput.classList.add('border-rose-400', 'ring-2', 'ring-rose-400/20');
+    }
+
+    if (card) {
+      card.classList.remove('animate-shake');
+      void card.offsetWidth;
+      card.classList.add('animate-shake');
+    }
+  }
+
+  if (emailInput) {
+    emailInput.addEventListener('input', clearError);
+  }
+  if (passwordInput) {
+    passwordInput.addEventListener('input', clearError);
+  }
 
   if (toggleBtn && passwordInput && toggleIcon) {
     toggleBtn.addEventListener('click', (e) => {
@@ -155,21 +227,24 @@ export function setupLoginListeners(onLoginSuccess) {
   if (form) {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const username = emailInput.value.trim();
-      const password = passwordInput.value;
+      const username = emailInput ? emailInput.value.trim() : '';
+      const password = passwordInput ? passwordInput.value : '';
 
       if (!username || !password) {
-        showError('Заполните логин и пароль');
+        showError('Заполните логин и пароль', !username && !password ? 'both' : (!username ? 'email' : 'password'));
         return;
       }
 
       const res = login(username, password);
       if (!res.success) {
-        showError(res.error || 'Неверный логин или пароль');
-        passwordInput.value = '';
-        passwordInput.focus();
+        showError(res.error || 'Неверный логин или пароль', 'password');
+        if (passwordInput) {
+          passwordInput.value = '';
+          passwordInput.focus();
+        }
         return;
       }
+
       const defRoute = getDefaultRouteForRole(res.user.role);
       window.location.hash = defRoute;
       if (onLoginSuccess) onLoginSuccess(res.user, defRoute);
@@ -191,23 +266,59 @@ export function setupLoginListeners(onLoginSuccess) {
 
   const forgotBtn = document.getElementById('btn-forgot-password');
   const modalForgot = document.getElementById('modal-forgot-password');
+  const modalDialog = document.getElementById('modal-forgot-dialog');
   const closeForgotBtn = document.getElementById('btn-close-modal-forgot');
+  const closeForgotX = document.getElementById('btn-close-modal-forgot-x');
 
-  if (forgotBtn && modalForgot) {
-    forgotBtn.addEventListener('click', () => {
-      modalForgot.classList.remove('hidden');
-    });
-  }
-  if (closeForgotBtn && modalForgot) {
-    closeForgotBtn.addEventListener('click', () => {
-      modalForgot.classList.add('hidden');
-    });
-  }
-
-  function showError(msg) {
-    if (errorBox && errorText) {
-      errorText.textContent = msg;
-      errorBox.classList.remove('hidden');
+  function openModal() {
+    if (!modalForgot) return;
+    modalForgot.classList.remove('opacity-0', 'pointer-events-none');
+    modalForgot.classList.add('opacity-100', 'pointer-events-auto');
+    if (modalDialog) {
+      modalDialog.classList.remove('scale-95');
+      modalDialog.classList.add('scale-100');
     }
+  }
+
+  function closeModal() {
+    if (!modalForgot) return;
+    modalForgot.classList.remove('opacity-100', 'pointer-events-auto');
+    modalForgot.classList.add('opacity-0', 'pointer-events-none');
+    if (modalDialog) {
+      modalDialog.classList.remove('scale-100');
+      modalDialog.classList.add('scale-95');
+    }
+  }
+
+  if (forgotBtn) forgotBtn.addEventListener('click', openModal);
+  if (closeForgotBtn) closeForgotBtn.addEventListener('click', closeModal);
+  if (closeForgotX) closeForgotX.addEventListener('click', closeModal);
+  if (modalForgot) {
+    modalForgot.addEventListener('click', (e) => {
+      if (e.target === modalForgot) closeModal();
+    });
+  }
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalForgot && !modalForgot.classList.contains('pointer-events-none')) {
+      closeModal();
+    }
+  });
+
+  const logoEl = document.getElementById('login-brand-logo');
+  if (logoEl) {
+    let clickCount = 0;
+    let clickTimer = null;
+    logoEl.addEventListener('click', () => {
+      clickCount++;
+      clearTimeout(clickTimer);
+      if (clickCount >= 3) {
+        clickCount = 0;
+        if (window.__CRM_DEV__) {
+          window.__CRM_DEV__.toggle();
+        }
+      } else {
+        clickTimer = setTimeout(() => { clickCount = 0; }, 500);
+      }
+    });
   }
 }
