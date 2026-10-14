@@ -86,7 +86,7 @@ export function setupHeaderListeners(onNavigate) {
     logoutBtn.addEventListener('click', (e) => {
       e.preventDefault();
       logout();
-      window.location.hash = '#/login';
+      window.location.replace('#/login');
       if (onNavigate) onNavigate('#/login');
     });
   }

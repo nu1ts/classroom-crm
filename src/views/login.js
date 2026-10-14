@@ -1,9 +1,61 @@
-import { login, quickLoginAsRole } from '../services/storage.js';
+import { login, quickLoginAsRole, getCurrentUser, logout } from '../services/storage.js';
 import { getDefaultRouteForRole } from '../config/navigation.js';
 import { isDevMode } from '../services/env.js';
 import { renderIcon } from '../components/icons.js';
 
 export function renderLoginView() {
+  const currentUser = getCurrentUser();
+  if (currentUser) {
+    const defRoute = getDefaultRouteForRole(currentUser.role);
+    return `
+      <div class="w-full max-w-md mx-auto my-auto animate-fadeIn">
+        <div class="text-center mb-8">
+          <div id="login-brand-logo"
+               title="Томский государственный университет"
+               class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-500 text-white font-extrabold text-2xl shadow-lg shadow-brand-500/30 mb-4 select-none cursor-pointer hover:scale-105 transition-transform">
+            U
+          </div>
+          <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
+            Кабинет классного руководителя
+          </h1>
+          <p class="text-sm text-slate-500 mt-1">
+            Цифровой кабинет классного руководителя
+          </p>
+        </div>
+
+        <div id="login-active-card" class="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200/80 p-8 sm:p-9 text-center animate-fadeIn">
+          <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-brand-50 border border-brand-200 text-brand-600 flex items-center justify-center shadow-inner">
+            ${renderIcon('user', 'w-7 h-7 text-brand-600')}
+          </div>
+          <h2 class="text-lg font-bold text-slate-800 mb-1.5">
+            Сеанс уже активен
+          </h2>
+          <p class="text-xs text-slate-500 mb-5">
+            Вы уже вошли в систему под учётной записью:
+          </p>
+
+          <div class="bg-slate-50 rounded-xl p-4 border border-slate-200/80 text-left mb-6">
+            <div class="font-bold text-sm text-slate-900">${currentUser.shortName || currentUser.personName}</div>
+            <div class="text-xs text-brand-600 font-semibold mt-0.5">${currentUser.roleLabel}</div>
+            <div class="text-[11px] text-slate-400 mt-1">${currentUser.username}</div>
+          </div>
+
+          <div class="space-y-2.5">
+            <a href="${defRoute}" id="btn-login-to-cabinet"
+               class="flex items-center justify-center space-x-2 w-full py-2.5 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-semibold text-sm shadow-md shadow-brand-500/25 transition-all text-center">
+              <span>Перейти в кабинет</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </a>
+            <button type="button" id="btn-login-switch-user"
+                    class="w-full py-2.5 px-4 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-medium text-xs transition-colors">
+              Выйти и сменить пользователя
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   const devModeActive = isDevMode();
 
   let devQuickLoginHtml = '';
@@ -151,6 +203,30 @@ export function renderLoginView() {
 }
 
 export function setupLoginListeners(onLoginSuccess) {
+  const currentUser = getCurrentUser();
+  if (currentUser) {
+    const toCabinetBtn = document.getElementById('btn-login-to-cabinet');
+    if (toCabinetBtn) {
+      toCabinetBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const defRoute = getDefaultRouteForRole(currentUser.role);
+        window.location.replace(defRoute);
+        if (onLoginSuccess) onLoginSuccess(currentUser, defRoute);
+      });
+    }
+
+    const switchBtn = document.getElementById('btn-login-switch-user');
+    if (switchBtn) {
+      switchBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        logout();
+        window.location.replace('#/login');
+        if (onLoginSuccess) onLoginSuccess(null, '#/login');
+      });
+    }
+    return;
+  }
+
   const form = document.getElementById('login-form');
   const card = document.getElementById('login-card');
   const emailInput = document.getElementById('login-email');
@@ -222,6 +298,11 @@ export function setupLoginListeners(onLoginSuccess) {
   if (form) {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
+      if (getCurrentUser()) {
+        showError('Сеанс уже активен. Сначала завершите текущий сеанс для смены пользователя.', 'both');
+        return;
+      }
+
       const username = emailInput ? emailInput.value.trim() : '';
       const password = passwordInput ? passwordInput.value : '';
 
@@ -241,7 +322,7 @@ export function setupLoginListeners(onLoginSuccess) {
       }
 
       const defRoute = getDefaultRouteForRole(res.user.role);
-      window.location.hash = defRoute;
+      window.location.replace(defRoute);
       if (onLoginSuccess) onLoginSuccess(res.user, defRoute);
     });
   }
@@ -253,7 +334,7 @@ export function setupLoginListeners(onLoginSuccess) {
       const user = quickLoginAsRole(roleKey);
       if (user) {
         const defRoute = getDefaultRouteForRole(user.role);
-        window.location.hash = defRoute;
+        window.location.replace(defRoute);
         if (onLoginSuccess) onLoginSuccess(user, defRoute);
       }
     });

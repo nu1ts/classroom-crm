@@ -121,6 +121,8 @@ class Router {
 
   init() {
     window.addEventListener('hashchange', () => this.handleRoute());
+    window.addEventListener('popstate', () => this.handleRoute());
+    window.addEventListener('pageshow', () => this.handleRoute());
     window.addEventListener('load', () => this.handleRoute());
     this.handleRoute();
   }
@@ -138,23 +140,27 @@ class Router {
     const cleanHash = rawHash.split('?')[0];
     const user = getCurrentUser();
 
+    let activeHash = cleanHash;
+
     if (!user) {
       if (cleanHash !== '#/login') {
-        window.location.replace('#/login');
-        return;
+        if (window.location.hash !== '#/login') {
+          window.location.replace('#/login');
+        }
+        activeHash = '#/login';
       }
     } else {
       if (cleanHash === '#/login' || cleanHash === '#/' || cleanHash === '') {
         const defRoute = getDefaultRouteForRole(user.role);
-        window.location.replace(defRoute);
-        return;
+        if (window.location.hash !== defRoute) {
+          window.location.replace(defRoute);
+        }
+        activeHash = defRoute;
+      } else if (!isRouteAllowedForRole(user.role, cleanHash)) {
+        activeHash = '#/forbidden';
       }
     }
 
-    let activeHash = cleanHash;
-    if (user && !isRouteAllowedForRole(user.role, cleanHash)) {
-      activeHash = '#/forbidden';
-    }
     const handler = ROUTE_HANDLERS[activeHash] || {
       title: 'Страница не найдена',
       render: () => renderForbiddenView(),

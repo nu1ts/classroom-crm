@@ -8,6 +8,7 @@
  * TC-AUTH-06 (Пустые поля и трим пробелов)
  * TC-AUTH-07 (Блокировка после 5 неудачных попыток)
  * TC-AUTH-08 (Выход из системы и очистка сессии)
+ * TC-AUTH-09 (Смена пользователя в одном браузере и защита от повторного логина)
  * TC-AUTH-14 (Блокировка учетной записи)
  * TC-AUTH-15 (Сброс пароля)
  */
@@ -23,6 +24,7 @@ import {
   clearSession
 } from '../services/storage.js';
 import { getDefaultRouteForRole } from '../config/navigation.js';
+import { renderLoginView } from '../views/login.js';
 
 let passed = 0;
 let total = 0;
@@ -136,6 +138,39 @@ clearSession();
   // Даже с верным паролем вход теперь заблокирован
   const rBlocked = login(testLogin, 'Osipov#2024');
   assert(rBlocked.success === false && rBlocked.error.includes('заблокирована'), 'TC-AUTH-07: Вход заблокирован даже с верным паролем');
+}
+
+// 8. TC-AUTH-09: Смена пользователя в одном браузере и защита от повторного логина
+{
+  resetDB();
+  clearSession();
+
+  // 1. Авторизация первого пользователя (классрук)
+  const rTeacher = login('smirnova@school.ru', 'Test#2024');
+  assert(rTeacher.success === true, 'TC-AUTH-09: Успешная авторизация первого пользователя');
+  assert(getCurrentUser() !== null && getCurrentUser().role === 'teacher', 'TC-AUTH-09: Сессия первого пользователя активна');
+
+  // 2. Попытка возврата на страницу логина при активном сеансе
+  const activeViewHtml = renderLoginView();
+  assert(activeViewHtml.includes('login-active-card'), 'TC-AUTH-09: При активной сессии экран входа показывает карточку активного сеанса');
+  assert(!activeViewHtml.includes('id="login-form"'), 'TC-AUTH-09: Форма повторного входа скрыта, повторный ввод логина невозможен');
+  assert(activeViewHtml.includes('btn-login-to-cabinet'), 'TC-AUTH-09: Присутствует действие перехода в кабинет');
+  assert(activeViewHtml.includes('btn-login-switch-user'), 'TC-AUTH-09: Присутствует действие выхода для смены пользователя');
+
+  // 3. Выход из системы для смены пользователя
+  logout();
+  assert(getCurrentUser() === null, 'TC-AUTH-09: Сессия очищена после выхода');
+
+  // 4. Проверка экрана логина после выхода
+  const cleanViewHtml = renderLoginView();
+  assert(cleanViewHtml.includes('id="login-form"'), 'TC-AUTH-09: После выхода форма логина снова доступна');
+  assert(!cleanViewHtml.includes('login-active-card'), 'TC-AUTH-09: Карточка активного сеанса скрыта после логаута');
+
+  // 5. Вход второго пользователя (родитель)
+  const rParent = login('petrov@mail.ru', 'Test#2024');
+  assert(rParent.success === true, 'TC-AUTH-09: Вход второго пользователя (родитель) успешен');
+  assert(getCurrentUser().role === 'parent', 'TC-AUTH-09: Активная сессия переключена на родителя');
+  assert(getDefaultRouteForRole(rParent.user.role) === '#/child', 'TC-AUTH-09: Стартовый экран родителя — #/child');
 }
 
 console.log(`\n🎉 ВСЕ ${passed} ПРОВЕРОК АВТОРИЗАЦИИ И СЕССИЙ УСПЕШНО ПРОЙДЕНЫ!`);
