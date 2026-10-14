@@ -8,6 +8,7 @@
   },
   "type": "module",
   "scripts": {
+    "build": "tailwindcss -i ./src/input.css -o ./reference/css/styles.css --minify",
     "build:css": "tailwindcss -i ./src/input.css -o ./reference/css/styles.css --minify",
     "watch:css": "tailwindcss -i ./src/input.css -o ./reference/css/styles.css --watch",
     "test:data": "node ./src/mock/test-dataset.js",

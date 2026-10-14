@@ -19,9 +19,14 @@ export function renderJournalView(options = {}) {
   const selectedSubjectId = options.subjectId || 'all';
   const selectedPeriodId = options.periodId || 'q1_2024';
   const selectedWeek = options.weekId || 'all';
-  const filterOnlyAbsences = options.filterOnlyAbsences === true || options.filterOnlyAbsences === 'true';
-  const filterUnconfirmedOnly = options.filterUnconfirmedOnly === true || options.filterUnconfirmedOnly === 'true';
+  const filterStatus = options.filterStatus || (options.filterUnconfirmedOnly ? 'unconfirmed' : (options.filterOnlyAbsences ? 'absences' : 'all'));
+  const isUnconfirmedOnly = filterStatus === 'unconfirmed' || options.filterUnconfirmedOnly === true || options.filterUnconfirmedOnly === 'true';
+  const isAbsencesOnly = filterStatus === 'absences' || options.filterOnlyAbsences === true || options.filterOnlyAbsences === 'true' || isUnconfirmedOnly;
+  const filterOnlyAbsences = isAbsencesOnly;
+  const filterUnconfirmedOnly = isUnconfirmedOnly;
+  const isGradesOnly = filterStatus === 'grades';
   const filterOnlyEntries = options.filterOnlyEntries === true || options.filterOnlyEntries === 'true';
+  const highlightUnconfirmed = options.highlightUnconfirmed === true || options.highlightUnconfirmed === 'true';
   const searchQuery = (options.searchQuery || '').trim().toLowerCase();
 
   let lessons = allLessons.filter(l => l.periodId === selectedPeriodId);
@@ -37,7 +42,7 @@ export function renderJournalView(options = {}) {
 
   if (filterOnlyEntries) {
     const lessonIdsWithEntries = new Set([
-      ...allGrades.map(g => g.lessonId),
+      ...allGrades.filter(g => g.periodId === selectedPeriodId && (selectedSubjectId === 'all' || g.subjectId === selectedSubjectId)).map(g => g.lessonId),
       ...allAttendance.filter(a => a.value === 'absent').map(a => a.lessonId)
     ]);
     lessons = lessons.filter(l => lessonIdsWithEntries.has(l.id));
@@ -83,15 +88,32 @@ export function renderJournalView(options = {}) {
     filteredStudents = filteredStudents.filter(s => s.fullName.toLowerCase().includes(searchQuery));
   }
 
-  if (filterOnlyAbsences || filterUnconfirmedOnly) {
+  if (isUnconfirmedOnly) {
     filteredStudents = filteredStudents.filter(s => {
       return lessons.some(l => {
         const att = attendanceMap.get(`${l.id}_${s.id}`);
-        if (!att || att.value !== 'absent') return false;
-        if (filterUnconfirmedOnly) {
-          return att.status === 'unconfirmed' || att.status === 'unexcused' || att.code === 'Н';
-        }
-        return true;
+        return att && att.value === 'absent' && (att.status === 'unconfirmed' || att.status === 'unexcused' || att.code === 'Н');
+      });
+    });
+  } else if (isAbsencesOnly) {
+    filteredStudents = filteredStudents.filter(s => {
+      return lessons.some(l => {
+        const att = attendanceMap.get(`${l.id}_${s.id}`);
+        return att && att.value === 'absent';
+      });
+    });
+  } else if (isGradesOnly) {
+    filteredStudents = filteredStudents.filter(s => {
+      return lessons.some(l => gradesMap.has(`${l.id}_${s.id}`));
+    });
+  }
+
+  if (filterOnlyEntries) {
+    filteredStudents = filteredStudents.filter(s => {
+      return lessons.some(l => {
+        const grade = gradesMap.get(`${l.id}_${s.id}`);
+        const att = attendanceMap.get(`${l.id}_${s.id}`);
+        return !!grade || (att && att.value === 'absent');
       });
     });
   }
@@ -177,8 +199,11 @@ export function renderJournalView(options = {}) {
         ? `<span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-brand-500 ring-2 ring-white" title="Комментарии: ${comments.length}"></span>`
         : '';
 
+      const isUnconfirmed = att && att.value === 'absent' && (att.status === 'unconfirmed' || att.status === 'unexcused' || att.code === 'Н');
+      const cellStatusClass = isUnconfirmed ? 'journal-cell-unconfirmed' : 'journal-cell-normal';
+
       return `
-        <td class="p-1 text-center border-b border-slate-200 border-r border-slate-100 relative cursor-pointer ${cellBg} transition-colors cell-journal-entry"
+        <td class="p-1 text-center border-b border-slate-200 border-r border-slate-100 relative cursor-pointer ${cellBg} transition-all cell-journal-entry ${cellStatusClass}"
             data-lesson-id="${l.id}"
             data-student-id="${s.id}"
             title="${tooltip}">
@@ -191,7 +216,7 @@ export function renderJournalView(options = {}) {
     }).join('');
 
     return `
-      <tr class="hover:bg-slate-50/70 transition-colors group">
+      <tr class="hover:bg-slate-50/70 transition-colors group student-row" data-student-name="${s.fullName}">
         <td class="px-3.5 py-2.5 text-xs font-semibold text-slate-900 border-b border-slate-200 border-r border-slate-200 sticky left-0 bg-white group-hover:bg-slate-50 z-10 min-w-[210px] whitespace-nowrap shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
           <div class="flex items-center space-x-2.5">
             <span class="w-6 text-center text-slate-400 font-semibold flex-shrink-0">${idx + 1}</span>
@@ -229,15 +254,6 @@ export function renderJournalView(options = {}) {
         </div>
 
         <div class="flex items-center space-x-2.5">
-          <button type="button" id="btn-toggle-find-absences"
-                  class="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${filterOnlyAbsences ? 'bg-rose-600 text-white ring-4 ring-rose-500/20' : 'bg-white border border-rose-200 text-rose-700 hover:bg-rose-50'}">
-            ${renderIcon('alert-circle', 'w-4 h-4')}
-            <span>${filterOnlyAbsences ? 'Показаны только пропуски' : 'Найти пропуски за период'}</span>
-            <span class="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold ${filterOnlyAbsences ? 'bg-white text-rose-700' : 'bg-rose-100 text-rose-800'}">
-              ${periodAbsences.length}
-            </span>
-          </button>
-
           <a href="#/attendance"
              class="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors shadow-xs">
             ${renderIcon('check-square', 'w-4 h-4 text-brand-500')}
@@ -281,30 +297,6 @@ export function renderJournalView(options = {}) {
           </div>
         </div>
       </div>
-
-      ${filterOnlyAbsences ? `
-        <div class="p-4 rounded-2xl bg-rose-50/80 border border-rose-200 text-rose-900 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs">
-          <div class="flex items-start space-x-3">
-            <span class="p-2 rounded-xl bg-rose-100 text-rose-700 mt-0.5">${renderIcon('alert-circle', 'w-5 h-5')}</span>
-            <div>
-              <div class="text-sm font-bold text-rose-950">Шаг БП: Поиск пропусков за период активирован</div>
-              <p class="text-xs text-rose-800 mt-0.5">
-                Отображаются только ученики с зафиксированными пропусками. Всего обнаружено <b>${periodAbsences.length}</b> пропусков, из них <b>${periodUnconfirmed.length}</b> требуют подтверждения справкой («Н»).
-              </p>
-            </div>
-          </div>
-          <div class="flex items-center space-x-2">
-            <button type="button" id="btn-filter-unconfirmed-only"
-                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${filterUnconfirmedOnly ? 'bg-rose-700 text-white' : 'bg-white text-rose-700 border border-rose-300 hover:bg-rose-100/60'}">
-              ${filterUnconfirmedOnly ? 'Показаны только «Н»' : 'Только неподтверждённые («Н»)'}
-            </button>
-            <button type="button" id="btn-reset-absence-filter"
-                    class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors">
-              Сбросить фильтр
-            </button>
-          </div>
-        </div>
-      ` : ''}
 
       <div class="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -353,55 +345,105 @@ export function renderJournalView(options = {}) {
               <input type="text" id="input-search-student"
                      value="${searchQuery}"
                      placeholder="Фамилия или имя..."
+                     autocomplete="off"
                      class="w-full pl-3.5 pr-8 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" />
               <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400">
-                ${renderIcon('search', 'w-4 h-4')}
+                <button type="button" id="btn-clear-search" class="${searchQuery ? '' : 'hidden'} text-slate-400 hover:text-slate-600 p-0.5">
+                  ${renderIcon('x', 'w-3.5 h-3.5')}
+                </button>
+                <span id="icon-search-glass" class="${searchQuery ? 'hidden' : ''}">
+                  ${renderIcon('search', 'w-4 h-4')}
+                </span>
               </div>
             </div>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Фильтрация</label>
-            <label for="check-only-entries"
-                   class="flex items-center space-x-2.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer select-none h-[38px]">
-              <input type="checkbox" id="check-only-entries"
-                     ${filterOnlyEntries ? 'checked' : ''}
-                     class="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer" />
-              <span class="text-xs font-semibold text-slate-700 truncate">Показывать только записи</span>
-            </label>
+            <label for="select-journal-status" class="block text-xs font-semibold text-slate-700 mb-1.5">Отметки и пропуски</label>
+            <div class="relative">
+              <select id="select-journal-status"
+                      class="w-full appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                <option value="all" ${filterStatus === 'all' && !filterOnlyAbsences ? 'selected' : ''}>Все отметки и пропуски</option>
+                <option value="unconfirmed" ${filterStatus === 'unconfirmed' || filterUnconfirmedOnly ? 'selected' : ''}>Только неподтверждённые («Н»)</option>
+                <option value="absences" ${filterStatus === 'absences' || (filterOnlyAbsences && !filterUnconfirmedOnly) ? 'selected' : ''}>Все пропуски («Н», «Б», «УП»)</option>
+                <option value="grades" ${filterStatus === 'grades' ? 'selected' : ''}>Только оценки</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                ${renderIcon('chevron-down', 'w-4 h-4')}
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
           <div class="flex flex-wrap items-center gap-3">
-            <span class="font-semibold text-slate-700">Обозначения:</span>
-            <div class="flex items-center space-x-1.5">
-              <span class="w-5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-emerald-50 text-emerald-800 border border-emerald-300">5</span>
-              <span class="w-5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-blue-50 text-blue-800 border border-blue-300">4</span>
-              <span class="w-5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-amber-50 text-amber-800 border border-amber-300">3</span>
-              <span class="w-5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-rose-50 text-rose-800 border border-rose-300">2</span>
-              <span class="text-slate-500 text-[11px]">— оценки</span>
-            </div>
-            <div class="flex items-center space-x-1.5 pl-2 border-l border-slate-200">
-              <span class="px-1.5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-indigo-50 text-indigo-700 border border-indigo-200">Б</span>
-              <span class="text-slate-500 text-[11px]">— по болезни / справка (уважительная)</span>
-            </div>
-            <div class="flex items-center space-x-1.5 pl-2 border-l border-slate-200">
-              <span class="px-1.5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-rose-50 text-rose-700 border border-rose-300">Н</span>
-              <span class="text-slate-500 text-[11px]">— не подтверждён (требует справку)</span>
-            </div>
-            <div class="flex items-center space-x-1.5 pl-2 border-l border-slate-200">
-              <span class="w-2.5 h-2.5 rounded-full bg-brand-500"></span>
-              <span class="text-slate-500 text-[11px]">— есть комментарий</span>
+            <button type="button" id="btn-toggle-highlight-unconfirmed"
+                    class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${highlightUnconfirmed ? 'bg-rose-50 text-rose-700 border-rose-300 ring-2 ring-rose-500/20' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300'}">
+              <span class="w-2 h-2 rounded-full ${highlightUnconfirmed ? 'bg-rose-600 animate-pulse' : 'bg-rose-400'}"></span>
+              <span>Подсветить неподтверждённые («Н»)</span>
+              <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold ${highlightUnconfirmed ? 'bg-rose-600 text-white' : 'bg-rose-100 text-rose-700'}">
+                ${periodUnconfirmed.length}
+              </span>
+            </button>
+
+            <label for="check-only-entries"
+                   class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer select-none">
+              <input type="checkbox" id="check-only-entries"
+                     ${filterOnlyEntries ? 'checked' : ''}
+                     class="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer" />
+              <span class="font-medium text-slate-700">Показывать только записи</span>
+            </label>
+
+            <div class="h-4 w-px bg-slate-200 hidden md:block"></div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="font-semibold text-slate-700">Обозначения:</span>
+              <div class="flex items-center space-x-1">
+                <span class="w-5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-emerald-50 text-emerald-800 border border-emerald-300">5</span>
+                <span class="w-5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-blue-50 text-blue-800 border border-blue-300">4</span>
+                <span class="w-5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-amber-50 text-amber-800 border border-amber-300">3</span>
+                <span class="w-5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-rose-50 text-rose-800 border border-rose-300">2</span>
+              </div>
+              <div class="flex items-center space-x-1 pl-1.5 border-l border-slate-200">
+                <span class="px-1.5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-indigo-50 text-indigo-700 border border-indigo-200">Б</span>
+                <span class="text-slate-500 text-[11px]">— уваж.</span>
+              </div>
+              <div class="flex items-center space-x-1 pl-1.5 border-l border-slate-200">
+                <span class="px-1.5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-rose-50 text-rose-700 border border-rose-300">Н</span>
+                <span class="text-slate-500 text-[11px]">— неуваж.</span>
+              </div>
+              <div class="flex items-center space-x-1 pl-1.5 border-l border-slate-200">
+                <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+                <span class="text-slate-500 text-[11px]">— коммент.</span>
+              </div>
             </div>
           </div>
-          <div class="text-[11px] text-slate-400">
-            Кликните на ячейку для просмотра деталей и добавления комментария
+
+          <div class="text-[11px] text-slate-400 hidden xl:block">
+            Кликните на ячейку для просмотра деталей
           </div>
         </div>
       </div>
 
-      <div class="rounded-2xl bg-white border border-slate-200/80 shadow-xs overflow-hidden">
+      <style>
+        .journal-highlight-mode .journal-cell-unconfirmed span {
+          outline: 2px solid #e11d48 !important;
+          outline-offset: 1px !important;
+          background-color: #ffe4e6 !important;
+          color: #9f1239 !important;
+          font-weight: 800 !important;
+          box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.25) !important;
+        }
+        .journal-highlight-mode .journal-cell-normal {
+          opacity: 0.35;
+          transition: opacity 0.15s ease-in-out;
+        }
+        .journal-highlight-mode .journal-cell-normal:hover {
+          opacity: 1;
+        }
+      </style>
+
+      <div id="journal-table-container" class="rounded-2xl bg-white border border-slate-200/80 shadow-xs overflow-hidden ${highlightUnconfirmed ? 'journal-highlight-mode' : ''}">
         <div class="overflow-x-auto scrollbar-thin">
           <table class="w-full border-separate border-spacing-0 text-left">
             <thead>
@@ -421,7 +463,7 @@ export function renderJournalView(options = {}) {
                 ${tableHeaderColumns}
               </tr>
             </thead>
-            <tbody>
+            <tbody id="journal-table-body">
               ${tableRows.length > 0 ? tableRows : `
                 <tr>
                   <td colspan="${lessons.length + 3}" class="py-12 text-center text-slate-400 text-xs">
@@ -429,6 +471,11 @@ export function renderJournalView(options = {}) {
                   </td>
                 </tr>
               `}
+              <tr id="journal-search-no-results" style="display: none;">
+                <td colspan="${lessons.length + 3}" class="py-12 text-center text-slate-400 text-xs">
+                  По данному поисковому запросу ученики не найдены.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -526,21 +573,27 @@ export function renderJournalView(options = {}) {
 export function setupJournalListeners(onNavigate) {
   const selectSubject = document.getElementById('select-journal-subject');
   const selectWeek = document.getElementById('select-journal-week');
+  const selectStatus = document.getElementById('select-journal-status');
   const checkOnlyEntries = document.getElementById('check-only-entries');
   const inputSearch = document.getElementById('input-search-student');
-  const btnToggleFindAbsences = document.getElementById('btn-toggle-find-absences');
-  const btnResetAbsenceFilter = document.getElementById('btn-reset-absence-filter');
-  const btnFilterUnconfirmedOnly = document.getElementById('btn-filter-unconfirmed-only');
+  const btnClearSearch = document.getElementById('btn-clear-search');
+  const iconSearch = document.getElementById('icon-search-glass');
+  const btnToggleHighlight = document.getElementById('btn-toggle-highlight-unconfirmed');
+  const tableContainer = document.getElementById('journal-table-container');
 
   function getUrlParams() {
     const rawHash = window.location.hash || '#/journal';
     const queryString = rawHash.includes('?') ? rawHash.split('?')[1] : '';
     const params = new URLSearchParams(queryString);
+    const unconfirmed = params.get('unconfirmed') === 'true';
+    const absences = params.get('absences') === 'true';
+    const statusParam = params.get('status') || (unconfirmed ? 'unconfirmed' : (absences ? 'absences' : 'all'));
     return {
       subjectId: params.get('subject') || 'all',
       weekId: params.get('week') || 'all',
-      filterOnlyAbsences: params.get('absences') === 'true',
-      filterUnconfirmedOnly: params.get('unconfirmed') === 'true',
+      filterStatus: statusParam,
+      filterOnlyAbsences: statusParam === 'absences' || statusParam === 'unconfirmed',
+      filterUnconfirmedOnly: statusParam === 'unconfirmed',
       filterOnlyEntries: params.get('onlyEntries') === 'true',
       searchQuery: params.get('search') || ''
     };
@@ -553,8 +606,11 @@ export function setupJournalListeners(onNavigate) {
 
     if (merged.subjectId && merged.subjectId !== 'all') params.set('subject', merged.subjectId);
     if (merged.weekId && merged.weekId !== 'all') params.set('week', merged.weekId);
-    if (merged.filterOnlyAbsences) params.set('absences', 'true');
-    if (merged.filterUnconfirmedOnly) params.set('unconfirmed', 'true');
+    if (merged.filterStatus && merged.filterStatus !== 'all') {
+      params.set('status', merged.filterStatus);
+      if (merged.filterStatus === 'unconfirmed') params.set('unconfirmed', 'true');
+      if (merged.filterStatus === 'absences' || merged.filterStatus === 'unconfirmed') params.set('absences', 'true');
+    }
     if (merged.filterOnlyEntries) params.set('onlyEntries', 'true');
     if (merged.searchQuery) params.set('search', merged.searchQuery);
 
@@ -580,47 +636,76 @@ export function setupJournalListeners(onNavigate) {
     });
   }
 
+  if (selectStatus) {
+    selectStatus.addEventListener('change', () => {
+      const val = selectStatus.value;
+      updateRoute({
+        filterStatus: val,
+        filterOnlyAbsences: val === 'absences' || val === 'unconfirmed',
+        filterUnconfirmedOnly: val === 'unconfirmed'
+      });
+    });
+  }
+
   if (checkOnlyEntries) {
     checkOnlyEntries.addEventListener('change', () => {
       updateRoute({ filterOnlyEntries: checkOnlyEntries.checked });
     });
   }
 
+  function filterTableRowsLocally(query) {
+    const q = (query || '').trim().toLowerCase();
+    const rows = document.querySelectorAll('tr.student-row');
+    let visibleCount = 0;
+    rows.forEach(r => {
+      const name = (r.getAttribute('data-student-name') || '').toLowerCase();
+      const match = !q || name.includes(q);
+      r.style.display = match ? '' : 'none';
+      if (match) visibleCount++;
+    });
+
+    const noMatchRow = document.getElementById('journal-search-no-results');
+    if (noMatchRow) {
+      noMatchRow.style.display = (visibleCount === 0 && rows.length > 0) ? '' : 'none';
+    }
+
+    if (btnClearSearch && iconSearch) {
+      if (q) {
+        btnClearSearch.classList.remove('hidden');
+        iconSearch.classList.add('hidden');
+      } else {
+        btnClearSearch.classList.add('hidden');
+        iconSearch.classList.remove('hidden');
+      }
+    }
+  }
+
   if (inputSearch) {
-    let debounceTimer;
     inputSearch.addEventListener('input', () => {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        updateRoute({ searchQuery: inputSearch.value.trim() });
-      }, 350);
+      filterTableRowsLocally(inputSearch.value);
     });
   }
 
-  if (btnToggleFindAbsences) {
-    btnToggleFindAbsences.addEventListener('click', () => {
-      const current = getUrlParams();
-      updateRoute({
-        filterOnlyAbsences: !current.filterOnlyAbsences,
-        filterUnconfirmedOnly: false
-      });
+  if (btnClearSearch && inputSearch) {
+    btnClearSearch.addEventListener('click', () => {
+      inputSearch.value = '';
+      filterTableRowsLocally('');
+      inputSearch.focus();
     });
   }
 
-  if (btnResetAbsenceFilter) {
-    btnResetAbsenceFilter.addEventListener('click', () => {
-      updateRoute({
-        filterOnlyAbsences: false,
-        filterUnconfirmedOnly: false
-      });
-    });
-  }
+  if (btnToggleHighlight && tableContainer) {
+    btnToggleHighlight.addEventListener('click', () => {
+      const isNowActive = !tableContainer.classList.contains('journal-highlight-mode');
+      tableContainer.classList.toggle('journal-highlight-mode', isNowActive);
 
-  if (btnFilterUnconfirmedOnly) {
-    btnFilterUnconfirmedOnly.addEventListener('click', () => {
-      const current = getUrlParams();
-      updateRoute({
-        filterUnconfirmedOnly: !current.filterUnconfirmedOnly
-      });
+      if (isNowActive) {
+        btnToggleHighlight.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
+        btnToggleHighlight.classList.add('bg-rose-50', 'text-rose-700', 'border-rose-300', 'ring-2', 'ring-rose-500/20');
+      } else {
+        btnToggleHighlight.classList.remove('bg-rose-50', 'text-rose-700', 'border-rose-300', 'ring-2', 'ring-rose-500/20');
+        btnToggleHighlight.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
+      }
     });
   }
 

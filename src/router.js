@@ -7,7 +7,7 @@ import { renderProfileView, setupProfileListeners } from './views/profile.js';
 import { renderForbiddenView } from './views/forbidden.js';
 import { renderPlaceholderView } from './views/placeholder.js';
 import { renderAttendanceView, setupAttendanceListeners } from './views/attendance.js?v=2';
-import { renderJournalView, setupJournalListeners } from './views/journal.js?v=5';
+import { renderJournalView, setupJournalListeners } from './views/journal.js?v=6';
 
 const ROUTE_HANDLERS = {
   '#/login': {
@@ -31,11 +31,15 @@ const ROUTE_HANDLERS = {
       const hash = window.location.hash || '';
       const queryString = hash.includes('?') ? hash.split('?')[1] : '';
       const params = new URLSearchParams(queryString);
+      const unconfirmed = params.get('unconfirmed') === 'true';
+      const absences = params.get('absences') === 'true';
+      const statusParam = params.get('status') || (unconfirmed ? 'unconfirmed' : (absences ? 'absences' : 'all'));
       return renderJournalView({
         subjectId: params.get('subject') || 'all',
         weekId: params.get('week') || 'all',
-        filterOnlyAbsences: params.get('absences') === 'true',
-        filterUnconfirmedOnly: params.get('unconfirmed') === 'true',
+        filterStatus: statusParam,
+        filterOnlyAbsences: statusParam === 'absences' || unconfirmed,
+        filterUnconfirmedOnly: unconfirmed,
         filterOnlyEntries: params.get('onlyEntries') === 'true',
         searchQuery: params.get('search') || ''
       });
