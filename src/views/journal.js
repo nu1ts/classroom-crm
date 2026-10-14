@@ -196,7 +196,7 @@ export function renderJournalView(options = {}) {
       }
 
       const commentIndicator = hasComments
-        ? `<span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-brand-500 ring-2 ring-white" title="Комментарии: ${comments.length}"></span>`
+        ? `<span class="indicator-comment absolute top-1 right-1 w-2 h-2 rounded-full bg-brand-500 ring-2 ring-white" title="Комментарии: ${comments.length}"></span>`
         : '';
 
       const isUnconfirmed = att && att.value === 'absent' && (att.status === 'unconfirmed' || att.status === 'unexcused' || att.code === 'Н');
@@ -396,7 +396,7 @@ export function renderJournalView(options = {}) {
 
             <div class="h-4 w-px bg-slate-200 hidden md:block"></div>
 
-            <div class="flex flex-wrap items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2.5">
               <span class="font-semibold text-slate-700">Обозначения:</span>
               <div class="flex items-center space-x-1">
                 <span class="w-5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-emerald-50 text-emerald-800 border border-emerald-300">5</span>
@@ -404,15 +404,18 @@ export function renderJournalView(options = {}) {
                 <span class="w-5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-amber-50 text-amber-800 border border-amber-300">3</span>
                 <span class="w-5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-rose-50 text-rose-800 border border-rose-300">2</span>
               </div>
-              <div class="flex items-center space-x-1 pl-1.5 border-l border-slate-200">
+              <div class="h-3.5 w-px bg-slate-200"></div>
+              <div class="flex items-center space-x-1.5">
                 <span class="px-1.5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-indigo-50 text-indigo-700 border border-indigo-200">Б</span>
                 <span class="text-slate-500 text-[11px]">— уваж.</span>
               </div>
-              <div class="flex items-center space-x-1 pl-1.5 border-l border-slate-200">
+              <div class="h-3.5 w-px bg-slate-200"></div>
+              <div class="flex items-center space-x-1.5">
                 <span class="px-1.5 h-5 flex items-center justify-center text-[11px] font-bold rounded bg-rose-50 text-rose-700 border border-rose-300">Н</span>
                 <span class="text-slate-500 text-[11px]">— неуваж.</span>
               </div>
-              <div class="flex items-center space-x-1 pl-1.5 border-l border-slate-200">
+              <div class="h-3.5 w-px bg-slate-200"></div>
+              <div class="flex items-center space-x-1.5">
                 <span class="w-2 h-2 rounded-full bg-brand-500"></span>
                 <span class="text-slate-500 text-[11px]">— коммент.</span>
               </div>
@@ -964,6 +967,19 @@ export function setupJournalListeners(onNavigate) {
       if (res.success) {
         inputCommentText.value = '';
         renderModalComments(activeLessonId, activeStudentId);
+
+        const targetCell = document.querySelector(`.cell-journal-entry[data-lesson-id="${activeLessonId}"][data-student-id="${activeStudentId}"]`);
+        if (targetCell) {
+          let indicator = targetCell.querySelector('.indicator-comment');
+          const allCommentsForCell = getJournalComments(activeLessonId, activeStudentId);
+          if (!indicator) {
+            indicator = document.createElement('span');
+            indicator.className = 'indicator-comment absolute top-1 right-1 w-2 h-2 rounded-full bg-brand-500 ring-2 ring-white animate-pulse';
+            targetCell.appendChild(indicator);
+            setTimeout(() => indicator && indicator.classList.remove('animate-pulse'), 1500);
+          }
+          indicator.title = `Комментарии: ${allCommentsForCell.length}`;
+        }
       }
     });
   }
