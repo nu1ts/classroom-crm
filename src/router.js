@@ -6,6 +6,7 @@ import { renderOverviewView, setupOverviewListeners } from './views/overview.js?
 import { renderProfileView, setupProfileListeners } from './views/profile.js';
 import { renderForbiddenView } from './views/forbidden.js';
 import { renderPlaceholderView } from './views/placeholder.js';
+import { renderAttendanceView, setupAttendanceListeners } from './views/attendance.js?v=2';
 
 const ROUTE_HANDLERS = {
   '#/login': {
@@ -30,8 +31,8 @@ const ROUTE_HANDLERS = {
   },
   '#/attendance': {
     title: 'Посещаемость',
-    render: () => renderPlaceholderView('Посещаемость', 'Учёт посещаемости уроков, причины отсутствия и справки', '#/attendance'),
-    setup: () => { }
+    render: () => renderAttendanceView(),
+    setup: (navigate) => setupAttendanceListeners(navigate)
   },
   '#/schedule': {
     title: 'Расписание',
