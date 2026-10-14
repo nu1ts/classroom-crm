@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-full bg-slate-50">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Кабинет классного руководителя — Classroom CRM</title>
+  <meta name="description"
+    content="Цифровой кабинет классного руководителя: контроль успеваемости, посещаемости, собрания и аналитика класса" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./css/styles.css" />
+
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fadeIn {
+      animation: fadeIn 0.15s ease-out forwards;
+    }
+  </style>
+</head>
+
+<body class="h-full text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+  <div id="app" class="h-full"></div>
+
+  <script type="module" src="../src/app.js"></script>
+</body>
+
+</html>

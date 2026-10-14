@@ -1,0 +1,32 @@
+{
+  "name": "classroom-crm",
+  "version": "1.0.0",
+  "description": "A digital homeroom teacher's cabinet (Classroom CRM). Static site: HTML5, CSS3, Vanilla JS, Tailwind; backend and DB mocked on the client. Five roles: admin, homeroom teacher, subject teacher, parent, student.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "type": "module",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/input.css -o ./reference/css/styles.css --minify",
+    "watch:css": "tailwindcss -i ./src/input.css -o ./reference/css/styles.css --watch",
+    "test:data": "node ./src/mock/test-dataset.js",
+    "test:calc": "node ./src/mock/test-calculations.js",
+    "test:nav": "node ./src/mock/test-navigation.js",
+    "test": "node ./src/mock/test-dataset.js && node ./src/mock/test-calculations.js && node ./src/mock/test-navigation.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nu1ts/classroom-crm.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nu1ts/classroom-crm/issues"
+  },
+  "homepage": "https://github.com/nu1ts/classroom-crm#readme",
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
+  }
+}
