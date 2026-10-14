@@ -7,7 +7,7 @@ import { renderProfileView, setupProfileListeners } from './views/profile.js';
 import { renderForbiddenView } from './views/forbidden.js';
 import { renderPlaceholderView } from './views/placeholder.js';
 import { renderAttendanceView, setupAttendanceListeners } from './views/attendance.js?v=2';
-import { renderJournalView, setupJournalListeners } from './views/journal.js?v=6';
+import { renderJournalView, setupJournalListeners } from './views/journal.js?v=8';
 
 const ROUTE_HANDLERS = {
   '#/login': {

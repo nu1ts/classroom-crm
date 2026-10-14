@@ -434,17 +434,25 @@ export function renderJournalView(options = {}) {
           font-weight: 800 !important;
           box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.25) !important;
         }
-        .journal-highlight-mode .journal-cell-normal {
-          opacity: 0.35;
+        .journal-highlight-mode .journal-cell-unconfirmed {
+          background-color: #fff1f2 !important;
+        }
+        .journal-highlight-mode .journal-cell-normal > div {
+          opacity: 0.25;
           transition: opacity 0.15s ease-in-out;
         }
-        .journal-highlight-mode .journal-cell-normal:hover {
+        .journal-highlight-mode .journal-cell-normal:hover > div {
           opacity: 1;
+        }
+        .journal-empty-sticky-box {
+          position: sticky;
+          left: 0;
+          box-sizing: border-box;
         }
       </style>
 
       <div id="journal-table-container" class="rounded-2xl bg-white border border-slate-200/80 shadow-xs overflow-hidden ${highlightUnconfirmed ? 'journal-highlight-mode' : ''}">
-        <div class="overflow-x-auto scrollbar-thin">
+        <div id="journal-table-scroll" class="overflow-x-auto scrollbar-thin">
           <table class="w-full border-separate border-spacing-0 text-left">
             <thead>
               <tr>
@@ -466,14 +474,30 @@ export function renderJournalView(options = {}) {
             <tbody id="journal-table-body">
               ${tableRows.length > 0 ? tableRows : `
                 <tr>
-                  <td colspan="${lessons.length + 3}" class="py-12 text-center text-slate-400 text-xs">
-                    По заданным критериям ничего не найдено. Попробуйте сбросить фильтры.
+                  <td colspan="${lessons.length + 3}" class="p-0 border-b border-slate-100">
+                    <div class="journal-empty-sticky-box py-12 px-6 flex flex-col items-center justify-center text-center">
+                      <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-2.5">
+                        ${renderIcon('search', 'w-5 h-5')}
+                      </div>
+                      <div class="text-sm font-semibold text-slate-700">По заданным критериям ничего не найдено</div>
+                      <div class="text-xs text-slate-400 mt-1 max-w-sm">Попробуйте изменить выбранные фильтры или сбросить параметры</div>
+                    </div>
                   </td>
                 </tr>
               `}
               <tr id="journal-search-no-results" style="display: none;">
-                <td colspan="${lessons.length + 3}" class="py-12 text-center text-slate-400 text-xs">
-                  По данному поисковому запросу ученики не найдены.
+                <td colspan="${lessons.length + 3}" class="p-0 border-b border-slate-100">
+                  <div class="journal-empty-sticky-box py-12 px-6 flex flex-col items-center justify-center text-center">
+                    <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-2.5">
+                      ${renderIcon('search', 'w-5 h-5')}
+                    </div>
+                    <div class="text-sm font-semibold text-slate-700">По данному поисковому запросу ученики не найдены</div>
+                    <div class="text-xs text-slate-400 mt-1 max-w-sm">Проверьте правильность написания или сбросьте фильтр поиска</div>
+                    <button type="button" id="btn-reset-empty-search" class="mt-3 inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 transition-colors cursor-pointer shadow-2xs">
+                      ${renderIcon('x', 'w-3.5 h-3.5')}
+                      <span>Сбросить поиск</span>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -653,6 +677,21 @@ export function setupJournalListeners(onNavigate) {
     });
   }
 
+  const tableScroll = document.getElementById('journal-table-scroll');
+
+  function updateStickyBoxesWidth() {
+    if (!tableScroll) return;
+    const visibleWidth = tableScroll.clientWidth;
+    if (visibleWidth > 0) {
+      document.querySelectorAll('.journal-empty-sticky-box').forEach(box => {
+        box.style.width = `${visibleWidth}px`;
+      });
+    }
+  }
+
+  updateStickyBoxesWidth();
+  window.addEventListener('resize', updateStickyBoxesWidth);
+
   function filterTableRowsLocally(query) {
     const q = (query || '').trim().toLowerCase();
     const rows = document.querySelectorAll('tr.student-row');
@@ -666,7 +705,11 @@ export function setupJournalListeners(onNavigate) {
 
     const noMatchRow = document.getElementById('journal-search-no-results');
     if (noMatchRow) {
-      noMatchRow.style.display = (visibleCount === 0 && rows.length > 0) ? '' : 'none';
+      const showEmpty = (visibleCount === 0 && rows.length > 0);
+      noMatchRow.style.display = showEmpty ? '' : 'none';
+      if (showEmpty) {
+        updateStickyBoxesWidth();
+      }
     }
 
     if (btnClearSearch && iconSearch) {
@@ -688,6 +731,15 @@ export function setupJournalListeners(onNavigate) {
 
   if (btnClearSearch && inputSearch) {
     btnClearSearch.addEventListener('click', () => {
+      inputSearch.value = '';
+      filterTableRowsLocally('');
+      inputSearch.focus();
+    });
+  }
+
+  const btnResetEmptySearch = document.getElementById('btn-reset-empty-search');
+  if (btnResetEmptySearch && inputSearch) {
+    btnResetEmptySearch.addEventListener('click', () => {
       inputSearch.value = '';
       filterTableRowsLocally('');
       inputSearch.focus();
