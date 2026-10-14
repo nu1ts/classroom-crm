@@ -6,40 +6,71 @@ const STORAGE_KEYS = {
   FAILED_ATTEMPTS: 'classroom_crm_failed_attempts'
 };
 
+const memoryStore = new Map();
+const storage = {
+  getItem(key) {
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem(key);
+    }
+    return memoryStore.has(key) ? memoryStore.get(key) : null;
+  },
+  setItem(key, value) {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(key, value);
+    } else {
+      memoryStore.set(key, String(value));
+    }
+  },
+  removeItem(key) {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(key);
+    } else {
+      memoryStore.delete(key);
+    }
+  },
+  clear() {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.clear();
+    } else {
+      memoryStore.clear();
+    }
+  }
+};
+
 export function getDB() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.DB);
+    const raw = storage.getItem(STORAGE_KEYS.DB);
     if (!raw) {
       const clone = JSON.parse(JSON.stringify(INITIAL_DATASET));
-      localStorage.setItem(STORAGE_KEYS.DB, JSON.stringify(clone));
+      storage.setItem(STORAGE_KEYS.DB, JSON.stringify(clone));
       return clone;
     }
     return JSON.parse(raw);
   } catch (e) {
-    console.error('Ошибка чтения БД из localStorage, сброс к начальному состоянию', e);
+    console.error('Ошибка чтения БД из хранилища, сброс к начальному состоянию', e);
     const clone = JSON.parse(JSON.stringify(INITIAL_DATASET));
-    localStorage.setItem(STORAGE_KEYS.DB, JSON.stringify(clone));
+    storage.setItem(STORAGE_KEYS.DB, JSON.stringify(clone));
     return clone;
   }
 }
 
 export function saveDB(data) {
   try {
-    localStorage.setItem(STORAGE_KEYS.DB, JSON.stringify(data));
+    storage.setItem(STORAGE_KEYS.DB, JSON.stringify(data));
   } catch (e) {
-    console.error('Ошибка сохранения БД в localStorage', e);
+    console.error('Ошибка сохранения БД в хранилище', e);
   }
 }
 
 export function resetDB() {
   const clone = JSON.parse(JSON.stringify(INITIAL_DATASET));
-  localStorage.setItem(STORAGE_KEYS.DB, JSON.stringify(clone));
+  storage.setItem(STORAGE_KEYS.DB, JSON.stringify(clone));
   return clone;
 }
 
 export function getSession() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.SESSION);
+    const raw = storage.getItem(STORAGE_KEYS.SESSION);
     if (!raw) return null;
     return JSON.parse(raw);
   } catch {
@@ -48,11 +79,11 @@ export function getSession() {
 }
 
 export function setSession(sessionData) {
-  localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sessionData));
+  storage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sessionData));
 }
 
 export function clearSession() {
-  localStorage.removeItem(STORAGE_KEYS.SESSION);
+  storage.removeItem(STORAGE_KEYS.SESSION);
 }
 
 export function getCurrentUser() {
@@ -70,7 +101,7 @@ export function getCurrentUser() {
 
 function getFailedAttempts(username) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.FAILED_ATTEMPTS);
+    const raw = storage.getItem(STORAGE_KEYS.FAILED_ATTEMPTS);
     const map = raw ? JSON.parse(raw) : {};
     return map[username] || 0;
   } catch {
@@ -80,10 +111,10 @@ function getFailedAttempts(username) {
 
 function incrementFailedAttempts(username) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.FAILED_ATTEMPTS);
+    const raw = storage.getItem(STORAGE_KEYS.FAILED_ATTEMPTS);
     const map = raw ? JSON.parse(raw) : {};
     map[username] = (map[username] || 0) + 1;
-    localStorage.setItem(STORAGE_KEYS.FAILED_ATTEMPTS, JSON.stringify(map));
+    storage.setItem(STORAGE_KEYS.FAILED_ATTEMPTS, JSON.stringify(map));
     return map[username];
   } catch {
     return 1;
@@ -92,11 +123,11 @@ function incrementFailedAttempts(username) {
 
 function resetFailedAttempts(username) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.FAILED_ATTEMPTS);
+    const raw = storage.getItem(STORAGE_KEYS.FAILED_ATTEMPTS);
     if (raw) {
       const map = JSON.parse(raw);
       delete map[username];
-      localStorage.setItem(STORAGE_KEYS.FAILED_ATTEMPTS, JSON.stringify(map));
+      storage.setItem(STORAGE_KEYS.FAILED_ATTEMPTS, JSON.stringify(map));
     }
   } catch {
     // noop
@@ -105,7 +136,7 @@ function resetFailedAttempts(username) {
 
 export function login(rawUsername, password) {
   const username = (rawUsername || '').trim();
-  const pwd = password || '';
+  const pwd = (password || '').trim();
 
   if (!username || !pwd) {
     return { success: false, error: 'Заполните все поля' };
@@ -181,27 +212,31 @@ export function changePassword(userId, currentPassword, newPassword, confirmPass
     return { success: false, error: 'Пользователь не найден' };
   }
 
-  if (user.password !== currentPassword) {
+  const curPwd = (currentPassword || '').trim();
+  const newPwd = (newPassword || '').trim();
+  const confPwd = (confirmPassword || '').trim();
+
+  if (user.password !== curPwd) {
     return { success: false, error: 'Текущий пароль указан неверно' };
   }
 
-  if (!newPassword || newPassword.length < 8) {
+  if (!newPwd || newPwd.length < 8) {
     return { success: false, error: 'Новый пароль должен содержать не менее 8 символов' };
   }
 
-  const hasLower = /[a-zа-я]/.test(newPassword);
-  const hasUpper = /[A-ZА-Я]/.test(newPassword);
-  const hasDigit = /\d/.test(newPassword);
+  const hasLower = /[a-zа-я]/.test(newPwd);
+  const hasUpper = /[A-ZА-Я]/.test(newPwd);
+  const hasDigit = /\d/.test(newPwd);
 
   if (!hasLower || !hasUpper || !hasDigit) {
     return { success: false, error: 'Пароль должен содержать буквы в обоих регистрах и хотя бы одну цифру' };
   }
 
-  if (newPassword !== confirmPassword) {
+  if (newPwd !== confPwd) {
     return { success: false, error: 'Пароли не совпадают' };
   }
 
-  user.password = newPassword;
+  user.password = newPwd;
   saveDB(db);
 
   return { success: true, message: 'Пароль успешно изменён' };

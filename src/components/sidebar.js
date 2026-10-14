@@ -103,7 +103,7 @@ export function setupSidebarListeners(onNavigate) {
       e.preventDefault();
       if (confirm('Вы действительно хотите выйти из системы?')) {
         logout();
-        window.location.hash = '#/login';
+        window.location.replace('#/login');
         if (onNavigate) onNavigate('#/login');
       }
     });

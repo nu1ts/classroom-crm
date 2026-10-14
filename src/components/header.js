@@ -1,5 +1,6 @@
 import { ROLE_NAVIGATION } from '../config/navigation.js';
 import { logout, quickLoginAsRole } from '../services/storage.js';
+import { isDevMode } from '../services/env.js';
 import { renderIcon } from './icons.js';
 
 export function renderHeader(currentUser, currentPath) {
@@ -9,19 +10,34 @@ export function renderHeader(currentUser, currentPath) {
   const currentItem = roleConfig.items.find(i => i.path === currentPath);
   const pageTitle = currentItem ? currentItem.title : (currentPath === '#/profile' ? 'Мой профиль' : 'Кабинет');
 
-  const demoRoles = [
-    { key: 'teacher', name: 'Классрук: Смирнова М. В.' },
-    { key: 'subject_teacher', name: 'Предметник: Козлов А. П.' },
-    { key: 'parent', name: 'Родитель: Петров С. В.' },
-    { key: 'student', name: 'Ученик: Петрова А.' },
-    { key: 'admin', name: 'Админ: Никитин П. А.' }
-  ];
+  const showDevSwitcher = isDevMode();
+  let devSwitcherHtml = '';
 
-  const roleOptionsHtml = demoRoles.map(r => `
-    <option value="${r.key}" ${currentUser.role === r.key ? 'selected' : ''}>
-      ${r.name}
-    </option>
-  `).join('');
+  if (showDevSwitcher) {
+    const demoRoles = [
+      { key: 'teacher', name: 'Классрук: Смирнова М. В.' },
+      { key: 'subject_teacher', name: 'Предметник: Козлов А. П.' },
+      { key: 'parent', name: 'Родитель: Петров С. В.' },
+      { key: 'student', name: 'Ученик: Петрова А.' },
+      { key: 'admin', name: 'Админ: Никитин П. А.' }
+    ];
+
+    const roleOptionsHtml = demoRoles.map(r => `
+      <option value="${r.key}" ${currentUser.role === r.key ? 'selected' : ''}>
+        ${r.name}
+      </option>
+    `).join('');
+
+    devSwitcherHtml = `
+      <div class="hidden sm:flex items-center space-x-2 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200">
+        <label for="demo-role-switcher" class="text-xs text-slate-500 font-medium whitespace-nowrap">Роль:</label>
+        <select id="demo-role-switcher"
+                class="text-xs font-semibold text-slate-700 bg-transparent border-none outline-none focus:ring-0 cursor-pointer">
+          ${roleOptionsHtml}
+        </select>
+      </div>
+    `;
+  }
 
   return `
     <header id="app-header" class="bg-white border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between shadow-sm sticky top-0 z-20">
@@ -37,13 +53,7 @@ export function renderHeader(currentUser, currentPath) {
       </div>
 
       <div class="flex items-center space-x-3.5">
-        <div class="hidden sm:flex items-center space-x-2 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200">
-          <label for="demo-role-switcher" class="text-xs text-slate-500 font-medium whitespace-nowrap">Роль:</label>
-          <select id="demo-role-switcher"
-                  class="text-xs font-semibold text-slate-700 bg-transparent border-none outline-none focus:ring-0 cursor-pointer">
-            ${roleOptionsHtml}
-          </select>
-        </div>
+        ${devSwitcherHtml}
 
         <a href="#/profile" class="flex items-center space-x-2.5 px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors">
           <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-700 font-bold text-xs flex items-center justify-center border border-brand-200">
@@ -76,7 +86,7 @@ export function setupHeaderListeners(onNavigate) {
     logoutBtn.addEventListener('click', (e) => {
       e.preventDefault();
       logout();
-      window.location.hash = '#/login';
+      window.location.replace('#/login');
       if (onNavigate) onNavigate('#/login');
     });
   }
