@@ -515,90 +515,117 @@ export function renderJournalView(options = {}) {
     </div>
 
     <div id="modal-journal-entry" class="fixed inset-0 z-50 !m-0 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-200">
-      <div id="modal-journal-dialog" class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 transform scale-95 transition-all duration-200 max-h-[90vh] overflow-y-auto scrollbar-thin">
-          <div class="flex items-center justify-between pb-4 border-b border-slate-100">
-            <div>
-              <h3 id="entry-modal-subject" class="text-base font-bold text-slate-900">Запись в журнале</h3>
-              <p id="entry-modal-lesson-info" class="text-xs text-slate-500 mt-0.5">Дата, время, кабинет</p>
+      <div id="modal-journal-dialog" class="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-100 transform scale-95 transition-all duration-200 max-h-[92vh] overflow-y-auto scrollbar-thin">
+        
+        <div class="flex items-start justify-between pb-4 border-b border-slate-100">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center border border-brand-100 flex-shrink-0" style="width: 40px; height: 40px; min-width: 40px;">
+              ${renderIcon('book-open', 'w-5 h-5 text-brand-600')}
             </div>
-            <button type="button" id="btn-close-journal-modal" class="p-1 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
-              ${renderIcon('x', 'w-5 h-5')}
+            <div>
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 id="entry-modal-subject" class="text-base font-bold text-slate-900 leading-tight">Запись в журнале</h3>
+                <span id="entry-modal-lesson-date-badge" class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200"></span>
+              </div>
+              <p id="entry-modal-lesson-info" class="text-xs text-slate-500 mt-0.5">Дата, кабинет, преподаватель</p>
+            </div>
+          </div>
+          <button type="button" id="btn-close-journal-modal" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer flex-shrink-0 -mr-1 -mt-1" title="Закрыть">
+            ${renderIcon('x', 'w-5 h-5')}
+          </button>
+        </div>
+
+        <div class="pt-4 pb-3 space-y-3 text-xs">
+          <!-- Student Card -->
+          <div class="p-3 rounded-2xl bg-slate-50/80 border border-slate-200 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div id="entry-modal-student-avatar" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-sky-500 text-white font-bold text-xs flex items-center justify-center shadow-sm flex-shrink-0" style="width: 40px; height: 40px; min-width: 40px;">
+                УЧ
+              </div>
+              <div>
+                <div class="flex items-center space-x-2">
+                  <span id="entry-modal-student-name" class="text-sm font-bold text-slate-900 leading-tight">—</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white border border-slate-200 text-slate-600 shadow-sm">7Б класс</span>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-0.5">Ученик класса · Полная сводка успеваемости</p>
+              </div>
+            </div>
+            <a id="entry-modal-student-link" href="#/overview" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-brand-50 text-brand-600 border border-slate-200 text-xs font-semibold transition-colors flex items-center space-x-1 flex-shrink-0 shadow-sm">
+              <span>Профиль</span>
+              ${renderIcon('external-link', 'w-3.5 h-3.5')}
+            </a>
+          </div>
+
+          <!-- Grade and Attendance 2-column cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Оценка за урок</div>
+              <div id="entry-modal-grade-badge" class="h-10 flex items-center">
+                <span class="text-slate-400 text-xs">Оценка не выставлялась</span>
+              </div>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Посещаемость</div>
+              <div id="entry-modal-attendance-badge" class="h-10 flex items-center">
+                <span class="text-emerald-700 font-semibold text-xs">Был на уроке</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="entry-modal-absence-details" class="hidden p-3.5 rounded-xl border text-xs">
+          </div>
+
+          <div id="block-confirm-from-journal" class="hidden">
+            <button type="button" id="btn-quick-confirm-absence"
+                    class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 text-white font-semibold text-xs shadow-sm shadow-brand-500/25 transition-all flex items-center justify-center space-x-2 cursor-pointer">
+              ${renderIcon('check', 'w-4 h-4')}
+              <span>Подтвердить уважительную причину (предоставлена справка)</span>
             </button>
           </div>
 
-          <div class="py-4 space-y-4 text-xs">
-            <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/70 flex items-center justify-between">
-              <div>
-                <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Ученик</div>
-                <div id="entry-modal-student-name" class="text-sm font-bold text-slate-900 mt-0.5">—</div>
+          <div class="rounded-2xl border border-slate-200 bg-slate-50/60 overflow-hidden shadow-sm">
+            <div class="px-3.5 py-2.5 bg-white border-b border-slate-200 flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <span class="w-6 h-6 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0">
+                  ${renderIcon('message-square', 'w-3.5 h-3.5')}
+                </span>
+                <span class="text-xs font-bold text-slate-800">Чат записи</span>
+                <span id="entry-modal-comments-count" class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">0</span>
               </div>
-              <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-700 shadow-2xs">
-                7Б класс
-              </span>
+              <span class="text-[10px] text-slate-400 font-medium">Заметки и сообщения</span>
             </div>
 
-            <div class="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="font-semibold text-slate-700">Оценка за урок:</span>
-                <div id="entry-modal-grade-badge">
-                  <span class="text-slate-400">Оценка не выставлялась</span>
-                </div>
-              </div>
+            <div id="entry-modal-comments-list" class="p-3 space-y-2 max-h-36 overflow-y-auto">
             </div>
 
-            <div class="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-2.5">
-              <div class="flex items-center justify-between">
-                <span class="font-semibold text-slate-700">Посещаемость:</span>
-                <div id="entry-modal-attendance-badge">
-                  <span class="text-emerald-700 font-semibold">Был на уроке</span>
-                </div>
-              </div>
-              <div id="entry-modal-absence-details" class="text-slate-600 hidden">
-              </div>
-              <div id="block-confirm-from-journal" class="hidden pt-1">
-                <button type="button" id="btn-quick-confirm-absence"
-                        class="w-full py-2 px-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-xs transition-colors flex items-center justify-center space-x-1.5">
-                  ${renderIcon('check', 'w-4 h-4')}
-                  <span>Подтвердить уважительную причину пропуска</span>
+            <form id="form-add-journal-comment" class="p-2.5 bg-white border-t border-slate-200">
+              <div class="relative flex items-center">
+                <input type="text"
+                       id="input-journal-comment-text"
+                       placeholder="Написать примечание или комментарий..."
+                       autocomplete="off"
+                       class="w-full pl-3.5 pr-12 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all" />
+                <button type="submit"
+                        id="btn-send-journal-comment"
+                        title="Отправить сообщение"
+                        class="absolute w-7 h-7 rounded-lg bg-brand-500 hover:bg-brand-600 text-white flex items-center justify-center transition-all cursor-pointer shadow-sm flex-shrink-0"
+                        style="width: 28px; height: 28px; min-width: 28px; right: 8px; top: 50%; transform: translateY(-50%);">
+                  ${renderIcon('send', 'w-3.5 h-3.5')}
                 </button>
               </div>
-            </div>
-
-            <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="font-bold text-slate-800">Комментарии к записи</span>
-                <span id="entry-modal-comments-count" class="text-[11px] font-semibold text-slate-500">0</span>
-              </div>
-
-              <div id="entry-modal-comments-list" class="space-y-2 max-h-36 overflow-y-auto scrollbar-thin">
-                <p class="text-slate-400 italic text-[11px]">Пока нет комментариев</p>
-              </div>
-
-              <form id="form-add-journal-comment" class="pt-2 border-t border-slate-200/70 space-y-2">
-                <label for="input-journal-comment-text" class="block font-semibold text-slate-700 text-[11px]">
-                  Добавить комментарий классного руководителя
-                </label>
-                <textarea id="input-journal-comment-text" rows="2"
-                          placeholder="Например: Родители уведомлены, справка ожидается..."
-                          class="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 resize-none focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"></textarea>
-                <div class="flex justify-end">
-                  <button type="submit"
-                          class="py-1.5 px-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition-colors shadow-2xs">
-                    Сохранить комментарий
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-
-          <div class="pt-2 flex justify-end">
-            <button type="button" id="btn-close-journal-modal-footer"
-                    class="py-2 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors">
-              Закрыть
-            </button>
+            </form>
           </div>
         </div>
+
+        <div class="pt-3 border-t border-slate-100 flex justify-end">
+          <button type="button" id="btn-close-journal-modal-footer"
+                  class="py-2 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer">
+            Закрыть
+          </button>
+        </div>
       </div>
+    </div>
   `;
 }
 
@@ -799,6 +826,12 @@ export function setupJournalListeners(onNavigate) {
     });
   }
 
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal && !modal.classList.contains('pointer-events-none')) {
+      closeModal();
+    }
+  });
+
   function openJournalEntryModal(lessonId, studentId) {
     if (!modal) return;
     activeLessonId = lessonId;
@@ -812,18 +845,32 @@ export function setupJournalListeners(onNavigate) {
     activeAttendanceRecord = att;
 
     const elSub = document.getElementById('entry-modal-subject');
+    const elDateBadge = document.getElementById('entry-modal-lesson-date-badge');
     const elInfo = document.getElementById('entry-modal-lesson-info');
     const elStudent = document.getElementById('entry-modal-student-name');
+    const elStudentAvatar = document.getElementById('entry-modal-student-avatar');
+    const elStudentLink = document.getElementById('entry-modal-student-link');
     const elGrade = document.getElementById('entry-modal-grade-badge');
     const elAtt = document.getElementById('entry-modal-attendance-badge');
     const elAbsenceDetails = document.getElementById('entry-modal-absence-details');
     const elConfirmBlock = document.getElementById('block-confirm-from-journal');
 
-    if (elSub && lesson) elSub.textContent = `Запись в журнале: ${lesson.subjectName || 'Урок'}`;
+    if (elSub && lesson) elSub.textContent = lesson.subjectName || 'Урок';
+    if (elDateBadge && lesson) {
+      elDateBadge.textContent = `${lesson.date || ''} (${lesson.time || ''})`;
+    }
     if (elInfo && lesson) {
-      elInfo.textContent = `${lesson.date} (${lesson.time || ''}) · ${lesson.room || ''} · Преподаватель: ${lesson.teacher || ''}`;
+      elInfo.textContent = `${lesson.room ? lesson.room + ' · ' : ''}Преподаватель: ${lesson.teacher || 'Учитель'}`;
     }
     if (elStudent && student) elStudent.textContent = student.fullName;
+    if (elStudentAvatar && student) {
+      const parts = (student.fullName || '').trim().split(/\s+/);
+      const initials = parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}` : (student.fullName ? student.fullName.slice(0, 2) : 'УЧ');
+      elStudentAvatar.textContent = initials.toUpperCase();
+    }
+    if (elStudentLink && student) {
+      elStudentLink.href = `#/overview?student=${student.id}`;
+    }
 
     if (elGrade) {
       if (grade) {
@@ -834,15 +881,23 @@ export function setupJournalListeners(onNavigate) {
         else if (grade.value === 2) badgeStyle = 'bg-rose-50 text-rose-800 border-rose-300';
 
         elGrade.innerHTML = `
-          <div class="flex items-center space-x-2">
-            <span class="inline-flex items-center justify-center w-7 h-7 text-sm font-bold rounded-lg border ${badgeStyle}">
+          <div class="flex items-center space-x-3">
+            <span class="inline-flex items-center justify-center w-10 h-10 text-base font-extrabold rounded-xl border ${badgeStyle} shadow-sm flex-shrink-0" style="width: 40px; height: 40px; min-width: 40px;">
               ${grade.value}
             </span>
-            <span class="text-xs text-slate-500 font-medium">Выставил: ${grade.teacher || 'Учитель-предметник'}</span>
+            <div>
+              <div class="text-xs font-bold text-slate-800">Оценка: ${grade.value}</div>
+              <div class="text-[11px] text-slate-500">${grade.teacher || 'Учитель-предметник'}</div>
+            </div>
           </div>
         `;
       } else {
-        elGrade.innerHTML = '<span class="text-slate-400">Оценка не выставлялась</span>';
+        elGrade.innerHTML = `
+          <div class="flex items-center space-x-3 text-slate-400">
+            <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 text-slate-400 font-semibold text-sm flex-shrink-0" style="width: 40px; height: 40px; min-width: 40px;">—</span>
+            <span class="text-xs">Оценка не выставлялась</span>
+          </div>
+        `;
       }
     }
 
@@ -851,40 +906,62 @@ export function setupJournalListeners(onNavigate) {
         const isExcused = att.status === 'excused' || att.code === 'УП' || att.code === 'Б';
         if (isExcused) {
           elAtt.innerHTML = `
-            <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-              <span>Б</span>
-              <span>Уважительная причина (болезнь / справка)</span>
-            </span>
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200 flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-sm" style="width: 40px; height: 40px; min-width: 40px;">
+                Б
+              </div>
+              <div>
+                <div class="text-xs font-bold text-indigo-800">Уважительная причина</div>
+                <div class="text-[11px] text-slate-500">Пропуск подтверждён</div>
+              </div>
+            </div>
           `;
           if (elAbsenceDetails) {
             elAbsenceDetails.classList.remove('hidden');
+            elAbsenceDetails.className = 'p-3 rounded-xl bg-indigo-50/50 border border-indigo-200/80 text-xs text-indigo-900';
             elAbsenceDetails.innerHTML = `
-              <div class="mt-1 text-[11px] text-slate-500">
-                Основание: <b class="text-slate-700">${att.document || att.reason || 'Справка'}</b>
-                ${att.confirmedBy ? `· Подтвердил: <b class="text-slate-700">${att.confirmedBy}</b>` : ''}
+              <div class="flex items-center space-x-2">
+                <span class="font-bold">Основание пропуска:</span>
+                <span>${att.document || att.reason || 'Медицинская справка'}</span>
               </div>
+              ${att.confirmedBy ? `<div class="text-[11px] text-slate-500 mt-1">Подтвердил: <b class="text-slate-700">${att.confirmedBy}</b></div>` : ''}
             `;
           }
           if (elConfirmBlock) elConfirmBlock.classList.add('hidden');
         } else {
           elAtt.innerHTML = `
-            <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-50 text-rose-700 border border-rose-300">
-              <span>Н</span>
-              <span>Отсутствовал (причина не подтверждена)</span>
-            </span>
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-700 border border-rose-300 flex items-center justify-center font-bold text-sm flex-shrink-0 animate-pulse shadow-sm" style="width: 40px; height: 40px; min-width: 40px;">
+                Н
+              </div>
+              <div>
+                <div class="text-xs font-bold text-rose-800">Не подтверждено</div>
+                <div class="text-[11px] text-rose-600 font-medium">Требуется справка</div>
+              </div>
+            </div>
           `;
           if (elAbsenceDetails) {
             elAbsenceDetails.classList.remove('hidden');
+            elAbsenceDetails.className = 'p-3 rounded-xl bg-rose-50/60 border border-rose-200/90 text-xs text-rose-900';
             elAbsenceDetails.innerHTML = `
-              <div class="mt-1 text-[11px] text-rose-600 font-medium">
-                Требуется медицинская справка или заявление родителей для подтверждения уважительной причины.
-              </div>
+              <div class="font-bold text-rose-800 mb-0.5">Причина отсутствия не подтверждена</div>
+              <p class="text-[11px] text-rose-700">Необходим подтверждающий документ (медицинская справка или заявление родителей).</p>
             `;
           }
           if (elConfirmBlock) elConfirmBlock.classList.remove('hidden');
         }
       } else {
-        elAtt.innerHTML = '<span class="text-emerald-700 font-semibold">Был на уроке</span>';
+        elAtt.innerHTML = `
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-sm" style="width: 40px; height: 40px; min-width: 40px;">
+              ✓
+            </div>
+            <div>
+              <div class="text-xs font-bold text-emerald-800">Присутствовал</div>
+              <div class="text-[11px] text-slate-500">Отметка на уроке</div>
+            </div>
+          </div>
+        `;
         if (elAbsenceDetails) elAbsenceDetails.classList.add('hidden');
         if (elConfirmBlock) elConfirmBlock.classList.add('hidden');
       }
@@ -909,19 +986,38 @@ export function setupJournalListeners(onNavigate) {
     if (!elList) return;
 
     if (comments.length === 0) {
-      elList.innerHTML = '<p class="text-slate-400 italic text-[11px]">Пока нет комментариев</p>';
+      elList.innerHTML = `
+        <div class="py-3.5 text-center">
+          <p class="text-xs font-medium text-slate-400">В этой записи пока нет комментариев</p>
+        </div>
+      `;
       return;
     }
 
-    elList.innerHTML = comments.map(c => `
-      <div class="p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs space-y-1">
-        <div class="flex items-center justify-between text-[10px]">
-          <span class="font-bold text-slate-800">${c.author} <span class="font-normal text-slate-400">(${c.role === 'teacher' ? 'Классрук' : 'Предметник'})</span></span>
-          <span class="text-slate-400">${c.createdAt}</span>
+    elList.innerHTML = comments.map(c => {
+      const isHomeroom = c.role === 'teacher';
+      const roleLabel = isHomeroom ? 'Классрук' : 'Предметник';
+      const authorInitials = (c.author || 'УЧ').split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase();
+      return `
+        <div class="flex items-start space-x-2">
+          <div class="w-6 h-6 rounded-full ${isHomeroom ? 'bg-brand-100 text-brand-700' : 'bg-slate-200 text-slate-700'} font-bold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+            ${authorInitials}
+          </div>
+          <div class="flex-1 bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm space-y-1">
+            <div class="flex items-center justify-between text-[10px]">
+              <div class="flex items-center space-x-1.5">
+                <span class="font-bold text-slate-900">${c.author}</span>
+                <span class="px-1.5 py-0.5 rounded text-[9px] font-semibold ${isHomeroom ? 'bg-brand-50 text-brand-700 border border-brand-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}">${roleLabel}</span>
+              </div>
+              <span class="text-slate-400">${c.createdAt}</span>
+            </div>
+            <p class="text-xs text-slate-700 font-normal leading-relaxed">${c.text}</p>
+          </div>
         </div>
-        <p class="text-xs text-slate-700 font-medium">${c.text}</p>
-      </div>
-    `).join('');
+      `;
+    }).join('');
+
+    elList.scrollTop = elList.scrollHeight;
   }
 
   document.querySelectorAll('.cell-journal-entry').forEach(cell => {
