@@ -104,7 +104,7 @@ export function renderJournalView(options = {}) {
     const isClosed = l.status === 'closed';
 
     return `
-      <th class="px-2.5 py-3 text-center border-b border-slate-200 text-slate-700 bg-slate-50 font-semibold min-w-[56px] select-none text-[11px] leading-tight"
+      <th class="px-2.5 py-3 text-center border-b border-slate-200 border-r border-slate-100 text-slate-700 bg-slate-50 font-semibold min-w-[56px] select-none text-[11px] leading-tight"
           title="${l.subjectName || ''} · ${l.date} (${l.time}) · ${l.teacher || ''}">
         <div class="font-bold text-slate-900">${dateFormatted}</div>
         <div class="text-[10px] text-slate-500 font-normal truncate max-w-[65px] mx-auto">${subShort}</div>
@@ -192,14 +192,14 @@ export function renderJournalView(options = {}) {
 
     return `
       <tr class="hover:bg-slate-50/70 transition-colors group">
-        <td class="px-3 py-2 text-xs font-semibold text-slate-400 text-center border-b border-slate-200 border-r border-slate-200 sticky left-0 bg-white group-hover:bg-slate-50 z-10 w-10">
-          ${idx + 1}
-        </td>
-        <td class="px-3.5 py-2 text-xs font-semibold text-slate-900 border-b border-slate-200 border-r border-slate-200 sticky left-10 bg-white group-hover:bg-slate-50 z-10 min-w-[190px] whitespace-nowrap">
-          <a href="#/overview?student=${s.id}" class="hover:text-brand-600 transition-colors flex items-center justify-between">
-            <span>${s.fullName}</span>
-            <span class="text-[10px] text-slate-400 font-normal">7Б</span>
-          </a>
+        <td class="px-3.5 py-2.5 text-xs font-semibold text-slate-900 border-b border-slate-200 border-r border-slate-200 sticky left-0 bg-white group-hover:bg-slate-50 z-10 min-w-[210px] whitespace-nowrap shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
+          <div class="flex items-center space-x-2">
+            <span class="w-6 text-center text-slate-400 font-semibold flex-shrink-0">${idx + 1}</span>
+            <a href="#/overview?student=${s.id}" class="hover:text-brand-600 transition-colors flex items-center justify-between flex-1 truncate">
+              <span class="truncate">${s.fullName}</span>
+              <span class="text-[10px] text-slate-400 font-normal ml-1.5 flex-shrink-0">7Б</span>
+            </a>
+          </div>
         </td>
         <td class="px-2.5 py-2 text-xs text-center border-b border-slate-200 border-r border-slate-200 bg-slate-50/50 font-bold ${studentAvg !== '—' && parseFloat(studentAvg) < 3.5 ? 'text-amber-700 bg-amber-50/30' : 'text-slate-800'}">
           ${studentAvg}
@@ -406,19 +406,19 @@ export function renderJournalView(options = {}) {
 
       <div class="rounded-2xl bg-white border border-slate-200/80 shadow-xs overflow-hidden">
         <div class="overflow-x-auto scrollbar-thin">
-          <table class="w-full border-collapse text-left">
+          <table class="w-full border-separate border-spacing-0 text-left">
             <thead>
               <tr>
-                <th class="px-3 py-3 text-center border-b border-slate-200 text-slate-500 bg-slate-50 font-bold text-xs sticky left-0 z-20 w-10">
-                  №
+                <th class="px-3.5 py-3 border-b border-slate-200 border-r border-slate-200 text-slate-700 bg-slate-50 font-bold text-xs sticky left-0 z-20 min-w-[210px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
+                  <div class="flex items-center space-x-2">
+                    <span class="w-6 text-center text-slate-400 font-semibold flex-shrink-0">№</span>
+                    <span>Ученик (28 чел.)</span>
+                  </div>
                 </th>
-                <th class="px-3.5 py-3 border-b border-slate-200 text-slate-700 bg-slate-50 font-bold text-xs sticky left-10 z-20 min-w-[190px]">
-                  Ученик (28 чел.)
-                </th>
-                <th class="px-2.5 py-3 text-center border-b border-slate-200 text-slate-700 bg-slate-50 font-bold text-xs min-w-[50px]" title="Средний балл за период">
+                <th class="px-2.5 py-3 text-center border-b border-slate-200 border-r border-slate-200 text-slate-700 bg-slate-50 font-bold text-xs min-w-[50px]" title="Средний балл за период">
                   Ср. балл
                 </th>
-                <th class="px-2 py-3 text-center border-b border-slate-200 text-slate-700 bg-slate-50 font-bold text-xs min-w-[65px]" title="Всего пропусков уроков">
+                <th class="px-2 py-3 text-center border-b border-slate-200 border-r border-slate-200 text-slate-700 bg-slate-50 font-bold text-xs min-w-[65px]" title="Всего пропусков уроков">
                   Пропуски
                 </th>
                 ${tableHeaderColumns}
@@ -427,7 +427,7 @@ export function renderJournalView(options = {}) {
             <tbody>
               ${tableRows.length > 0 ? tableRows : `
                 <tr>
-                  <td colspan="${lessons.length + 4}" class="py-12 text-center text-slate-400 text-xs">
+                  <td colspan="${lessons.length + 3}" class="py-12 text-center text-slate-400 text-xs">
                     По заданным критериям ничего не найдено. Попробуйте сбросить фильтры.
                   </td>
                 </tr>
