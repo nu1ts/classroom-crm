@@ -578,9 +578,9 @@ export function renderJournalView(options = {}) {
 
           <div id="block-confirm-from-journal" class="hidden">
             <button type="button" id="btn-quick-confirm-absence"
-                    class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 text-white font-semibold text-xs shadow-sm shadow-brand-500/25 transition-all flex items-center justify-center space-x-2 cursor-pointer">
-              ${renderIcon('check', 'w-4 h-4')}
-              <span>Подтвердить уважительную причину (предоставлена справка)</span>
+                    class="w-full py-2.5 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-semibold text-xs shadow-xs hover:shadow-sm transition-all flex items-center justify-center space-x-2 cursor-pointer border border-brand-600/30">
+              ${renderIcon('check-square', 'w-4 h-4 text-white')}
+              <span>Подтвердить уважительную причину</span>
             </button>
           </div>
 
@@ -624,6 +624,97 @@ export function renderJournalView(options = {}) {
             Закрыть
           </button>
         </div>
+      </div>
+    </div>
+
+    <div id="modal-journal-confirm-absence" class="fixed inset-0 z-[60] !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none" style="z-index: 60;">
+      <div id="modal-journal-confirm-dialog" class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center border border-brand-100 flex-shrink-0" style="width: 40px; height: 40px; min-width: 40px;">
+              ${renderIcon('check-square', 'w-5 h-5 text-brand-600')}
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Подтверждение пропуска урока</h3>
+              <p class="text-[11px] text-slate-500">Учёт уважительной причины и медицинских документов</p>
+            </div>
+          </div>
+          <button type="button" id="btn-close-journal-confirm-x" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-xl transition-colors cursor-pointer">
+            ${renderIcon('x', 'w-4 h-4')}
+          </button>
+        </div>
+
+        <form id="form-journal-confirm-absence" class="space-y-4">
+          <input type="hidden" id="journal-confirm-attendance-id" />
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Ученик</label>
+            <div class="relative flex items-center">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                ${renderIcon('user', 'w-4 h-4 text-slate-400')}
+              </div>
+              <input type="text" id="journal-confirm-student-name" readonly tabindex="-1"
+                     class="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-100/80 border border-slate-200 text-xs font-bold text-slate-800 cursor-default select-none focus:outline-none" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">Дата пропуска</label>
+              <input type="text" id="journal-confirm-absence-date" readonly tabindex="-1"
+                     class="w-full px-3 py-2 rounded-xl bg-slate-100/80 border border-slate-200 text-xs font-medium text-slate-800 cursor-default select-none focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">Урок / Предмет</label>
+              <input type="text" id="journal-confirm-absence-lesson" readonly tabindex="-1"
+                     class="w-full px-3 py-2 rounded-xl bg-slate-100/80 border border-slate-200 text-xs font-medium text-slate-800 cursor-default select-none focus:outline-none" />
+            </div>
+          </div>
+
+          <div>
+            <label for="journal-confirm-reason-type" class="block text-xs font-semibold text-slate-700 mb-1.5">Тип причины</label>
+            <div class="relative">
+              <select id="journal-confirm-reason-type" class="w-full appearance-none pl-3.5 pr-10 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                <option value="excused">Уважительная (по справке от врача / заявлению родителей)</option>
+                <option value="unexcused">Неуважительная (прогул / причина не подтверждена)</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                ${renderIcon('chevron-down', 'w-4 h-4')}
+              </div>
+            </div>
+          </div>
+
+          <div id="block-journal-document-fields" class="space-y-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+            <label for="journal-confirm-has-certificate" class="flex items-center space-x-2 cursor-pointer select-none">
+              <input type="checkbox" id="journal-confirm-has-certificate" checked class="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer" />
+              <span class="text-xs font-semibold text-slate-800">Предоставлен подтверждающий документ (справка / заявление)</span>
+            </label>
+
+            <div>
+              <label for="journal-confirm-document-text" class="block text-xs font-semibold text-slate-700 mb-1">
+                Реквизиты документа (номер, дата, медучреждение)
+              </label>
+              <input type="text" id="journal-confirm-document-text"
+                     placeholder="Например: Справка № 142 от 25.10.2024 (ДГП № 1)"
+                     class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" />
+            </div>
+          </div>
+
+          <div>
+            <label for="journal-confirm-notes" class="block text-xs font-semibold text-slate-700 mb-1.5">Комментарий классного руководителя</label>
+            <textarea id="journal-confirm-notes" rows="2" placeholder="Дополнительное примечание к пропуску..."
+                      class="w-full p-2.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-xs text-slate-800 placeholder:text-slate-400 resize-none shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"></textarea>
+          </div>
+
+          <div class="pt-2 flex items-center space-x-2.5">
+            <button type="button" id="btn-cancel-journal-confirm" class="flex-1 py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer">
+              Отмена
+            </button>
+            <button type="submit" class="flex-1 py-2 px-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-xs transition-colors cursor-pointer">
+              Подтвердить пропуск
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   `;
@@ -803,6 +894,21 @@ export function setupJournalListeners(onNavigate) {
   const formComment = document.getElementById('form-add-journal-comment');
   const inputCommentText = document.getElementById('input-journal-comment-text');
 
+  const modalConfirm = document.getElementById('modal-journal-confirm-absence');
+  const modalConfirmDialog = document.getElementById('modal-journal-confirm-dialog');
+  const btnCloseConfirmX = document.getElementById('btn-close-journal-confirm-x');
+  const btnCancelConfirm = document.getElementById('btn-cancel-journal-confirm');
+  const formConfirmAbsence = document.getElementById('form-journal-confirm-absence');
+  const inputConfirmAttId = document.getElementById('journal-confirm-attendance-id');
+  const inputConfirmStudentName = document.getElementById('journal-confirm-student-name');
+  const inputConfirmDate = document.getElementById('journal-confirm-absence-date');
+  const inputConfirmLesson = document.getElementById('journal-confirm-absence-lesson');
+  const selectConfirmReasonType = document.getElementById('journal-confirm-reason-type');
+  const checkConfirmHasDoc = document.getElementById('journal-confirm-has-certificate');
+  const inputConfirmDocText = document.getElementById('journal-confirm-document-text');
+  const inputConfirmNotes = document.getElementById('journal-confirm-notes');
+  const blockConfirmDocFields = document.getElementById('block-journal-document-fields');
+
   let activeLessonId = null;
   let activeStudentId = null;
   let activeAttendanceRecord = null;
@@ -818,6 +924,42 @@ export function setupJournalListeners(onNavigate) {
     if (formComment) formComment.reset();
   }
 
+  function openJournalConfirmModal() {
+    if (!modalConfirm || !activeAttendanceRecord) return;
+    const currentDB = getDB();
+    const student = (currentDB.students || []).find(s => s.id === activeAttendanceRecord.studentId);
+    const lesson = (currentDB.lessons || []).find(l => l.id === activeAttendanceRecord.lessonId);
+
+    if (inputConfirmAttId) inputConfirmAttId.value = activeAttendanceRecord.id;
+    if (inputConfirmStudentName) inputConfirmStudentName.value = student ? student.fullName : 'Ученик';
+    if (inputConfirmDate) inputConfirmDate.value = activeAttendanceRecord.date || (lesson ? lesson.date : '');
+    if (inputConfirmLesson) inputConfirmLesson.value = lesson ? `${lesson.subjectName || 'Урок'} (${lesson.time || ''})` : 'Урок';
+
+    if (selectConfirmReasonType) selectConfirmReasonType.value = 'excused';
+    if (checkConfirmHasDoc) checkConfirmHasDoc.checked = true;
+    if (blockConfirmDocFields) blockConfirmDocFields.style.display = 'block';
+    if (inputConfirmDocText) inputConfirmDocText.value = '';
+    if (inputConfirmNotes) inputConfirmNotes.value = '';
+
+    modalConfirm.classList.remove('opacity-0', 'pointer-events-none');
+    modalConfirm.classList.add('opacity-100', 'pointer-events-auto');
+    if (modalConfirmDialog) {
+      modalConfirmDialog.classList.remove('scale-95');
+      modalConfirmDialog.classList.add('scale-100');
+    }
+  }
+
+  function closeJournalConfirmModal() {
+    if (!modalConfirm) return;
+    modalConfirm.classList.remove('opacity-100', 'pointer-events-auto');
+    modalConfirm.classList.add('opacity-0', 'pointer-events-none');
+    if (modalConfirmDialog) {
+      modalConfirmDialog.classList.remove('scale-100');
+      modalConfirmDialog.classList.add('scale-95');
+    }
+    if (formConfirmAbsence) formConfirmAbsence.reset();
+  }
+
   if (btnCloseX) btnCloseX.onclick = closeModal;
   if (btnCloseFooter) btnCloseFooter.onclick = closeModal;
   if (modal) {
@@ -826,9 +968,31 @@ export function setupJournalListeners(onNavigate) {
     });
   }
 
+  if (btnCloseConfirmX) btnCloseConfirmX.onclick = closeJournalConfirmModal;
+  if (btnCancelConfirm) btnCancelConfirm.onclick = closeJournalConfirmModal;
+  if (modalConfirm) {
+    modalConfirm.addEventListener('click', (e) => {
+      if (e.target === modalConfirm) closeJournalConfirmModal();
+    });
+  }
+
+  if (selectConfirmReasonType && blockConfirmDocFields) {
+    selectConfirmReasonType.addEventListener('change', () => {
+      if (selectConfirmReasonType.value === 'unexcused') {
+        blockConfirmDocFields.style.display = 'none';
+      } else {
+        blockConfirmDocFields.style.display = 'block';
+      }
+    });
+  }
+
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal && !modal.classList.contains('pointer-events-none')) {
-      closeModal();
+    if (e.key === 'Escape') {
+      if (modalConfirm && !modalConfirm.classList.contains('pointer-events-none')) {
+        closeJournalConfirmModal();
+      } else if (modal && !modal.classList.contains('pointer-events-none')) {
+        closeModal();
+      }
     }
   });
 
@@ -941,12 +1105,8 @@ export function setupJournalListeners(onNavigate) {
             </div>
           `;
           if (elAbsenceDetails) {
-            elAbsenceDetails.classList.remove('hidden');
-            elAbsenceDetails.className = 'p-3 rounded-xl bg-rose-50/60 border border-rose-200/90 text-xs text-rose-900';
-            elAbsenceDetails.innerHTML = `
-              <div class="font-bold text-rose-800 mb-0.5">Причина отсутствия не подтверждена</div>
-              <p class="text-[11px] text-rose-700">Необходим подтверждающий документ (медицинская справка или заявление родителей).</p>
-            `;
+            elAbsenceDetails.classList.add('hidden');
+            elAbsenceDetails.innerHTML = '';
           }
           if (elConfirmBlock) elConfirmBlock.classList.remove('hidden');
         }
@@ -1034,13 +1194,37 @@ export function setupJournalListeners(onNavigate) {
   if (btnQuickConfirm) {
     btnQuickConfirm.addEventListener('click', () => {
       if (!activeAttendanceRecord) return;
-      confirmAbsenceRecord(activeAttendanceRecord.id, {
-        status: 'excused',
-        reason: 'Медицинская справка от врача',
-        document: 'Медицинская справка',
+      openJournalConfirmModal();
+    });
+  }
+
+  if (formConfirmAbsence) {
+    formConfirmAbsence.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const attId = inputConfirmAttId ? inputConfirmAttId.value : null;
+      if (!attId) return;
+
+      const reasonType = selectConfirmReasonType ? selectConfirmReasonType.value : 'excused';
+      const hasDoc = checkConfirmHasDoc ? checkConfirmHasDoc.checked : false;
+      const docText = inputConfirmDocText ? inputConfirmDocText.value.trim() : '';
+      const notes = inputConfirmNotes ? inputConfirmNotes.value.trim() : '';
+
+      const isExcused = reasonType === 'excused';
+      const documentValue = isExcused
+        ? (hasDoc ? (docText || 'Медицинская справка') : 'Заявление родителей')
+        : null;
+      const reasonValue = notes || (isExcused ? 'Болезнь / справка' : 'Неуважительная причина');
+
+      confirmAbsenceRecord(attId, {
+        status: isExcused ? 'excused' : 'unexcused',
+        reason: reasonValue,
+        document: documentValue,
         confirmedBy: 'Смирнова М. В.'
       });
+
+      closeJournalConfirmModal();
       closeModal();
+
       const currentHash = window.location.hash || '#/journal';
       if (onNavigate) {
         onNavigate(currentHash);
