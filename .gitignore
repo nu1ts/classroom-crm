@@ -1,0 +1,6 @@
+docs
+node_modules/
+.DS_Store
+dist/
+scripts/
+repomix-output.md
