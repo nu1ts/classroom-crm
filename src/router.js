@@ -1,13 +1,13 @@
 import { getCurrentUser } from './services/storage.js';
 import { isRouteAllowedForRole, getDefaultRouteForRole } from './config/navigation.js';
-import { renderLayout, setupLayoutListeners } from './components/layout.js?v=3';
+import { renderLayout, setupLayoutListeners, updateSidebarActiveItem } from './components/layout.js?v=5';
 import { renderLoginView, setupLoginListeners } from './views/login.js';
 import { renderOverviewView, setupOverviewListeners } from './views/overview.js?v=2';
 import { renderProfileView, setupProfileListeners } from './views/profile.js';
 import { renderForbiddenView } from './views/forbidden.js';
 import { renderPlaceholderView } from './views/placeholder.js';
 import { renderAttendanceView, setupAttendanceListeners } from './views/attendance.js?v=2';
-import { renderJournalView, setupJournalListeners } from './views/journal.js';
+import { renderJournalView, setupJournalListeners } from './views/journal.js?v=5';
 
 const ROUTE_HANDLERS = {
   '#/login': {
@@ -131,11 +131,12 @@ const ROUTE_HANDLERS = {
 class Router {
   constructor(rootElementId = 'app') {
     this.rootElementId = rootElementId;
+    this.lastUserId = null;
+    this.lastUserRole = null;
   }
 
   init() {
     window.addEventListener('hashchange', () => this.handleRoute());
-    window.addEventListener('popstate', () => this.handleRoute());
     window.addEventListener('pageshow', () => this.handleRoute());
     window.addEventListener('load', () => this.handleRoute());
     this.handleRoute();
@@ -150,6 +151,18 @@ class Router {
   }
 
   handleRoute() {
+    if (this._isRouting) return;
+    this._isRouting = true;
+    try {
+      this._processRoute();
+    } finally {
+      setTimeout(() => {
+        this._isRouting = false;
+      }, 40);
+    }
+  }
+
+  _processRoute() {
     const rawHash = window.location.hash || '';
     const cleanHash = rawHash.split('?')[0];
     const user = getCurrentUser();
@@ -184,10 +197,33 @@ class Router {
     document.title = `${handler.title} — Кабинет классного руководителя`;
 
     const contentHtml = handler.render();
-    const fullHtml = renderLayout(user, activeHash, contentHtml);
 
     const rootEl = document.getElementById(this.rootElementId);
-    if (rootEl) {
+    if (!rootEl) return;
+
+    const existingMainLayout = rootEl.querySelector('#main-layout');
+    const isAuthRoute = activeHash === '#/login' || !user;
+    const isSameUserAndRole = user && this.lastUserId === user.id && this.lastUserRole === user.role;
+
+    if (existingMainLayout && !isAuthRoute && isSameUserAndRole) {
+      const appContentContainer = rootEl.querySelector('#app-content > div');
+      if (appContentContainer) {
+        appContentContainer.innerHTML = contentHtml;
+      }
+      const appContent = rootEl.querySelector('#app-content');
+      if (appContent) {
+        appContent.scrollTop = 0;
+      }
+      updateSidebarActiveItem(activeHash);
+
+      if (handler.setup) {
+        handler.setup((h) => this.navigate(h));
+      }
+    } else {
+      this.lastUserId = user ? user.id : null;
+      this.lastUserRole = user ? user.role : null;
+
+      const fullHtml = renderLayout(user, activeHash, contentHtml);
       rootEl.innerHTML = fullHtml;
       setupLayoutListeners((h) => this.navigate(h));
       if (handler.setup) {

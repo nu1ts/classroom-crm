@@ -148,7 +148,7 @@ export function renderJournalView(options = {}) {
           cellBg = 'bg-indigo-50/20 hover:bg-indigo-50/50';
         } else {
           cellContent = `
-            <span class="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-lg bg-rose-50 text-rose-700 border border-rose-300 shadow-2xs animate-pulse-subtle"
+            <span class="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-lg bg-rose-50 text-rose-700 border border-rose-300 shadow-2xs"
                   title="Отсутствовал (причина не подтверждена, требуется справка)">
               Н
             </span>
@@ -193,18 +193,17 @@ export function renderJournalView(options = {}) {
     return `
       <tr class="hover:bg-slate-50/70 transition-colors group">
         <td class="px-3.5 py-2.5 text-xs font-semibold text-slate-900 border-b border-slate-200 border-r border-slate-200 sticky left-0 bg-white group-hover:bg-slate-50 z-10 min-w-[210px] whitespace-nowrap shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
-          <div class="flex items-center space-x-2">
+          <div class="flex items-center space-x-2.5">
             <span class="w-6 text-center text-slate-400 font-semibold flex-shrink-0">${idx + 1}</span>
-            <a href="#/overview?student=${s.id}" class="hover:text-brand-600 transition-colors flex items-center justify-between flex-1 truncate">
-              <span class="truncate">${s.fullName}</span>
-              <span class="text-[10px] text-slate-400 font-normal ml-1.5 flex-shrink-0">7Б</span>
+            <a href="#/overview?student=${s.id}" class="hover:text-brand-600 transition-colors truncate font-semibold text-slate-900">
+              ${s.fullName}
             </a>
           </div>
         </td>
-        <td class="px-2.5 py-2 text-xs text-center border-b border-slate-200 border-r border-slate-200 bg-slate-50/50 font-bold ${studentAvg !== '—' && parseFloat(studentAvg) < 3.5 ? 'text-amber-700 bg-amber-50/30' : 'text-slate-800'}">
+        <td class="px-2.5 py-2.5 text-xs text-center border-b border-slate-200 border-r border-slate-200 bg-slate-50/50 font-bold whitespace-nowrap ${studentAvg !== '—' && parseFloat(studentAvg) < 3.5 ? 'text-amber-700 bg-amber-50/30' : 'text-slate-800'}">
           ${studentAvg}
         </td>
-        <td class="px-2 py-2 text-xs text-center border-b border-slate-200 border-r border-slate-200 bg-slate-50/30">
+        <td class="px-2 py-2.5 text-xs text-center border-b border-slate-200 border-r border-slate-200 bg-slate-50/30 whitespace-nowrap">
           ${studentAbsences.length > 0
             ? `<span class="inline-flex items-center space-x-1 text-[11px] font-semibold text-slate-700">
                  <span>${studentAbsences.length}</span>
@@ -226,13 +225,7 @@ export function renderJournalView(options = {}) {
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-200">
               ${subjects.find(s => s.id === selectedSubjectId)?.name || 'Все предметы'}
             </span>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
-              Режим классрука (просмотр и комментарии)
-            </span>
           </div>
-          <p class="text-xs text-slate-500">
-            Электронный журнал успеваемости и отметок посещаемости. Выставление оценок закреплено за учителями-предметниками.
-          </p>
         </div>
 
         <div class="flex items-center space-x-2.5">
@@ -240,7 +233,7 @@ export function renderJournalView(options = {}) {
                   class="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${filterOnlyAbsences ? 'bg-rose-600 text-white ring-4 ring-rose-500/20' : 'bg-white border border-rose-200 text-rose-700 hover:bg-rose-50'}">
             ${renderIcon('alert-circle', 'w-4 h-4')}
             <span>${filterOnlyAbsences ? 'Показаны только пропуски' : 'Найти пропуски за период'}</span>
-            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold ${filterOnlyAbsences ? 'bg-white text-rose-700' : 'bg-rose-100 text-rose-800'}">
+            <span class="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold ${filterOnlyAbsences ? 'bg-white text-rose-700' : 'bg-rose-100 text-rose-800'}">
               ${periodAbsences.length}
             </span>
           </button>
@@ -266,7 +259,7 @@ export function renderJournalView(options = {}) {
           <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Выставлено оценок</div>
           <div class="flex items-baseline space-x-2">
             <span class="text-2xl font-bold text-slate-900">${periodGrades.length}</span>
-            <span class="text-xs text-slate-500">оценок</span>
+            <span class="text-xs text-slate-500">${periodGrades.length % 10 === 1 && periodGrades.length % 100 !== 11 ? 'оценка' : (periodGrades.length % 10 >= 2 && periodGrades.length % 10 <= 4 && (periodGrades.length % 100 < 10 || periodGrades.length % 100 >= 20) ? 'оценки' : 'оценок')}</span>
           </div>
         </div>
 
@@ -282,7 +275,9 @@ export function renderJournalView(options = {}) {
           <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Пропуски за период</div>
           <div class="flex items-baseline space-x-2">
             <span class="text-2xl font-bold text-slate-900">${periodAbsences.length}</span>
-            <span class="text-xs font-medium text-rose-600" title="Требуют справку">${periodUnconfirmed.length} не подтверждено</span>
+            ${periodUnconfirmed.length > 0
+              ? `<span class="text-xs font-semibold text-rose-600" title="Требуют справку">${periodUnconfirmed.length} не подтверждено</span>`
+              : `<span class="text-xs font-semibold text-emerald-600">Все подтверждены</span>`}
           </div>
         </div>
       </div>
@@ -365,12 +360,14 @@ export function renderJournalView(options = {}) {
             </div>
           </div>
 
-          <div class="flex items-end pb-1.5">
-            <label class="flex items-center space-x-2.5 cursor-pointer select-none">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Фильтрация</label>
+            <label for="check-only-entries"
+                   class="flex items-center space-x-2.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer select-none h-[38px]">
               <input type="checkbox" id="check-only-entries"
                      ${filterOnlyEntries ? 'checked' : ''}
                      class="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer" />
-              <span class="text-xs font-semibold text-slate-700">Показывать только записи</span>
+              <span class="text-xs font-semibold text-slate-700 truncate">Показывать только записи</span>
             </label>
           </div>
         </div>
@@ -467,10 +464,6 @@ export function renderJournalView(options = {}) {
                 <div id="entry-modal-grade-badge">
                   <span class="text-slate-400">Оценка не выставлялась</span>
                 </div>
-              </div>
-              <div class="p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/80 text-[11px] text-amber-900 flex items-start space-x-2">
-                <span class="text-amber-600 mt-0.5">${renderIcon('info', 'w-3.5 h-3.5')}</span>
-                <span>Выставление и изменение оценок доступно исключительно учителю-предметнику. Классному руководителю доступен просмотр и комментарии.</span>
               </div>
             </div>
 

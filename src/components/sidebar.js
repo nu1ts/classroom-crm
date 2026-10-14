@@ -152,3 +152,22 @@ export function setupSidebarListeners(onNavigate) {
     });
   }
 }
+
+export function updateSidebarActiveItem(currentPath) {
+  const sidebar = document.getElementById('app-sidebar');
+  if (!sidebar) return;
+
+  const links = sidebar.querySelectorAll('nav a[href]');
+  links.forEach(link => {
+    const href = link.getAttribute('href');
+    const cleanPath = (currentPath || '').split('?')[0];
+    const isActive = (href === cleanPath) || (href === '#/overview' && (!cleanPath || cleanPath === '#/' || cleanPath === ''));
+    if (isActive) {
+      link.classList.remove('text-slate-300', 'hover:text-white', 'hover:bg-brand-sidebarHover');
+      link.classList.add('bg-brand-sidebarActive', 'text-white', 'shadow-sm');
+    } else {
+      link.classList.remove('bg-brand-sidebarActive', 'text-white', 'shadow-sm');
+      link.classList.add('text-slate-300', 'hover:text-white', 'hover:bg-brand-sidebarHover');
+    }
+  });
+}
