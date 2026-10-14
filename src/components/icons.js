@@ -148,6 +148,11 @@ export function renderIcon(name, className = 'w-5 h-5') {
         <polyline points="10 9 9 9 8 9"></polyline>
       </svg>`;
 
+    case 'chevron-down':
+      return `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>`;
+
     case 'logo':
       return `<div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center text-white font-bold text-lg shadow-sm">
         U

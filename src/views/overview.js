@@ -394,22 +394,28 @@ export function renderOverviewView() {
         </div>
       </div>
     </div>
+  </div>
 
-    <div id="modal-student-summary" class="fixed inset-0 w-screen h-screen bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
-      <div id="modal-student-summary-dialog" class="bg-white rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 max-h-[90vh] overflow-y-auto">
-        <div id="student-summary-content">
-        </div>
+  <div id="modal-student-summary" class="fixed inset-0 z-50 !m-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+    <div id="modal-student-summary-dialog" class="bg-white rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 max-h-[90vh] overflow-y-auto">
+      <div id="student-summary-content">
       </div>
     </div>
+  </div>
 
-    <div id="modal-contact-parent" class="fixed inset-0 w-screen h-screen bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
-      <div id="modal-contact-dialog" class="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95">
-        <div class="flex items-center justify-between mb-3.5 pb-2 border-b border-slate-100">
-          <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
-            ${renderIcon('phone', 'w-4 h-4 text-brand-600')}
-            <span>Фиксация контакта с родителем</span>
-          </h3>
-          <button type="button" id="btn-close-contact-x" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+  <div id="modal-contact-parent" class="fixed inset-0 z-50 !m-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+    <div id="modal-contact-dialog" class="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95">
+        <div class="flex items-center justify-between mb-4 pb-2.5 border-b border-slate-100">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center border border-brand-100">
+              ${renderIcon('phone', 'w-4 h-4 text-brand-600')}
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Фиксация контакта с родителем</h3>
+              <p class="text-[11px] text-slate-500">Запись о звонке, встрече или сообщении</p>
+            </div>
+          </div>
+          <button type="button" id="btn-close-contact-x" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-lg transition-colors">
             ${renderIcon('x', 'w-4 h-4')}
           </button>
         </div>
@@ -418,48 +424,70 @@ export function renderOverviewView() {
           <input type="hidden" id="contact-student-id" />
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Ученик</label>
-            <input type="text" id="contact-student-name" readonly class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800" />
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Ученик</label>
+            <div class="relative flex items-center">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                ${renderIcon('user', 'w-4 h-4 text-slate-400')}
+              </div>
+              <input type="text" id="contact-student-name" readonly tabindex="-1"
+                     class="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-100/80 border border-slate-200 text-xs font-bold text-slate-800 cursor-default select-none focus:outline-none" />
+            </div>
           </div>
 
           <div>
-            <label for="contact-parent-select" class="block text-xs font-semibold text-slate-700 mb-1">Родитель / представитель</label>
-            <select id="contact-parent-select" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
-            </select>
+            <label for="contact-parent-select" class="block text-xs font-semibold text-slate-700 mb-1.5">Родитель / представитель</label>
+            <div class="relative">
+              <select id="contact-parent-select" class="w-full appearance-none pl-3.5 pr-10 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                ${renderIcon('chevron-down', 'w-4 h-4')}
+              </div>
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label for="contact-channel" class="block text-xs font-semibold text-slate-700 mb-1">Канал связи</label>
-              <select id="contact-channel" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
-                <option value="phone">Телефонный звонок</option>
-                <option value="chat">Мессенджер (Сферум/TG)</option>
-                <option value="meeting">Личная встреча</option>
-              </select>
+              <label for="contact-channel" class="block text-xs font-semibold text-slate-700 mb-1.5">Канал связи</label>
+              <div class="relative">
+                <select id="contact-channel" class="w-full appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                  <option value="phone">Телефонный звонок</option>
+                  <option value="chat">Мессенджер (Сферум/TG)</option>
+                  <option value="meeting">Личная встреча</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
+                  ${renderIcon('chevron-down', 'w-3.5 h-3.5')}
+                </div>
+              </div>
             </div>
             <div>
-              <label for="contact-topic" class="block text-xs font-semibold text-slate-700 mb-1">Тема</label>
-              <select id="contact-topic" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
-                <option value="absence">Пропуски уроков</option>
-                <option value="grades">Успеваемость по предмету</option>
-                <option value="behavior">Поведение и дисциплина</option>
-                <option value="org">Организационные вопросы</option>
-              </select>
+              <label for="contact-topic" class="block text-xs font-semibold text-slate-700 mb-1.5">Тема</label>
+              <div class="relative">
+                <select id="contact-topic" class="w-full appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                  <option value="absence">Пропуски уроков</option>
+                  <option value="grades">Успеваемость по предмету</option>
+                  <option value="behavior">Поведение и дисциплина</option>
+                  <option value="org">Организационные вопросы</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
+                  ${renderIcon('chevron-down', 'w-3.5 h-3.5')}
+                </div>
+              </div>
             </div>
           </div>
 
           <div>
-            <label for="contact-summary" class="block text-xs font-semibold text-slate-700 mb-1">Итог разговора / комментарий</label>
+            <label for="contact-summary" class="block text-xs font-semibold text-slate-700 mb-1.5">Итог разговора / комментарий</label>
             <textarea id="contact-summary" rows="3" required placeholder="Кратко опишите договорённости..."
-                      class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"></textarea>
+                      class="w-full p-3 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-xs text-slate-800 placeholder:text-slate-400 resize-none shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"></textarea>
           </div>
 
-          <div class="flex items-center space-x-2">
-            <input type="checkbox" id="contact-agreement" checked class="rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
-            <label for="contact-agreement" class="text-xs font-medium text-slate-700 select-none cursor-pointer">
-              Договорённость достигнута (причина подтверждена / план намечен)
-            </label>
-          </div>
+          <label for="contact-agreement" class="flex items-start p-2.5 rounded-xl bg-slate-50/80 hover:bg-slate-50 border border-slate-200/90 transition-colors cursor-pointer space-x-2.5 group">
+            <input type="checkbox" id="contact-agreement" checked class="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500/20 focus:ring-offset-0 cursor-pointer" />
+            <div class="text-xs text-slate-700 select-none">
+              <span class="font-semibold text-slate-900 group-hover:text-brand-600 transition-colors">Договорённость достигнута</span>
+              <p class="text-[11px] text-slate-500">Причина подтверждена или намечен план действий</p>
+            </div>
+          </label>
 
           <div class="pt-2 flex items-center space-x-2.5">
             <button type="button" id="btn-cancel-contact" class="flex-1 py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors">
@@ -473,14 +501,19 @@ export function renderOverviewView() {
       </div>
     </div>
 
-    <div id="modal-add-note" class="fixed inset-0 w-screen h-screen bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+  <div id="modal-add-note" class="fixed inset-0 z-50 !m-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
       <div id="modal-note-dialog" class="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95">
-        <div class="flex items-center justify-between mb-3.5 pb-2 border-b border-slate-100">
-          <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
-            ${renderIcon('message-square', 'w-4 h-4 text-brand-600')}
-            <span>Заметка классного руководителя</span>
-          </h3>
-          <button type="button" id="btn-close-note-x" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+        <div class="flex items-center justify-between mb-4 pb-2.5 border-b border-slate-100">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center border border-brand-100">
+              ${renderIcon('message-square', 'w-4 h-4 text-brand-600')}
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Заметка классного руководителя</h3>
+              <p class="text-[11px] text-slate-500">Педагогическое наблюдение</p>
+            </div>
+          </div>
+          <button type="button" id="btn-close-note-x" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-lg transition-colors">
             ${renderIcon('x', 'w-4 h-4')}
           </button>
         </div>
@@ -489,22 +522,29 @@ export function renderOverviewView() {
           <input type="hidden" id="note-student-id" />
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Ученик</label>
-            <input type="text" id="note-student-name" readonly class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800" />
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Ученик</label>
+            <div class="relative flex items-center">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                ${renderIcon('user', 'w-4 h-4 text-slate-400')}
+              </div>
+              <input type="text" id="note-student-name" readonly tabindex="-1"
+                     class="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-100/80 border border-slate-200 text-xs font-bold text-slate-800 cursor-default select-none focus:outline-none" />
+            </div>
           </div>
 
           <div>
-            <label for="note-text" class="block text-xs font-semibold text-slate-700 mb-1">Текст заметки</label>
+            <label for="note-text" class="block text-xs font-semibold text-slate-700 mb-1.5">Текст заметки</label>
             <textarea id="note-text" rows="3" required placeholder="Наблюдение за успеваемостью, поведением или контактом..."
-                      class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"></textarea>
+                      class="w-full p-3 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-xs text-slate-800 placeholder:text-slate-400 resize-none shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"></textarea>
           </div>
 
-          <div class="flex items-center space-x-2">
-            <input type="checkbox" id="note-private" checked class="rounded border-slate-300 text-brand-600 focus:ring-brand-500" />
-            <label for="note-private" class="text-xs font-medium text-slate-700 select-none cursor-pointer">
-              Приватная заметка (видна только классруку)
-            </label>
-          </div>
+          <label for="note-private" class="flex items-start p-2.5 rounded-xl bg-slate-50/80 hover:bg-slate-50 border border-slate-200/90 transition-colors cursor-pointer space-x-2.5 group">
+            <input type="checkbox" id="note-private" checked class="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500/20 focus:ring-offset-0 cursor-pointer" />
+            <div class="text-xs text-slate-700 select-none">
+              <span class="font-semibold text-slate-900 group-hover:text-brand-600 transition-colors">Приватная заметка</span>
+              <p class="text-[11px] text-slate-500">Заметка видна только классному руководителю</p>
+            </div>
+          </label>
 
           <div class="pt-2 flex items-center space-x-2.5">
             <button type="button" id="btn-cancel-note" class="flex-1 py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors">
