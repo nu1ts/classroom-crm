@@ -1,6 +1,6 @@
 export const INITIAL_DATASET = {
   "meta": {
-    "version": "1.0.0",
+    "version": "1.2.0",
     "demoToday": "2024-10-28",
     "academicYear": "2024/2025",
     "period": {
@@ -19,14 +19,15 @@ export const INITIAL_DATASET = {
     "classAverageGrade": 4.2,
     "totalMarkedLessons": 40,
     "totalScheduledLessons": 42,
-    "totalAttendanceRecords": 1120,
+    "totalAttendanceRecordsQ1": 1120,
+    "totalAttendanceRecords": 1176,
     "totalAbsences": 72,
     "absencePercentage": 6.4,
     "attendancePercentage": 93.6,
     "unconfirmedAbsencesCount": 4,
     "todayAttendancePercentage": 96.4,
-    "todayPresentCount": 27,
-    "todayAbsentCount": 1
+    "todayPresentCount": 54,
+    "todayTotalCount": 56
   },
   "users": [
     {
@@ -107,6 +108,7 @@ export const INITIAL_DATASET = {
     {
       "id": "math",
       "name": "Математика (Алгебра)",
+      "shortName": "Математика",
       "teacher": "Козлов А. П.",
       "room": "Каб. 204",
       "targetAvg": 3.9
@@ -114,6 +116,7 @@ export const INITIAL_DATASET = {
     {
       "id": "rus",
       "name": "Русский язык",
+      "shortName": "Русский язык",
       "teacher": "Иванова Е. С.",
       "room": "Каб. 302",
       "targetAvg": 4.3
@@ -121,6 +124,7 @@ export const INITIAL_DATASET = {
     {
       "id": "phys",
       "name": "Физика",
+      "shortName": "Физика",
       "teacher": "Дмитриев Д. К.",
       "room": "Каб. 401",
       "targetAvg": 4.0
@@ -128,6 +132,7 @@ export const INITIAL_DATASET = {
     {
       "id": "hist",
       "name": "История",
+      "shortName": "История",
       "teacher": "Смирнова М. В.",
       "room": "Каб. 302",
       "targetAvg": 4.4
@@ -135,9 +140,18 @@ export const INITIAL_DATASET = {
     {
       "id": "pe",
       "name": "Физкультура",
+      "shortName": "Физкультура",
       "teacher": "Новиков С. А.",
       "room": "Спортзал",
       "targetAvg": 4.8
+    },
+    {
+      "id": "talks",
+      "name": "Разговоры о важном",
+      "shortName": "Классный час",
+      "teacher": "Смирнова М. В.",
+      "room": "Каб. 302",
+      "targetAvg": null
     }
   ],
   "students": [
@@ -541,7 +555,7 @@ export const INITIAL_DATASET = {
       "firstName": "Ирина",
       "middleName": "Алексеевна",
       "fullName": "Александрова Ирина Алексеевна",
-      "shortName": "Александрова И. А.",
+      "shortName": "Александрова И.",
       "phone": "+7 999 123-45-60",
       "otherChildren": []
     },
@@ -551,7 +565,7 @@ export const INITIAL_DATASET = {
       "firstName": "Анна",
       "middleName": "Васильевна",
       "fullName": "Беляева Анна Васильевна",
-      "shortName": "Беляева А. В.",
+      "shortName": "Беляева А.",
       "phone": "+7 999 123-45-78",
       "otherChildren": []
     },
@@ -561,7 +575,7 @@ export const INITIAL_DATASET = {
       "firstName": "Константин",
       "middleName": "Дмитриевич",
       "fullName": "Васильев Константин Дмитриевич",
-      "shortName": "Васильев К. Д.",
+      "shortName": "Васильев К.",
       "phone": "+7 999 123-45-61",
       "otherChildren": []
     },
@@ -571,7 +585,7 @@ export const INITIAL_DATASET = {
       "firstName": "Дмитрий",
       "middleName": "Сергеевич",
       "fullName": "Волков Дмитрий Сергеевич",
-      "shortName": "Волков Д. С.",
+      "shortName": "Волков Д.",
       "phone": "+7 999 123-45-70",
       "otherChildren": []
     },
@@ -581,7 +595,7 @@ export const INITIAL_DATASET = {
       "firstName": "Сергей",
       "middleName": "Павлович",
       "fullName": "Григорьев Сергей Павлович",
-      "shortName": "Григорьев С. П.",
+      "shortName": "Григорьев С.",
       "phone": "+7 999 123-45-79",
       "otherChildren": []
     },
@@ -591,7 +605,7 @@ export const INITIAL_DATASET = {
       "firstName": "Юлия",
       "middleName": "Ивановна",
       "fullName": "Дмитриева Юлия Ивановна",
-      "shortName": "Дмитриева Ю. И.",
+      "shortName": "Дмитриева Ю.",
       "phone": "+7 999 123-45-80",
       "otherChildren": []
     },
@@ -601,7 +615,7 @@ export const INITIAL_DATASET = {
       "firstName": "Максим",
       "middleName": "Игоревич",
       "fullName": "Зайцев Максим Игоревич",
-      "shortName": "Зайцев М. И.",
+      "shortName": "Зайцев М.",
       "phone": "+7 999 123-45-81",
       "otherChildren": []
     },
@@ -611,7 +625,7 @@ export const INITIAL_DATASET = {
       "firstName": "Роман",
       "middleName": "Сергеевич",
       "fullName": "Ильин Роман Сергеевич",
-      "shortName": "Ильин Р. С.",
+      "shortName": "Ильин Р.",
       "phone": "+7 999 123-45-83",
       "otherChildren": []
     },
@@ -621,7 +635,7 @@ export const INITIAL_DATASET = {
       "firstName": "Надежда",
       "middleName": "Дмитриевна",
       "fullName": "Киселёва Надежда Дмитриевна",
-      "shortName": "Киселёва Н. Д.",
+      "shortName": "Киселёва Н.",
       "phone": "+7 999 123-45-84",
       "otherChildren": []
     },
@@ -631,7 +645,7 @@ export const INITIAL_DATASET = {
       "firstName": "Елена",
       "middleName": "Павловна",
       "fullName": "Котова Елена Павловна",
-      "shortName": "Котова Е. П.",
+      "shortName": "Котова Е.",
       "phone": "+7 999 123-45-62",
       "otherChildren": [
         {
@@ -646,7 +660,7 @@ export const INITIAL_DATASET = {
       "firstName": "Наталья",
       "middleName": "Владимировна",
       "fullName": "Кузнецова Наталья Владимировна",
-      "shortName": "Кузнецова Н. В.",
+      "shortName": "Кузнецова Н.",
       "phone": "+7 999 123-45-71",
       "otherChildren": []
     },
@@ -656,7 +670,7 @@ export const INITIAL_DATASET = {
       "firstName": "Владимир",
       "middleName": "Петрович",
       "fullName": "Кузнецов Владимир Петрович",
-      "shortName": "Кузнецов В. П.",
+      "shortName": "Кузнецов В.",
       "phone": "+7 999 123-45-94",
       "otherChildren": []
     },
@@ -666,7 +680,7 @@ export const INITIAL_DATASET = {
       "firstName": "Ольга",
       "middleName": "Викторовна",
       "fullName": "Лебедева Ольга Викторовна",
-      "shortName": "Лебедева О. В.",
+      "shortName": "Лебедева О.",
       "phone": "+7 999 123-45-82",
       "otherChildren": []
     },
@@ -676,7 +690,7 @@ export const INITIAL_DATASET = {
       "firstName": "Андрей",
       "middleName": "Сергеевич",
       "fullName": "Медведев Андрей Сергеевич",
-      "shortName": "Медведев А. С.",
+      "shortName": "Медведев А.",
       "phone": "+7 999 123-45-85",
       "otherChildren": []
     },
@@ -686,7 +700,7 @@ export const INITIAL_DATASET = {
       "firstName": "Елена",
       "middleName": "Александровна",
       "fullName": "Мишина Елена Александровна",
-      "shortName": "Мишина Е. А.",
+      "shortName": "Мишина Е.",
       "phone": "+7 999 123-45-86",
       "otherChildren": []
     },
@@ -696,7 +710,7 @@ export const INITIAL_DATASET = {
       "firstName": "Екатерина",
       "middleName": "Андреевна",
       "fullName": "Морозова Екатерина Андреевна",
-      "shortName": "Морозова Е. А.",
+      "shortName": "Морозова Е.",
       "phone": "+7 999 123-45-72",
       "otherChildren": []
     },
@@ -706,7 +720,7 @@ export const INITIAL_DATASET = {
       "firstName": "Андрей",
       "middleName": "Викторович",
       "fullName": "Морозов Андрей Викторович",
-      "shortName": "Морозов А. В.",
+      "shortName": "Морозов А.",
       "phone": "+7 999 123-45-93",
       "otherChildren": []
     },
@@ -716,7 +730,7 @@ export const INITIAL_DATASET = {
       "firstName": "Светлана",
       "middleName": "Юрьевна",
       "fullName": "Никитина Светлана Юрьевна",
-      "shortName": "Никитина С. Ю.",
+      "shortName": "Никитина С.",
       "phone": "+7 999 123-45-73",
       "otherChildren": []
     },
@@ -726,7 +740,7 @@ export const INITIAL_DATASET = {
       "firstName": "Владимир",
       "middleName": "Иванович",
       "fullName": "Николаев Владимир Иванович",
-      "shortName": "Николаев В. И.",
+      "shortName": "Николаев В.",
       "phone": "+7 999 123-45-87",
       "otherChildren": []
     },
@@ -736,7 +750,7 @@ export const INITIAL_DATASET = {
       "firstName": "Игорь",
       "middleName": "Петрович",
       "fullName": "Орлов Игорь Петрович",
-      "shortName": "Орлов И. П.",
+      "shortName": "Орлов И.",
       "phone": "+7 999 123-45-74",
       "otherChildren": []
     },
@@ -746,7 +760,7 @@ export const INITIAL_DATASET = {
       "firstName": "Надежда",
       "middleName": "Павловна",
       "fullName": "Орлова Надежда Павловна",
-      "shortName": "Орлова Н. П.",
+      "shortName": "Орлова Н.",
       "phone": "+7 999 123-45-65",
       "otherChildren": []
     },
@@ -756,7 +770,7 @@ export const INITIAL_DATASET = {
       "firstName": "Татьяна",
       "middleName": "Николаевна",
       "fullName": "Осипова Татьяна Николаевна",
-      "shortName": "Осипова Т. Н.",
+      "shortName": "Осипова Т.",
       "phone": "+7 999 123-45-75",
       "otherChildren": []
     },
@@ -766,7 +780,7 @@ export const INITIAL_DATASET = {
       "firstName": "Сергей",
       "middleName": "Викторович",
       "fullName": "Петров Сергей Викторович",
-      "shortName": "Петров С. В.",
+      "shortName": "Петров С.",
       "phone": "+7 999 123-45-63",
       "otherChildren": []
     },
@@ -776,7 +790,7 @@ export const INITIAL_DATASET = {
       "firstName": "Елена",
       "middleName": "Игоревна",
       "fullName": "Петрова Елена Игоревна",
-      "shortName": "Петрова Е. И.",
+      "shortName": "Петрова Е.",
       "phone": "+7 999 765-43-21",
       "otherChildren": []
     },
@@ -786,7 +800,7 @@ export const INITIAL_DATASET = {
       "firstName": "Денис",
       "middleName": "Анатольевич",
       "fullName": "Лукин Денис Анатольевич",
-      "shortName": "Лукин Д. А.",
+      "shortName": "Лукин Д.",
       "phone": "+7 999 123-45-88",
       "otherChildren": []
     },
@@ -796,7 +810,7 @@ export const INITIAL_DATASET = {
       "firstName": "Марина",
       "middleName": "Евгеньевна",
       "fullName": "Романова Марина Евгеньевна",
-      "shortName": "Романова М. Е.",
+      "shortName": "Романова М.",
       "phone": "+7 999 123-45-76",
       "otherChildren": []
     },
@@ -806,7 +820,7 @@ export const INITIAL_DATASET = {
       "firstName": "Ольга",
       "middleName": "Николаевна",
       "fullName": "Сидорова Ольга Николаевна",
-      "shortName": "Сидорова О. Н.",
+      "shortName": "Сидорова О.",
       "phone": "+7 999 123-45-64",
       "otherChildren": []
     },
@@ -816,7 +830,7 @@ export const INITIAL_DATASET = {
       "firstName": "Валерий",
       "middleName": "Олегович",
       "fullName": "Смирнов Валерий Олегович",
-      "shortName": "Смирнов В. О.",
+      "shortName": "Смирнов В.",
       "phone": "+7 999 123-45-77",
       "otherChildren": []
     },
@@ -826,7 +840,7 @@ export const INITIAL_DATASET = {
       "firstName": "Михаил",
       "middleName": "Юрьевич",
       "fullName": "Соколов Михаил Юрьевич",
-      "shortName": "Соколов М. Ю.",
+      "shortName": "Соколов М.",
       "phone": "+7 999 123-45-89",
       "otherChildren": []
     },
@@ -836,7 +850,7 @@ export const INITIAL_DATASET = {
       "firstName": "Инна",
       "middleName": "Григорьевна",
       "fullName": "Федосеева Инна Григорьевна",
-      "shortName": "Федосеева И. Г.",
+      "shortName": "Федосеева И.",
       "phone": "+7 999 123-45-90",
       "otherChildren": []
     },
@@ -846,7 +860,7 @@ export const INITIAL_DATASET = {
       "firstName": "Виктор",
       "middleName": "Николаевич",
       "fullName": "Чернышёв Виктор Николаевич",
-      "shortName": "Чернышёв В. Н.",
+      "shortName": "Чернышёв В.",
       "phone": "+7 999 123-45-91",
       "otherChildren": []
     },
@@ -856,7 +870,7 @@ export const INITIAL_DATASET = {
       "firstName": "Лариса",
       "middleName": "Сергеевна",
       "fullName": "Якушева Лариса Сергеевна",
-      "shortName": "Якушева Л. С.",
+      "shortName": "Якушева Л.",
       "phone": "+7 999 123-45-92",
       "otherChildren": []
     }
@@ -1085,6 +1099,7 @@ export const INITIAL_DATASET = {
       "id": "lsn-01",
       "lessonNumber": 1,
       "date": "2024-09-02",
+      "time": "09:30 - 10:15",
       "weekIndex": 1,
       "dayOfWeek": 0,
       "subjectId": "math",
@@ -1092,12 +1107,14 @@ export const INITIAL_DATASET = {
       "teacher": "Козлов А. П.",
       "room": "Каб. 204",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-02",
       "lessonNumber": 2,
       "date": "2024-09-03",
+      "time": "09:30 - 10:15",
       "weekIndex": 1,
       "dayOfWeek": 1,
       "subjectId": "rus",
@@ -1105,12 +1122,14 @@ export const INITIAL_DATASET = {
       "teacher": "Иванова Е. С.",
       "room": "Каб. 302",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-03",
       "lessonNumber": 3,
       "date": "2024-09-04",
+      "time": "09:30 - 10:15",
       "weekIndex": 1,
       "dayOfWeek": 2,
       "subjectId": "phys",
@@ -1118,12 +1137,14 @@ export const INITIAL_DATASET = {
       "teacher": "Дмитриев Д. К.",
       "room": "Каб. 401",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-04",
       "lessonNumber": 4,
       "date": "2024-09-05",
+      "time": "09:30 - 10:15",
       "weekIndex": 1,
       "dayOfWeek": 3,
       "subjectId": "hist",
@@ -1131,12 +1152,14 @@ export const INITIAL_DATASET = {
       "teacher": "Смирнова М. В.",
       "room": "Каб. 302",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-05",
       "lessonNumber": 5,
       "date": "2024-09-06",
+      "time": "09:30 - 10:15",
       "weekIndex": 1,
       "dayOfWeek": 4,
       "subjectId": "pe",
@@ -1144,12 +1167,14 @@ export const INITIAL_DATASET = {
       "teacher": "Новиков С. А.",
       "room": "Спортзал",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-06",
       "lessonNumber": 6,
       "date": "2024-09-09",
+      "time": "09:30 - 10:15",
       "weekIndex": 2,
       "dayOfWeek": 0,
       "subjectId": "math",
@@ -1157,12 +1182,14 @@ export const INITIAL_DATASET = {
       "teacher": "Козлов А. П.",
       "room": "Каб. 204",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-07",
       "lessonNumber": 7,
       "date": "2024-09-10",
+      "time": "09:30 - 10:15",
       "weekIndex": 2,
       "dayOfWeek": 1,
       "subjectId": "rus",
@@ -1170,25 +1197,29 @@ export const INITIAL_DATASET = {
       "teacher": "Иванова Е. С.",
       "room": "Каб. 302",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-08",
       "lessonNumber": 8,
       "date": "2024-09-11",
+      "time": "09:30 - 10:15",
       "weekIndex": 2,
       "dayOfWeek": 2,
-      "subjectId": "phys",
-      "subjectName": "Физика",
-      "teacher": "Дмитриев Д. К.",
-      "room": "Каб. 401",
+      "subjectId": "pe",
+      "subjectName": "Физкультура",
+      "teacher": "Новиков С. А.",
+      "room": "Спортзал",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-09",
       "lessonNumber": 9,
       "date": "2024-09-12",
+      "time": "09:30 - 10:15",
       "weekIndex": 2,
       "dayOfWeek": 3,
       "subjectId": "hist",
@@ -1196,12 +1227,14 @@ export const INITIAL_DATASET = {
       "teacher": "Смирнова М. В.",
       "room": "Каб. 302",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-10",
       "lessonNumber": 10,
       "date": "2024-09-13",
+      "time": "09:30 - 10:15",
       "weekIndex": 2,
       "dayOfWeek": 4,
       "subjectId": "pe",
@@ -1209,12 +1242,14 @@ export const INITIAL_DATASET = {
       "teacher": "Новиков С. А.",
       "room": "Спортзал",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-11",
       "lessonNumber": 11,
       "date": "2024-09-16",
+      "time": "09:30 - 10:15",
       "weekIndex": 3,
       "dayOfWeek": 0,
       "subjectId": "math",
@@ -1222,12 +1257,14 @@ export const INITIAL_DATASET = {
       "teacher": "Козлов А. П.",
       "room": "Каб. 204",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-12",
       "lessonNumber": 12,
       "date": "2024-09-17",
+      "time": "09:30 - 10:15",
       "weekIndex": 3,
       "dayOfWeek": 1,
       "subjectId": "rus",
@@ -1235,12 +1272,14 @@ export const INITIAL_DATASET = {
       "teacher": "Иванова Е. С.",
       "room": "Каб. 302",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-13",
       "lessonNumber": 13,
       "date": "2024-09-18",
+      "time": "09:30 - 10:15",
       "weekIndex": 3,
       "dayOfWeek": 2,
       "subjectId": "phys",
@@ -1248,25 +1287,29 @@ export const INITIAL_DATASET = {
       "teacher": "Дмитриев Д. К.",
       "room": "Каб. 401",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-14",
       "lessonNumber": 14,
       "date": "2024-09-19",
+      "time": "09:30 - 10:15",
       "weekIndex": 3,
       "dayOfWeek": 3,
-      "subjectId": "hist",
-      "subjectName": "История",
-      "teacher": "Смирнова М. В.",
-      "room": "Каб. 302",
+      "subjectId": "pe",
+      "subjectName": "Физкультура",
+      "teacher": "Новиков С. А.",
+      "room": "Спортзал",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-15",
       "lessonNumber": 15,
       "date": "2024-09-20",
+      "time": "09:30 - 10:15",
       "weekIndex": 3,
       "dayOfWeek": 4,
       "subjectId": "pe",
@@ -1274,12 +1317,14 @@ export const INITIAL_DATASET = {
       "teacher": "Новиков С. А.",
       "room": "Спортзал",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-16",
       "lessonNumber": 16,
       "date": "2024-09-23",
+      "time": "09:30 - 10:15",
       "weekIndex": 4,
       "dayOfWeek": 0,
       "subjectId": "math",
@@ -1287,12 +1332,14 @@ export const INITIAL_DATASET = {
       "teacher": "Козлов А. П.",
       "room": "Каб. 204",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-17",
       "lessonNumber": 17,
       "date": "2024-09-24",
+      "time": "09:30 - 10:15",
       "weekIndex": 4,
       "dayOfWeek": 1,
       "subjectId": "rus",
@@ -1300,12 +1347,14 @@ export const INITIAL_DATASET = {
       "teacher": "Иванова Е. С.",
       "room": "Каб. 302",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-18",
       "lessonNumber": 18,
       "date": "2024-09-25",
+      "time": "09:30 - 10:15",
       "weekIndex": 4,
       "dayOfWeek": 2,
       "subjectId": "phys",
@@ -1313,12 +1362,14 @@ export const INITIAL_DATASET = {
       "teacher": "Дмитриев Д. К.",
       "room": "Каб. 401",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-19",
       "lessonNumber": 19,
       "date": "2024-09-26",
+      "time": "09:30 - 10:15",
       "weekIndex": 4,
       "dayOfWeek": 3,
       "subjectId": "hist",
@@ -1326,12 +1377,14 @@ export const INITIAL_DATASET = {
       "teacher": "Смирнова М. В.",
       "room": "Каб. 302",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-20",
       "lessonNumber": 20,
       "date": "2024-09-27",
+      "time": "09:30 - 10:15",
       "weekIndex": 4,
       "dayOfWeek": 4,
       "subjectId": "pe",
@@ -1339,12 +1392,14 @@ export const INITIAL_DATASET = {
       "teacher": "Новиков С. А.",
       "room": "Спортзал",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-21",
       "lessonNumber": 21,
       "date": "2024-09-30",
+      "time": "09:30 - 10:15",
       "weekIndex": 5,
       "dayOfWeek": 0,
       "subjectId": "math",
@@ -1352,12 +1407,14 @@ export const INITIAL_DATASET = {
       "teacher": "Козлов А. П.",
       "room": "Каб. 204",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-22",
       "lessonNumber": 22,
       "date": "2024-10-01",
+      "time": "09:30 - 10:15",
       "weekIndex": 5,
       "dayOfWeek": 1,
       "subjectId": "rus",
@@ -1365,12 +1422,14 @@ export const INITIAL_DATASET = {
       "teacher": "Иванова Е. С.",
       "room": "Каб. 302",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-23",
       "lessonNumber": 23,
       "date": "2024-10-02",
+      "time": "09:30 - 10:15",
       "weekIndex": 5,
       "dayOfWeek": 2,
       "subjectId": "phys",
@@ -1378,12 +1437,14 @@ export const INITIAL_DATASET = {
       "teacher": "Дмитриев Д. К.",
       "room": "Каб. 401",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-24",
       "lessonNumber": 24,
       "date": "2024-10-03",
+      "time": "09:30 - 10:15",
       "weekIndex": 5,
       "dayOfWeek": 3,
       "subjectId": "hist",
@@ -1391,12 +1452,14 @@ export const INITIAL_DATASET = {
       "teacher": "Смирнова М. В.",
       "room": "Каб. 302",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-25",
       "lessonNumber": 25,
       "date": "2024-10-04",
+      "time": "09:30 - 10:15",
       "weekIndex": 5,
       "dayOfWeek": 4,
       "subjectId": "pe",
@@ -1404,12 +1467,14 @@ export const INITIAL_DATASET = {
       "teacher": "Новиков С. А.",
       "room": "Спортзал",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-26",
       "lessonNumber": 26,
       "date": "2024-10-07",
+      "time": "09:30 - 10:15",
       "weekIndex": 6,
       "dayOfWeek": 0,
       "subjectId": "math",
@@ -1417,12 +1482,14 @@ export const INITIAL_DATASET = {
       "teacher": "Козлов А. П.",
       "room": "Каб. 204",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-27",
       "lessonNumber": 27,
       "date": "2024-10-08",
+      "time": "09:30 - 10:15",
       "weekIndex": 6,
       "dayOfWeek": 1,
       "subjectId": "rus",
@@ -1430,38 +1497,44 @@ export const INITIAL_DATASET = {
       "teacher": "Иванова Е. С.",
       "room": "Каб. 302",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-28",
       "lessonNumber": 28,
       "date": "2024-10-09",
+      "time": "09:30 - 10:15",
       "weekIndex": 6,
       "dayOfWeek": 2,
-      "subjectId": "phys",
-      "subjectName": "Физика",
-      "teacher": "Дмитриев Д. К.",
-      "room": "Каб. 401",
+      "subjectId": "pe",
+      "subjectName": "Физкультура",
+      "teacher": "Новиков С. А.",
+      "room": "Спортзал",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-29",
       "lessonNumber": 29,
       "date": "2024-10-10",
+      "time": "09:30 - 10:15",
       "weekIndex": 6,
       "dayOfWeek": 3,
-      "subjectId": "hist",
-      "subjectName": "История",
-      "teacher": "Смирнова М. В.",
-      "room": "Каб. 302",
+      "subjectId": "pe",
+      "subjectName": "Физкультура",
+      "teacher": "Новиков С. А.",
+      "room": "Спортзал",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-30",
       "lessonNumber": 30,
       "date": "2024-10-11",
+      "time": "09:30 - 10:15",
       "weekIndex": 6,
       "dayOfWeek": 4,
       "subjectId": "pe",
@@ -1469,12 +1542,14 @@ export const INITIAL_DATASET = {
       "teacher": "Новиков С. А.",
       "room": "Спортзал",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-31",
       "lessonNumber": 31,
       "date": "2024-10-14",
+      "time": "09:30 - 10:15",
       "weekIndex": 7,
       "dayOfWeek": 0,
       "subjectId": "math",
@@ -1482,12 +1557,14 @@ export const INITIAL_DATASET = {
       "teacher": "Козлов А. П.",
       "room": "Каб. 204",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-32",
       "lessonNumber": 32,
       "date": "2024-10-15",
+      "time": "09:30 - 10:15",
       "weekIndex": 7,
       "dayOfWeek": 1,
       "subjectId": "rus",
@@ -1495,12 +1572,14 @@ export const INITIAL_DATASET = {
       "teacher": "Иванова Е. С.",
       "room": "Каб. 302",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-33",
       "lessonNumber": 33,
       "date": "2024-10-16",
+      "time": "09:30 - 10:15",
       "weekIndex": 7,
       "dayOfWeek": 2,
       "subjectId": "phys",
@@ -1508,25 +1587,29 @@ export const INITIAL_DATASET = {
       "teacher": "Дмитриев Д. К.",
       "room": "Каб. 401",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-34",
       "lessonNumber": 34,
       "date": "2024-10-17",
+      "time": "09:30 - 10:15",
       "weekIndex": 7,
       "dayOfWeek": 3,
-      "subjectId": "hist",
-      "subjectName": "История",
-      "teacher": "Смирнова М. В.",
-      "room": "Каб. 302",
+      "subjectId": "pe",
+      "subjectName": "Физкультура",
+      "teacher": "Новиков С. А.",
+      "room": "Спортзал",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-35",
       "lessonNumber": 35,
       "date": "2024-10-18",
+      "time": "09:30 - 10:15",
       "weekIndex": 7,
       "dayOfWeek": 4,
       "subjectId": "pe",
@@ -1534,12 +1617,14 @@ export const INITIAL_DATASET = {
       "teacher": "Новиков С. А.",
       "room": "Спортзал",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-36",
       "lessonNumber": 36,
       "date": "2024-10-21",
+      "time": "09:30 - 10:15",
       "weekIndex": 8,
       "dayOfWeek": 0,
       "subjectId": "math",
@@ -1547,12 +1632,14 @@ export const INITIAL_DATASET = {
       "teacher": "Козлов А. П.",
       "room": "Каб. 204",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-37",
       "lessonNumber": 37,
       "date": "2024-10-22",
+      "time": "09:30 - 10:15",
       "weekIndex": 8,
       "dayOfWeek": 1,
       "subjectId": "rus",
@@ -1560,38 +1647,44 @@ export const INITIAL_DATASET = {
       "teacher": "Иванова Е. С.",
       "room": "Каб. 302",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-38",
       "lessonNumber": 38,
       "date": "2024-10-23",
+      "time": "09:30 - 10:15",
       "weekIndex": 8,
       "dayOfWeek": 2,
-      "subjectId": "phys",
-      "subjectName": "Физика",
-      "teacher": "Дмитриев Д. К.",
-      "room": "Каб. 401",
-      "status": "closed",
-      "isMarked": true
-    },
-    {
-      "id": "lsn-39",
-      "lessonNumber": 39,
-      "date": "2024-10-24",
-      "weekIndex": 8,
-      "dayOfWeek": 3,
       "subjectId": "hist",
       "subjectName": "История",
       "teacher": "Смирнова М. В.",
       "room": "Каб. 302",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "lsn-39",
+      "lessonNumber": 39,
+      "date": "2024-10-24",
+      "time": "09:30 - 10:15",
+      "weekIndex": 8,
+      "dayOfWeek": 3,
+      "subjectId": "math",
+      "subjectName": "Математика (Алгебра)",
+      "teacher": "Козлов А. П.",
+      "room": "Каб. 204",
+      "status": "closed",
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-40",
       "lessonNumber": 40,
       "date": "2024-10-25",
+      "time": "09:30 - 10:15",
       "weekIndex": 8,
       "dayOfWeek": 4,
       "subjectId": "pe",
@@ -1599,33 +1692,113 @@ export const INITIAL_DATASET = {
       "teacher": "Новиков С. А.",
       "room": "Спортзал",
       "status": "closed",
-      "isMarked": true
+      "isMarked": true,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-41",
       "lessonNumber": 41,
       "date": "2024-10-25",
+      "time": "12:35 - 13:20",
       "weekIndex": 8,
       "dayOfWeek": 4,
       "subjectId": "talks",
-      "subjectName": "Классный час",
+      "subjectName": "Разговоры о важном",
       "teacher": "Смирнова М. В.",
       "room": "Каб. 302",
       "status": "planned",
-      "isMarked": false
+      "isMarked": false,
+      "periodId": "q1_2024"
     },
     {
       "id": "lsn-42",
       "lessonNumber": 42,
       "date": "2024-10-25",
+      "time": "13:30 - 14:15",
       "weekIndex": 8,
       "dayOfWeek": 4,
       "subjectId": "pe",
-      "subjectName": "Секция ОФП",
+      "subjectName": "Физкультура",
       "teacher": "Новиков С. А.",
       "room": "Спортзал",
       "status": "planned",
-      "isMarked": false
+      "isMarked": false,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "lsn-today-01",
+      "lessonNumber": 1,
+      "date": "2024-10-28",
+      "time": "08:30 - 09:15",
+      "weekIndex": 9,
+      "dayOfWeek": 0,
+      "subjectId": "talks",
+      "subjectName": "Разговоры о важном",
+      "teacher": "Смирнова М. В.",
+      "room": "Каб. 302",
+      "status": "closed",
+      "isMarked": true,
+      "periodId": "q2_2024"
+    },
+    {
+      "id": "lsn-today-02",
+      "lessonNumber": 2,
+      "date": "2024-10-28",
+      "time": "09:30 - 10:15",
+      "weekIndex": 9,
+      "dayOfWeek": 0,
+      "subjectId": "math",
+      "subjectName": "Математика (Алгебра)",
+      "teacher": "Козлов А. П.",
+      "room": "Каб. 204",
+      "status": "closed",
+      "isMarked": true,
+      "periodId": "q2_2024"
+    },
+    {
+      "id": "lsn-today-03",
+      "lessonNumber": 3,
+      "date": "2024-10-28",
+      "time": "10:30 - 11:15",
+      "weekIndex": 9,
+      "dayOfWeek": 0,
+      "subjectId": "rus",
+      "subjectName": "Русский язык",
+      "teacher": "Иванова Е. С.",
+      "room": "Каб. 302",
+      "status": "planned",
+      "isMarked": false,
+      "periodId": "q2_2024"
+    },
+    {
+      "id": "lsn-today-04",
+      "lessonNumber": 4,
+      "date": "2024-10-28",
+      "time": "11:30 - 12:15",
+      "weekIndex": 9,
+      "dayOfWeek": 0,
+      "subjectId": "phys",
+      "subjectName": "Физика",
+      "teacher": "Дмитриев Д. К.",
+      "room": "Каб. 401",
+      "status": "planned",
+      "isMarked": false,
+      "periodId": "q2_2024"
+    },
+    {
+      "id": "lsn-today-05",
+      "lessonNumber": 5,
+      "date": "2024-10-28",
+      "time": "12:35 - 13:20",
+      "weekIndex": 9,
+      "dayOfWeek": 0,
+      "subjectId": "pe",
+      "subjectName": "Физкультура",
+      "teacher": "Новиков С. А.",
+      "room": "Спортзал",
+      "status": "planned",
+      "isMarked": false,
+      "periodId": "q2_2024"
     }
   ],
   "attendance": [
@@ -8446,13 +8619,13 @@ export const INITIAL_DATASET = {
       "lessonId": "lsn-19",
       "studentId": "st-23",
       "date": "2024-09-26",
-      "value": "present",
-      "status": "present",
-      "code": "Был",
-      "reason": null,
-      "confirmedBy": null,
-      "confirmedAt": null,
-      "document": null
+      "value": "absent",
+      "status": "confirmed",
+      "code": "УП",
+      "reason": "Справка",
+      "confirmedBy": "Смирнова М. В.",
+      "confirmedAt": "2024-10-25 15:00",
+      "document": "Справка ОРВИ"
     },
     {
       "id": "att-0526",
@@ -8810,13 +8983,13 @@ export const INITIAL_DATASET = {
       "lessonId": "lsn-20",
       "studentId": "st-23",
       "date": "2024-09-27",
-      "value": "absent",
-      "status": "confirmed",
-      "code": "УП",
-      "reason": "Справка",
-      "confirmedBy": "Смирнова М. В.",
-      "confirmedAt": "2024-10-25 15:00",
-      "document": "Справка ОРВИ"
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
     },
     {
       "id": "att-0554",
@@ -16188,2734 +16361,3765 @@ export const INITIAL_DATASET = {
       "confirmedBy": null,
       "confirmedAt": null,
       "document": null
+    },
+    {
+      "id": "att-1121",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-01",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1122",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-02",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1123",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-16",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1124",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-17",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1125",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-03",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1126",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-04",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1127",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-05",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1128",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-18",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1129",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-19",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1130",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-06",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1131",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-07",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1132",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-08",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1133",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-24",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1134",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-20",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1135",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-21",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1136",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-09",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1137",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-10",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1138",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-22",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1139",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-11",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1140",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-12",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1141",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-23",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1142",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-13",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1143",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-14",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1144",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-15",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1145",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-25",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1146",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-26",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1147",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-27",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1148",
+      "lessonId": "lsn-today-01",
+      "studentId": "st-28",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1149",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-01",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1150",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-02",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1151",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-16",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1152",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-17",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1153",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-03",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1154",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-04",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1155",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-05",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1156",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-18",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1157",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-19",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1158",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-06",
+      "date": "2024-10-28",
+      "value": "absent",
+      "status": "unconfirmed",
+      "code": "Н (без)",
+      "reason": "Причина не подтверждена",
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1159",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-07",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1160",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-08",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1161",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-24",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1162",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-20",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1163",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-21",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1164",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-09",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1165",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-10",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1166",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-22",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1167",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-11",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1168",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-12",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1169",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-23",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1170",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-13",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1171",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-14",
+      "date": "2024-10-28",
+      "value": "absent",
+      "status": "unconfirmed",
+      "code": "Н (без)",
+      "reason": "Причина не подтверждена",
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1172",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-15",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1173",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-25",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1174",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-26",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1175",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-27",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
+    },
+    {
+      "id": "att-1176",
+      "lessonId": "lsn-today-02",
+      "studentId": "st-28",
+      "date": "2024-10-28",
+      "value": "present",
+      "status": "present",
+      "code": "Был",
+      "reason": null,
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": null
     }
   ],
   "grades": [
     {
+      "id": "grd-0001",
+      "lessonId": "lsn-01",
+      "studentId": "st-09",
+      "subjectId": "math",
+      "date": "2024-09-02",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0002",
+      "lessonId": "lsn-01",
+      "studentId": "st-06",
+      "subjectId": "math",
+      "date": "2024-09-02",
+      "teacher": "Козлов А. П.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0003",
+      "lessonId": "lsn-01",
+      "studentId": "st-14",
+      "subjectId": "math",
+      "date": "2024-09-02",
+      "teacher": "Козлов А. П.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0004",
+      "lessonId": "lsn-01",
+      "studentId": "st-23",
+      "subjectId": "math",
+      "date": "2024-09-02",
+      "teacher": "Козлов А. П.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0005",
+      "lessonId": "lsn-01",
+      "studentId": "st-10",
+      "subjectId": "math",
+      "date": "2024-09-02",
+      "teacher": "Козлов А. П.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0006",
+      "lessonId": "lsn-01",
+      "studentId": "st-01",
+      "subjectId": "math",
+      "date": "2024-09-02",
+      "teacher": "Козлов А. П.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0007",
+      "lessonId": "lsn-01",
+      "studentId": "st-07",
+      "subjectId": "math",
+      "date": "2024-09-02",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0008",
+      "lessonId": "lsn-01",
+      "studentId": "st-11",
+      "subjectId": "math",
+      "date": "2024-09-02",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0009",
+      "lessonId": "lsn-02",
+      "studentId": "st-06",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0010",
+      "lessonId": "lsn-02",
+      "studentId": "st-14",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0011",
+      "lessonId": "lsn-02",
+      "studentId": "st-23",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0012",
+      "lessonId": "lsn-02",
+      "studentId": "st-10",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0013",
+      "lessonId": "lsn-02",
+      "studentId": "st-01",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0014",
+      "lessonId": "lsn-02",
+      "studentId": "st-07",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0015",
+      "lessonId": "lsn-02",
+      "studentId": "st-02",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0016",
+      "lessonId": "lsn-02",
+      "studentId": "st-03",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0017",
+      "lessonId": "lsn-02",
+      "studentId": "st-04",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0018",
+      "lessonId": "lsn-02",
+      "studentId": "st-05",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0019",
+      "lessonId": "lsn-02",
+      "studentId": "st-18",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0020",
+      "lessonId": "lsn-02",
+      "studentId": "st-19",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0021",
+      "lessonId": "lsn-02",
+      "studentId": "st-08",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0022",
+      "lessonId": "lsn-02",
+      "studentId": "st-24",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0023",
+      "lessonId": "lsn-02",
+      "studentId": "st-20",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0024",
+      "lessonId": "lsn-02",
+      "studentId": "st-21",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0025",
+      "lessonId": "lsn-02",
+      "studentId": "st-22",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0026",
+      "lessonId": "lsn-02",
+      "studentId": "st-12",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0027",
+      "lessonId": "lsn-02",
+      "studentId": "st-15",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0028",
+      "lessonId": "lsn-02",
+      "studentId": "st-25",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0029",
+      "lessonId": "lsn-02",
+      "studentId": "st-26",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0030",
+      "lessonId": "lsn-02",
+      "studentId": "st-27",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0031",
+      "lessonId": "lsn-02",
+      "studentId": "st-28",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0032",
+      "lessonId": "lsn-02",
+      "studentId": "st-11",
+      "subjectId": "rus",
+      "date": "2024-09-03",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0033",
+      "lessonId": "lsn-03",
+      "studentId": "st-06",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0034",
+      "lessonId": "lsn-03",
+      "studentId": "st-14",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0035",
+      "lessonId": "lsn-03",
+      "studentId": "st-23",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0036",
+      "lessonId": "lsn-03",
+      "studentId": "st-17",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0037",
+      "lessonId": "lsn-03",
+      "studentId": "st-10",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0038",
+      "lessonId": "lsn-03",
+      "studentId": "st-01",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0039",
+      "lessonId": "lsn-03",
+      "studentId": "st-07",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0040",
+      "lessonId": "lsn-03",
+      "studentId": "st-02",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0041",
+      "lessonId": "lsn-03",
+      "studentId": "st-18",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0042",
+      "lessonId": "lsn-03",
+      "studentId": "st-19",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0043",
+      "lessonId": "lsn-03",
+      "studentId": "st-08",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0044",
+      "lessonId": "lsn-03",
+      "studentId": "st-24",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0045",
+      "lessonId": "lsn-03",
+      "studentId": "st-21",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0046",
+      "lessonId": "lsn-03",
+      "studentId": "st-22",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0047",
+      "lessonId": "lsn-03",
+      "studentId": "st-12",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0048",
+      "lessonId": "lsn-03",
+      "studentId": "st-15",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0049",
+      "lessonId": "lsn-03",
+      "studentId": "st-25",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0050",
+      "lessonId": "lsn-03",
+      "studentId": "st-26",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0051",
+      "lessonId": "lsn-03",
+      "studentId": "st-03",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0052",
+      "lessonId": "lsn-03",
+      "studentId": "st-05",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0053",
+      "lessonId": "lsn-03",
+      "studentId": "st-20",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0054",
+      "lessonId": "lsn-03",
+      "studentId": "st-28",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0055",
+      "lessonId": "lsn-03",
+      "studentId": "st-04",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0056",
+      "lessonId": "lsn-03",
+      "studentId": "st-27",
+      "subjectId": "phys",
+      "date": "2024-09-04",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0057",
+      "lessonId": "lsn-04",
+      "studentId": "st-06",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0058",
+      "lessonId": "lsn-04",
+      "studentId": "st-14",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0059",
+      "lessonId": "lsn-04",
+      "studentId": "st-23",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0060",
+      "lessonId": "lsn-04",
+      "studentId": "st-10",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0061",
+      "lessonId": "lsn-04",
+      "studentId": "st-01",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0062",
+      "lessonId": "lsn-04",
+      "studentId": "st-07",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0063",
+      "lessonId": "lsn-04",
+      "studentId": "st-03",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0064",
+      "lessonId": "lsn-04",
+      "studentId": "st-04",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0065",
+      "lessonId": "lsn-04",
+      "studentId": "st-05",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0066",
+      "lessonId": "lsn-04",
+      "studentId": "st-20",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0067",
+      "lessonId": "lsn-04",
+      "studentId": "st-27",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0068",
+      "lessonId": "lsn-04",
+      "studentId": "st-28",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0069",
+      "lessonId": "lsn-04",
+      "studentId": "st-02",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0070",
+      "lessonId": "lsn-04",
+      "studentId": "st-18",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0071",
+      "lessonId": "lsn-04",
+      "studentId": "st-19",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0072",
+      "lessonId": "lsn-04",
+      "studentId": "st-08",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0073",
+      "lessonId": "lsn-04",
+      "studentId": "st-24",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0074",
+      "lessonId": "lsn-04",
+      "studentId": "st-21",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0075",
+      "lessonId": "lsn-04",
+      "studentId": "st-22",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0076",
+      "lessonId": "lsn-04",
+      "studentId": "st-11",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0077",
+      "lessonId": "lsn-04",
+      "studentId": "st-12",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0078",
+      "lessonId": "lsn-04",
+      "studentId": "st-15",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0079",
+      "lessonId": "lsn-04",
+      "studentId": "st-25",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0080",
+      "lessonId": "lsn-04",
+      "studentId": "st-26",
+      "subjectId": "hist",
+      "date": "2024-09-05",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0081",
+      "lessonId": "lsn-05",
+      "studentId": "st-06",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0082",
+      "lessonId": "lsn-05",
+      "studentId": "st-23",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0083",
+      "lessonId": "lsn-05",
+      "studentId": "st-10",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0084",
+      "lessonId": "lsn-05",
+      "studentId": "st-01",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0085",
+      "lessonId": "lsn-05",
+      "studentId": "st-07",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0086",
+      "lessonId": "lsn-05",
+      "studentId": "st-04",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0087",
+      "lessonId": "lsn-05",
+      "studentId": "st-27",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0088",
+      "lessonId": "lsn-05",
+      "studentId": "st-02",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0089",
+      "lessonId": "lsn-05",
+      "studentId": "st-03",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0090",
+      "lessonId": "lsn-05",
+      "studentId": "st-05",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0091",
+      "lessonId": "lsn-05",
+      "studentId": "st-18",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0092",
+      "lessonId": "lsn-05",
+      "studentId": "st-19",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0093",
+      "lessonId": "lsn-05",
+      "studentId": "st-08",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0094",
+      "lessonId": "lsn-05",
+      "studentId": "st-24",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0095",
+      "lessonId": "lsn-05",
+      "studentId": "st-20",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0096",
+      "lessonId": "lsn-05",
+      "studentId": "st-21",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0097",
+      "lessonId": "lsn-05",
+      "studentId": "st-22",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0098",
+      "lessonId": "lsn-05",
+      "studentId": "st-11",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0099",
+      "lessonId": "lsn-05",
+      "studentId": "st-12",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0100",
+      "lessonId": "lsn-05",
+      "studentId": "st-15",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0101",
+      "lessonId": "lsn-05",
+      "studentId": "st-25",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0102",
+      "lessonId": "lsn-05",
+      "studentId": "st-26",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0103",
+      "lessonId": "lsn-05",
+      "studentId": "st-28",
+      "subjectId": "pe",
+      "date": "2024-09-06",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0104",
+      "lessonId": "lsn-06",
+      "studentId": "st-14",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0105",
+      "lessonId": "lsn-06",
+      "studentId": "st-23",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0106",
+      "lessonId": "lsn-06",
+      "studentId": "st-17",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0107",
+      "lessonId": "lsn-06",
+      "studentId": "st-10",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0108",
+      "lessonId": "lsn-06",
+      "studentId": "st-03",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0109",
+      "lessonId": "lsn-06",
+      "studentId": "st-05",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0110",
+      "lessonId": "lsn-06",
+      "studentId": "st-18",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0111",
+      "lessonId": "lsn-06",
+      "studentId": "st-19",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0112",
+      "lessonId": "lsn-06",
+      "studentId": "st-08",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0113",
+      "lessonId": "lsn-06",
+      "studentId": "st-24",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0114",
+      "lessonId": "lsn-06",
+      "studentId": "st-20",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0115",
+      "lessonId": "lsn-06",
+      "studentId": "st-11",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0116",
+      "lessonId": "lsn-06",
+      "studentId": "st-12",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0117",
+      "lessonId": "lsn-06",
+      "studentId": "st-15",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0118",
+      "lessonId": "lsn-06",
+      "studentId": "st-25",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0119",
+      "lessonId": "lsn-06",
+      "studentId": "st-26",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0120",
+      "lessonId": "lsn-06",
+      "studentId": "st-27",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0121",
+      "lessonId": "lsn-06",
+      "studentId": "st-28",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0122",
+      "lessonId": "lsn-06",
+      "studentId": "st-02",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0123",
+      "lessonId": "lsn-06",
+      "studentId": "st-04",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0124",
+      "lessonId": "lsn-06",
+      "studentId": "st-21",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0125",
+      "lessonId": "lsn-06",
+      "studentId": "st-22",
+      "subjectId": "math",
+      "date": "2024-09-09",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0126",
+      "lessonId": "lsn-07",
+      "studentId": "st-09",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0127",
+      "lessonId": "lsn-07",
+      "studentId": "st-14",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0128",
+      "lessonId": "lsn-07",
+      "studentId": "st-23",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0129",
+      "lessonId": "lsn-07",
+      "studentId": "st-17",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0130",
+      "lessonId": "lsn-07",
+      "studentId": "st-02",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0131",
+      "lessonId": "lsn-07",
+      "studentId": "st-04",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0132",
+      "lessonId": "lsn-07",
+      "studentId": "st-21",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0133",
+      "lessonId": "lsn-07",
+      "studentId": "st-22",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0134",
+      "lessonId": "lsn-07",
+      "studentId": "st-03",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0135",
+      "lessonId": "lsn-07",
+      "studentId": "st-05",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0136",
+      "lessonId": "lsn-07",
+      "studentId": "st-18",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0137",
+      "lessonId": "lsn-07",
+      "studentId": "st-19",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0138",
+      "lessonId": "lsn-07",
+      "studentId": "st-08",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0139",
+      "lessonId": "lsn-07",
+      "studentId": "st-24",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0140",
+      "lessonId": "lsn-07",
+      "studentId": "st-20",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0141",
+      "lessonId": "lsn-07",
+      "studentId": "st-12",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0142",
+      "lessonId": "lsn-07",
+      "studentId": "st-15",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0143",
+      "lessonId": "lsn-07",
+      "studentId": "st-25",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0144",
+      "lessonId": "lsn-07",
+      "studentId": "st-26",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0145",
+      "lessonId": "lsn-07",
+      "studentId": "st-27",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0146",
+      "lessonId": "lsn-07",
+      "studentId": "st-28",
+      "subjectId": "rus",
+      "date": "2024-09-10",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0147",
+      "lessonId": "lsn-08",
+      "studentId": "st-14",
+      "subjectId": "pe",
+      "date": "2024-09-11",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0148",
+      "lessonId": "lsn-08",
+      "studentId": "st-23",
+      "subjectId": "pe",
+      "date": "2024-09-11",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0149",
+      "lessonId": "lsn-08",
+      "studentId": "st-11",
+      "subjectId": "pe",
+      "date": "2024-09-11",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0150",
+      "lessonId": "lsn-08",
+      "studentId": "st-04",
+      "subjectId": "pe",
+      "date": "2024-09-11",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0151",
+      "lessonId": "lsn-08",
+      "studentId": "st-08",
+      "subjectId": "pe",
+      "date": "2024-09-11",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0152",
+      "lessonId": "lsn-08",
+      "studentId": "st-24",
+      "subjectId": "pe",
+      "date": "2024-09-11",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0153",
+      "lessonId": "lsn-08",
+      "studentId": "st-21",
+      "subjectId": "pe",
+      "date": "2024-09-11",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0154",
+      "lessonId": "lsn-08",
+      "studentId": "st-15",
+      "subjectId": "pe",
+      "date": "2024-09-11",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0155",
+      "lessonId": "lsn-09",
+      "studentId": "st-23",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0156",
+      "lessonId": "lsn-09",
+      "studentId": "st-17",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0157",
+      "lessonId": "lsn-09",
+      "studentId": "st-22",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0158",
+      "lessonId": "lsn-09",
+      "studentId": "st-02",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0159",
+      "lessonId": "lsn-09",
+      "studentId": "st-03",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0160",
+      "lessonId": "lsn-09",
+      "studentId": "st-05",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0161",
+      "lessonId": "lsn-09",
+      "studentId": "st-18",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0162",
+      "lessonId": "lsn-09",
+      "studentId": "st-19",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0163",
+      "lessonId": "lsn-09",
+      "studentId": "st-20",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0164",
+      "lessonId": "lsn-09",
+      "studentId": "st-11",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0165",
+      "lessonId": "lsn-09",
+      "studentId": "st-12",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0166",
+      "lessonId": "lsn-09",
+      "studentId": "st-25",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0167",
+      "lessonId": "lsn-09",
+      "studentId": "st-26",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0168",
+      "lessonId": "lsn-09",
+      "studentId": "st-27",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0169",
+      "lessonId": "lsn-09",
+      "studentId": "st-28",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0170",
+      "lessonId": "lsn-09",
+      "studentId": "st-04",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0171",
+      "lessonId": "lsn-09",
+      "studentId": "st-08",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0172",
+      "lessonId": "lsn-09",
+      "studentId": "st-24",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0173",
+      "lessonId": "lsn-09",
+      "studentId": "st-21",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0174",
+      "lessonId": "lsn-09",
+      "studentId": "st-15",
+      "subjectId": "hist",
+      "date": "2024-09-12",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0175",
+      "lessonId": "lsn-10",
+      "studentId": "st-09",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0176",
+      "lessonId": "lsn-10",
+      "studentId": "st-02",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0177",
+      "lessonId": "lsn-10",
+      "studentId": "st-03",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0178",
+      "lessonId": "lsn-10",
+      "studentId": "st-05",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0179",
+      "lessonId": "lsn-10",
+      "studentId": "st-18",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0180",
+      "lessonId": "lsn-10",
+      "studentId": "st-19",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0181",
+      "lessonId": "lsn-10",
+      "studentId": "st-20",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0182",
+      "lessonId": "lsn-10",
+      "studentId": "st-22",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0183",
+      "lessonId": "lsn-10",
+      "studentId": "st-11",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0184",
+      "lessonId": "lsn-10",
+      "studentId": "st-12",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0185",
+      "lessonId": "lsn-10",
+      "studentId": "st-25",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0186",
+      "lessonId": "lsn-10",
+      "studentId": "st-26",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0187",
+      "lessonId": "lsn-10",
+      "studentId": "st-27",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0188",
+      "lessonId": "lsn-10",
+      "studentId": "st-28",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0189",
+      "lessonId": "lsn-10",
+      "studentId": "st-04",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0190",
+      "lessonId": "lsn-10",
+      "studentId": "st-08",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0191",
+      "lessonId": "lsn-10",
+      "studentId": "st-24",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0192",
+      "lessonId": "lsn-10",
+      "studentId": "st-21",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0193",
+      "lessonId": "lsn-10",
+      "studentId": "st-15",
+      "subjectId": "pe",
+      "date": "2024-09-13",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0194",
+      "lessonId": "lsn-11",
+      "studentId": "st-09",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0195",
+      "lessonId": "lsn-11",
+      "studentId": "st-06",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0196",
+      "lessonId": "lsn-11",
+      "studentId": "st-23",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0197",
+      "lessonId": "lsn-11",
+      "studentId": "st-01",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0198",
+      "lessonId": "lsn-11",
+      "studentId": "st-07",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0199",
+      "lessonId": "lsn-11",
+      "studentId": "st-02",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0200",
+      "lessonId": "lsn-11",
+      "studentId": "st-03",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0201",
+      "lessonId": "lsn-11",
+      "studentId": "st-05",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0202",
+      "lessonId": "lsn-11",
+      "studentId": "st-18",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0203",
+      "lessonId": "lsn-11",
+      "studentId": "st-19",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0204",
+      "lessonId": "lsn-11",
+      "studentId": "st-20",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0205",
+      "lessonId": "lsn-11",
+      "studentId": "st-22",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0206",
+      "lessonId": "lsn-11",
+      "studentId": "st-11",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0207",
+      "lessonId": "lsn-11",
+      "studentId": "st-25",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0208",
+      "lessonId": "lsn-11",
+      "studentId": "st-26",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0209",
+      "lessonId": "lsn-11",
+      "studentId": "st-04",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0210",
+      "lessonId": "lsn-11",
+      "studentId": "st-08",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0211",
+      "lessonId": "lsn-11",
+      "studentId": "st-21",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0212",
+      "lessonId": "lsn-11",
+      "studentId": "st-12",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0213",
+      "lessonId": "lsn-11",
+      "studentId": "st-15",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0214",
+      "lessonId": "lsn-11",
+      "studentId": "st-28",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0215",
+      "lessonId": "lsn-11",
+      "studentId": "st-24",
+      "subjectId": "math",
+      "date": "2024-09-16",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0216",
+      "lessonId": "lsn-12",
+      "studentId": "st-06",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0217",
+      "lessonId": "lsn-12",
+      "studentId": "st-23",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0218",
+      "lessonId": "lsn-12",
+      "studentId": "st-01",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0219",
+      "lessonId": "lsn-12",
+      "studentId": "st-07",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0220",
+      "lessonId": "lsn-12",
+      "studentId": "st-12",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0221",
+      "lessonId": "lsn-12",
+      "studentId": "st-27",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0222",
+      "lessonId": "lsn-12",
+      "studentId": "st-28",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0223",
+      "lessonId": "lsn-12",
+      "studentId": "st-02",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0224",
+      "lessonId": "lsn-12",
+      "studentId": "st-03",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0225",
+      "lessonId": "lsn-12",
+      "studentId": "st-05",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0226",
+      "lessonId": "lsn-12",
+      "studentId": "st-18",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0227",
+      "lessonId": "lsn-12",
+      "studentId": "st-19",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0228",
+      "lessonId": "lsn-12",
+      "studentId": "st-24",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0229",
+      "lessonId": "lsn-12",
+      "studentId": "st-20",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0230",
+      "lessonId": "lsn-12",
+      "studentId": "st-22",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0231",
+      "lessonId": "lsn-12",
+      "studentId": "st-25",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0232",
+      "lessonId": "lsn-12",
+      "studentId": "st-26",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0233",
+      "lessonId": "lsn-12",
+      "studentId": "st-04",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0234",
+      "lessonId": "lsn-12",
+      "studentId": "st-08",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0235",
+      "lessonId": "lsn-12",
+      "studentId": "st-21",
+      "subjectId": "rus",
+      "date": "2024-09-17",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0236",
+      "lessonId": "lsn-13",
+      "studentId": "st-14",
+      "subjectId": "phys",
+      "date": "2024-09-18",
+      "teacher": "Дмитриев Д. К.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0237",
+      "lessonId": "lsn-13",
+      "studentId": "st-17",
+      "subjectId": "phys",
+      "date": "2024-09-18",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0238",
+      "lessonId": "lsn-13",
+      "studentId": "st-11",
+      "subjectId": "phys",
+      "date": "2024-09-18",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0239",
+      "lessonId": "lsn-13",
+      "studentId": "st-02",
+      "subjectId": "phys",
+      "date": "2024-09-18",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0240",
+      "lessonId": "lsn-13",
+      "studentId": "st-05",
+      "subjectId": "phys",
+      "date": "2024-09-18",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0241",
+      "lessonId": "lsn-13",
+      "studentId": "st-20",
+      "subjectId": "phys",
+      "date": "2024-09-18",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0242",
+      "lessonId": "lsn-13",
+      "studentId": "st-12",
+      "subjectId": "phys",
+      "date": "2024-09-18",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0243",
+      "lessonId": "lsn-14",
+      "studentId": "st-09",
+      "subjectId": "pe",
+      "date": "2024-09-19",
+      "teacher": "Новиков С. А.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0244",
+      "lessonId": "lsn-14",
+      "studentId": "st-23",
+      "subjectId": "pe",
+      "date": "2024-09-19",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0245",
+      "lessonId": "lsn-14",
+      "studentId": "st-17",
+      "subjectId": "pe",
+      "date": "2024-09-19",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0246",
+      "lessonId": "lsn-14",
+      "studentId": "st-10",
+      "subjectId": "pe",
+      "date": "2024-09-19",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0247",
+      "lessonId": "lsn-14",
+      "studentId": "st-27",
+      "subjectId": "pe",
+      "date": "2024-09-19",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0248",
+      "lessonId": "lsn-14",
+      "studentId": "st-03",
+      "subjectId": "pe",
+      "date": "2024-09-19",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0249",
+      "lessonId": "lsn-14",
+      "studentId": "st-18",
+      "subjectId": "pe",
+      "date": "2024-09-19",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0250",
+      "lessonId": "lsn-14",
+      "studentId": "st-19",
+      "subjectId": "pe",
+      "date": "2024-09-19",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0251",
+      "lessonId": "lsn-14",
+      "studentId": "st-22",
+      "subjectId": "pe",
+      "date": "2024-09-19",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0252",
+      "lessonId": "lsn-14",
+      "studentId": "st-11",
+      "subjectId": "pe",
+      "date": "2024-09-19",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0253",
+      "lessonId": "lsn-15",
+      "studentId": "st-06",
+      "subjectId": "pe",
+      "date": "2024-09-20",
+      "teacher": "Новиков С. А.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0254",
+      "lessonId": "lsn-15",
+      "studentId": "st-23",
+      "subjectId": "pe",
+      "date": "2024-09-20",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0255",
+      "lessonId": "lsn-15",
+      "studentId": "st-01",
+      "subjectId": "pe",
+      "date": "2024-09-20",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0256",
+      "lessonId": "lsn-16",
+      "studentId": "st-23",
+      "subjectId": "math",
+      "date": "2024-09-23",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0257",
+      "lessonId": "lsn-17",
+      "studentId": "st-23",
+      "subjectId": "rus",
+      "date": "2024-09-24",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0258",
+      "lessonId": "lsn-18",
+      "studentId": "st-17",
+      "subjectId": "phys",
+      "date": "2024-09-25",
+      "teacher": "Дмитриев Д. К.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0259",
+      "lessonId": "lsn-18",
+      "studentId": "st-07",
+      "subjectId": "phys",
+      "date": "2024-09-25",
+      "teacher": "Дмитриев Д. К.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0260",
+      "lessonId": "lsn-20",
+      "studentId": "st-23",
+      "subjectId": "pe",
+      "date": "2024-09-27",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0261",
+      "lessonId": "lsn-21",
+      "studentId": "st-23",
+      "subjectId": "math",
+      "date": "2024-09-30",
+      "teacher": "Козлов А. П.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0262",
+      "lessonId": "lsn-21",
+      "studentId": "st-10",
+      "subjectId": "math",
+      "date": "2024-09-30",
+      "teacher": "Козлов А. П.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0263",
+      "lessonId": "lsn-22",
+      "studentId": "st-09",
+      "subjectId": "rus",
+      "date": "2024-10-01",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0264",
+      "lessonId": "lsn-22",
+      "studentId": "st-23",
+      "subjectId": "rus",
+      "date": "2024-10-01",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0265",
+      "lessonId": "lsn-22",
+      "studentId": "st-16",
+      "subjectId": "rus",
+      "date": "2024-10-01",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0266",
+      "lessonId": "lsn-23",
+      "studentId": "st-17",
+      "subjectId": "phys",
+      "date": "2024-10-02",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0267",
+      "lessonId": "lsn-23",
+      "studentId": "st-16",
+      "subjectId": "phys",
+      "date": "2024-10-02",
+      "teacher": "Дмитриев Д. К.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0268",
+      "lessonId": "lsn-24",
+      "studentId": "st-09",
+      "subjectId": "hist",
+      "date": "2024-10-03",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0269",
+      "lessonId": "lsn-24",
+      "studentId": "st-10",
+      "subjectId": "hist",
+      "date": "2024-10-03",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0270",
+      "lessonId": "lsn-24",
+      "studentId": "st-16",
+      "subjectId": "hist",
+      "date": "2024-10-03",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0271",
+      "lessonId": "lsn-25",
+      "studentId": "st-23",
+      "subjectId": "pe",
+      "date": "2024-10-04",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0272",
+      "lessonId": "lsn-25",
+      "studentId": "st-17",
+      "subjectId": "pe",
+      "date": "2024-10-04",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0273",
+      "lessonId": "lsn-25",
+      "studentId": "st-16",
+      "subjectId": "pe",
+      "date": "2024-10-04",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0274",
+      "lessonId": "lsn-26",
+      "studentId": "st-16",
+      "subjectId": "math",
+      "date": "2024-10-07",
+      "teacher": "Козлов А. П.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0275",
+      "lessonId": "lsn-27",
+      "studentId": "st-16",
+      "subjectId": "rus",
+      "date": "2024-10-08",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0276",
+      "lessonId": "lsn-28",
+      "studentId": "st-23",
+      "subjectId": "pe",
+      "date": "2024-10-09",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0277",
+      "lessonId": "lsn-28",
+      "studentId": "st-16",
+      "subjectId": "pe",
+      "date": "2024-10-09",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0278",
+      "lessonId": "lsn-29",
+      "studentId": "st-23",
+      "subjectId": "pe",
+      "date": "2024-10-10",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0279",
+      "lessonId": "lsn-29",
+      "studentId": "st-16",
+      "subjectId": "pe",
+      "date": "2024-10-10",
+      "teacher": "Новиков С. А.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0280",
+      "lessonId": "lsn-30",
+      "studentId": "st-23",
+      "subjectId": "pe",
+      "date": "2024-10-11",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0281",
+      "lessonId": "lsn-33",
+      "studentId": "st-17",
+      "subjectId": "phys",
+      "date": "2024-10-16",
+      "teacher": "Дмитриев Д. К.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0282",
+      "lessonId": "lsn-34",
+      "studentId": "st-23",
+      "subjectId": "pe",
+      "date": "2024-10-17",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0283",
+      "lessonId": "lsn-35",
+      "studentId": "st-23",
+      "subjectId": "pe",
+      "date": "2024-10-18",
+      "teacher": "Новиков С. А.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0284",
+      "lessonId": "lsn-36",
+      "studentId": "st-09",
+      "subjectId": "math",
+      "date": "2024-10-21",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0285",
+      "lessonId": "lsn-36",
+      "studentId": "st-06",
+      "subjectId": "math",
+      "date": "2024-10-21",
+      "teacher": "Козлов А. П.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0286",
+      "lessonId": "lsn-36",
+      "studentId": "st-14",
+      "subjectId": "math",
+      "date": "2024-10-21",
+      "teacher": "Козлов А. П.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0287",
+      "lessonId": "lsn-36",
+      "studentId": "st-17",
+      "subjectId": "math",
+      "date": "2024-10-21",
+      "teacher": "Козлов А. П.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0288",
+      "lessonId": "lsn-36",
+      "studentId": "st-10",
+      "subjectId": "math",
+      "date": "2024-10-21",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0289",
+      "lessonId": "lsn-36",
+      "studentId": "st-16",
+      "subjectId": "math",
+      "date": "2024-10-21",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0290",
+      "lessonId": "lsn-36",
+      "studentId": "st-01",
+      "subjectId": "math",
+      "date": "2024-10-21",
+      "teacher": "Козлов А. П.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0291",
+      "lessonId": "lsn-36",
+      "studentId": "st-07",
+      "subjectId": "math",
+      "date": "2024-10-21",
+      "teacher": "Козлов А. П.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0292",
+      "lessonId": "lsn-36",
+      "studentId": "st-02",
+      "subjectId": "math",
+      "date": "2024-10-21",
+      "teacher": "Козлов А. П.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0293",
+      "lessonId": "lsn-37",
+      "studentId": "st-09",
+      "subjectId": "rus",
+      "date": "2024-10-22",
+      "teacher": "Иванова Е. С.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0294",
+      "lessonId": "lsn-37",
+      "studentId": "st-10",
+      "subjectId": "rus",
+      "date": "2024-10-22",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0295",
+      "lessonId": "lsn-37",
+      "studentId": "st-16",
+      "subjectId": "rus",
+      "date": "2024-10-22",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0296",
+      "lessonId": "lsn-37",
+      "studentId": "st-01",
+      "subjectId": "rus",
+      "date": "2024-10-22",
+      "teacher": "Иванова Е. С.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0297",
+      "lessonId": "lsn-37",
+      "studentId": "st-07",
+      "subjectId": "rus",
+      "date": "2024-10-22",
+      "teacher": "Иванова Е. С.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0298",
+      "lessonId": "lsn-38",
+      "studentId": "st-06",
+      "subjectId": "hist",
+      "date": "2024-10-23",
+      "teacher": "Смирнова М. В.",
+      "value": 4,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0299",
+      "lessonId": "lsn-38",
+      "studentId": "st-14",
+      "subjectId": "hist",
+      "date": "2024-10-23",
+      "teacher": "Смирнова М. В.",
+      "value": 3,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0300",
+      "lessonId": "lsn-38",
+      "studentId": "st-01",
+      "subjectId": "hist",
+      "date": "2024-10-23",
+      "teacher": "Смирнова М. В.",
+      "value": 5,
+      "periodId": "q1_2024"
+    },
+    {
+      "id": "grd-0301",
+      "lessonId": "lsn-39",
       "studentId": "st-13",
       "subjectId": "math",
       "date": "2024-10-24",
+      "teacher": "Козлов А. П.",
       "value": 5,
-      "id": "grd-0001",
-      "teacher": "Козлов А. П.",
       "periodId": "q1_2024"
     },
     {
-      "studentId": "st-09",
-      "subjectId": "math",
-      "date": "2024-09-09",
-      "value": 4,
-      "id": "grd-0002",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-09",
-      "subjectId": "rus",
-      "date": "2024-09-17",
-      "value": 4,
-      "id": "grd-0003",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-09",
-      "subjectId": "phys",
-      "date": "2024-09-25",
-      "value": 4,
-      "id": "grd-0004",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-09",
-      "subjectId": "hist",
-      "date": "2024-10-03",
-      "value": 4,
-      "id": "grd-0005",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-09",
-      "subjectId": "pe",
-      "date": "2024-10-09",
-      "value": 3,
-      "id": "grd-0006",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-09",
-      "subjectId": "math",
-      "date": "2024-10-14",
-      "value": 4,
-      "id": "grd-0007",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-09",
-      "subjectId": "rus",
-      "date": "2024-10-18",
-      "value": 4,
-      "id": "grd-0008",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-09",
-      "subjectId": "hist",
-      "date": "2024-10-22",
-      "value": 4,
-      "id": "grd-0009",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-09",
+      "id": "grd-0302",
+      "lessonId": "lsn-39",
+      "studentId": "st-01",
       "subjectId": "math",
       "date": "2024-10-24",
-      "value": 3,
-      "id": "grd-0010",
       "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-06",
-      "subjectId": "math",
-      "date": "2024-09-04",
-      "value": 3,
-      "id": "grd-0011",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-06",
-      "subjectId": "rus",
-      "date": "2024-09-12",
-      "value": 3,
-      "id": "grd-0012",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-06",
-      "subjectId": "phys",
-      "date": "2024-09-20",
-      "value": 3,
-      "id": "grd-0013",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-06",
-      "subjectId": "hist",
-      "date": "2024-09-27",
       "value": 4,
-      "id": "grd-0014",
-      "teacher": "Смирнова М. В.",
       "periodId": "q1_2024"
     },
     {
-      "studentId": "st-06",
-      "subjectId": "pe",
-      "date": "2024-10-04",
-      "value": 4,
-      "id": "grd-0015",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-06",
-      "subjectId": "math",
-      "date": "2024-10-10",
-      "value": 3,
-      "id": "grd-0016",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-06",
-      "subjectId": "rus",
-      "date": "2024-10-15",
-      "value": 3,
-      "id": "grd-0017",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-06",
-      "subjectId": "phys",
-      "date": "2024-10-18",
-      "value": 3,
-      "id": "grd-0018",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-06",
-      "subjectId": "math",
-      "date": "2024-10-22",
-      "value": 3,
-      "id": "grd-0019",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-06",
-      "subjectId": "hist",
-      "date": "2024-10-24",
-      "value": 4,
-      "id": "grd-0020",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-14",
-      "subjectId": "math",
-      "date": "2024-09-06",
-      "value": 3,
-      "id": "grd-0021",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-14",
-      "subjectId": "rus",
-      "date": "2024-09-13",
-      "value": 3,
-      "id": "grd-0022",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-14",
-      "subjectId": "phys",
-      "date": "2024-09-19",
-      "value": 3,
-      "id": "grd-0023",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-14",
-      "subjectId": "hist",
-      "date": "2024-09-26",
-      "value": 3,
-      "id": "grd-0024",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-14",
-      "subjectId": "pe",
-      "date": "2024-10-02",
-      "value": 4,
-      "id": "grd-0025",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-14",
-      "subjectId": "math",
-      "date": "2024-10-08",
-      "value": 3,
-      "id": "grd-0026",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-14",
-      "subjectId": "rus",
-      "date": "2024-10-11",
-      "value": 3,
-      "id": "grd-0027",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-14",
-      "subjectId": "phys",
-      "date": "2024-10-16",
-      "value": 3,
-      "id": "grd-0028",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-14",
-      "subjectId": "math",
-      "date": "2024-10-23",
-      "value": 3,
-      "id": "grd-0029",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-14",
-      "subjectId": "hist",
-      "date": "2024-10-24",
-      "value": 3,
-      "id": "grd-0030",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-17",
-      "subjectId": "phys",
-      "date": "2024-09-04",
-      "value": 3,
-      "id": "grd-0031",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-17",
-      "subjectId": "phys",
-      "date": "2024-09-18",
-      "value": 4,
-      "id": "grd-0032",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-17",
-      "subjectId": "phys",
-      "date": "2024-10-02",
-      "value": 3,
-      "id": "grd-0033",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-17",
-      "subjectId": "phys",
-      "date": "2024-10-09",
-      "value": 4,
-      "id": "grd-0034",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-17",
-      "subjectId": "phys",
-      "date": "2024-10-16",
-      "value": 3,
-      "id": "grd-0035",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-17",
-      "subjectId": "math",
-      "date": "2024-09-10",
-      "value": 4,
-      "id": "grd-0036",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-17",
-      "subjectId": "rus",
-      "date": "2024-09-24",
-      "value": 5,
-      "id": "grd-0037",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-17",
-      "subjectId": "hist",
-      "date": "2024-10-08",
-      "value": 4,
-      "id": "grd-0038",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-17",
-      "subjectId": "pe",
-      "date": "2024-10-15",
-      "value": 5,
-      "id": "grd-0039",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-17",
-      "subjectId": "rus",
-      "date": "2024-10-18",
-      "value": 5,
-      "id": "grd-0040",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-17",
-      "subjectId": "hist",
-      "date": "2024-10-21",
-      "value": 5,
-      "id": "grd-0041",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-10",
-      "subjectId": "math",
-      "date": "2024-09-11",
-      "value": 3,
-      "id": "grd-0042",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-10",
-      "subjectId": "math",
-      "date": "2024-10-09",
-      "value": 4,
-      "id": "grd-0043",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-10",
-      "subjectId": "rus",
-      "date": "2024-09-05",
-      "value": 4,
-      "id": "grd-0044",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-10",
-      "subjectId": "phys",
-      "date": "2024-09-19",
-      "value": 4,
-      "id": "grd-0045",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-10",
-      "subjectId": "hist",
-      "date": "2024-10-03",
-      "value": 4,
-      "id": "grd-0046",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-10",
-      "subjectId": "pe",
-      "date": "2024-10-10",
-      "value": 5,
-      "id": "grd-0047",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-10",
-      "subjectId": "rus",
-      "date": "2024-10-17",
-      "value": 4,
-      "id": "grd-0048",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-10",
-      "subjectId": "hist",
-      "date": "2024-10-18",
-      "value": 4,
-      "id": "grd-0049",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-10",
-      "subjectId": "phys",
-      "date": "2024-10-22",
-      "value": 4,
-      "id": "grd-0050",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-10",
-      "subjectId": "pe",
-      "date": "2024-10-24",
-      "value": 5,
-      "id": "grd-0051",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-16",
-      "subjectId": "math",
-      "date": "2024-10-02",
-      "value": 4,
-      "id": "grd-0052",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-16",
-      "subjectId": "rus",
-      "date": "2024-10-04",
-      "value": 4,
-      "id": "grd-0053",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-16",
-      "subjectId": "phys",
-      "date": "2024-10-08",
-      "value": 4,
-      "id": "grd-0054",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-16",
-      "subjectId": "hist",
-      "date": "2024-10-10",
-      "value": 5,
-      "id": "grd-0055",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-16",
-      "subjectId": "pe",
-      "date": "2024-10-11",
-      "value": 5,
-      "id": "grd-0056",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-16",
-      "subjectId": "math",
-      "date": "2024-10-15",
-      "value": 4,
-      "id": "grd-0057",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-16",
-      "subjectId": "rus",
-      "date": "2024-10-17",
-      "value": 4,
-      "id": "grd-0058",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-16",
-      "subjectId": "phys",
-      "date": "2024-10-18",
-      "value": 4,
-      "id": "grd-0059",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-16",
-      "subjectId": "hist",
-      "date": "2024-10-21",
-      "value": 4,
-      "id": "grd-0060",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-16",
-      "subjectId": "math",
-      "date": "2024-10-23",
-      "value": 4,
-      "id": "grd-0061",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
+      "id": "grd-0303",
+      "lessonId": "lsn-40",
       "studentId": "st-16",
       "subjectId": "pe",
       "date": "2024-10-25",
-      "value": 4,
-      "id": "grd-0062",
       "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-01",
-      "subjectId": "math",
-      "date": "2024-09-04",
-      "value": 5,
-      "id": "grd-0063",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-01",
-      "subjectId": "rus",
-      "date": "2024-09-11",
-      "value": 5,
-      "id": "grd-0064",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-01",
-      "subjectId": "phys",
-      "date": "2024-09-18",
-      "value": 5,
-      "id": "grd-0065",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-01",
-      "subjectId": "hist",
-      "date": "2024-09-25",
-      "value": 5,
-      "id": "grd-0066",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-01",
-      "subjectId": "pe",
-      "date": "2024-10-02",
-      "value": 5,
-      "id": "grd-0067",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-01",
-      "subjectId": "math",
-      "date": "2024-10-09",
-      "value": 5,
-      "id": "grd-0068",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-01",
-      "subjectId": "rus",
-      "date": "2024-10-16",
-      "value": 5,
-      "id": "grd-0069",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-01",
-      "subjectId": "phys",
-      "date": "2024-10-18",
       "value": 4,
-      "id": "grd-0070",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-01",
-      "subjectId": "hist",
-      "date": "2024-10-21",
-      "value": 5,
-      "id": "grd-0071",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-01",
-      "subjectId": "pe",
-      "date": "2024-10-22",
-      "value": 5,
-      "id": "grd-0072",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-01",
-      "subjectId": "math",
-      "date": "2024-10-23",
-      "value": 5,
-      "id": "grd-0073",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-01",
-      "subjectId": "rus",
-      "date": "2024-10-24",
-      "value": 4,
-      "id": "grd-0074",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-07",
-      "subjectId": "math",
-      "date": "2024-09-05",
-      "value": 4,
-      "id": "grd-0075",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-07",
-      "subjectId": "rus",
-      "date": "2024-09-12",
-      "value": 4,
-      "id": "grd-0076",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-07",
-      "subjectId": "phys",
-      "date": "2024-09-19",
-      "value": 4,
-      "id": "grd-0077",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-07",
-      "subjectId": "hist",
-      "date": "2024-09-26",
-      "value": 4,
-      "id": "grd-0078",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-07",
-      "subjectId": "pe",
-      "date": "2024-10-03",
-      "value": 5,
-      "id": "grd-0079",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-07",
-      "subjectId": "math",
-      "date": "2024-10-10",
-      "value": 4,
-      "id": "grd-0080",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-07",
-      "subjectId": "rus",
-      "date": "2024-10-17",
-      "value": 4,
-      "id": "grd-0081",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-07",
-      "subjectId": "phys",
-      "date": "2024-10-18",
-      "value": 3,
-      "id": "grd-0082",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-07",
-      "subjectId": "hist",
-      "date": "2024-10-22",
-      "value": 4,
-      "id": "grd-0083",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-07",
-      "subjectId": "pe",
-      "date": "2024-10-24",
-      "value": 4,
-      "id": "grd-0084",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "math",
-      "date": "2024-09-04",
-      "value": 3,
-      "id": "grd-0085",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "math",
-      "date": "2024-09-18",
-      "value": 3,
-      "id": "grd-0086",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "math",
-      "date": "2024-09-25",
-      "value": 3,
-      "id": "grd-0087",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "math",
-      "date": "2024-10-09",
-      "value": 4,
-      "id": "grd-0088",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "math",
-      "date": "2024-10-16",
-      "value": 3,
-      "id": "grd-0089",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "rus",
-      "date": "2024-09-06",
-      "value": 5,
-      "id": "grd-0090",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "rus",
-      "date": "2024-09-13",
-      "value": 5,
-      "id": "grd-0091",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "rus",
-      "date": "2024-09-27",
-      "value": 4,
-      "id": "grd-0092",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "rus",
-      "date": "2024-10-04",
-      "value": 5,
-      "id": "grd-0093",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "rus",
-      "date": "2024-10-18",
-      "value": 4,
-      "id": "grd-0094",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "phys",
-      "date": "2024-09-11",
-      "value": 4,
-      "id": "grd-0095",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "hist",
-      "date": "2024-09-20",
-      "value": 5,
-      "id": "grd-0096",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "hist",
-      "date": "2024-10-11",
-      "value": 4,
-      "id": "grd-0097",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "pe",
-      "date": "2024-09-02",
-      "value": 5,
-      "id": "grd-0098",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "pe",
-      "date": "2024-09-05",
-      "value": 5,
-      "id": "grd-0099",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "pe",
-      "date": "2024-09-09",
-      "value": 5,
-      "id": "grd-0100",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "pe",
-      "date": "2024-09-12",
-      "value": 5,
-      "id": "grd-0101",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "pe",
-      "date": "2024-09-16",
-      "value": 5,
-      "id": "grd-0102",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "pe",
-      "date": "2024-09-19",
-      "value": 5,
-      "id": "grd-0103",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "pe",
-      "date": "2024-09-23",
-      "value": 5,
-      "id": "grd-0104",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "pe",
-      "date": "2024-09-26",
-      "value": 5,
-      "id": "grd-0105",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "pe",
-      "date": "2024-09-30",
-      "value": 5,
-      "id": "grd-0106",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "pe",
-      "date": "2024-10-03",
-      "value": 5,
-      "id": "grd-0107",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "pe",
-      "date": "2024-10-07",
-      "value": 5,
-      "id": "grd-0108",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "pe",
-      "date": "2024-10-10",
-      "value": 5,
-      "id": "grd-0109",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "pe",
-      "date": "2024-10-14",
-      "value": 5,
-      "id": "grd-0110",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-23",
-      "subjectId": "pe",
-      "date": "2024-10-17",
-      "value": 5,
-      "id": "grd-0111",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-15",
-      "subjectId": "pe",
-      "date": "2024-10-21",
-      "value": 5,
-      "id": "grd-0112",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-02",
-      "subjectId": "math",
-      "date": "2024-09-02",
-      "value": 4,
-      "id": "grd-0113",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-03",
-      "subjectId": "rus",
-      "date": "2024-09-03",
-      "value": 4,
-      "id": "grd-0114",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-04",
-      "subjectId": "phys",
-      "date": "2024-09-04",
-      "value": 4,
-      "id": "grd-0115",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-05",
-      "subjectId": "hist",
-      "date": "2024-09-05",
-      "value": 4,
-      "id": "grd-0116",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-18",
-      "subjectId": "pe",
-      "date": "2024-09-06",
-      "value": 4,
-      "id": "grd-0117",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-19",
-      "subjectId": "math",
-      "date": "2024-09-09",
-      "value": 4,
-      "id": "grd-0118",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-08",
-      "subjectId": "pe",
-      "date": "2024-09-10",
-      "value": 5,
-      "id": "grd-0119",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-24",
-      "subjectId": "hist",
-      "date": "2024-09-11",
-      "value": 5,
-      "id": "grd-0120",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-20",
-      "subjectId": "hist",
-      "date": "2024-09-12",
-      "value": 4,
-      "id": "grd-0121",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-21",
-      "subjectId": "pe",
-      "date": "2024-09-13",
-      "value": 5,
-      "id": "grd-0122",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-22",
-      "subjectId": "math",
-      "date": "2024-09-16",
-      "value": 4,
-      "id": "grd-0123",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-11",
-      "subjectId": "rus",
-      "date": "2024-09-17",
-      "value": 4,
-      "id": "grd-0124",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-12",
-      "subjectId": "phys",
-      "date": "2024-09-18",
-      "value": 4,
-      "id": "grd-0125",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-15",
-      "subjectId": "hist",
-      "date": "2024-09-19",
-      "value": 5,
-      "id": "grd-0126",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-25",
-      "subjectId": "pe",
-      "date": "2024-09-20",
-      "value": 4,
-      "id": "grd-0127",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-26",
-      "subjectId": "math",
-      "date": "2024-09-23",
-      "value": 4,
-      "id": "grd-0128",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-27",
-      "subjectId": "rus",
-      "date": "2024-09-24",
-      "value": 4,
-      "id": "grd-0129",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-28",
-      "subjectId": "rus",
-      "date": "2024-09-25",
-      "value": 5,
-      "id": "grd-0130",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-02",
-      "subjectId": "hist",
-      "date": "2024-09-26",
-      "value": 4,
-      "id": "grd-0131",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-03",
-      "subjectId": "pe",
-      "date": "2024-09-27",
-      "value": 4,
-      "id": "grd-0132",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-04",
-      "subjectId": "math",
-      "date": "2024-09-30",
-      "value": 4,
-      "id": "grd-0133",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-05",
-      "subjectId": "pe",
-      "date": "2024-10-01",
-      "value": 5,
-      "id": "grd-0134",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-18",
-      "subjectId": "phys",
-      "date": "2024-10-02",
-      "value": 4,
-      "id": "grd-0135",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-19",
-      "subjectId": "rus",
-      "date": "2024-10-03",
-      "value": 5,
-      "id": "grd-0136",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-08",
-      "subjectId": "pe",
-      "date": "2024-10-04",
-      "value": 4,
-      "id": "grd-0137",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-24",
-      "subjectId": "hist",
-      "date": "2024-10-07",
-      "value": 5,
-      "id": "grd-0138",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-20",
-      "subjectId": "rus",
-      "date": "2024-10-08",
-      "value": 4,
-      "id": "grd-0139",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-21",
-      "subjectId": "phys",
-      "date": "2024-10-09",
-      "value": 4,
-      "id": "grd-0140",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-22",
-      "subjectId": "hist",
-      "date": "2024-10-10",
-      "value": 4,
-      "id": "grd-0141",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-11",
-      "subjectId": "pe",
-      "date": "2024-10-11",
-      "value": 4,
-      "id": "grd-0142",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-12",
-      "subjectId": "math",
-      "date": "2024-10-14",
-      "value": 4,
-      "id": "grd-0143",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-15",
-      "subjectId": "rus",
-      "date": "2024-10-15",
-      "value": 4,
-      "id": "grd-0144",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-25",
-      "subjectId": "rus",
-      "date": "2024-10-16",
-      "value": 5,
-      "id": "grd-0145",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-26",
-      "subjectId": "hist",
-      "date": "2024-10-17",
-      "value": 4,
-      "id": "grd-0146",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-27",
-      "subjectId": "pe",
-      "date": "2024-10-18",
-      "value": 4,
-      "id": "grd-0147",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-28",
-      "subjectId": "math",
-      "date": "2024-09-02",
-      "value": 4,
-      "id": "grd-0148",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-02",
-      "subjectId": "rus",
-      "date": "2024-09-03",
-      "value": 4,
-      "id": "grd-0149",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-03",
-      "subjectId": "hist",
-      "date": "2024-09-04",
-      "value": 5,
-      "id": "grd-0150",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-04",
-      "subjectId": "hist",
-      "date": "2024-09-05",
-      "value": 4,
-      "id": "grd-0151",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-05",
-      "subjectId": "pe",
-      "date": "2024-09-06",
-      "value": 4,
-      "id": "grd-0152",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-18",
-      "subjectId": "hist",
-      "date": "2024-09-09",
-      "value": 5,
-      "id": "grd-0153",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-19",
-      "subjectId": "rus",
-      "date": "2024-09-10",
-      "value": 4,
-      "id": "grd-0154",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-08",
-      "subjectId": "phys",
-      "date": "2024-09-11",
-      "value": 4,
-      "id": "grd-0155",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-24",
-      "subjectId": "hist",
-      "date": "2024-09-12",
-      "value": 5,
-      "id": "grd-0156",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-20",
-      "subjectId": "pe",
-      "date": "2024-09-13",
-      "value": 4,
-      "id": "grd-0157",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-21",
-      "subjectId": "math",
-      "date": "2024-09-16",
-      "value": 4,
-      "id": "grd-0158",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-22",
-      "subjectId": "hist",
-      "date": "2024-09-17",
-      "value": 5,
-      "id": "grd-0159",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-11",
-      "subjectId": "phys",
-      "date": "2024-09-18",
-      "value": 4,
-      "id": "grd-0160",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-12",
-      "subjectId": "hist",
-      "date": "2024-09-19",
-      "value": 4,
-      "id": "grd-0161",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-15",
-      "subjectId": "pe",
-      "date": "2024-09-20",
-      "value": 4,
-      "id": "grd-0162",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-25",
-      "subjectId": "math",
-      "date": "2024-09-23",
-      "value": 4,
-      "id": "grd-0163",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-26",
-      "subjectId": "rus",
-      "date": "2024-09-24",
-      "value": 4,
-      "id": "grd-0164",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-27",
-      "subjectId": "hist",
-      "date": "2024-09-25",
-      "value": 5,
-      "id": "grd-0165",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-28",
-      "subjectId": "hist",
-      "date": "2024-09-26",
-      "value": 4,
-      "id": "grd-0166",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-02",
-      "subjectId": "pe",
-      "date": "2024-09-27",
-      "value": 4,
-      "id": "grd-0167",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-03",
-      "subjectId": "hist",
-      "date": "2024-09-30",
-      "value": 5,
-      "id": "grd-0168",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-04",
-      "subjectId": "rus",
-      "date": "2024-10-01",
-      "value": 5,
-      "id": "grd-0169",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-05",
-      "subjectId": "pe",
-      "date": "2024-10-02",
-      "value": 5,
-      "id": "grd-0170",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-18",
-      "subjectId": "hist",
-      "date": "2024-10-03",
-      "value": 4,
-      "id": "grd-0171",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-19",
-      "subjectId": "rus",
-      "date": "2024-10-04",
-      "value": 5,
-      "id": "grd-0172",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-08",
-      "subjectId": "math",
-      "date": "2024-10-07",
-      "value": 4,
-      "id": "grd-0173",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-24",
-      "subjectId": "hist",
-      "date": "2024-10-08",
-      "value": 5,
-      "id": "grd-0174",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-20",
-      "subjectId": "phys",
-      "date": "2024-10-09",
-      "value": 4,
-      "id": "grd-0175",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-21",
-      "subjectId": "hist",
-      "date": "2024-10-10",
-      "value": 4,
-      "id": "grd-0176",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-22",
-      "subjectId": "pe",
-      "date": "2024-10-11",
-      "value": 4,
-      "id": "grd-0177",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-11",
-      "subjectId": "math",
-      "date": "2024-10-14",
-      "value": 4,
-      "id": "grd-0178",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-12",
-      "subjectId": "rus",
-      "date": "2024-10-15",
-      "value": 4,
-      "id": "grd-0179",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-15",
-      "subjectId": "hist",
-      "date": "2024-10-16",
-      "value": 5,
-      "id": "grd-0180",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-25",
-      "subjectId": "hist",
-      "date": "2024-10-17",
-      "value": 4,
-      "id": "grd-0181",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-26",
-      "subjectId": "pe",
-      "date": "2024-10-18",
-      "value": 4,
-      "id": "grd-0182",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-27",
-      "subjectId": "math",
-      "date": "2024-09-02",
-      "value": 4,
-      "id": "grd-0183",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-28",
-      "subjectId": "rus",
-      "date": "2024-09-03",
-      "value": 4,
-      "id": "grd-0184",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-02",
-      "subjectId": "phys",
-      "date": "2024-09-04",
-      "value": 4,
-      "id": "grd-0185",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-03",
-      "subjectId": "hist",
-      "date": "2024-09-05",
-      "value": 4,
-      "id": "grd-0186",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-04",
-      "subjectId": "pe",
-      "date": "2024-09-06",
-      "value": 4,
-      "id": "grd-0187",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-05",
-      "subjectId": "math",
-      "date": "2024-09-09",
-      "value": 4,
-      "id": "grd-0188",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-18",
-      "subjectId": "rus",
-      "date": "2024-09-10",
-      "value": 4,
-      "id": "grd-0189",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-19",
-      "subjectId": "phys",
-      "date": "2024-09-11",
-      "value": 4,
-      "id": "grd-0190",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-08",
-      "subjectId": "hist",
-      "date": "2024-09-12",
-      "value": 4,
-      "id": "grd-0191",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-24",
-      "subjectId": "pe",
-      "date": "2024-09-13",
-      "value": 4,
-      "id": "grd-0192",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-20",
-      "subjectId": "math",
-      "date": "2024-09-16",
-      "value": 4,
-      "id": "grd-0193",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-21",
-      "subjectId": "rus",
-      "date": "2024-09-17",
-      "value": 4,
-      "id": "grd-0194",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-22",
-      "subjectId": "phys",
-      "date": "2024-09-18",
-      "value": 4,
-      "id": "grd-0195",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-11",
-      "subjectId": "hist",
-      "date": "2024-09-19",
-      "value": 4,
-      "id": "grd-0196",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-12",
-      "subjectId": "pe",
-      "date": "2024-09-20",
-      "value": 4,
-      "id": "grd-0197",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-15",
-      "subjectId": "math",
-      "date": "2024-09-23",
-      "value": 4,
-      "id": "grd-0198",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-25",
-      "subjectId": "rus",
-      "date": "2024-09-24",
-      "value": 5,
-      "id": "grd-0199",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-26",
-      "subjectId": "phys",
-      "date": "2024-09-25",
-      "value": 4,
-      "id": "grd-0200",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-27",
-      "subjectId": "hist",
-      "date": "2024-09-26",
-      "value": 4,
-      "id": "grd-0201",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-28",
-      "subjectId": "rus",
-      "date": "2024-09-27",
-      "value": 5,
-      "id": "grd-0202",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-02",
-      "subjectId": "math",
-      "date": "2024-09-30",
-      "value": 4,
-      "id": "grd-0203",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-03",
-      "subjectId": "rus",
-      "date": "2024-10-01",
-      "value": 4,
-      "id": "grd-0204",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-04",
-      "subjectId": "phys",
-      "date": "2024-10-02",
-      "value": 4,
-      "id": "grd-0205",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-05",
-      "subjectId": "hist",
-      "date": "2024-10-03",
-      "value": 4,
-      "id": "grd-0206",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-18",
-      "subjectId": "pe",
-      "date": "2024-10-04",
-      "value": 4,
-      "id": "grd-0207",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-19",
-      "subjectId": "math",
-      "date": "2024-10-07",
-      "value": 4,
-      "id": "grd-0208",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-08",
-      "subjectId": "rus",
-      "date": "2024-10-08",
-      "value": 4,
-      "id": "grd-0209",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-24",
-      "subjectId": "phys",
-      "date": "2024-10-09",
-      "value": 4,
-      "id": "grd-0210",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-20",
-      "subjectId": "hist",
-      "date": "2024-10-10",
-      "value": 4,
-      "id": "grd-0211",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-21",
-      "subjectId": "pe",
-      "date": "2024-10-11",
-      "value": 5,
-      "id": "grd-0212",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-22",
-      "subjectId": "math",
-      "date": "2024-10-14",
-      "value": 4,
-      "id": "grd-0213",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-11",
-      "subjectId": "rus",
-      "date": "2024-10-15",
-      "value": 4,
-      "id": "grd-0214",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-12",
-      "subjectId": "phys",
-      "date": "2024-10-16",
-      "value": 4,
-      "id": "grd-0215",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-15",
-      "subjectId": "hist",
-      "date": "2024-10-17",
-      "value": 4,
-      "id": "grd-0216",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-25",
-      "subjectId": "rus",
-      "date": "2024-10-18",
-      "value": 5,
-      "id": "grd-0217",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-26",
-      "subjectId": "pe",
-      "date": "2024-09-02",
-      "value": 5,
-      "id": "grd-0218",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-27",
-      "subjectId": "rus",
-      "date": "2024-09-03",
-      "value": 4,
-      "id": "grd-0219",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-28",
-      "subjectId": "phys",
-      "date": "2024-09-04",
-      "value": 4,
-      "id": "grd-0220",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-02",
-      "subjectId": "hist",
-      "date": "2024-09-05",
-      "value": 4,
-      "id": "grd-0221",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-03",
-      "subjectId": "pe",
-      "date": "2024-09-06",
-      "value": 4,
-      "id": "grd-0222",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-04",
-      "subjectId": "math",
-      "date": "2024-09-09",
-      "value": 4,
-      "id": "grd-0223",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-05",
-      "subjectId": "rus",
-      "date": "2024-09-10",
-      "value": 4,
-      "id": "grd-0224",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-18",
-      "subjectId": "hist",
-      "date": "2024-09-11",
-      "value": 5,
-      "id": "grd-0225",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-19",
-      "subjectId": "rus",
-      "date": "2024-09-12",
-      "value": 5,
-      "id": "grd-0226",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-08",
-      "subjectId": "pe",
-      "date": "2024-09-13",
-      "value": 4,
-      "id": "grd-0227",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-24",
-      "subjectId": "math",
-      "date": "2024-09-16",
-      "value": 4,
-      "id": "grd-0228",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-20",
-      "subjectId": "rus",
-      "date": "2024-09-17",
-      "value": 4,
-      "id": "grd-0229",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-21",
-      "subjectId": "pe",
-      "date": "2024-09-18",
-      "value": 5,
-      "id": "grd-0230",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-22",
-      "subjectId": "hist",
-      "date": "2024-09-19",
-      "value": 4,
-      "id": "grd-0231",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-11",
-      "subjectId": "pe",
-      "date": "2024-09-20",
-      "value": 4,
-      "id": "grd-0232",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-12",
-      "subjectId": "math",
-      "date": "2024-09-23",
-      "value": 4,
-      "id": "grd-0233",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-15",
-      "subjectId": "rus",
-      "date": "2024-09-24",
-      "value": 4,
-      "id": "grd-0234",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-25",
-      "subjectId": "rus",
-      "date": "2024-09-25",
-      "value": 5,
-      "id": "grd-0235",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-26",
-      "subjectId": "hist",
-      "date": "2024-09-26",
-      "value": 4,
-      "id": "grd-0236",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-27",
-      "subjectId": "hist",
-      "date": "2024-09-27",
-      "value": 5,
-      "id": "grd-0237",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-28",
-      "subjectId": "rus",
-      "date": "2024-09-30",
-      "value": 5,
-      "id": "grd-0238",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-02",
-      "subjectId": "rus",
-      "date": "2024-10-01",
-      "value": 4,
-      "id": "grd-0239",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-03",
-      "subjectId": "phys",
-      "date": "2024-10-02",
-      "value": 4,
-      "id": "grd-0240",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-04",
-      "subjectId": "hist",
-      "date": "2024-10-03",
-      "value": 4,
-      "id": "grd-0241",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-05",
-      "subjectId": "pe",
-      "date": "2024-10-04",
-      "value": 5,
-      "id": "grd-0242",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-18",
-      "subjectId": "hist",
-      "date": "2024-10-07",
-      "value": 5,
-      "id": "grd-0243",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-19",
-      "subjectId": "rus",
-      "date": "2024-10-08",
-      "value": 5,
-      "id": "grd-0244",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-08",
-      "subjectId": "phys",
-      "date": "2024-10-09",
-      "value": 4,
-      "id": "grd-0245",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-24",
-      "subjectId": "hist",
-      "date": "2024-10-10",
-      "value": 4,
-      "id": "grd-0246",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-20",
-      "subjectId": "pe",
-      "date": "2024-10-11",
-      "value": 4,
-      "id": "grd-0247",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-21",
-      "subjectId": "math",
-      "date": "2024-10-14",
-      "value": 4,
-      "id": "grd-0248",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-22",
-      "subjectId": "rus",
-      "date": "2024-10-15",
-      "value": 4,
-      "id": "grd-0249",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-11",
-      "subjectId": "phys",
-      "date": "2024-10-16",
-      "value": 4,
-      "id": "grd-0250",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-12",
-      "subjectId": "hist",
-      "date": "2024-10-17",
-      "value": 4,
-      "id": "grd-0251",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-15",
-      "subjectId": "pe",
-      "date": "2024-10-18",
-      "value": 4,
-      "id": "grd-0252",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-25",
-      "subjectId": "math",
-      "date": "2024-09-02",
-      "value": 4,
-      "id": "grd-0253",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-26",
-      "subjectId": "pe",
-      "date": "2024-09-03",
-      "value": 5,
-      "id": "grd-0254",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-27",
-      "subjectId": "phys",
-      "date": "2024-09-04",
-      "value": 4,
-      "id": "grd-0255",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-28",
-      "subjectId": "hist",
-      "date": "2024-09-05",
-      "value": 4,
-      "id": "grd-0256",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-02",
-      "subjectId": "pe",
-      "date": "2024-09-06",
-      "value": 4,
-      "id": "grd-0257",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-03",
-      "subjectId": "math",
-      "date": "2024-09-09",
-      "value": 4,
-      "id": "grd-0258",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-04",
-      "subjectId": "rus",
-      "date": "2024-09-10",
-      "value": 4,
-      "id": "grd-0259",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-05",
-      "subjectId": "phys",
-      "date": "2024-09-11",
-      "value": 4,
-      "id": "grd-0260",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-18",
-      "subjectId": "hist",
-      "date": "2024-09-12",
-      "value": 4,
-      "id": "grd-0261",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-19",
-      "subjectId": "pe",
-      "date": "2024-09-13",
-      "value": 4,
-      "id": "grd-0262",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-08",
-      "subjectId": "math",
-      "date": "2024-09-16",
-      "value": 4,
-      "id": "grd-0263",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-24",
-      "subjectId": "rus",
-      "date": "2024-09-17",
-      "value": 4,
-      "id": "grd-0264",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-20",
-      "subjectId": "phys",
-      "date": "2024-09-18",
-      "value": 4,
-      "id": "grd-0265",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-21",
-      "subjectId": "hist",
-      "date": "2024-09-19",
-      "value": 4,
-      "id": "grd-0266",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-22",
-      "subjectId": "pe",
-      "date": "2024-09-20",
-      "value": 4,
-      "id": "grd-0267",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-11",
-      "subjectId": "math",
-      "date": "2024-09-23",
-      "value": 4,
-      "id": "grd-0268",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-12",
-      "subjectId": "pe",
-      "date": "2024-09-24",
-      "value": 5,
-      "id": "grd-0269",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-15",
-      "subjectId": "hist",
-      "date": "2024-09-25",
-      "value": 5,
-      "id": "grd-0270",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-25",
-      "subjectId": "rus",
-      "date": "2024-09-26",
-      "value": 5,
-      "id": "grd-0271",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-26",
-      "subjectId": "pe",
-      "date": "2024-09-27",
-      "value": 5,
-      "id": "grd-0272",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-27",
-      "subjectId": "hist",
-      "date": "2024-09-30",
-      "value": 5,
-      "id": "grd-0273",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-28",
-      "subjectId": "rus",
-      "date": "2024-10-01",
-      "value": 5,
-      "id": "grd-0274",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-02",
-      "subjectId": "phys",
-      "date": "2024-10-02",
-      "value": 4,
-      "id": "grd-0275",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-03",
-      "subjectId": "hist",
-      "date": "2024-10-03",
-      "value": 4,
-      "id": "grd-0276",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-04",
-      "subjectId": "rus",
-      "date": "2024-10-04",
-      "value": 5,
-      "id": "grd-0277",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-05",
-      "subjectId": "pe",
-      "date": "2024-10-07",
-      "value": 5,
-      "id": "grd-0278",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-18",
-      "subjectId": "rus",
-      "date": "2024-10-08",
-      "value": 4,
-      "id": "grd-0279",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-19",
-      "subjectId": "phys",
-      "date": "2024-10-09",
-      "value": 4,
-      "id": "grd-0280",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-08",
-      "subjectId": "hist",
-      "date": "2024-10-10",
-      "value": 4,
-      "id": "grd-0281",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-24",
-      "subjectId": "pe",
-      "date": "2024-10-11",
-      "value": 4,
-      "id": "grd-0282",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-20",
-      "subjectId": "rus",
-      "date": "2024-10-14",
-      "value": 5,
-      "id": "grd-0283",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-21",
-      "subjectId": "pe",
-      "date": "2024-10-15",
-      "value": 5,
-      "id": "grd-0284",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-22",
-      "subjectId": "phys",
-      "date": "2024-10-16",
-      "value": 4,
-      "id": "grd-0285",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-11",
-      "subjectId": "hist",
-      "date": "2024-10-17",
-      "value": 4,
-      "id": "grd-0286",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-12",
-      "subjectId": "pe",
-      "date": "2024-10-18",
-      "value": 4,
-      "id": "grd-0287",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-15",
-      "subjectId": "math",
-      "date": "2024-09-02",
-      "value": 4,
-      "id": "grd-0288",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-25",
-      "subjectId": "rus",
-      "date": "2024-09-03",
-      "value": 5,
-      "id": "grd-0289",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-26",
-      "subjectId": "pe",
-      "date": "2024-09-04",
-      "value": 5,
-      "id": "grd-0290",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-27",
-      "subjectId": "hist",
-      "date": "2024-09-05",
-      "value": 4,
-      "id": "grd-0291",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-28",
-      "subjectId": "pe",
-      "date": "2024-09-06",
-      "value": 4,
-      "id": "grd-0292",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-02",
-      "subjectId": "math",
-      "date": "2024-09-09",
-      "value": 4,
-      "id": "grd-0293",
-      "teacher": "Козлов А. П.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-03",
-      "subjectId": "rus",
-      "date": "2024-09-10",
-      "value": 4,
-      "id": "grd-0294",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-04",
-      "subjectId": "phys",
-      "date": "2024-09-11",
-      "value": 4,
-      "id": "grd-0295",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-05",
-      "subjectId": "hist",
-      "date": "2024-09-12",
-      "value": 4,
-      "id": "grd-0296",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-18",
-      "subjectId": "hist",
-      "date": "2024-09-13",
-      "value": 5,
-      "id": "grd-0297",
-      "teacher": "Смирнова М. В.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-19",
-      "subjectId": "rus",
-      "date": "2024-09-16",
-      "value": 5,
-      "id": "grd-0298",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-08",
-      "subjectId": "rus",
-      "date": "2024-09-17",
-      "value": 4,
-      "id": "grd-0299",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-24",
-      "subjectId": "phys",
-      "date": "2024-09-18",
-      "value": 4,
-      "id": "grd-0300",
-      "teacher": "Дмитриев Д. К.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-20",
-      "subjectId": "rus",
-      "date": "2024-09-19",
-      "value": 5,
-      "id": "grd-0301",
-      "teacher": "Иванова Е. С.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-21",
-      "subjectId": "pe",
-      "date": "2024-09-20",
-      "value": 4,
-      "id": "grd-0302",
-      "teacher": "Новиков С. А.",
-      "periodId": "q1_2024"
-    },
-    {
-      "studentId": "st-22",
-      "subjectId": "hist",
-      "date": "2024-09-23",
-      "value": 5,
-      "id": "grd-0303",
-      "teacher": "Смирнова М. В.",
       "periodId": "q1_2024"
     }
   ],
@@ -18941,8 +20145,7 @@ export const INITIAL_DATASET = {
       "studentId": "st-09",
       "name": "Морозов Артём Андреевич",
       "reasons": [
-        "Пропуски 9 из 40 (22.5%)",
-        "Физкультура: 3.0"
+        "Пропуски 9 из 40 (22.5%)"
       ]
     },
     {
@@ -19063,176 +20266,6 @@ export const INITIAL_DATASET = {
       "content": "В четверг, 31 октября, в 18:30 в Каб. 302 состоится общее собрание родителей 7Б класса. Повестка: итоги первой четверти и каникулы.",
       "target": "parents",
       "meetingId": "mtg-01"
-    }
-  ],
-  "todayAttendance": [
-    {
-      "studentId": "st-01",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-02",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-16",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-17",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-03",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-04",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-05",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-18",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-19",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-06",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-07",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-08",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-24",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-20",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-21",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-09",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-10",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-22",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-11",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-12",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-23",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-13",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-14",
-      "value": "absent",
-      "code": "Н (без)",
-      "reason": "Причина не подтверждена"
-    },
-    {
-      "studentId": "st-15",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-25",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-26",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-27",
-      "value": "present",
-      "code": "Был",
-      "reason": null
-    },
-    {
-      "studentId": "st-28",
-      "value": "present",
-      "code": "Был",
-      "reason": null
     }
   ]
 };
