@@ -114,7 +114,7 @@ export function renderIcon(name, className = 'w-5 h-5') {
 
     case 'logo':
       return `<div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-        В
+        U
       </div>`;
 
     default:

@@ -7,7 +7,7 @@ export function renderLoginView() {
     <div class="w-full max-w-md mx-auto my-auto animate-fadeIn">
       <div class="text-center mb-8">
         <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-500 text-white font-extrabold text-2xl shadow-lg shadow-brand-500/30 mb-4">
-          В
+          U
         </div>
         <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
           Кабинет классного руководителя

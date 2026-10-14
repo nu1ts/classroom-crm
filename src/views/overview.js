@@ -59,7 +59,7 @@ export function renderOverviewView() {
                     </div>
                   </div>
                 </div>
-                <button type="button" class="sm:flex-shrink-0 px-3.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs transition-colors">
+                <button type="button" class="sm:flex-shrink-0 px-3.5 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 font-semibold text-xs transition-colors">
                   Зафиксировать контакт
                 </button>
               </div>
@@ -89,7 +89,7 @@ export function renderOverviewView() {
                     </div>
                   </div>
                 </div>
-                <button type="button" class="sm:flex-shrink-0 px-3.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs transition-colors">
+                <button type="button" class="sm:flex-shrink-0 px-3.5 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 font-semibold text-xs transition-colors">
                   Написать заметку
                 </button>
               </div>
