@@ -419,7 +419,6 @@ export function renderAttendanceView(options = {}) {
               </label>
               <input type="text" id="confirm-document-text"
                      placeholder="Например: Справка № 142 от 25.10.2024 (ДГП № 1)"
-                     value="Справка № 142 от 25.10.2024 (ДГП № 1)"
                      class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" />
             </div>
           </div>
@@ -481,6 +480,8 @@ export function setupAttendanceListeners(onNavigate) {
     if (selectReasonType) selectReasonType.value = 'excused';
     if (checkHasDoc) checkHasDoc.checked = true;
     if (blockDocFields) blockDocFields.style.display = 'block';
+    if (inputDocText) inputDocText.value = '';
+    if (inputNotes) inputNotes.value = '';
 
     modal.classList.remove('opacity-0', 'pointer-events-none');
     modal.classList.add('opacity-100', 'pointer-events-auto');
@@ -590,7 +591,9 @@ export function setupAttendanceListeners(onNavigate) {
       const notes = inputNotes ? inputNotes.value.trim() : '';
 
       const isExcused = reasonType === 'excused';
-      const documentValue = (isExcused && hasDoc && docText) ? docText : (isExcused ? 'Заявление родителей' : null);
+      const documentValue = isExcused
+        ? (hasDoc ? (docText || 'Медицинская справка') : 'Заявление родителей')
+        : null;
       const reasonValue = notes || (isExcused ? 'Болезнь / справка' : 'Неуважительная причина');
 
       confirmAbsenceRecord(attId, {
