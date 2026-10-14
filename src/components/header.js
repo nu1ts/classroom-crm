@@ -29,11 +29,10 @@ export function renderHeader(currentUser, currentPath) {
     `).join('');
 
     devSwitcherHtml = `
-      <div class="hidden sm:flex items-center space-x-2 bg-amber-50 px-2.5 py-1.5 rounded-lg border border-amber-200" title="Режим разработки">
-        <span class="text-[10px] font-bold text-amber-700 bg-amber-200/80 px-1.5 py-0.5 rounded">DEV</span>
-        <label for="demo-role-switcher" class="text-xs text-amber-900 font-medium whitespace-nowrap">Роль:</label>
+      <div class="hidden sm:flex items-center space-x-2 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200">
+        <label for="demo-role-switcher" class="text-xs text-slate-500 font-medium whitespace-nowrap">Роль:</label>
         <select id="demo-role-switcher"
-                class="text-xs font-semibold text-amber-900 bg-transparent border-none outline-none focus:ring-0 cursor-pointer">
+                class="text-xs font-semibold text-slate-700 bg-transparent border-none outline-none focus:ring-0 cursor-pointer">
           ${roleOptionsHtml}
         </select>
       </div>

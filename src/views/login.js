@@ -10,13 +10,8 @@ export function renderLoginView() {
   if (devModeActive) {
     devQuickLoginHtml = `
       <div class="mt-7 pt-5 border-t border-slate-100">
-        <div class="flex items-center justify-between mb-2.5">
-          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-            Быстрый вход
-          </span>
-          <span class="text-[10px] font-bold text-amber-700 bg-amber-100 border border-amber-200 px-1.5 py-0.5 rounded">
-            DEV MODE
-          </span>
+        <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2.5 text-center">
+          Быстрый вход
         </div>
         <div class="grid grid-cols-2 gap-2 text-xs">
           <button type="button" data-demo-role="teacher"
@@ -303,22 +298,4 @@ export function setupLoginListeners(onLoginSuccess) {
       closeModal();
     }
   });
-
-  const logoEl = document.getElementById('login-brand-logo');
-  if (logoEl) {
-    let clickCount = 0;
-    let clickTimer = null;
-    logoEl.addEventListener('click', () => {
-      clickCount++;
-      clearTimeout(clickTimer);
-      if (clickCount >= 3) {
-        clickCount = 0;
-        if (window.__CRM_DEV__) {
-          window.__CRM_DEV__.toggle();
-        }
-      } else {
-        clickTimer = setTimeout(() => { clickCount = 0; }, 500);
-      }
-    });
-  }
 }
