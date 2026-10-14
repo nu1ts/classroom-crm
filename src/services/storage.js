@@ -312,3 +312,45 @@ export function batchConfirmAbsences(recordIds, data = {}) {
   return { success: true, updatedCount };
 }
 
+/**
+ * Получение комментариев к конкретной записи журнала (уроку и ученику)
+ */
+export function getJournalComments(lessonId, studentId) {
+  const db = getDB();
+  if (!db.journalComments) return [];
+  return db.journalComments.filter(c => c.lessonId === lessonId && c.studentId === studentId);
+}
+
+/**
+ * Добавление комментария к записи журнала (БП «Журнал класса»)
+ * @param {Object} data { lessonId, studentId, text, author, role }
+ */
+export function addJournalComment(data = {}) {
+  const text = (data.text || '').trim();
+  if (!text || !data.lessonId || !data.studentId) {
+    return { success: false, error: 'Заполните текст комментария' };
+  }
+
+  const db = getDB();
+  if (!db.journalComments) {
+    db.journalComments = [];
+  }
+
+  const newComment = {
+    id: `jc-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    lessonId: data.lessonId,
+    studentId: data.studentId,
+    text,
+    author: data.author || 'Смирнова М. В.',
+    role: data.role || 'teacher',
+    createdAt: data.createdAt || new Date().toLocaleString('ru-RU', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    })
+  };
+
+  db.journalComments.push(newComment);
+  saveDB(db);
+  return { success: true, comment: newComment };
+}
+

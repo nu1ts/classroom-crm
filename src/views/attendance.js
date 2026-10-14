@@ -350,7 +350,7 @@ export function renderAttendanceView(options = {}) {
       </div>
     </div>
 
-    <div id="modal-confirm-absence" class="fixed inset-0 z-50 !m-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+    <div id="modal-confirm-absence" class="fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
       <div id="modal-confirm-dialog" class="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-4 pb-2.5 border-b border-slate-100">
           <div class="flex items-center space-x-2.5">

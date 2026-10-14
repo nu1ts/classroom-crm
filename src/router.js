@@ -7,6 +7,7 @@ import { renderProfileView, setupProfileListeners } from './views/profile.js';
 import { renderForbiddenView } from './views/forbidden.js';
 import { renderPlaceholderView } from './views/placeholder.js';
 import { renderAttendanceView, setupAttendanceListeners } from './views/attendance.js?v=2';
+import { renderJournalView, setupJournalListeners } from './views/journal.js';
 
 const ROUTE_HANDLERS = {
   '#/login': {
@@ -25,9 +26,21 @@ const ROUTE_HANDLERS = {
     setup: () => { }
   },
   '#/journal': {
-    title: 'Журнал',
-    render: () => renderPlaceholderView('Журнал', 'Электронный журнал успеваемости класса 7Б по предметам', '#/journal'),
-    setup: () => { }
+    title: 'Журнал класса',
+    render: () => {
+      const hash = window.location.hash || '';
+      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+      const params = new URLSearchParams(queryString);
+      return renderJournalView({
+        subjectId: params.get('subject') || 'all',
+        weekId: params.get('week') || 'all',
+        filterOnlyAbsences: params.get('absences') === 'true',
+        filterUnconfirmedOnly: params.get('unconfirmed') === 'true',
+        filterOnlyEntries: params.get('onlyEntries') === 'true',
+        searchQuery: params.get('search') || ''
+      });
+    },
+    setup: (navigate) => setupJournalListeners(navigate)
   },
   '#/attendance': {
     title: 'Посещаемость',
