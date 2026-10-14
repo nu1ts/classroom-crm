@@ -1,6 +1,7 @@
 import { ROLE_NAVIGATION } from '../config/navigation.js';
 import { renderIcon } from './icons.js';
-import { logout } from '../services/storage.js';
+import { logout, quickLoginAsRole } from '../services/storage.js';
+import { isDevMode } from '../services/env.js';
 
 export function renderSidebar(currentUser, currentPath) {
   if (!currentUser) return '';
@@ -71,6 +72,35 @@ export function renderSidebar(currentUser, currentPath) {
         ${readOnlyBadge}
       </nav>
 
+      ${(() => {
+        if (!isDevMode()) return '';
+        const demoRoles = [
+          { key: 'teacher', name: 'Классрук: Смирнова М. В.' },
+          { key: 'subject_teacher', name: 'Предметник: Козлов А. П.' },
+          { key: 'parent', name: 'Родитель: Петров С. В.' },
+          { key: 'student', name: 'Ученик: Петрова А.' },
+          { key: 'admin', name: 'Админ: Никитин П. А.' }
+        ];
+        const roleOptionsHtml = demoRoles.map(r => `
+          <option value="${r.key}" ${currentUser.role === r.key ? 'selected' : ''} class="bg-slate-900 text-white">
+            ${r.name}
+          </option>
+        `).join('');
+
+        return `
+          <div class="px-3 pt-2 pb-1 border-t border-slate-800/80 bg-slate-900/60">
+            <div class="flex items-center justify-between mb-1.5 px-0.5">
+              <span class="text-[10px] font-bold text-sky-400 uppercase tracking-wider">DEV режим</span>
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            </div>
+            <select id="demo-role-switcher"
+                    class="w-full text-xs font-medium text-slate-200 bg-slate-800/90 border border-slate-700/80 rounded-lg px-2.5 py-1.5 outline-none focus:border-brand-500 cursor-pointer">
+              ${roleOptionsHtml}
+            </select>
+          </div>
+        `;
+      })()}
+
       <div class="p-3 border-t border-slate-800/80 bg-slate-900/40">
         <div class="flex items-center justify-between p-2 rounded-xl hover:bg-brand-sidebarHover/80 transition-colors">
           <a href="#/profile" id="sidebar-profile-link" class="flex items-center space-x-3 overflow-hidden flex-1 group">
@@ -105,6 +135,19 @@ export function setupSidebarListeners(onNavigate) {
         logout();
         window.location.replace('#/login');
         if (onNavigate) onNavigate('#/login');
+      }
+    });
+  }
+
+  const roleSwitcher = document.getElementById('demo-role-switcher');
+  if (roleSwitcher) {
+    roleSwitcher.addEventListener('change', (e) => {
+      const targetRole = e.target.value;
+      const user = quickLoginAsRole(targetRole);
+      if (user) {
+        const defRoute = ROLE_NAVIGATION[user.role]?.defaultRoute || '#/overview';
+        window.location.hash = defRoute;
+        if (onNavigate) onNavigate(defRoute);
       }
     });
   }

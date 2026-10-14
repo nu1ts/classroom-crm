@@ -124,7 +124,7 @@ export function renderOverviewView() {
               <span>•</span>
               <span>1 четверть</span>
               <span>•</span>
-              <span>28 октября 2024 (Демо-день)</span>
+              <span>28 октября 2024</span>
             </div>
             <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">
               7Б класс (28 учеников)
@@ -134,11 +134,11 @@ export function renderOverviewView() {
             </p>
           </div>
           <div class="flex items-center space-x-3 self-start md:self-center flex-shrink-0">
-            <div class="px-3.5 py-2 rounded-xl bg-white/10 border border-white/15 text-xs text-white">
-              <span class="text-slate-300 block text-[11px]">Состав класса</span>
-              <strong class="text-white font-semibold">${boysCount} мал. / ${girlsCount} дев.</strong>
+            <div class="h-10 px-3.5 rounded-xl bg-white/10 border border-white/15 text-xs text-white flex flex-col justify-center">
+              <span class="text-slate-300 block text-[10px] leading-tight">Состав класса</span>
+              <strong class="text-white font-semibold leading-tight">${boysCount} мал. / ${girlsCount} дев.</strong>
             </div>
-            <a href="#/students" class="px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-sm shadow-brand-500/30 transition-all flex items-center space-x-1.5">
+            <a href="#/students" class="h-10 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-sm shadow-brand-500/30 transition-all flex items-center space-x-1.5">
               <span>Список класса</span>
               ${renderIcon('arrow-right', 'w-3.5 h-3.5 text-white/80')}
             </a>
@@ -290,7 +290,7 @@ export function renderOverviewView() {
             <div class="space-y-2.5">
               <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                  <div class="text-xs font-bold text-slate-500 w-24">08:30 – 09:15</div>
+                  <div class="text-xs font-bold text-slate-500 w-28 flex-shrink-0">08:30 – 09:15</div>
                   <div>
                     <div class="text-sm font-bold text-slate-800">1. Разговоры о важном</div>
                     <div class="text-xs text-slate-500">Смирнова М. В. · Кабинет 302</div>
@@ -301,7 +301,7 @@ export function renderOverviewView() {
 
               <div class="p-3 rounded-xl bg-brand-50/70 border border-brand-200 flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                  <div class="text-xs font-bold text-brand-700 w-24">09:30 – 10:15</div>
+                  <div class="text-xs font-bold text-brand-700 w-28 flex-shrink-0">09:30 – 10:15</div>
                   <div>
                     <div class="text-sm font-bold text-brand-900">2. Математика (Алгебра)</div>
                     <div class="text-xs text-brand-700">Козлов А. П. · Кабинет 204</div>
@@ -312,7 +312,7 @@ export function renderOverviewView() {
 
               <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                  <div class="text-xs font-bold text-slate-500 w-24">10:30 – 11:15</div>
+                  <div class="text-xs font-bold text-slate-500 w-28 flex-shrink-0">10:30 – 11:15</div>
                   <div>
                     <div class="text-sm font-bold text-slate-800">3. Русский язык</div>
                     <div class="text-xs text-slate-500">Иванова Е. С. · Кабинет 302</div>
@@ -323,7 +323,7 @@ export function renderOverviewView() {
 
               <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                  <div class="text-xs font-bold text-slate-500 w-24">11:30 – 12:15</div>
+                  <div class="text-xs font-bold text-slate-500 w-28 flex-shrink-0">11:30 – 12:15</div>
                   <div>
                     <div class="text-sm font-bold text-slate-800">4. Физика</div>
                     <div class="text-xs text-slate-500">Дмитриев Д. К. · Кабинет 401</div>
@@ -334,7 +334,7 @@ export function renderOverviewView() {
 
               <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                  <div class="text-xs font-bold text-slate-500 w-24">12:35 – 13:20</div>
+                  <div class="text-xs font-bold text-slate-500 w-28 flex-shrink-0">12:35 – 13:20</div>
                   <div>
                     <div class="text-sm font-bold text-slate-800">5. Физкультура</div>
                     <div class="text-xs text-slate-500">Новиков С. А. · Спортзал</div>

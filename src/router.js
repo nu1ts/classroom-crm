@@ -1,6 +1,6 @@
 import { getCurrentUser } from './services/storage.js';
 import { isRouteAllowedForRole, getDefaultRouteForRole } from './config/navigation.js';
-import { renderLayout, setupLayoutListeners } from './components/layout.js';
+import { renderLayout, setupLayoutListeners } from './components/layout.js?v=3';
 import { renderLoginView, setupLoginListeners } from './views/login.js';
 import { renderOverviewView, setupOverviewListeners } from './views/overview.js?v=2';
 import { renderProfileView, setupProfileListeners } from './views/profile.js';
