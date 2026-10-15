@@ -18,7 +18,8 @@
     "test:overview": "node ./src/mock/test-overview.js",
     "test:attendance": "node ./src/mock/test-attendance.js",
     "test:journal": "node ./src/mock/test-journal.js",
-    "test": "node ./src/mock/test-dataset.js && node ./src/mock/test-calculations.js && node ./src/mock/test-navigation.js && node ./src/mock/test-auth.js && node ./src/mock/test-overview.js && node ./src/mock/test-attendance.js && node ./src/mock/test-journal.js"
+    "test:students": "node ./src/mock/test-students.js",
+    "test": "node ./src/mock/test-dataset.js && node ./src/mock/test-calculations.js && node ./src/mock/test-navigation.js && node ./src/mock/test-auth.js && node ./src/mock/test-overview.js && node ./src/mock/test-attendance.js && node ./src/mock/test-journal.js && node ./src/mock/test-students.js"
   },
   "repository": {
     "type": "git",
