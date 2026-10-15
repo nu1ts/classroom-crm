@@ -4,3 +4,5 @@ node_modules/
 dist/
 scripts/
 repomix-output.md
+playwright-report/
+test-results/
