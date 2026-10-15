@@ -347,7 +347,6 @@ export function renderStudentsView(options = {}) {
                     class="px-4 py-2.5 rounded-xl border ${filterAbsencesOnly ? 'bg-brand-500 text-white border-brand-500 shadow-xs' : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200/90 shadow-2xs'} text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer">
               ${renderIcon('filter', 'w-4 h-4 ' + (filterAbsencesOnly ? 'text-white' : 'text-slate-500'))}
               <span>Фильтр: С пропусками</span>
-              ${filterAbsencesOnly ? `<span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>` : ''}
             </button>
 
             <div class="relative">
@@ -691,7 +690,6 @@ export function setupStudentsListeners(onNavigate) {
       btnFilterAbsences.innerHTML = `
         ${renderIcon('filter', 'w-4 h-4 text-white')}
         <span>Фильтр: С пропусками</span>
-        <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
       `;
     } else {
       btnFilterAbsences.className = 'px-4 py-2.5 rounded-xl border bg-white hover:bg-slate-50 text-slate-700 border-slate-200/90 shadow-2xs text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer';
