@@ -45,7 +45,15 @@ export function getDB() {
       storage.setItem(STORAGE_KEYS.DB, JSON.stringify(clone));
       return clone;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    const kotova = (parsed.parents || []).find(p => p.id === 'pr-10');
+    if (kotova && kotova.otherChildren && kotova.otherChildren.some(oc => oc.name === 'Котов Денис')) {
+      kotova.otherChildren = [
+        { name: 'Котова Дарья', class: '9В', role: 'Дочь' }
+      ];
+      storage.setItem(STORAGE_KEYS.DB, JSON.stringify(parsed));
+    }
+    return parsed;
   } catch (e) {
     console.error('Ошибка чтения БД из хранилища, сброс к начальному состоянию', e);
     const clone = JSON.parse(JSON.stringify(INITIAL_DATASET));
@@ -604,6 +612,30 @@ export function linkParentToStudent(parentId, studentId, options = {}) {
   saveDB(db);
   return { success: true };
 }
+
+/**
+ * Снятие связи родителя с учеником (TC-PR-13)
+ */
+export function unlinkParentFromStudent(parentId, studentId) {
+  if (!parentId) return { success: false, error: 'ID родителя не указан' };
+
+  const db = getDB();
+  if (!db.parentStudentRelations) db.parentStudentRelations = [];
+
+  if (studentId) {
+    db.parentStudentRelations = db.parentStudentRelations.filter(
+      r => !(r.parentId === parentId && r.studentId === studentId)
+    );
+  } else {
+    db.parentStudentRelations = db.parentStudentRelations.filter(
+      r => r.parentId !== parentId
+    );
+  }
+
+  saveDB(db);
+  return { success: true };
+}
+
 
 
 

@@ -649,8 +649,9 @@
       "phone": "+7 999 123-45-62",
       "otherChildren": [
         {
-          "name": "Котов Денис",
-          "class": "8А"
+          "name": "Котова Дарья",
+          "class": "9В",
+          "role": "Дочь"
         }
       ]
     },
@@ -20196,20 +20197,20 @@
       "time": "15:20",
       "channel": "phone",
       "channelLabel": "Звонок",
-      "summary": "Звонок матери по поводу пропусков. Елена Игоревна сообщила, что Анна заболела, вызвали врача. Справку принесут позже.",
+      "summary": "Звонок матери по поводу пропусков. Анна приболела, вызвали врача. Справку принесут после каникул.",
       "agreementReached": true,
       "nextContactDate": null
     },
     {
       "id": "pc-02",
       "studentId": "st-23",
-      "parentId": "pr-23",
+      "parentId": "pr-24",
       "author": "Смирнова М. В.",
       "date": "2024-10-15",
       "time": "18:45",
       "channel": "personal",
       "channelLabel": "Личная беседа",
-      "summary": "Обсуждение успеваемости по математике на собрании. Согласовали дополнительные занятия с учителем.",
+      "summary": "Обсуждение успеваемости по математике, согласовали дополнительные занятия.",
       "agreementReached": true,
       "nextContactDate": null
     },
@@ -20218,11 +20219,24 @@
       "studentId": "st-14",
       "parentId": "pr-27",
       "author": "Смирнова М. В.",
-      "date": "2024-10-22",
-      "time": "16:10",
+      "date": "2024-10-26",
+      "time": "14:10",
       "channel": "phone",
       "channelLabel": "Звонок",
-      "summary": "Уведомление о пропусках уроков. Обещала предоставить справку до пятницы.",
+      "summary": "Мать не выходит на связь третий день. Отправлено сообщение в мессенджере.",
+      "agreementReached": false,
+      "nextContactDate": "2024-10-29"
+    },
+    {
+      "id": "pc-04",
+      "studentId": "st-14",
+      "parentId": "pr-27",
+      "author": "Смирнова М. В.",
+      "date": "2024-10-18",
+      "time": "11:30",
+      "channel": "chat",
+      "channelLabel": "Мессенджер",
+      "summary": "Напоминание о справке по пропускам.",
       "agreementReached": true,
       "nextContactDate": null
     }

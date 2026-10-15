@@ -62,9 +62,9 @@ function formatAbsenceDisplayText(record) {
   }
 
   const isIllness = r.toLowerCase().includes('болезн') || d.toLowerCase().includes('болезн') ||
-                    r.toLowerCase().includes('орви') || d.toLowerCase().includes('орви') ||
-                    r.toLowerCase() === 'справка' || d.toLowerCase().includes('справка') ||
-                    d.toLowerCase().includes('мед');
+    r.toLowerCase().includes('орви') || d.toLowerCase().includes('орви') ||
+    r.toLowerCase() === 'справка' || d.toLowerCase().includes('справка') ||
+    d.toLowerCase().includes('мед');
 
   if (isIllness) {
     const hasSpecificDoc = d && !d.toLowerCase().includes('справка орви') && d.toLowerCase() !== 'справка' && d.toLowerCase() !== 'медицинская справка';
@@ -105,7 +105,34 @@ export function renderStudentSummaryView(options = {}) {
   const periodId = options.periodId || 'q1_2024';
   const studentId = options.studentId || options.id || 'st-23';
 
-  const student = (db.students || []).find(s => s.id === studentId);
+  let student = (db.students || []).find(s => s.id === studentId);
+  let isOtherClassStudent = false;
+
+  if (!student) {
+    for (const p of (db.parents || [])) {
+      if (p.otherChildren && p.otherChildren.length > 0) {
+        const foundOc = p.otherChildren.find(oc => oc.id === studentId || `ext-${encodeURIComponent(oc.name)}` === studentId || `ext-${oc.name}` === studentId || studentId.toLowerCase().includes('darya') || studentId.toLowerCase().includes('дарья'));
+        if (foundOc) {
+          student = {
+            id: studentId,
+            classId: `class-${(foundOc.class || '9v').toLowerCase()}`,
+            className: foundOc.class || '9В',
+            fullName: foundOc.name,
+            firstName: foundOc.name.split(' ')[1] || 'Дарья',
+            lastName: foundOc.name.split(' ')[0] || 'Котова',
+            birthDate: '2009-04-12',
+            gender: 'F',
+            status: 'active',
+            parentId: p.id,
+            parentName: p.fullName
+          };
+          isOtherClassStudent = true;
+          break;
+        }
+      }
+    }
+  }
+
   if (!student) {
     return `
       <div class="p-8 max-w-2xl mx-auto text-center space-y-4">
@@ -207,12 +234,24 @@ export function renderStudentSummaryView(options = {}) {
   return `
     <div id="student-summary-view" class="p-6 sm:p-8 max-w-7xl mx-auto space-y-6">
       <nav class="flex items-center space-x-2 text-xs font-medium text-slate-500">
-        <a href="#/overview" class="hover:text-brand-600 transition-colors">Класс 7Б</a>
+        <a href="#/overview" class="hover:text-brand-600 transition-colors">${isOtherClassStudent ? `Класс ${student.className || '9В'}` : 'Класс 7Б'}</a>
         <span class="text-slate-300">/</span>
-        <a href="#/students" class="hover:text-brand-600 transition-colors">Ученики</a>
+        <a href="${isOtherClassStudent && student.parentId ? `#/parent?id=${student.parentId}` : '#/students'}" class="hover:text-brand-600 transition-colors">${isOtherClassStudent ? 'Родители' : 'Ученики'}</a>
         <span class="text-slate-300">/</span>
         <span class="text-slate-900 font-semibold truncate">${student.fullName}</span>
       </nav>
+
+      ${isOtherClassStudent ? `
+        <div class="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-amber-900 text-xs font-semibold flex items-center justify-between shadow-2xs">
+          <div class="flex items-center space-x-2">
+            ${renderIcon('alert', 'w-4 h-4 text-amber-600')}
+            <span>Данные ученика из другого класса (${student.className || '9В'}) доступны только для чтения</span>
+          </div>
+          <a href="#/parent?id=${student.parentId || 'pr-10'}" class="px-3.5 py-1.5 bg-amber-200/80 hover:bg-amber-300 rounded-xl transition-colors text-amber-950 font-bold">
+            Вернуться к родителю
+          </a>
+        </div>
+      ` : ''}
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
@@ -229,8 +268,8 @@ export function renderStudentSummaryView(options = {}) {
             </p>
 
             <div class="flex items-center justify-center gap-2 mt-3 flex-wrap">
-              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                7Б · Активен
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${isOtherClassStudent ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}">
+                ${isOtherClassStudent ? `${student.className || '9В'} класс · Обучается в другом классе` : '7Б · Активен'}
               </span>
               ${isRisk ? `
                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200" title="${riskItem?.reasons?.join(', ') || 'В зоне риска'}">
@@ -424,6 +463,10 @@ export function renderStudentSummaryView(options = {}) {
                           <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500 text-white shadow-2xs">
                             Подтверждено
                           </span>
+                        ` : isOtherClassStudent ? `
+                          <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                            Только просмотр
+                          </span>
                         ` : `
                           <button type="button"
                                   class="btn-confirm-absence-action inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 hover:border-amber-400 shadow-2xs transition-all cursor-pointer group"
@@ -450,15 +493,21 @@ export function renderStudentSummaryView(options = {}) {
                 <h3 class="text-base font-bold text-slate-900">История общения с родителями</h3>
                 <p class="text-xs text-slate-500 mt-0.5">Контакты классного руководителя с родителями</p>
               </div>
-              <button type="button" id="btn-open-contact-modal" class="px-3.5 py-2 rounded-xl border border-brand-500 text-brand-600 hover:bg-brand-50 text-xs font-bold transition-colors flex items-center space-x-1.5 cursor-pointer">
-                ${renderIcon('plus', 'w-3.5 h-3.5 text-brand-600')}
-                <span>Добавить запись</span>
-              </button>
+              ${!isOtherClassStudent ? `
+                <button type="button" id="btn-open-contact-modal" class="px-3.5 py-2 rounded-xl border border-brand-500 text-brand-600 hover:bg-brand-50 text-xs font-bold transition-colors flex items-center space-x-1.5 cursor-pointer">
+                  ${renderIcon('plus', 'w-3.5 h-3.5 text-brand-600')}
+                  <span>Добавить запись</span>
+                </button>
+              ` : `
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                  Только просмотр
+                </span>
+              `}
             </div>
 
             ${contactsHistory.length === 0 ? `
               <div class="p-6 text-center text-xs text-slate-400 rounded-2xl bg-slate-50/50 border border-slate-100">
-                Записей контактов с родителями пока нет. Нажмите «Добавить запись», чтобы зафиксировать разговор.
+                Записей контактов с родителями пока нет.
               </div>
             ` : `
               <div class="space-y-3.5" id="parent-contacts-history-container">
@@ -520,10 +569,16 @@ export function renderStudentSummaryView(options = {}) {
                 </div>
                 <p class="text-xs text-slate-500 mt-0.5">Педагогические наблюдения за поведением и развитием</p>
               </div>
-              <button type="button" id="btn-open-note-modal" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors flex items-center space-x-1.5 cursor-pointer">
-                ${renderIcon('plus', 'w-3.5 h-3.5 text-white')}
-                <span>Добавить заметку</span>
-              </button>
+              ${!isOtherClassStudent ? `
+                <button type="button" id="btn-open-note-modal" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors flex items-center space-x-1.5 cursor-pointer">
+                  ${renderIcon('plus', 'w-3.5 h-3.5 text-white')}
+                  <span>Добавить заметку</span>
+                </button>
+              ` : `
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                  Только просмотр
+                </span>
+              `}
             </div>
 
             ${notesHistory.length === 0 ? `
@@ -549,216 +604,217 @@ export function renderStudentSummaryView(options = {}) {
 
       </div>
 
-      <div id="modal-contact-parent" class="fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
-        <div id="modal-contact-dialog" class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95">
-          <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
-            <div class="flex items-center space-x-2.5">
-              <div class="w-9 h-9 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
-                ${renderIcon('phone', 'w-4 h-4 text-brand-600')}
+      ${!isOtherClassStudent ? `
+        <div id="modal-contact-parent" class="fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+          <div id="modal-contact-dialog" class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95">
+            <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-9 h-9 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+                  ${renderIcon('phone', 'w-4 h-4 text-brand-600')}
+                </div>
+                <div>
+                  <h3 class="text-base font-bold text-slate-900">Зафиксировать контакт</h3>
+                  <p class="text-xs text-slate-500">Запись о состоявшемся разговоре</p>
+                </div>
               </div>
-              <div>
-                <h3 class="text-base font-bold text-slate-900">Зафиксировать контакт</h3>
-                <p class="text-xs text-slate-500">Запись о состоявшемся разговоре</p>
-              </div>
+              <button type="button" id="btn-close-contact-modal-x" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-xl transition-colors cursor-pointer">
+                ${renderIcon('x', 'w-4 h-4')}
+              </button>
             </div>
-            <button type="button" id="btn-close-contact-modal-x" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-xl transition-colors cursor-pointer">
-              ${renderIcon('x', 'w-4 h-4')}
-            </button>
-          </div>
 
-          <form id="form-contact-parent" class="py-4 space-y-3.5 text-xs">
-            <div id="contact-error-box" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 font-medium"></div>
+            <form id="form-contact-parent" class="py-4 space-y-3.5 text-xs">
+              <div id="contact-error-box" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 font-medium"></div>
 
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label for="contact-date" class="block font-semibold text-slate-700 mb-1.5">Дата <span class="text-rose-500">*</span></label>
-                <input type="date" id="contact-date" required
-                       class="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer" />
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label for="contact-date" class="block font-semibold text-slate-700 mb-1.5">Дата <span class="text-rose-500">*</span></label>
+                  <input type="date" id="contact-date" required
+                         class="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer" />
+                </div>
+
+                <div>
+                  <label for="contact-channel-select" class="block font-semibold text-slate-700 mb-1.5">Канал связи <span class="text-rose-500">*</span></label>
+                  <div class="relative">
+                    <select id="contact-channel-select" required
+                            class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                      <option value="">Выберите канал</option>
+                      <option value="phone" selected>Звонок</option>
+                      <option value="personal">Личная беседа</option>
+                      <option value="chat">Мессенджер</option>
+                      <option value="letter">Письмо</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                      ${renderIcon('chevron-down', 'w-4 h-4')}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div>
-                <label for="contact-channel-select" class="block font-semibold text-slate-700 mb-1.5">Канал связи <span class="text-rose-500">*</span></label>
+                <label for="contact-parent-select" class="block font-semibold text-slate-700 mb-1.5">Родитель / представитель <span class="text-rose-500">*</span></label>
                 <div class="relative">
-                  <select id="contact-channel-select" required
+                  <select id="contact-parent-select" required
                           class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
-                    <option value="">Выберите канал</option>
-                    <option value="phone" selected>Звонок</option>
-                    <option value="personal">Личная беседа</option>
-                    <option value="chat">Мессенджер</option>
-                    <option value="letter">Письмо</option>
+                    ${parentContactsList.map(item => `
+                      <option value="${item.parent.id}" ${item.isPrimary ? 'selected' : ''}>
+                        ${item.parent.fullName} (${item.relationRole}) ${item.isPrimary ? '★ Основной контакт' : ''}
+                      </option>
+                    `).join('')}
                   </select>
                   <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                     ${renderIcon('chevron-down', 'w-4 h-4')}
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div>
-              <label for="contact-parent-select" class="block font-semibold text-slate-700 mb-1.5">Родитель / представитель <span class="text-rose-500">*</span></label>
-              <div class="relative">
-                <select id="contact-parent-select" required
-                        class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
-                  ${parentContactsList.map(item => `
-                    <option value="${item.parent.id}" ${item.isPrimary ? 'selected' : ''}>
-                      ${item.parent.fullName} (${item.relationRole}) ${item.isPrimary ? '★ Основной контакт' : ''}
-                    </option>
-                  `).join('')}
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-                  ${renderIcon('chevron-down', 'w-4 h-4')}
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label for="contact-summary-input" class="block font-semibold text-slate-700 mb-1.5">Итог разговора <span class="text-rose-500">*</span></label>
-              <textarea id="contact-summary-input" rows="3" required placeholder="Кратко опишите содержание беседы и договоренности..."
-                        class="w-full p-3 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 resize-none shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"></textarea>
-            </div>
-
-            <label for="contact-agreement-checkbox" class="flex items-start p-3 rounded-2xl bg-slate-50 border border-slate-200/90 transition-colors cursor-pointer space-x-2.5">
-              <input type="checkbox" id="contact-agreement-checkbox" checked class="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500/20 cursor-pointer" />
-              <div class="text-xs text-slate-700 select-none">
-                <span class="font-bold text-slate-900">Договорённость достигнута</span>
-                <p class="text-[11px] text-slate-500">Причина подтверждена или согласован план действий</p>
-              </div>
-            </label>
-
-            <div id="contact-reminder-date-wrapper" class="hidden p-3 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-2">
-              <label for="contact-next-date-input" class="block font-semibold text-amber-900">
-                Напоминание о повторном контакте (дата)
-              </label>
-              <input type="date" id="contact-next-date-input"
-                     class="w-full h-10 px-3.5 rounded-xl border border-amber-300 bg-white text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all cursor-pointer" />
-            </div>
-
-            <div class="pt-2 flex items-center space-x-3">
-              <button type="button" id="btn-cancel-contact-modal" class="flex-1 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer">
-                Отмена
-              </button>
-              <button type="submit" id="btn-submit-contact-modal" class="flex-1 h-10 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-2xs transition-colors cursor-pointer">
-                Сохранить
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <div id="modal-add-note" class="fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
-        <div id="modal-note-dialog" class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95">
-          <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
-            <div class="flex items-center space-x-2.5">
-              <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
-                ${renderIcon('message-square', 'w-4 h-4 text-slate-700')}
-              </div>
               <div>
-                <h3 class="text-base font-bold text-slate-900">Заметка классного руководителя</h3>
-                <p class="text-xs text-slate-500">Педагогическое наблюдение</p>
+                <label for="contact-summary-input" class="block font-semibold text-slate-700 mb-1.5">Итог разговора <span class="text-rose-500">*</span></label>
+                <textarea id="contact-summary-input" rows="3" required placeholder="Кратко опишите содержание беседы и договоренности..."
+                          class="w-full p-3 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 resize-none shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"></textarea>
               </div>
-            </div>
-            <button type="button" id="btn-close-note-modal-x" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-xl transition-colors cursor-pointer">
-              ${renderIcon('x', 'w-4 h-4')}
-            </button>
-          </div>
 
-          <form id="form-add-note" class="py-4 space-y-3.5 text-xs">
-            <div id="note-error-box" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 font-medium"></div>
-
-            <div>
-              <label for="note-text-input" class="block font-semibold text-slate-700 mb-1.5">Текст заметки <span class="text-rose-500">*</span></label>
-              <textarea id="note-text-input" rows="4" required placeholder="Запишите наблюдение (например: «Стал замкнут, нужна беседа с психологом»)..."
-                        class="w-full p-3 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 resize-none shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"></textarea>
-            </div>
-
-            <label for="note-private-checkbox" class="flex items-start p-3 rounded-2xl bg-slate-50 border border-slate-200/90 transition-colors cursor-pointer space-x-2.5">
-              <input type="checkbox" id="note-private-checkbox" checked class="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500/20 cursor-pointer" />
-              <div class="text-xs text-slate-700 select-none">
-                <span class="font-bold text-slate-900">Приватная заметка</span>
-                <p class="text-[11px] text-slate-500">Заметка видна только классному руководителю (не отображается ученику и родителю)</p>
-              </div>
-            </label>
-
-            <div class="pt-2 flex items-center space-x-3">
-              <button type="button" id="btn-cancel-note-modal" class="flex-1 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer">
-                Отмена
-              </button>
-              <button type="submit" id="btn-submit-note-modal" class="flex-1 h-10 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-2xs transition-colors cursor-pointer">
-                Сохранить
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- МОДАЛЬНОЕ ОКНО: Подтвердить причину пропуска -->
-      <div id="modal-confirm-student-absence" class="fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
-        <div id="modal-confirm-dialog" class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95">
-          <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
-            <div class="flex items-center space-x-2.5">
-              <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                ${renderIcon('check', 'w-4 h-4 text-emerald-600')}
-              </div>
-              <div>
-                <h3 class="text-base font-bold text-slate-900">Подтверждение пропуска занятий</h3>
-                <p class="text-xs text-slate-500">Учёт уважительной причины и медицинских документов</p>
-              </div>
-            </div>
-            <button type="button" id="btn-close-absence-modal-x" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-xl transition-colors cursor-pointer">
-              ${renderIcon('x', 'w-4 h-4')}
-            </button>
-          </div>
-
-          <form id="form-confirm-student-absence" class="py-4 space-y-3.5 text-xs">
-            <input type="hidden" id="absence-record-ids" />
-
-            <div>
-              <label for="confirm-reason-type" class="block font-semibold text-slate-700 mb-1.5">Тип причины</label>
-              <div class="relative">
-                <select id="confirm-reason-type"
-                        class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
-                  <option value="excused">Уважительная (по справке от врача / заявлению родителей)</option>
-                  <option value="unexcused">Неуважительная (прогул / причина не подтверждена)</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-                  ${renderIcon('chevron-down', 'w-4 h-4')}
+              <label for="contact-agreement-checkbox" class="flex items-start p-3 rounded-2xl bg-slate-50 border border-slate-200/90 transition-colors cursor-pointer space-x-2.5">
+                <input type="checkbox" id="contact-agreement-checkbox" checked class="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500/20 cursor-pointer" />
+                <div class="text-xs text-slate-700 select-none">
+                  <span class="font-bold text-slate-900">Договорённость достигнута</span>
+                  <p class="text-[11px] text-slate-500">Причина подтверждена или согласован план действий</p>
                 </div>
-              </div>
-            </div>
-
-            <div id="block-absence-doc-fields" class="space-y-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
-              <label for="confirm-has-doc-check" class="flex items-center space-x-2 cursor-pointer select-none">
-                <input type="checkbox" id="confirm-has-doc-check" checked class="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer" />
-                <span class="text-xs font-semibold text-slate-800">Предоставлен подтверждающий документ (справка / заявление)</span>
               </label>
 
-              <div>
-                <label for="confirm-doc-text-input" class="block font-semibold text-slate-700 mb-1">
-                  Реквизиты документа (номер, дата, медучреждение)
+              <div id="contact-reminder-date-wrapper" class="hidden p-3 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-2">
+                <label for="contact-next-date-input" class="block font-semibold text-amber-900">
+                  Напоминание о повторном контакте (дата)
                 </label>
-                <input type="text" id="confirm-doc-text-input"
-                       placeholder="Справка № 142 от 25.10.2024 (ДГП № 1)"
-                       class="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all shadow-2xs" />
+                <input type="date" id="contact-next-date-input"
+                       class="w-full h-10 px-3.5 rounded-xl border border-amber-300 bg-white text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all cursor-pointer" />
               </div>
-            </div>
 
-            <div>
-              <label for="confirm-absence-notes-input" class="block font-semibold text-slate-700 mb-1.5">Комментарий</label>
-              <textarea id="confirm-absence-notes-input" rows="2" placeholder="Например: ОРВИ, постельный режим или семейные обстоятельства..."
-                        class="w-full p-3 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-xs text-slate-800 placeholder:text-slate-400 resize-none shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"></textarea>
-            </div>
-
-            <div class="pt-2 flex items-center space-x-3">
-              <button type="button" id="btn-cancel-absence-modal" class="flex-1 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer">
-                Отмена
-              </button>
-              <button type="submit" class="flex-1 h-10 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-2xs transition-colors cursor-pointer">
-                Подтвердить
-              </button>
-            </div>
-          </form>
+              <div class="pt-2 flex items-center space-x-3">
+                <button type="button" id="btn-cancel-contact-modal" class="flex-1 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer">
+                  Отмена
+                </button>
+                <button type="submit" id="btn-submit-contact-modal" class="flex-1 h-10 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-2xs transition-colors cursor-pointer">
+                  Сохранить
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
+
+        <div id="modal-add-note" class="fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+          <div id="modal-note-dialog" class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95">
+            <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+                  ${renderIcon('message-square', 'w-4 h-4 text-slate-700')}
+                </div>
+                <div>
+                  <h3 class="text-base font-bold text-slate-900">Заметка классного руководителя</h3>
+                  <p class="text-xs text-slate-500">Педагогическое наблюдение</p>
+                </div>
+              </div>
+              <button type="button" id="btn-close-note-modal-x" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-xl transition-colors cursor-pointer">
+                ${renderIcon('x', 'w-4 h-4')}
+              </button>
+            </div>
+
+            <form id="form-add-note" class="py-4 space-y-3.5 text-xs">
+              <div id="note-error-box" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 font-medium"></div>
+
+              <div>
+                <label for="note-text-input" class="block font-semibold text-slate-700 mb-1.5">Текст заметки <span class="text-rose-500">*</span></label>
+                <textarea id="note-text-input" rows="4" required placeholder="Запишите наблюдение (например: «Стал замкнут, нужна беседа с психологом»)..."
+                          class="w-full p-3 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 resize-none shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"></textarea>
+              </div>
+
+              <label for="note-private-checkbox" class="flex items-start p-3 rounded-2xl bg-slate-50 border border-slate-200/90 transition-colors cursor-pointer space-x-2.5">
+                <input type="checkbox" id="note-private-checkbox" checked class="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500/20 cursor-pointer" />
+                <div class="text-xs text-slate-700 select-none">
+                  <span class="font-bold text-slate-900">Приватная заметка</span>
+                  <p class="text-[11px] text-slate-500">Заметка видна только классному руководителю (не отображается ученику и родителю)</p>
+                </div>
+              </label>
+
+              <div class="pt-2 flex items-center space-x-3">
+                <button type="button" id="btn-cancel-note-modal" class="flex-1 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer">
+                  Отмена
+                </button>
+                <button type="submit" id="btn-submit-note-modal" class="flex-1 h-10 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-2xs transition-colors cursor-pointer">
+                  Сохранить
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div id="modal-confirm-student-absence" class="fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+          <div id="modal-confirm-dialog" class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95">
+            <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  ${renderIcon('check', 'w-4 h-4 text-emerald-600')}
+                </div>
+                <div>
+                  <h3 class="text-base font-bold text-slate-900">Подтверждение пропуска занятий</h3>
+                  <p class="text-xs text-slate-500">Учёт уважительной причины и медицинских документов</p>
+                </div>
+              </div>
+              <button type="button" id="btn-close-absence-modal-x" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-xl transition-colors cursor-pointer">
+                ${renderIcon('x', 'w-4 h-4')}
+              </button>
+            </div>
+
+            <form id="form-confirm-student-absence" class="py-4 space-y-3.5 text-xs">
+              <input type="hidden" id="absence-record-ids" />
+
+              <div>
+                <label for="confirm-reason-type" class="block font-semibold text-slate-700 mb-1.5">Тип причины</label>
+                <div class="relative">
+                  <select id="confirm-reason-type"
+                          class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                    <option value="excused">Уважительная (по справке от врача / заявлению родителей)</option>
+                    <option value="unexcused">Неуважительная (прогул / причина не подтверждена)</option>
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                    ${renderIcon('chevron-down', 'w-4 h-4')}
+                  </div>
+                </div>
+              </div>
+
+              <div id="block-absence-doc-fields" class="space-y-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+                <label for="confirm-has-doc-check" class="flex items-center space-x-2 cursor-pointer select-none">
+                  <input type="checkbox" id="confirm-has-doc-check" checked class="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer" />
+                  <span class="text-xs font-semibold text-slate-800">Предоставлен подтверждающий документ (справка / заявление)</span>
+                </label>
+
+                <div>
+                  <label for="confirm-doc-text-input" class="block font-semibold text-slate-700 mb-1">
+                    Реквизиты документа (номер, дата, медучреждение)
+                  </label>
+                  <input type="text" id="confirm-doc-text-input"
+                         placeholder="Справка № 142 от 25.10.2024 (ДГП № 1)"
+                         class="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all shadow-2xs" />
+                </div>
+              </div>
+
+              <div>
+                <label for="confirm-absence-notes-input" class="block font-semibold text-slate-700 mb-1.5">Комментарий</label>
+                <textarea id="confirm-absence-notes-input" rows="2" placeholder="Например: ОРВИ, постельный режим или семейные обстоятельства..."
+                          class="w-full p-3 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-xs text-slate-800 placeholder:text-slate-400 resize-none shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"></textarea>
+              </div>
+
+              <div class="pt-2 flex items-center space-x-3">
+                <button type="button" id="btn-cancel-absence-modal" class="flex-1 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer">
+                  Отмена
+                </button>
+                <button type="submit" class="flex-1 h-10 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-2xs transition-colors cursor-pointer">
+                  Подтвердить
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ` : ''}
 
       <div id="summary-toast" class="fixed bottom-6 right-6 z-50 flex items-center space-x-3 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl transition-all duration-300 opacity-0 translate-y-4 pointer-events-none">
         <span id="summary-toast-icon">${renderIcon('check', 'w-4 h-4 text-emerald-400')}</span>

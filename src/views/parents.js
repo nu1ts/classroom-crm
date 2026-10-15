@@ -12,8 +12,9 @@
  * - Переход в сводку родителя по кнопке «Сводка»
  */
 
-import { getDB, saveDB, addParent, updateParent, deleteParent, linkParentToStudent } from '../services/storage.js';
+import { getDB, saveDB, addParent, updateParent, deleteParent, linkParentToStudent, unlinkParentFromStudent } from '../services/storage.js';
 import { renderIcon } from '../components/icons.js';
+import { calculateStudentAttendance, calculateStudentAverage, getRiskZoneStudents } from '../mock/calculations.js';
 
 export function renderParentsView(options = {}) {
   const db = getDB();
@@ -40,12 +41,22 @@ export function renderParentsView(options = {}) {
     const parts = (parent.fullName || '').trim().split(/\s+/);
     const initials = parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}` : (parent.fullName ? parent.fullName.slice(0, 2) : 'РД');
 
+    const parentContacts = (db.parentContacts || []).filter(c => c.parentId === parent.id);
+    parentContacts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    const lastContact = parentContacts[0] ? {
+      ...parentContacts[0],
+      displayDate: parentContacts[0].date && parentContacts[0].date.includes('-')
+        ? parentContacts[0].date.split('-').reverse().join('.')
+        : (parentContacts[0].date || '')
+    } : null;
+
     return {
       parent,
       initials: initials.toUpperCase(),
       relations: parentRels,
       children,
-      hasLink: children.length > 0
+      hasLink: children.length > 0,
+      lastContact
     };
   });
 
@@ -214,6 +225,11 @@ export function renderParentsView(options = {}) {
                               ${renderIcon('phone', 'w-3 h-3 text-slate-400')}
                               <span>${p.phone || 'Нет телефона'}</span>
                             </div>
+                            ${row.lastContact ? `
+                              <div class="text-[11px] text-brand-600 font-semibold flex items-center space-x-1 mt-0.5" title="${row.lastContact.summary || ''}">
+                                <span>Контакт: ${row.lastContact.displayDate} (${row.lastContact.channelLabel || 'Звонок'})</span>
+                              </div>
+                            ` : ''}
                           </div>
                         </div>
                       </td>
@@ -890,7 +906,7 @@ export function setupParentsListeners(onNavigate) {
 
 export function renderParentSummaryView(options = {}) {
   const db = getDB();
-  const parentId = options.parentId || 'pr-23';
+  const parentId = options.parentId || options.id || 'pr-27';
   const parent = (db.parents || []).find(p => p.id === parentId) || db.parents[0];
   if (!parent) {
     return `<div class="p-8 text-center text-slate-500">Родитель не найден</div>`;
@@ -904,17 +920,25 @@ export function renderParentSummaryView(options = {}) {
     return {
       student,
       relationRole: rel.relationRole || 'Родитель',
-      isPrimary: Boolean(rel.isPrimary)
+      isPrimary: Boolean(rel.isPrimary),
+      isOtherClass: false,
+      classLabel: '7Б класс'
     };
   });
 
   if (parent.otherChildren && parent.otherChildren.length > 0) {
     parent.otherChildren.forEach(oc => {
       children.push({
-        student: { id: `ext-${oc.name}`, fullName: oc.name, classId: oc.class },
-        relationRole: 'Ребёнок',
+        student: {
+          id: `ext-${encodeURIComponent(oc.name)}`,
+          fullName: oc.name,
+          classId: `class-${(oc.class || '9v').toLowerCase()}`,
+          className: oc.class || '9В'
+        },
+        relationRole: oc.role || 'Дочь',
         isPrimary: false,
-        isOtherClass: true
+        isOtherClass: true,
+        classLabel: `${oc.class || '9В'} класс (обучается в другом классе)`
       });
     });
   }
@@ -922,11 +946,37 @@ export function renderParentSummaryView(options = {}) {
   const isPrimaryOverall = children.some(c => c.isPrimary);
   const primaryRole = children[0]?.relationRole || 'Родитель';
 
+  const riskList = getRiskZoneStudents(db.students, db.lessons, db.attendance, db.grades, db.subjects, { periodId: 'q1_2024' });
+  const riskChildren = [];
+  for (const c of children) {
+    if (!c.isOtherClass && c.student) {
+      const riskItem = riskList.find(r => r.studentId === c.student.id);
+      if (riskItem) {
+        const attStats = calculateStudentAttendance(db.lessons, db.attendance, c.student.id, { periodId: 'q1_2024' });
+        const overallAvg = calculateStudentAverage(db.grades, c.student.id, { periodId: 'q1_2024' });
+        riskChildren.push({
+          student: c.student,
+          relationRole: c.relationRole,
+          attStats,
+          overallAvg,
+          riskItem,
+          reasons: riskItem.reasons || []
+        });
+      }
+    }
+  }
+
   const contacts = (db.parentContacts || []).filter(c => c.parentId === parent.id);
-  contacts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  contacts.sort((a, b) => {
+    const dtA = `${a.date || ''} ${a.time || ''} ${a.id || ''}`;
+    const dtB = `${b.date || ''} ${b.time || ''} ${b.id || ''}`;
+    return dtB.localeCompare(dtA);
+  });
 
   const parts = (parent.fullName || '').trim().split(/\s+/);
   const initials = parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}` : (parent.fullName ? parent.fullName.slice(0, 2) : 'РД');
+
+  const students7B = rawStudents.filter(s => (!s.classId || s.classId === 'class-7b') && s.status !== 'archived');
 
   return `
     <div class="space-y-6 animate-fadeIn pb-12">
@@ -976,12 +1026,19 @@ export function renderParentSummaryView(options = {}) {
                     class="w-full h-10 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer">
               Связать с учеником
             </button>
+            <button type="button" id="btn-card-unlink-student"
+                    class="w-full h-10 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-700 font-semibold text-xs transition-colors cursor-pointer ${relations.length === 0 ? 'opacity-50 pointer-events-none' : ''}">
+              Снять связь
+            </button>
           </div>
         </div>
 
         <div class="lg:col-span-2 space-y-6">
           <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-2xs">
-            <h3 class="text-base font-bold text-slate-900 mb-4">Связанные ученики</h3>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-base font-bold text-slate-900">Связанные ученики</h3>
+              <span class="text-xs font-medium text-slate-400">Дети: ${children.length}</span>
+            </div>
             <div class="space-y-3">
               ${children.length > 0 ? children.map(c => `
                 <div class="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
@@ -991,23 +1048,66 @@ export function renderParentSummaryView(options = {}) {
                     </div>
                     <div>
                       <div class="font-bold text-slate-900 text-xs">${c.student?.fullName || 'Ученик'}</div>
-                      <div class="text-[11px] text-slate-500 mt-0.5">${c.relationRole} • ${c.student?.classId === 'class-7b' || !c.student?.classId ? '7Б класс' : c.student.classId}</div>
+                      <div class="text-[11px] text-slate-500 mt-0.5">
+                        ${c.relationRole} • ${c.classLabel}
+                        ${c.isPrimary ? '<span class="ml-1.5 text-emerald-600 font-semibold">• Основной контакт</span>' : ''}
+                      </div>
                     </div>
                   </div>
                   <div>
                     <a href="#/student?id=${c.student?.id || ''}"
-                       class="px-3 py-1.5 rounded-xl border border-brand-200 hover:bg-brand-50 text-brand-700 font-semibold text-xs transition-colors">
-                      Открыть профиль
+                       class="px-3.5 py-1.5 rounded-xl border ${c.isOtherClass ? 'border-slate-200 hover:bg-slate-100 text-slate-700' : 'border-brand-200 hover:bg-brand-50 text-brand-700'} font-semibold text-xs transition-colors inline-block">
+                      Открыть сводку по ученику
                     </a>
                   </div>
                 </div>
               `).join('') : `
                 <div class="p-6 text-center text-xs text-slate-500">
-                  Нет связанных учеников в классе
+                  Нет связанных учеников
                 </div>
               `}
             </div>
           </div>
+
+          ${riskChildren.length > 0 ? riskChildren.map(rc => `
+            <div class="bg-amber-50/75 rounded-3xl p-6 border border-amber-200 shadow-2xs space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <span class="p-1.5 bg-amber-100 text-amber-700 rounded-xl">
+                    ${renderIcon('alert', 'w-4 h-4 text-amber-600')}
+                  </span>
+                  <h4 class="text-sm font-bold text-amber-950">Ребёнок под наблюдением: ${rc.student.fullName} (7Б)</h4>
+                </div>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-200/70 text-amber-900">
+                  Зона внимания
+                </span>
+              </div>
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
+                <div>
+                  <div class="text-xs text-slate-700 font-medium">
+                    Пропуски уроков: <span class="font-bold text-slate-900">${rc.attStats.absentCount} из ${rc.attStats.totalLessons}</span> (${rc.attStats.absenceRate}%)
+                    ${rc.overallAvg !== null ? ` · Средний балл: <span class="font-bold text-slate-900">${rc.overallAvg}</span>` : ''}
+                  </div>
+                  ${rc.reasons && rc.reasons.length > 0 ? `
+                    <div class="mt-2 flex flex-wrap gap-1.5">
+                      ${rc.reasons.map(r => `
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-white/90 border border-amber-200 text-amber-900">
+                          ${r.description || r}
+                        </span>
+                      `).join('')}
+                    </div>
+                  ` : ''}
+                </div>
+                <div class="shrink-0">
+                  <a href="#/student?id=${rc.student.id}"
+                     class="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs transition-colors shadow-2xs">
+                    <span>Сводка по ученику</span>
+                    ${renderIcon('chevron-right', 'w-3.5 h-3.5')}
+                  </a>
+                </div>
+              </div>
+            </div>
+          `).join('') : ''}
 
           <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-2xs">
             <div class="flex items-center justify-between mb-4">
@@ -1020,11 +1120,15 @@ export function renderParentSummaryView(options = {}) {
             </div>
 
             <div class="space-y-3" id="parent-communication-history-list">
-              ${contacts.length > 0 ? contacts.map(c => `
+              ${contacts.length > 0 ? contacts.map(c => {
+    const dateDisplay = c.date && c.date.includes('-')
+      ? c.date.split('-').reverse().join('.')
+      : (c.date || '');
+    return `
                 <div class="p-4 rounded-2xl border border-slate-100 bg-white hover:border-slate-200 transition-colors shadow-2xs">
                   <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-2">
-                      <span class="text-xs font-bold text-slate-900">${c.date || ''}</span>
+                      <span class="text-xs font-bold text-slate-900">${dateDisplay}</span>
                       <span class="text-xs text-slate-400">•</span>
                       <span class="text-xs text-slate-600 font-medium">Автор: ${c.author || 'Смирнова М. В.'}</span>
                     </div>
@@ -1042,7 +1146,8 @@ export function renderParentSummaryView(options = {}) {
                     </div>
                   ` : ''}
                 </div>
-              `).join('') : `
+              `;
+  }).join('') : `
                 <div class="py-10 text-center">
                   <div class="text-xs text-slate-500 font-medium">Разговоров с этим родителем ещё не было</div>
                   <div class="mt-3">
@@ -1135,63 +1240,192 @@ export function renderParentSummaryView(options = {}) {
           </form>
         </div>
       </div>
+
+      <div id="modal-card-link-student" class="fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+        <div id="modal-card-link-student-dialog" class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95">
+          <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Связать с учеником</h3>
+              <p class="text-xs text-slate-500 mt-0.5">${parent.fullName}</p>
+            </div>
+            <button type="button" id="btn-close-card-link-x" class="p-1 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer">
+              ${renderIcon('x', 'w-5 h-5')}
+            </button>
+          </div>
+
+          <form id="form-card-link-student" class="mt-4 space-y-4 text-xs">
+            <div>
+              <label for="card-link-student-select" class="block font-semibold text-slate-700 mb-1">Ученик 7Б класса</label>
+              <div class="relative">
+                <select id="card-link-student-select"
+                        class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                  ${students7B.map(s => `<option value="${s.id}">${s.fullName} (${s.id})</option>`).join('')}
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                  ${renderIcon('chevron-down', 'w-4 h-4')}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label for="card-link-role-select" class="block font-semibold text-slate-700 mb-1">Роль связи</label>
+              <div class="relative">
+                <select id="card-link-role-select"
+                        class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                  <option value="Мать">Мать</option>
+                  <option value="Отец">Отец</option>
+                  <option value="Опекун" selected>Опекун</option>
+                  <option value="Бабушка/Дедушка">Бабушка/Дедушка</option>
+                  <option value="Родственник">Родственник</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                  ${renderIcon('chevron-down', 'w-4 h-4')}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="flex items-center space-x-2 cursor-pointer select-none">
+                <input type="checkbox" id="card-link-is-primary" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer" />
+                <span class="text-xs font-semibold text-slate-800">Сделать основным контактом</span>
+              </label>
+            </div>
+
+            <div class="pt-3 flex items-center space-x-3">
+              <button type="button" id="btn-cancel-card-link" class="flex-1 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer">
+                Отмена
+              </button>
+              <button type="submit" class="flex-1 h-10 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-2xs transition-colors cursor-pointer">
+                Связать
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="modal-card-unlink-student" class="fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+        <div id="modal-card-unlink-student-dialog" class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95">
+          <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Снять связь с учеником</h3>
+              <p class="text-xs text-slate-500 mt-0.5">${parent.fullName}</p>
+            </div>
+            <button type="button" id="btn-close-card-unlink-x" class="p-1 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer">
+              ${renderIcon('x', 'w-5 h-5')}
+            </button>
+          </div>
+
+          <form id="form-card-unlink-student" class="mt-4 space-y-4 text-xs">
+            ${relations.length > 1 ? `
+              <div>
+                <label for="card-unlink-student-select" class="block font-semibold text-slate-700 mb-1">Выберите ученика для снятия связи</label>
+                <div class="relative">
+                  <select id="card-unlink-student-select"
+                          class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 transition-all cursor-pointer">
+                    ${relations.map(rel => {
+    const st = rawStudents.find(s => s.id === rel.studentId);
+    return `<option value="${rel.studentId}">${st ? st.fullName : 'Ученик'} (${rel.relationRole || 'Родитель'})</option>`;
+  }).join('')}
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                    ${renderIcon('chevron-down', 'w-4 h-4')}
+                  </div>
+                </div>
+              </div>
+            ` : `
+              <input type="hidden" id="card-unlink-student-select" value="${relations[0]?.studentId || ''}" />
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Вы уверены, что хотите снять связь родителя <strong class="text-slate-900">${parent.fullName}</strong> с учеником <strong class="text-slate-900">${children.find(c => !c.isOtherClass)?.student?.fullName || 'учеником'}</strong>?
+              </p>
+            `}
+
+            <div class="pt-3 flex items-center space-x-3">
+              <button type="button" id="btn-cancel-card-unlink" class="flex-1 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer">
+                Отмена
+              </button>
+              <button type="submit" class="flex-1 h-10 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs shadow-2xs transition-colors cursor-pointer">
+                Снять связь
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="parent-summary-toast" class="fixed bottom-6 right-6 z-50 flex items-center space-x-3 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl transition-all duration-300 opacity-0 translate-y-4 pointer-events-none">
+        <span>${renderIcon('check', 'w-4 h-4 text-emerald-400')}</span>
+        <span id="parent-summary-toast-message" class="text-xs font-medium"></span>
+      </div>
     </div>
   `;
 }
 
 export function setupParentSummaryListeners(onNavigate) {
-  const modal = document.getElementById('modal-record-parent-contact');
-  const modalDialog = document.getElementById('modal-record-contact-dialog');
-  const btnCloseX = document.getElementById('btn-close-record-contact-x');
-  const btnCancel = document.getElementById('btn-cancel-contact-modal');
-  const btnOpen1 = document.getElementById('btn-card-record-contact');
-  const btnOpen2 = document.getElementById('btn-open-parent-contact-modal');
-  const btnOpen3 = document.getElementById('btn-empty-record-contact');
-  const form = document.getElementById('form-record-parent-contact');
+  const toast = document.getElementById('parent-summary-toast');
+  const toastMsg = document.getElementById('parent-summary-toast-message');
+
+  function showSummaryToast(msg) {
+    if (!toast || !toastMsg) return;
+    toastMsg.textContent = msg;
+    toast.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+    toast.classList.add('opacity-100', 'translate-y-0');
+    setTimeout(() => {
+      toast.classList.remove('opacity-100', 'translate-y-0');
+      toast.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+    }, 2500);
+  }
+
+  const modalContact = document.getElementById('modal-record-parent-contact');
+  const modalContactDialog = document.getElementById('modal-record-contact-dialog');
+  const btnCloseContactX = document.getElementById('btn-close-record-contact-x');
+  const btnCancelContact = document.getElementById('btn-cancel-contact-modal');
+  const btnOpenContact1 = document.getElementById('btn-card-record-contact');
+  const btnOpenContact2 = document.getElementById('btn-open-parent-contact-modal');
+  const btnOpenContact3 = document.getElementById('btn-empty-record-contact');
+  const formContact = document.getElementById('form-record-parent-contact');
 
   const selectChannel = document.getElementById('contact-channel-select');
   const inputSummary = document.getElementById('contact-summary-input');
   const channelError = document.getElementById('contact-channel-error');
   const summaryError = document.getElementById('contact-summary-error');
 
-  function openModal() {
-    if (!modal) return;
-    if (form) form.reset();
+  function openContactModal() {
+    if (!modalContact) return;
+    if (formContact) formContact.reset();
     channelError?.classList.add('hidden');
     summaryError?.classList.add('hidden');
     selectChannel?.classList.remove('border-rose-500');
     inputSummary?.classList.remove('border-rose-500');
 
-    modal.classList.remove('opacity-0', 'pointer-events-none');
-    modal.classList.add('opacity-100', 'pointer-events-auto');
-    if (modalDialog) {
-      modalDialog.classList.remove('scale-95');
-      modalDialog.classList.add('scale-100');
+    modalContact.classList.remove('opacity-0', 'pointer-events-none');
+    modalContact.classList.add('opacity-100', 'pointer-events-auto');
+    if (modalContactDialog) {
+      modalContactDialog.classList.remove('scale-95');
+      modalContactDialog.classList.add('scale-100');
     }
   }
 
-  function closeModal() {
-    if (!modal) return;
-    modal.classList.remove('opacity-100', 'pointer-events-auto');
-    modal.classList.add('opacity-0', 'pointer-events-none');
-    if (modalDialog) {
-      modalDialog.classList.remove('scale-100');
-      modalDialog.classList.add('scale-95');
+  function closeContactModal() {
+    if (!modalContact) return;
+    modalContact.classList.remove('opacity-100', 'pointer-events-auto');
+    modalContact.classList.add('opacity-0', 'pointer-events-none');
+    if (modalContactDialog) {
+      modalContactDialog.classList.remove('scale-100');
+      modalContactDialog.classList.add('scale-95');
     }
   }
 
-  [btnOpen1, btnOpen2, btnOpen3].forEach(btn => {
-    btn?.addEventListener('click', openModal);
+  [btnOpenContact1, btnOpenContact2, btnOpenContact3].forEach(btn => {
+    btn?.addEventListener('click', openContactModal);
   });
 
-  btnCloseX?.addEventListener('click', closeModal);
-  btnCancel?.addEventListener('click', closeModal);
-  modal?.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
+  btnCloseContactX?.addEventListener('click', closeContactModal);
+  btnCancelContact?.addEventListener('click', closeContactModal);
+  modalContact?.addEventListener('click', (e) => {
+    if (e.target === modalContact) closeContactModal();
   });
 
-  if (form) {
-    form.addEventListener('submit', (e) => {
+  if (formContact) {
+    formContact.addEventListener('submit', (e) => {
       e.preventDefault();
       const parentId = document.getElementById('contact-parent-id')?.value;
       const studentId = document.getElementById('contact-student-select')?.value || null;
@@ -1247,10 +1481,127 @@ export function setupParentSummaryListeners(onNavigate) {
       db.parentContacts.unshift(newContact);
       saveDB(db);
 
-      closeModal();
-      const hash = window.location.hash || '#/parents';
-      if (onNavigate) onNavigate(hash);
-      else window.location.reload();
+      closeContactModal();
+      showSummaryToast('Контакт успешно зафиксирован');
+
+      setTimeout(() => {
+        const hash = window.location.hash || '#/parents';
+        if (onNavigate) onNavigate(hash);
+        else window.location.reload();
+      }, 200);
+    });
+  }
+
+  const modalLink = document.getElementById('modal-card-link-student');
+  const modalLinkDialog = document.getElementById('modal-card-link-student-dialog');
+  const btnOpenLink = document.getElementById('btn-card-link-student');
+  const btnCloseLinkX = document.getElementById('btn-close-card-link-x');
+  const btnCancelLink = document.getElementById('btn-cancel-card-link');
+  const formLink = document.getElementById('form-card-link-student');
+  const selectLinkStudent = document.getElementById('card-link-student-select');
+  const selectLinkRole = document.getElementById('card-link-role-select');
+  const checkLinkPrimary = document.getElementById('card-link-is-primary');
+
+  function openLinkModal() {
+    if (!modalLink) return;
+    if (formLink) formLink.reset();
+    modalLink.classList.remove('opacity-0', 'pointer-events-none');
+    modalLink.classList.add('opacity-100', 'pointer-events-auto');
+    if (modalLinkDialog) {
+      modalLinkDialog.classList.remove('scale-95');
+      modalLinkDialog.classList.add('scale-100');
+    }
+  }
+
+  function closeLinkModal() {
+    if (!modalLink) return;
+    modalLink.classList.remove('opacity-100', 'pointer-events-auto');
+    modalLink.classList.add('opacity-0', 'pointer-events-none');
+    if (modalLinkDialog) {
+      modalLinkDialog.classList.remove('scale-100');
+      modalLinkDialog.classList.add('scale-95');
+    }
+  }
+
+  btnOpenLink?.addEventListener('click', openLinkModal);
+  btnCloseLinkX?.addEventListener('click', closeLinkModal);
+  btnCancelLink?.addEventListener('click', closeLinkModal);
+  modalLink?.addEventListener('click', (e) => {
+    if (e.target === modalLink) closeLinkModal();
+  });
+
+  if (formLink) {
+    formLink.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const parentId = document.getElementById('contact-parent-id')?.value;
+      const studentId = selectLinkStudent?.value;
+      const relationRole = selectLinkRole?.value || 'Опекун';
+      const isPrimary = checkLinkPrimary?.checked || false;
+
+      const res = linkParentToStudent(parentId, studentId, { relationRole, isPrimary });
+      if (res.success) {
+        closeLinkModal();
+        showSummaryToast('Связь с учеником успешно создана');
+        setTimeout(() => {
+          const hash = window.location.hash || '#/parents';
+          if (onNavigate) onNavigate(hash);
+          else window.location.reload();
+        }, 200);
+      }
+    });
+  }
+
+  const modalUnlink = document.getElementById('modal-card-unlink-student');
+  const modalUnlinkDialog = document.getElementById('modal-card-unlink-student-dialog');
+  const btnOpenUnlink = document.getElementById('btn-card-unlink-student');
+  const btnCloseUnlinkX = document.getElementById('btn-close-card-unlink-x');
+  const btnCancelUnlink = document.getElementById('btn-cancel-card-unlink');
+  const formUnlink = document.getElementById('form-card-unlink-student');
+  const selectUnlinkStudent = document.getElementById('card-unlink-student-select');
+
+  function openUnlinkModal() {
+    if (!modalUnlink) return;
+    modalUnlink.classList.remove('opacity-0', 'pointer-events-none');
+    modalUnlink.classList.add('opacity-100', 'pointer-events-auto');
+    if (modalUnlinkDialog) {
+      modalUnlinkDialog.classList.remove('scale-95');
+      modalUnlinkDialog.classList.add('scale-100');
+    }
+  }
+
+  function closeUnlinkModal() {
+    if (!modalUnlink) return;
+    modalUnlink.classList.remove('opacity-100', 'pointer-events-auto');
+    modalUnlink.classList.add('opacity-0', 'pointer-events-none');
+    if (modalUnlinkDialog) {
+      modalUnlinkDialog.classList.remove('scale-100');
+      modalUnlinkDialog.classList.add('scale-95');
+    }
+  }
+
+  btnOpenUnlink?.addEventListener('click', openUnlinkModal);
+  btnCloseUnlinkX?.addEventListener('click', closeUnlinkModal);
+  btnCancelUnlink?.addEventListener('click', closeUnlinkModal);
+  modalUnlink?.addEventListener('click', (e) => {
+    if (e.target === modalUnlink) closeUnlinkModal();
+  });
+
+  if (formUnlink) {
+    formUnlink.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const parentId = document.getElementById('contact-parent-id')?.value;
+      const studentId = selectUnlinkStudent?.value;
+
+      const res = unlinkParentFromStudent(parentId, studentId);
+      if (res.success) {
+        closeUnlinkModal();
+        showSummaryToast('Связь с учеником удалена');
+        setTimeout(() => {
+          const hash = window.location.hash || '#/parents';
+          if (onNavigate) onNavigate(hash);
+          else window.location.reload();
+        }, 200);
+      }
     });
   }
 }
