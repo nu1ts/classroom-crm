@@ -48,6 +48,58 @@ function getChannelBadge(channel) {
   }
 }
 
+function formatAbsenceDisplayText(record) {
+  const isConfirmed = record.status === 'confirmed' || record.status === 'excused';
+  const r = (record.reason || '').trim();
+  const d = (record.document || '').trim();
+
+  if (!isConfirmed) {
+    return r || 'Причина не подтверждена';
+  }
+
+  if (!r && !d) {
+    return 'Уважительная причина (подтверждено)';
+  }
+
+  const isIllness = r.toLowerCase().includes('болезн') || d.toLowerCase().includes('болезн') ||
+                    r.toLowerCase().includes('орви') || d.toLowerCase().includes('орви') ||
+                    r.toLowerCase() === 'справка' || d.toLowerCase().includes('справка') ||
+                    d.toLowerCase().includes('мед');
+
+  if (isIllness) {
+    const hasSpecificDoc = d && !d.toLowerCase().includes('справка орви') && d.toLowerCase() !== 'справка' && d.toLowerCase() !== 'медицинская справка';
+    let diag = '';
+    const cleanR = r.replace(/^по болезни\s*/i, '').replace(/^\(|\)$/g, '').trim();
+    if (cleanR && !['справка', 'болезнь', 'болезнь / справка', 'по болезни'].includes(cleanR.toLowerCase())) {
+      diag = cleanR;
+    }
+
+    if (diag) {
+      if (hasSpecificDoc) {
+        return `По болезни (${diag}, ${d})`;
+      }
+      return `По болезни (${diag}, справка предоставлена)`;
+    } else {
+      if (hasSpecificDoc) {
+        return `По болезни (${d})`;
+      }
+      return 'По болезни (справка предоставлена)';
+    }
+  }
+
+  if (r.toLowerCase().includes('заявление') || d.toLowerCase().includes('заявление')) {
+    const details = (r && !r.toLowerCase().includes('заявление')) ? r : 'по семейным обстоятельствам';
+    return `Заявление родителей (${details})`;
+  }
+
+  if (r && d) {
+    if (r.toLowerCase() === d.toLowerCase()) return r;
+    return `${r} (${d})`;
+  }
+
+  return r || d || 'Уважительная причина (подтверждено)';
+}
+
 export function renderStudentSummaryView(options = {}) {
   const db = getDB();
   const periodId = options.periodId || 'q1_2024';
@@ -72,6 +124,14 @@ export function renderStudentSummaryView(options = {}) {
   }
 
   const overallAverage = calculateStudentAverage(db.grades, student.id, { periodId });
+  const avgColorClass = overallAverage === null
+    ? 'text-slate-400'
+    : overallAverage < 3.5
+      ? 'text-rose-600'
+      : overallAverage >= 4.5
+        ? 'text-emerald-500'
+        : 'text-slate-900';
+
   const attendanceStats = calculateStudentAttendance(db.lessons, db.attendance, student.id, { periodId });
 
   const riskList = getRiskZoneStudents(db.students, db.lessons, db.attendance, db.grades, db.subjects, { periodId });
@@ -234,7 +294,7 @@ export function renderStudentSummaryView(options = {}) {
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="bg-white rounded-3xl p-5 shadow-xs border border-slate-200/90">
               <div class="text-xs font-medium text-slate-500">Средний балл</div>
-              <div class="text-3xl font-extrabold text-emerald-500 mt-1">
+              <div class="text-3xl font-extrabold ${avgColorClass} mt-1">
                 ${overallAverage !== null ? overallAverage.toFixed(1) : '—'}
               </div>
               <div class="text-[11px] text-slate-400 mt-1">за I четверть 2024</div>
@@ -345,7 +405,7 @@ export function renderStudentSummaryView(options = {}) {
     const records = absencesByDateMap.get(date);
     const isAllConfirmed = records.every(r => r.record.status === 'confirmed' || r.record.status === 'excused');
     const firstRecord = records[0].record;
-    const firstReason = firstRecord.reason || 'По болезни (ОРВИ, справка предоставлена)';
+    const displayText = formatAbsenceDisplayText(firstRecord);
     const totalLessonsCount = records.length;
     const lessonText = totalLessonsCount >= 5 ? `Все уроки (${totalLessonsCount})` : `${totalLessonsCount} ${totalLessonsCount === 1 ? 'урок' : 'урока'}`;
 
@@ -355,8 +415,7 @@ export function renderStudentSummaryView(options = {}) {
                         <div class="text-xs font-bold text-slate-900 min-w-[75px]">${formatDateRu(date)}</div>
                         <div class="text-xs text-slate-500 min-w-[100px]">${lessonText}</div>
                         <div class="text-xs text-slate-700">
-                          ${firstReason}
-                          ${firstRecord.document ? `<span class="text-slate-400 text-[11px] ml-1">(${firstRecord.document})</span>` : ''}
+                          ${displayText}
                         </div>
                       </div>
 
@@ -632,6 +691,7 @@ export function renderStudentSummaryView(options = {}) {
         </div>
       </div>
 
+      <!-- МОДАЛЬНОЕ ОКНО: Подтвердить причину пропуска -->
       <div id="modal-confirm-student-absence" class="fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
         <div id="modal-confirm-dialog" class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95">
           <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
@@ -640,8 +700,8 @@ export function renderStudentSummaryView(options = {}) {
                 ${renderIcon('check', 'w-4 h-4 text-emerald-600')}
               </div>
               <div>
-                <h3 class="text-base font-bold text-slate-900">Подтвердить причину пропуска</h3>
-                <p class="text-xs text-slate-500">Предоставление справки или заявления</p>
+                <h3 class="text-base font-bold text-slate-900">Подтверждение пропуска занятий</h3>
+                <p class="text-xs text-slate-500">Учёт уважительной причины и медицинских документов</p>
               </div>
             </div>
             <button type="button" id="btn-close-absence-modal-x" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-xl transition-colors cursor-pointer">
@@ -653,13 +713,12 @@ export function renderStudentSummaryView(options = {}) {
             <input type="hidden" id="absence-record-ids" />
 
             <div>
-              <label class="block font-semibold text-slate-700 mb-1.5">Причина отсутствия</label>
+              <label for="confirm-reason-type" class="block font-semibold text-slate-700 mb-1.5">Тип причины</label>
               <div class="relative">
-                <select id="absence-reason-select"
+                <select id="confirm-reason-type"
                         class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
-                  <option value="По болезни (ОРВИ, справка предоставлена)">По болезни (ОРВИ, справка предоставлена)</option>
-                  <option value="Заявление от родителей по семейным обстоятельствам">Заявление от родителей по семейным обстоятельствам</option>
-                  <option value="Участие в олимпиаде / конкурсе">Участие в олимпиаде / конкурсе</option>
+                  <option value="excused">Уважительная (по справке от врача / заявлению родителей)</option>
+                  <option value="unexcused">Неуважительная (прогул / причина не подтверждена)</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                   ${renderIcon('chevron-down', 'w-4 h-4')}
@@ -667,17 +726,33 @@ export function renderStudentSummaryView(options = {}) {
               </div>
             </div>
 
+            <div id="block-absence-doc-fields" class="space-y-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+              <label for="confirm-has-doc-check" class="flex items-center space-x-2 cursor-pointer select-none">
+                <input type="checkbox" id="confirm-has-doc-check" checked class="rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer" />
+                <span class="text-xs font-semibold text-slate-800">Предоставлен подтверждающий документ (справка / заявление)</span>
+              </label>
+
+              <div>
+                <label for="confirm-doc-text-input" class="block font-semibold text-slate-700 mb-1">
+                  Реквизиты документа (номер, дата, медучреждение)
+                </label>
+                <input type="text" id="confirm-doc-text-input"
+                       placeholder="Справка № 142 от 25.10.2024 (ДГП № 1)"
+                       class="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all shadow-2xs" />
+              </div>
+            </div>
+
             <div>
-              <label class="block font-semibold text-slate-700 mb-1.5">Подтверждающий документ</label>
-              <input type="text" id="absence-document-input" value="Медицинская справка № 142/б"
-                     class="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" />
+              <label for="confirm-absence-notes-input" class="block font-semibold text-slate-700 mb-1.5">Комментарий</label>
+              <textarea id="confirm-absence-notes-input" rows="2" placeholder="Например: ОРВИ, постельный режим или семейные обстоятельства..."
+                        class="w-full p-3 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-xs text-slate-800 placeholder:text-slate-400 resize-none shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"></textarea>
             </div>
 
             <div class="pt-2 flex items-center space-x-3">
               <button type="button" id="btn-cancel-absence-modal" class="flex-1 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer">
                 Отмена
               </button>
-              <button type="submit" class="flex-1 h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-2xs transition-colors cursor-pointer">
+              <button type="submit" class="flex-1 h-10 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-2xs transition-colors cursor-pointer">
                 Подтвердить
               </button>
             </div>
@@ -942,12 +1017,28 @@ export function setupStudentSummaryListeners(onNavigate) {
   const btnCancelAbsence = document.getElementById('btn-cancel-absence-modal');
   const formAbsence = document.getElementById('form-confirm-student-absence');
   const absenceRecordIdsInput = document.getElementById('absence-record-ids');
-  const absenceReasonSelect = document.getElementById('absence-reason-select');
-  const absenceDocumentInput = document.getElementById('absence-document-input');
+  const selectReasonType = document.getElementById('confirm-reason-type');
+  const checkHasDoc = document.getElementById('confirm-has-doc-check');
+  const blockDocFields = document.getElementById('block-absence-doc-fields');
+  const inputDocText = document.getElementById('confirm-doc-text-input');
+  const inputAbsenceNotes = document.getElementById('confirm-absence-notes-input');
+
+  if (selectReasonType && blockDocFields) {
+    selectReasonType.addEventListener('change', () => {
+      blockDocFields.classList.toggle('hidden', selectReasonType.value !== 'excused');
+    });
+  }
 
   function openAbsenceModal(recordIds) {
     if (!modalAbsence) return;
     if (absenceRecordIdsInput) absenceRecordIdsInput.value = recordIds;
+    if (formAbsence) formAbsence.reset();
+    if (selectReasonType) selectReasonType.value = 'excused';
+    if (checkHasDoc) checkHasDoc.checked = true;
+    if (blockDocFields) blockDocFields.classList.remove('hidden');
+    if (inputDocText) inputDocText.value = '';
+    if (inputAbsenceNotes) inputAbsenceNotes.value = '';
+
     modalAbsence.classList.remove('opacity-0', 'pointer-events-none');
     modalAbsence.classList.add('opacity-100', 'pointer-events-auto');
     if (modalAbsenceDialog) {
@@ -986,14 +1077,21 @@ export function setupStudentSummaryListeners(onNavigate) {
     formAbsence.addEventListener('submit', (e) => {
       e.preventDefault();
       const ids = (absenceRecordIdsInput?.value || '').split(',').map(s => s.trim()).filter(Boolean);
-      const reason = absenceReasonSelect?.value || 'По болезни (ОРВИ, справка предоставлена)';
-      const doc = absenceDocumentInput?.value || 'Медицинская справка';
+      const isExcused = selectReasonType ? selectReasonType.value === 'excused' : true;
+      const hasDoc = checkHasDoc ? checkHasDoc.checked : true;
+      const docText = inputDocText ? inputDocText.value.trim() : '';
+      const notes = inputAbsenceNotes ? inputAbsenceNotes.value.trim() : '';
+
+      const documentValue = isExcused
+        ? (hasDoc ? (docText || 'Медицинская справка') : 'Заявление родителей')
+        : null;
+      const reasonValue = notes || (isExcused ? 'По болезни' : 'Неуважительная причина');
 
       ids.forEach(id => {
         confirmAbsenceRecord(id, {
-          status: 'excused',
-          reason,
-          document: doc,
+          status: isExcused ? 'excused' : 'unexcused',
+          reason: reasonValue,
+          document: documentValue,
           confirmedBy: 'Смирнова М. В.'
         });
       });
