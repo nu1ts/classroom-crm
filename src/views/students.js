@@ -626,18 +626,15 @@ export function setupStudentsListeners(onNavigate) {
     };
   }
 
-  // Текущее состояние фильтрации и пагинации
   const state = getUrlParams();
   const pageSize = 10;
 
-  // Элементы верхней панели
   const inputSearch = document.getElementById('input-search-student-list');
   const btnClearSearch = document.getElementById('btn-clear-student-search');
   const btnFilterAbsences = document.getElementById('btn-filter-absences-toggle');
   const selectPeriod = document.getElementById('select-students-period');
   const tableWrapper = document.getElementById('students-table-wrapper');
 
-  // Модальные окна
   const modalSummary = document.getElementById('modal-student-summary');
   const modalSummaryDialog = document.getElementById('modal-student-summary-dialog');
   const summaryContent = document.getElementById('student-summary-content');
@@ -738,7 +735,6 @@ export function setupStudentsListeners(onNavigate) {
       searchQuery: state.searchQuery
     });
 
-    // 1. Сортировка по колонкам
     tableWrapper.querySelectorAll('.col-sortable').forEach(th => {
       th.addEventListener('click', () => {
         const targetSortBy = th.getAttribute('data-sort-by');
@@ -754,7 +750,6 @@ export function setupStudentsListeners(onNavigate) {
       });
     });
 
-    // 2. Пагинация
     tableWrapper.querySelectorAll('.btn-pagination-nav, .btn-pagination-page').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -767,7 +762,6 @@ export function setupStudentsListeners(onNavigate) {
       });
     });
 
-    // 3. Кнопка сброса фильтра при пустом результате
     const btnReset = tableWrapper.querySelector('#btn-reset-students-filters');
     if (btnReset) {
       btnReset.addEventListener('click', () => {
@@ -783,7 +777,6 @@ export function setupStudentsListeners(onNavigate) {
       });
     }
 
-    // 4. Открытие сводки ученика
     tableWrapper.querySelectorAll('.btn-open-student-summary').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -800,7 +793,6 @@ export function setupStudentsListeners(onNavigate) {
     });
   }
 
-  // === Поиск в реальном времени (как в журнале, без перерендеривания инпута) ===
   if (inputSearch) {
     inputSearch.addEventListener('input', () => {
       state.searchQuery = inputSearch.value.trim();
@@ -825,7 +817,6 @@ export function setupStudentsListeners(onNavigate) {
     });
   }
 
-  // === Тумблер фильтра «С пропусками» ===
   if (btnFilterAbsences) {
     btnFilterAbsences.addEventListener('click', () => {
       state.filterAbsencesOnly = !state.filterAbsencesOnly;
@@ -836,7 +827,6 @@ export function setupStudentsListeners(onNavigate) {
     });
   }
 
-  // === Выбор периода / четверти ===
   if (selectPeriod) {
     selectPeriod.addEventListener('change', () => {
       state.periodId = selectPeriod.value;
@@ -846,7 +836,6 @@ export function setupStudentsListeners(onNavigate) {
     });
   }
 
-  // === МОДАЛЬНОЕ ОКНО «СВОДКА УЧЕНИКА» ===
   function openSummary(studentId) {
     db = getDB();
     const student = (db.students || []).find(s => s.id === studentId);
@@ -947,10 +936,17 @@ export function setupStudentsListeners(onNavigate) {
           <span>Перевести в архив</span>
         </button>
 
-        <button type="button" id="btn-close-students-summary-footer"
-                class="py-2 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors cursor-pointer">
-          Закрыть
-        </button>
+        <div class="flex items-center space-x-2">
+          <a href="#/student?id=${student.id}"
+             class="py-2 px-3.5 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 font-semibold text-xs transition-colors inline-flex items-center space-x-1.5">
+            <span>Полная сводка</span>
+            ${renderIcon('chevron-right', 'w-3.5 h-3.5 text-brand-600')}
+          </a>
+          <button type="button" id="btn-close-students-summary-footer"
+                  class="py-2 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors cursor-pointer">
+            Закрыть
+          </button>
+        </div>
       </div>
     `;
 
@@ -991,12 +987,9 @@ export function setupStudentsListeners(onNavigate) {
     });
   }
 
-  // === МОДАЛЬНОЕ ОКНО «ДОБАВИТЬ УЧЕНИКА» ===
   function openAddModal() {
     if (!modalAdd) return;
     db = getDB();
-
-    // Генерация следующего ID личного дела
     const maxNum = (db.students || []).reduce((max, s) => {
       const match = (s.id || '').match(/st-(\d+)/);
       if (match) {
@@ -1127,7 +1120,6 @@ export function setupStudentsListeners(onNavigate) {
     });
   }
 
-  // === МОДАЛЬНОЕ ОКНО «АРХИВ КЛАССА» ===
   function populateArchiveContent(preselectStudentId = null) {
     db = getDB();
     const archivedList = (db.students || []).filter(s => (!s.classId || s.classId === 'class-7b') && s.status === 'archived');
@@ -1271,7 +1263,6 @@ export function setupStudentsListeners(onNavigate) {
     });
   }
 
-  // === Закрытие по Escape ===
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       if (modalSummary && !modalSummary.classList.contains('pointer-events-none')) closeSummary();
@@ -1280,11 +1271,9 @@ export function setupStudentsListeners(onNavigate) {
     }
   });
 
-  // Автооткрытие по параметру URL ?student=st-XX
   if (state.studentModalId) {
     openSummary(state.studentModalId);
   }
 
-  // Первоначальное построение таблицы и привязка слушателей
   renderAndAttachTable();
 }

@@ -16,6 +16,8 @@ export const ROLE_NAVIGATION = {
     allowedRoutes: [
       '#/overview',
       '#/students',
+      '#/student',
+      '#/student-summary',
       '#/journal',
       '#/attendance',
       '#/schedule',
