@@ -64,7 +64,7 @@ export function renderOverviewView() {
     const reasonText = formatReasons(st);
 
     return `
-      <div class="p-3.5 sm:p-4 rounded-xl border ${isProcessed ? 'bg-slate-50/80 border-slate-200 opacity-90' : (isCritical ? 'bg-rose-50/30 border-rose-200/80 hover:bg-rose-50/50' : 'bg-amber-50/20 border-amber-200/70 hover:bg-amber-50/40')} transition-colors">
+      <div class="risk-card p-3.5 sm:p-4 rounded-xl border ${isProcessed ? 'bg-slate-50/80 border-slate-200 opacity-90' : (isCritical ? 'bg-rose-50/30 border-rose-200/80 hover:bg-rose-50/50' : 'bg-amber-50/20 border-amber-200/70 hover:bg-amber-50/40')} transition-colors" data-student-name="${st.name}">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="flex items-start space-x-3">
             <div class="w-8 h-8 rounded-lg ${isProcessed ? 'bg-slate-200 text-slate-600' : (isCritical ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700')} font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -583,7 +583,7 @@ export function setupOverviewListeners(onNavigate) {
     const rels = (db.parentStudentRelations || []).filter(r => r.studentId === studentId);
     const parentList = rels.map(r => {
       const p = db.parents?.find(par => par.id === r.parentId);
-      return { ...p, relation: r.relation, isPrimary: r.isPrimaryContact };
+      return { ...p, relation: r.relationRole || r.relation, isPrimary: r.isPrimary ?? r.isPrimaryContact };
     }).filter(Boolean);
 
     const notes = (db.notes || []).filter(n => n.studentId === studentId);
@@ -651,7 +651,7 @@ export function setupOverviewListeners(onNavigate) {
                   <div class="font-bold text-slate-900 flex items-center space-x-1.5">
                     <span>${p.fullName}</span>
                     <span class="text-[10px] text-slate-500">(${p.relation || 'Родитель'})</span>
-                    ${p.isPrimary ? '<span class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-brand-100 text-brand-700">Основной</span>' : ''}
+                    ${p.isPrimary ? '<span class="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-brand-100 text-brand-700">★ Основной контакт</span>' : ''}
                   </div>
                   <div class="text-slate-600 mt-0.5 text-[11px]">${p.phone || '+7 999 000-00-00'} · ${p.email || '—'}</div>
                 </div>
