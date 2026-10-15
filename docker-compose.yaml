@@ -1,0 +1,10 @@
+services:
+  classroom-crm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: classroom-crm:local
+    container_name: classroom-crm-local
+    restart: unless-stopped
+    ports:
+      - "8080:80"
