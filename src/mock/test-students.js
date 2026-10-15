@@ -84,4 +84,11 @@ assert(htmlDefault.includes('modal-student-summary'), 'Модальное окн
 assert(htmlDefault.includes('btn-open-student-summary'), 'Кнопки «Сводка» присутствуют у каждого ученика');
 console.log('✓ [TEST 11] TC-OV-11: Интеграция с модальным окном детальной сводки ученика');
 
-console.log('\n🎉 ВСЕ 11 ТЕСТ-КЕЙСОВ МОДУЛЯ «СПИСОК УЧЕНИКОВ» (TC-OV-01..11) УСПЕШНО ПРОЙДЕНЫ!\n');
+// 12. TC-OV-12: Модальные окна архива класса и добавления нового ученика
+assert(htmlDefault.includes('modal-add-student'), 'Модальное окно добавления ученика присутствует в разметке');
+assert(htmlDefault.includes('modal-class-archive'), 'Модальное окно архива класса присутствует в разметке');
+assert(htmlDefault.includes('btn-class-archive'), 'Кнопка «Архив класса» присутствует');
+assert(htmlDefault.includes('btn-add-student-mock'), 'Кнопка «Добавить ученика» присутствует');
+console.log('✓ [TEST 12] TC-OV-12: Модальные окна архива класса и добавления ученика присутствуют');
+
+console.log('\n🎉 ВСЕ ТЕСТ-КЕЙСЫ МОДУЛЯ «СПИСОК УЧЕНИКОВ» (TC-OV-01..12) УСПЕШНО ПРОЙДЕНЫ!\n');

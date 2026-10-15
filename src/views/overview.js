@@ -426,18 +426,18 @@ export function renderOverviewView() {
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1.5">Ученик</label>
             <div class="relative flex items-center">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                 ${renderIcon('user', 'w-4 h-4 text-slate-400')}
               </div>
               <input type="text" id="contact-student-name" readonly tabindex="-1"
-                     class="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-100/80 border border-slate-200 text-xs font-bold text-slate-800 cursor-default select-none focus:outline-none" />
+                     class="w-full h-10 pl-10 pr-3.5 rounded-xl bg-slate-100/80 border border-slate-200 text-xs font-bold text-slate-800 cursor-default select-none focus:outline-none" />
             </div>
           </div>
 
           <div>
             <label for="contact-parent-select" class="block text-xs font-semibold text-slate-700 mb-1.5">Родитель / представитель</label>
             <div class="relative">
-              <select id="contact-parent-select" class="w-full appearance-none pl-3.5 pr-10 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+              <select id="contact-parent-select" class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
               </select>
               <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                 ${renderIcon('chevron-down', 'w-4 h-4')}
@@ -449,27 +449,27 @@ export function renderOverviewView() {
             <div>
               <label for="contact-channel" class="block text-xs font-semibold text-slate-700 mb-1.5">Канал связи</label>
               <div class="relative">
-                <select id="contact-channel" class="w-full appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                <select id="contact-channel" class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
                   <option value="phone">Телефонный звонок</option>
                   <option value="chat">Мессенджер (Сферум/TG)</option>
                   <option value="meeting">Личная встреча</option>
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
-                  ${renderIcon('chevron-down', 'w-3.5 h-3.5')}
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                  ${renderIcon('chevron-down', 'w-4 h-4')}
                 </div>
               </div>
             </div>
             <div>
               <label for="contact-topic" class="block text-xs font-semibold text-slate-700 mb-1.5">Тема</label>
               <div class="relative">
-                <select id="contact-topic" class="w-full appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                <select id="contact-topic" class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
                   <option value="absence">Пропуски уроков</option>
                   <option value="grades">Успеваемость по предмету</option>
                   <option value="behavior">Поведение и дисциплина</option>
                   <option value="org">Организационные вопросы</option>
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
-                  ${renderIcon('chevron-down', 'w-3.5 h-3.5')}
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                  ${renderIcon('chevron-down', 'w-4 h-4')}
                 </div>
               </div>
             </div>
@@ -524,11 +524,11 @@ export function renderOverviewView() {
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1.5">Ученик</label>
             <div class="relative flex items-center">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                 ${renderIcon('user', 'w-4 h-4 text-slate-400')}
               </div>
               <input type="text" id="note-student-name" readonly tabindex="-1"
-                     class="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-100/80 border border-slate-200 text-xs font-bold text-slate-800 cursor-default select-none focus:outline-none" />
+                     class="w-full h-10 pl-10 pr-3.5 rounded-xl bg-slate-100/80 border border-slate-200 text-xs font-bold text-slate-800 cursor-default select-none focus:outline-none" />
             </div>
           </div>
 
