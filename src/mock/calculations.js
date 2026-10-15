@@ -513,7 +513,7 @@ export function generateClassReport(dataset, options = {}) {
     metrics: {
       studentsCount: (dataset.students || []).length,
       classAverageGrade: classAvg,
-      totalGradesCount: (dataset.grades || []).filter(g => g.periodId === periodId).length,
+      totalGradesCount: (dataset.grades || []).filter(g => (!periodId || g.periodId === periodId) && (!options.dateFrom || g.date >= options.dateFrom) && (!options.dateTo || g.date <= options.dateTo)).length,
       attendanceRate: classAtt.attendanceRate,
       absenceRate: classAtt.absenceRate,
       totalMarkedLessons: classAtt.totalLessons,
