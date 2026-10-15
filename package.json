@@ -11,18 +11,10 @@
     "build": "tailwindcss -i ./src/input.css -o ./reference/css/styles.css --minify",
     "build:css": "tailwindcss -i ./src/input.css -o ./reference/css/styles.css --minify",
     "watch:css": "tailwindcss -i ./src/input.css -o ./reference/css/styles.css --watch",
-    "test:data": "node ./src/mock/test-dataset.js",
-    "test:calc": "node ./src/mock/test-calculations.js",
-    "test:nav": "node ./src/mock/test-navigation.js",
-    "test:auth": "node ./src/mock/test-auth.js",
-    "test:overview": "node ./src/mock/test-overview.js",
-    "test:attendance": "node ./src/mock/test-attendance.js",
-    "test:journal": "node ./src/mock/test-journal.js",
-    "test:students": "node ./src/mock/test-students.js",
-    "test:student-summary": "node ./src/mock/test-student-summary.js",
-    "test:parents": "node ./src/mock/test-parents.js",
-    "test:analytics": "node ./src/mock/test-analytics.js",
-    "test": "node ./src/mock/test-dataset.js && node ./src/mock/test-calculations.js && node ./src/mock/test-navigation.js && node ./src/mock/test-auth.js && node ./src/mock/test-overview.js && node ./src/mock/test-attendance.js && node ./src/mock/test-journal.js && node ./src/mock/test-students.js && node ./src/mock/test-student-summary.js && node ./src/mock/test-parents.js && node ./src/mock/test-analytics.js"
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report"
   },
   "repository": {
     "type": "git",
@@ -36,6 +28,7 @@
   },
   "homepage": "https://github.com/nu1ts/classroom-crm#readme",
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "tailwindcss": "^3.4.19"
   }
 }
