@@ -11,6 +11,7 @@ import { renderJournalView, setupJournalListeners } from './views/journal.js?v=3
 import { renderStudentsView, setupStudentsListeners } from './views/students.js?v=1';
 import { renderStudentSummaryView, setupStudentSummaryListeners } from './views/student-summary.js?v=1';
 import { renderParentsView, setupParentsListeners, renderParentSummaryView, setupParentSummaryListeners } from './views/parents.js';
+import { renderAnalyticsView, setupAnalyticsListeners } from './views/analytics.js?v=2';
 
 const ROUTE_HANDLERS = {
   '#/login': {
@@ -148,8 +149,16 @@ const ROUTE_HANDLERS = {
   },
   '#/analytics': {
     title: 'Аналитика',
-    render: () => renderPlaceholderView('Аналитика', 'Аналитические сводки, отчёты успеваемости и зона риска', '#/analytics'),
-    setup: () => { }
+    render: () => {
+      const hash = window.location.hash || '';
+      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+      const params = new URLSearchParams(queryString);
+      return renderAnalyticsView({
+        periodId: params.get('periodId') || params.get('period') || 'q1_2024',
+        showReport: params.get('showReport') === 'true'
+      });
+    },
+    setup: (navigate) => setupAnalyticsListeners(navigate)
   },
   '#/profile': {
     title: 'Мой профиль',
