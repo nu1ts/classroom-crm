@@ -244,9 +244,7 @@ class Router {
     try {
       this._processRoute();
     } finally {
-      setTimeout(() => {
-        this._isRouting = false;
-      }, 40);
+      this._isRouting = false;
     }
   }
 

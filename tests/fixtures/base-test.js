@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import { LoginPage } from '../page-objects/LoginPage.js';
 import { NavigationPage } from '../page-objects/NavigationPage.js';
+import { ProfilePage } from '../page-objects/ProfilePage.js';
 import { TableHelper } from '../helpers/table-helper.js';
 import { MetricsHelper } from '../helpers/metrics-helper.js';
 import { TEST_USERS } from '../config/test-users.js';
@@ -97,6 +98,13 @@ export const test = baseTest.extend({
    */
   metricsHelper: async ({ page }, use) => {
     await use(new MetricsHelper(page));
+  },
+
+  /**
+   * Page Object страницы профиля
+   */
+  profilePage: async ({ page }, use) => {
+    await use(new ProfilePage(page));
   },
 });
 
