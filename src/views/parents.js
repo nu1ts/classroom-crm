@@ -895,7 +895,11 @@ export function setupParentsListeners(onNavigate) {
     btn.addEventListener('click', () => {
       const parentId = btn.getAttribute('data-parent-id');
       if (!parentId) return;
-      deleteParent(parentId);
+      const res = deleteParent(parentId);
+      if (!res.success) {
+        showToast(res.error || 'Сначала снимите связь с учеником в карточке или сводке');
+        return;
+      }
       showToast('Родитель удалён из базы');
       setTimeout(() => {
         updateQueryUrl({});
