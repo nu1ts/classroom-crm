@@ -99,11 +99,14 @@ export class NavigationPage {
   }
 
   /**
-   * Прямой переход по хеш-маршруту
+   * Прямой переход по хеш-маршруту с триггером hashchange для SPA
    */
   async gotoRoute(hashRoute) {
     const cleanRoute = hashRoute.startsWith('#') ? hashRoute : `#${hashRoute}`;
-    await this.page.goto(`index.html${cleanRoute}`);
-    await this.page.waitForLoadState('domcontentloaded');
+    await this.page.waitForTimeout(100);
+    await this.page.evaluate((targetHash) => {
+      window.location.hash = targetHash;
+    }, cleanRoute);
+    await this.page.waitForTimeout(100);
   }
 }

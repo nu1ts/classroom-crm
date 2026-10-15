@@ -30,6 +30,7 @@ export class LoginPage {
   async goto(options = {}) {
     await this.page.goto('index.html#/login', options);
     await this.page.waitForLoadState('domcontentloaded');
+    await expect(this.submitButton).toBeVisible({ timeout: 10000 });
   }
 
   /**
@@ -38,6 +39,7 @@ export class LoginPage {
   async gotoWithDevKey() {
     await this.page.goto('index.html#/login?key=tsu_debug');
     await this.page.waitForLoadState('domcontentloaded');
+    await expect(this.submitButton).toBeVisible({ timeout: 10000 });
   }
 
   /**
