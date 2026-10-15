@@ -8,6 +8,7 @@ import { renderForbiddenView } from './views/forbidden.js';
 import { renderPlaceholderView } from './views/placeholder.js';
 import { renderAttendanceView, setupAttendanceListeners } from './views/attendance.js?v=3';
 import { renderJournalView, setupJournalListeners } from './views/journal.js?v=31';
+import { renderStudentsView, setupStudentsListeners } from './views/students.js?v=1';
 
 const ROUTE_HANDLERS = {
   '#/login': {
@@ -22,8 +23,21 @@ const ROUTE_HANDLERS = {
   },
   '#/students': {
     title: 'Ученики',
-    render: () => renderPlaceholderView('Ученики', 'Список учеников класса 7Б, личные карточки и успеваемость', '#/students'),
-    setup: () => { }
+    render: () => {
+      const hash = window.location.hash || '';
+      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+      const params = new URLSearchParams(queryString);
+      return renderStudentsView({
+        periodId: params.get('period') || 'q1_2024',
+        searchQuery: params.get('search') || '',
+        filterAbsencesOnly: params.get('absences') === 'true',
+        sortBy: params.get('sortBy') || 'name',
+        sortOrder: params.get('sortOrder') || 'asc',
+        page: params.get('page') || '1',
+        studentModalId: params.get('student') || null
+      });
+    },
+    setup: (navigate) => setupStudentsListeners(navigate)
   },
   '#/journal': {
     title: 'Журнал класса',
