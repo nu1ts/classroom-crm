@@ -23,7 +23,8 @@ export function renderSidebar(currentUser, currentPath) {
   }
 
   const navHtml = items.map(item => {
-    const isActive = (currentPath === item.path) || (item.path === roleConfig.defaultRoute && (!currentPath || currentPath === '#/' || currentPath === ''));
+    const isStudentDetail = item.path === '#/students' && (currentPath === '#/student' || currentPath === '#/student-summary');
+    const isActive = (currentPath === item.path) || isStudentDetail || (item.path === roleConfig.defaultRoute && (!currentPath || currentPath === '#/' || currentPath === ''));
     const activeClasses = isActive
       ? 'bg-brand-sidebarActive text-white shadow-sm'
       : 'text-slate-300 hover:text-white hover:bg-brand-sidebarHover';
@@ -161,7 +162,8 @@ export function updateSidebarActiveItem(currentPath) {
   links.forEach(link => {
     const href = link.getAttribute('href');
     const cleanPath = (currentPath || '').split('?')[0];
-    const isActive = (href === cleanPath) || (href === '#/overview' && (!cleanPath || cleanPath === '#/' || cleanPath === ''));
+    const isStudentDetail = href === '#/students' && (cleanPath === '#/student' || cleanPath === '#/student-summary');
+    const isActive = (href === cleanPath) || isStudentDetail || (href === '#/overview' && (!cleanPath || cleanPath === '#/' || cleanPath === ''));
     if (isActive) {
       link.classList.remove('text-slate-300', 'hover:text-white', 'hover:bg-brand-sidebarHover');
       link.classList.add('bg-brand-sidebarActive', 'text-white', 'shadow-sm');

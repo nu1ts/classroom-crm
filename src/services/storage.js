@@ -354,3 +354,91 @@ export function addJournalComment(data = {}) {
   return { success: true, comment: newComment };
 }
 
+/**
+ * Фиксация контакта с родителем (TC-BP-23..29)
+ * @param {Object} data { studentId, parentId, author, date, time, channel, summary, agreementReached, nextContactDate }
+ */
+export function addParentContact(data = {}) {
+  const summary = (data.summary || '').trim();
+  const channel = (data.channel || '').trim();
+  const studentId = (data.studentId || '').trim();
+  const parentId = (data.parentId || '').trim();
+
+  if (!summary) {
+    return { success: false, error: 'Поле «Итог» обязательно для заполнения' };
+  }
+  if (!channel) {
+    return { success: false, error: 'Выберите канал связи' };
+  }
+  if (!studentId) {
+    return { success: false, error: 'Ученик не указан' };
+  }
+
+  const db = getDB();
+  if (!db.parentContacts) db.parentContacts = [];
+
+  const channelLabels = {
+    phone: 'Звонок',
+    chat: 'Мессенджер',
+    personal: 'Личная беседа',
+    meeting: 'Личная беседа',
+    letter: 'Письмо'
+  };
+
+  const agreementReached = data.agreementReached !== false;
+  const nextContactDate = (!agreementReached && data.nextContactDate) ? data.nextContactDate : null;
+
+  const newContact = {
+    id: `pc-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    studentId,
+    parentId: parentId || (db.parentStudentRelations?.find(r => r.studentId === studentId)?.parentId || 'pr-unknown'),
+    author: data.author || 'Смирнова М. В.',
+    date: data.date || new Date().toISOString().slice(0, 10),
+    time: data.time || new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+    channel,
+    channelLabel: channelLabels[channel] || data.channelLabel || 'Звонок',
+    summary,
+    agreementReached,
+    nextContactDate
+  };
+
+  db.parentContacts.unshift(newContact);
+  saveDB(db);
+
+  return { success: true, contact: newContact };
+}
+
+/**
+ * Добавление педагогической заметки классного руководителя (TC-BP-27..30)
+ * @param {Object} data { studentId, author, text, isPrivate, date }
+ */
+export function addStudentNote(data = {}) {
+  const text = (data.text || '').trim();
+  const studentId = (data.studentId || '').trim();
+
+  if (!text) {
+    return { success: false, error: 'Поле «Текст заметки» обязательно для заполнения' };
+  }
+  if (!studentId) {
+    return { success: false, error: 'Ученик не указан' };
+  }
+
+  const db = getDB();
+  if (!db.notes) db.notes = [];
+
+  const newNote = {
+    id: `note-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    studentId,
+    author: data.author || 'Смирнова М. В.',
+    date: data.date || `${new Date().toISOString().slice(0, 10)} ${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`,
+    text,
+    isPrivate: data.isPrivate !== false
+  };
+
+  db.notes.unshift(newNote);
+  saveDB(db);
+
+  return { success: true, note: newNote };
+}
+
+
