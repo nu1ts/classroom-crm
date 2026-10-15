@@ -566,8 +566,12 @@ export function deleteParent(parentId) {
   if (!parentId) return { success: false, error: 'ID родителя не указан' };
 
   const db = getDB();
+  const rels = (db.parentStudentRelations || []).filter(r => r.parentId === parentId);
+  if (rels.length > 0) {
+    return { success: false, error: 'Сначала снимите связь с учеником в карточке или сводке' };
+  }
+
   db.parents = (db.parents || []).filter(p => p.id !== parentId);
-  db.parentStudentRelations = (db.parentStudentRelations || []).filter(r => r.parentId !== parentId);
   saveDB(db);
 
   return { success: true };
