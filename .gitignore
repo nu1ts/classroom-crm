@@ -6,3 +6,4 @@ scripts/
 repomix-output.md
 playwright-report/
 test-results/
+nginx.conf
