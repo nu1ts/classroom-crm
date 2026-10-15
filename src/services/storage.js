@@ -441,4 +441,169 @@ export function addStudentNote(data = {}) {
   return { success: true, note: newNote };
 }
 
+/**
+ * Добавление нового родителя (TC-PR-04..05)
+ */
+export function addParent(data = {}) {
+  const fullName = (data.fullName || '').trim();
+  const phone = (data.phone || '').trim();
+  const studentId = data.studentId || null;
+  const relationRole = data.relationRole || 'Родитель';
+  const isPrimary = Boolean(data.isPrimary);
+
+  if (!fullName) {
+    return { success: false, error: 'Укажите ФИО родителя' };
+  }
+  if (!phone) {
+    return { success: false, error: 'Укажите телефон' };
+  }
+
+  const db = getDB();
+  if (!db.parents) db.parents = [];
+  if (!db.parentStudentRelations) db.parentStudentRelations = [];
+
+  const parts = fullName.split(/\s+/);
+  const lastName = parts[0] || 'Родитель';
+  const firstName = parts[1] || '';
+  const middleName = parts.slice(2).join(' ') || '';
+  const shortName = firstName ? `${lastName} ${firstName[0]}.` : lastName;
+
+  const parentId = `pr-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  const newParent = {
+    id: parentId,
+    lastName,
+    firstName,
+    middleName,
+    fullName,
+    shortName,
+    phone,
+    otherChildren: []
+  };
+
+  db.parents.push(newParent);
+
+  if (studentId) {
+    if (isPrimary) {
+      db.parentStudentRelations.forEach(r => {
+        if (r.studentId === studentId) {
+          r.isPrimary = false;
+        }
+      });
+    }
+
+    db.parentStudentRelations.push({
+      id: `rel-${parentId}-${studentId}`,
+      parentId,
+      studentId,
+      relationRole,
+      isPrimary
+    });
+  }
+
+  saveDB(db);
+  return { success: true, parent: newParent };
+}
+
+/**
+ * Обновление данных родителя (TC-PR-06..07)
+ */
+export function updateParent(parentId, data = {}) {
+  if (!parentId) return { success: false, error: 'ID родителя не указан' };
+
+  const db = getDB();
+  const parent = (db.parents || []).find(p => p.id === parentId);
+  if (!parent) return { success: false, error: 'Родитель не найден' };
+
+  if (data.fullName) {
+    const fullName = data.fullName.trim();
+    const parts = fullName.split(/\s+/);
+    parent.lastName = parts[0] || parent.lastName;
+    parent.firstName = parts[1] || parent.firstName;
+    parent.middleName = parts.slice(2).join(' ') || parent.middleName;
+    parent.fullName = fullName;
+    parent.shortName = parent.firstName ? `${parent.lastName} ${parent.firstName[0]}.` : parent.lastName;
+  }
+
+  if (data.phone !== undefined) {
+    parent.phone = data.phone.trim();
+  }
+
+  // Обновление связи, если передана
+  if (data.relationRole || data.isPrimary !== undefined) {
+    const rels = (db.parentStudentRelations || []).filter(r => r.parentId === parentId);
+    rels.forEach(rel => {
+      if (data.relationRole) rel.relationRole = data.relationRole;
+      if (data.isPrimary !== undefined) {
+        if (data.isPrimary) {
+          // сбрасываем у других родителей этого ученика
+          (db.parentStudentRelations || []).forEach(otherRel => {
+            if (otherRel.studentId === rel.studentId && otherRel.parentId !== parentId) {
+              otherRel.isPrimary = false;
+            }
+          });
+        }
+        rel.isPrimary = Boolean(data.isPrimary);
+      }
+    });
+  }
+
+  saveDB(db);
+  return { success: true, parent };
+}
+
+/**
+ * Удаление родителя (TC-PR-12)
+ */
+export function deleteParent(parentId) {
+  if (!parentId) return { success: false, error: 'ID родителя не указан' };
+
+  const db = getDB();
+  db.parents = (db.parents || []).filter(p => p.id !== parentId);
+  db.parentStudentRelations = (db.parentStudentRelations || []).filter(r => r.parentId !== parentId);
+  saveDB(db);
+
+  return { success: true };
+}
+
+/**
+ * Связывание родителя с учеником (TC-PR-08..09)
+ */
+export function linkParentToStudent(parentId, studentId, options = {}) {
+  if (!parentId || !studentId) {
+    return { success: false, error: 'Не указан родитель или ученик' };
+  }
+
+  const db = getDB();
+  if (!db.parentStudentRelations) db.parentStudentRelations = [];
+
+  const isPrimary = Boolean(options.isPrimary);
+  const relationRole = options.relationRole || 'Родитель';
+
+  if (isPrimary) {
+    db.parentStudentRelations.forEach(r => {
+      if (r.studentId === studentId) {
+        r.isPrimary = false;
+      }
+    });
+  }
+
+  const existing = db.parentStudentRelations.find(r => r.parentId === parentId && r.studentId === studentId);
+  if (existing) {
+    existing.relationRole = relationRole;
+    existing.isPrimary = isPrimary;
+  } else {
+    db.parentStudentRelations.push({
+      id: `rel-${parentId}-${studentId}`,
+      parentId,
+      studentId,
+      relationRole,
+      isPrimary
+    });
+  }
+
+  saveDB(db);
+  return { success: true };
+}
+
+
 
