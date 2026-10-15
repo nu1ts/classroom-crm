@@ -10,6 +10,7 @@ import { renderAttendanceView, setupAttendanceListeners } from './views/attendan
 import { renderJournalView, setupJournalListeners } from './views/journal.js?v=31';
 import { renderStudentsView, setupStudentsListeners } from './views/students.js?v=1';
 import { renderStudentSummaryView, setupStudentSummaryListeners } from './views/student-summary.js?v=1';
+import { renderParentsView, setupParentsListeners, renderParentSummaryView, setupParentSummaryListeners } from './views/parents.js';
 
 const ROUTE_HANDLERS = {
   '#/login': {
@@ -99,8 +100,41 @@ const ROUTE_HANDLERS = {
   },
   '#/parents': {
     title: 'Родители',
-    render: () => renderPlaceholderView('Родители', 'База контактных данных родителей и законных представителей', '#/parents'),
-    setup: () => { }
+    render: () => {
+      const hash = window.location.hash || '';
+      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+      const params = new URLSearchParams(queryString);
+      return renderParentsView({
+        searchQuery: params.get('search') || '',
+        filterLink: params.get('filter') || 'all',
+        page: params.get('page') || '1'
+      });
+    },
+    setup: (navigate) => setupParentsListeners(navigate)
+  },
+  '#/parent': {
+    title: 'Сводка по родителю',
+    render: () => {
+      const hash = window.location.hash || '';
+      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+      const params = new URLSearchParams(queryString);
+      return renderParentSummaryView({
+        parentId: params.get('id') || params.get('parent') || 'pr-23'
+      });
+    },
+    setup: (navigate) => setupParentSummaryListeners(navigate)
+  },
+  '#/parent-summary': {
+    title: 'Сводка по родителю',
+    render: () => {
+      const hash = window.location.hash || '';
+      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+      const params = new URLSearchParams(queryString);
+      return renderParentSummaryView({
+        parentId: params.get('id') || params.get('parent') || 'pr-23'
+      });
+    },
+    setup: (navigate) => setupParentSummaryListeners(navigate)
   },
   '#/meetings': {
     title: 'Собрания',

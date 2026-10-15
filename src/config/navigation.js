@@ -22,6 +22,8 @@ export const ROLE_NAVIGATION = {
       '#/attendance',
       '#/schedule',
       '#/parents',
+      '#/parent',
+      '#/parent-summary',
       '#/meetings',
       '#/announcements',
       '#/analytics',
