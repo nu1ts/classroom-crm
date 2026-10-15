@@ -337,31 +337,33 @@ export function renderAnalyticsView(options = {}) {
             </div>
           </div>
 
-          <div class="pt-8 pb-4 px-2">
-            <div class="relative h-48 flex items-end justify-between gap-2 sm:gap-6 border-b border-slate-100 pb-2">
-              <div class="absolute inset-x-0 bottom-[35%] border-b border-dashed border-slate-200 z-0">
-                <span class="absolute right-0 -top-3 text-[10px] font-semibold text-slate-400 bg-white px-1">
+          <div class="pt-6 pb-2 px-2">
+            <div class="relative h-44">
+              <div class="absolute inset-x-0 bottom-[35%] border-b border-dashed border-slate-200 z-10 pointer-events-none">
+                <span class="absolute right-0 -top-3 text-[10px] font-semibold text-slate-400 bg-white px-1.5 py-0.5 rounded shadow-2xs border border-slate-100">
                   порог 3.5
                 </span>
               </div>
 
-              ${weeklyGradePoints.map((pt, idx) => `
-                <div class="relative flex-1 flex flex-col items-center z-10 group">
-                  <div class="text-xs font-extrabold text-brand-600 mb-2 transition-transform group-hover:-translate-y-1">
-                    ${pt.value.toFixed(1)}
+              <div class="relative h-full flex items-end justify-between gap-2 sm:gap-6 pl-2 sm:pl-4 pr-16 sm:pr-20 z-0">
+                ${weeklyGradePoints.map((pt, idx) => `
+                  <div class="relative flex-1 flex flex-col items-center group">
+                    <div class="text-xs font-extrabold text-brand-600 mb-1.5 transition-transform group-hover:-translate-y-1">
+                      ${pt.value.toFixed(1)}
+                    </div>
+                    <div class="w-8 sm:w-12 bg-gradient-to-t from-brand-500/20 to-brand-500/70 hover:from-brand-500/30 hover:to-brand-500 rounded-t-xl transition-all shadow-2xs cursor-pointer"
+                         style="height: ${pt.heightPercent * 1.35}px;">
+                    </div>
+                    <div class="text-[11px] font-medium text-slate-500 mt-2 whitespace-nowrap text-center">
+                      ${pt.label}
+                    </div>
                   </div>
-                  <div class="w-8 sm:w-12 bg-gradient-to-t from-brand-500/20 to-brand-500/70 hover:from-brand-500/30 hover:to-brand-500 rounded-t-xl transition-all shadow-2xs cursor-pointer"
-                       style="height: ${pt.heightPercent * 1.5}px;">
-                  </div>
-                  <div class="text-[11px] font-medium text-slate-500 mt-3 whitespace-nowrap text-center">
-                    ${pt.label}
-                  </div>
-                </div>
-              `).join('')}
+                `).join('')}
+              </div>
             </div>
           </div>
 
-          <div class="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-100">
+          <div class="flex items-center justify-between text-xs text-slate-400 pt-3 border-t border-slate-100 !mt-2">
             <span>Период данных: ${currentPeriod.shortTitle}</span>
             <span class="font-medium text-slate-600">Всего отметок: ${report.metrics.totalGradesCount}</span>
           </div>
