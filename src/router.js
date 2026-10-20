@@ -1,17 +1,17 @@
 import { getCurrentUser } from './services/storage.js';
 import { isRouteAllowedForRole, getDefaultRouteForRole } from './config/navigation.js';
-import { renderLayout, setupLayoutListeners, updateSidebarActiveItem } from './components/layout.js?v=5';
+import { renderLayout, setupLayoutListeners, updateSidebarActiveItem } from './components/layout.js';
 import { renderLoginView, setupLoginListeners } from './views/login.js';
-import { renderOverviewView, setupOverviewListeners } from './views/overview.js?v=2';
+import { renderOverviewView, setupOverviewListeners } from './views/overview.js';
 import { renderProfileView, setupProfileListeners } from './views/profile.js';
 import { renderForbiddenView } from './views/forbidden.js';
 import { renderPlaceholderView } from './views/placeholder.js';
-import { renderAttendanceView, setupAttendanceListeners } from './views/attendance.js?v=3';
-import { renderJournalView, setupJournalListeners } from './views/journal.js?v=31';
-import { renderStudentsView, setupStudentsListeners } from './views/students.js?v=1';
-import { renderStudentSummaryView, setupStudentSummaryListeners } from './views/student-summary.js?v=1';
+import { renderAttendanceView, setupAttendanceListeners } from './views/attendance.js';
+import { renderJournalView, setupJournalListeners } from './views/journal.js';
+import { renderStudentsView, setupStudentsListeners } from './views/students.js';
+import { renderStudentSummaryView, setupStudentSummaryListeners } from './views/student-summary.js';
 import { renderParentsView, setupParentsListeners, renderParentSummaryView, setupParentSummaryListeners } from './views/parents.js';
-import { renderAnalyticsView, setupAnalyticsListeners } from './views/analytics.js?v=2';
+import { renderAnalyticsView, setupAnalyticsListeners } from './views/analytics.js';
 
 const ROUTE_HANDLERS = {
   '#/login': {
