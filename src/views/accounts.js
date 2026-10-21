@@ -149,12 +149,7 @@ export function renderAccountsView(options = {}) {
     <div id="accounts-view" class="space-y-6 animate-fadeIn pb-12">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div class="flex items-center space-x-2">
-            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Учётные записи</h1>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-              Администрирование
-            </span>
-          </div>
+          <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Учётные записи</h1>
           <p class="text-sm font-medium text-slate-500 mt-1" id="accounts-total-subtitle">
             ${rows.length} учётных записей · ${activeCount} активных · ${blockedCount} заблокированных
           </p>

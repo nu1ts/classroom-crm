@@ -65,12 +65,7 @@ export function renderTeachersView(options = {}) {
     <div id="teachers-view" class="space-y-6 animate-fadeIn pb-12">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div class="flex items-center space-x-2">
-            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Учителя</h1>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-              Педагогический состав
-            </span>
-          </div>
+          <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Учителя</h1>
           <p class="text-sm font-medium text-slate-500 mt-1" id="teachers-total-subtitle">
             ${cards.length} учителей · ${withAccount} с учётной записью · ${cards.reduce((s, c) => s + c.totalHours, 0)} часов нагрузки
           </p>
@@ -273,7 +268,7 @@ export function setupTeachersListeners(onNavigate) {
     }
 
     cardsArea.innerHTML = `
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
         ${filtered.map(teacherCardHtml).join('')}
       </div>
     `;
