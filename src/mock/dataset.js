@@ -41,6 +41,7 @@ export const INITIAL_DATASET = {
       "classId": "class-7b",
       "className": "7Б класс (28 учеников)",
       "phone": "+7 999 111-22-33",
+      "lastLoginAt": "2024-10-28T08:45:00",
       "status": "active"
     },
     {
@@ -53,6 +54,7 @@ export const INITIAL_DATASET = {
       "shortName": "Козлов А. П.",
       "subject": "Математика",
       "phone": "+7 999 222-33-44",
+      "lastLoginAt": "2024-10-27T16:20:00",
       "status": "active"
     },
     {
@@ -64,6 +66,7 @@ export const INITIAL_DATASET = {
       "personName": "Никитин Пётр Алексеевич",
       "shortName": "Никитин П. А.",
       "phone": "+7 999 333-44-55",
+      "lastLoginAt": "2024-10-28T10:11:00",
       "status": "active"
     },
     {
@@ -77,6 +80,7 @@ export const INITIAL_DATASET = {
       "childStudentId": "st-23",
       "childName": "Петрова Анна (7Б)",
       "phone": "+7 999 123-45-63",
+      "lastLoginAt": "2024-10-25T12:30:00",
       "status": "active"
     },
     {
@@ -89,6 +93,7 @@ export const INITIAL_DATASET = {
       "shortName": "Петрова А.",
       "studentId": "st-23",
       "classId": "class-7b",
+      "lastLoginAt": "2024-10-28T09:15:00",
       "status": "active"
     },
     {
@@ -101,6 +106,7 @@ export const INITIAL_DATASET = {
       "shortName": "Осипов К.",
       "studentId": "st-12",
       "classId": "class-7b",
+      "lastLoginAt": "2024-10-18T10:04:00",
       "status": "active"
     }
   ],

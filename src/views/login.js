@@ -335,6 +335,12 @@ export function setupLoginListeners(onLoginSuccess) {
         return;
       }
 
+      if (res.mustChangePassword) {
+        window.location.replace('#/change-password');
+        if (onLoginSuccess) onLoginSuccess(res.user, '#/change-password');
+        return;
+      }
+
       const defRoute = getDefaultRouteForRole(res.user.role);
       window.location.replace(defRoute);
       if (onLoginSuccess) onLoginSuccess(res.user, defRoute);

@@ -104,8 +104,24 @@ export function getCurrentUser() {
     clearSession();
     return null;
   }
+
+  if (session.role && session.role !== user.role) {
+    return {
+      ...user,
+      role: session.role,
+      roleLabel: ROLE_LABELS[session.role] || user.roleLabel
+    };
+  }
   return user;
 }
+
+export const ROLE_LABELS = {
+  teacher: 'Классный руководитель',
+  subject_teacher: 'Учитель-предметник',
+  parent: 'Родитель',
+  student: 'Ученик',
+  admin: 'Администратор'
+};
 
 function getFailedAttempts(username) {
   try {
@@ -182,6 +198,10 @@ export function login(rawUsername, password) {
   }
 
   resetFailedAttempts(username);
+
+  user.lastLoginAt = new Date().toISOString();
+  saveDB(db);
+
   const session = {
     userId: user.id,
     username: user.username,
@@ -190,7 +210,11 @@ export function login(rawUsername, password) {
   };
   setSession(session);
 
-  return { success: true, user };
+  return {
+    success: true,
+    user,
+    mustChangePassword: Boolean(user.mustChangePassword)
+  };
 }
 
 export function logout() {
@@ -213,7 +237,7 @@ export function quickLoginAsRole(roleKey) {
   return user;
 }
 
-export function changePassword(userId, currentPassword, newPassword, confirmPassword) {
+export function changePassword(userId, currentPassword, newPassword, confirmPassword, clearMustChange = false) {
   const db = getDB();
   const user = db.users.find(u => u.id === userId);
   if (!user) {
@@ -245,9 +269,155 @@ export function changePassword(userId, currentPassword, newPassword, confirmPass
   }
 
   user.password = newPwd;
+  if (clearMustChange) {
+    user.mustChangePassword = false;
+  }
   saveDB(db);
 
   return { success: true, message: 'Пароль успешно изменён' };
+}
+
+
+export function updateAccountRole(userId, newRole) {
+  const db = getDB();
+  const user = db.users.find(u => u.id === userId);
+  if (!user) {
+    return { success: false, error: 'Учётная запись не найдена' };
+  }
+  if (!ROLE_LABELS[newRole]) {
+    return { success: false, error: 'Неизвестная роль' };
+  }
+  if (user.role === 'admin' && newRole !== 'admin') {
+    const activeAdmins = db.users.filter(u => u.role === 'admin').length;
+    if (activeAdmins <= 1) {
+      return { success: false, error: 'Нельзя снять роль администратора с последнего администратора' };
+    }
+  }
+
+  user.role = newRole;
+  user.roleLabel = ROLE_LABELS[newRole];
+  saveDB(db);
+
+  return { success: true, message: `Роль изменена. Изменение применится при следующем входе` };
+}
+
+/**
+ * Блокировка / разблокировка учётной записи.
+ * Блокировка действует при следующем входе: активная сессия не прерывается.
+ * Разблокировка также сбрасывает счётчик неудачных попыток входа.
+ */
+export function setAccountStatus(userId, status) {
+  const db = getDB();
+  const user = db.users.find(u => u.id === userId);
+  if (!user) {
+    return { success: false, error: 'Учётная запись не найдена' };
+  }
+  if (status !== 'active' && status !== 'blocked') {
+    return { success: false, error: 'Недопустимый статус' };
+  }
+  if (status === 'blocked' && user.role === 'admin') {
+    const activeAdmins = db.users.filter(u => u.role === 'admin' && u.status === 'active').length;
+    if (activeAdmins <= 1) {
+      return { success: false, error: 'Нельзя заблокировать последнего активного администратора' };
+    }
+  }
+
+  user.status = status;
+  if (status === 'active') {
+    resetFailedAttempts(user.username);
+  }
+  saveDB(db);
+
+  return {
+    success: true,
+    message: status === 'blocked'
+      ? 'Учётная запись заблокирована. Вход будет запрещён при следующей попытке.'
+      : 'Учётная запись разблокирована. Вход снова доступен.'
+  };
+}
+
+/**
+ * Создание учётной записи с временным паролем
+ * (пользователь обязан сменить его при первом входе — AUTH-15).
+ */
+export function createAccount({ personName, username, role, tempPassword }) {
+  const db = getDB();
+  const name = (personName || '').trim();
+  const login = (username || '').trim().toLowerCase();
+  const pwd = (tempPassword || '').trim();
+
+  if (!name) {
+    return { success: false, error: 'Укажите ФИО пользователя' };
+  }
+  if (!login) {
+    return { success: false, error: 'Укажите логин (электронную почту)' };
+  }
+  if (!ROLE_LABELS[role]) {
+    return { success: false, error: 'Выберите роль' };
+  }
+  if (db.users.some(u => u.username.toLowerCase() === login)) {
+    return { success: false, error: 'Пользователь с таким логином уже существует' };
+  }
+  const pwdCheck = validateNewPassword(pwd);
+  if (!pwdCheck.valid) {
+    return { success: false, error: pwdCheck.error };
+  }
+
+  const newUser = {
+    id: `user-${Date.now()}`,
+    username: login,
+    password: pwd,
+    role,
+    roleLabel: ROLE_LABELS[role],
+    personName: name,
+    shortName: shortenName(name),
+    status: 'active',
+    mustChangePassword: true
+  };
+  db.users.push(newUser);
+  saveDB(db);
+
+  return { success: true, user: newUser, message: 'Учётная запись создана' };
+}
+
+/**
+ * Сброс пароля администратором (AUTH-15, шаг 3):
+ * выдаётся временный пароль, обязательный к смене при первом входе.
+ */
+export function resetAccountPassword(userId) {
+  const db = getDB();
+  const user = db.users.find(u => u.id === userId);
+  if (!user) {
+    return { success: false, error: 'Учётная запись не найдена' };
+  }
+
+  const tempPassword = `Temp#${Math.floor(1000 + Math.random() * 9000)}${new Date().getFullYear() % 100}`;
+  user.password = tempPassword;
+  user.mustChangePassword = true;
+  resetFailedAttempts(user.username);
+  saveDB(db);
+
+  return { success: true, tempPassword, message: 'Пароль сброшен. Сообщите временный пароль пользователю.' };
+}
+
+function validateNewPassword(pwd) {
+  if (!pwd || pwd.length < 8) {
+    return { valid: false, error: 'Пароль должен содержать не менее 8 символов' };
+  }
+  const hasLower = /[a-zа-я]/.test(pwd);
+  const hasUpper = /[A-ZА-Я]/.test(pwd);
+  const hasDigit = /\d/.test(pwd);
+  if (!hasLower || !hasUpper || !hasDigit) {
+    return { valid: false, error: 'Пароль должен содержать буквы в обоих регистрах и хотя бы одну цифру' };
+  }
+  return { valid: true };
+}
+
+function shortenName(fullName) {
+  const parts = fullName.split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return fullName;
+  const initials = parts.slice(1).map(p => `${p[0]}.`).join(' ');
+  return `${parts[0]} ${initials}`;
 }
 
 /**
@@ -536,14 +706,12 @@ export function updateParent(parentId, data = {}) {
     parent.phone = data.phone.trim();
   }
 
-  // Обновление связи, если передана
   if (data.relationRole || data.isPrimary !== undefined) {
     const rels = (db.parentStudentRelations || []).filter(r => r.parentId === parentId);
     rels.forEach(rel => {
       if (data.relationRole) rel.relationRole = data.relationRole;
       if (data.isPrimary !== undefined) {
         if (data.isPrimary) {
-          // сбрасываем у других родителей этого ученика
           (db.parentStudentRelations || []).forEach(otherRel => {
             if (otherRel.studentId === rel.studentId && otherRel.parentId !== parentId) {
               otherRel.isPrimary = false;
