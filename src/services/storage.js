@@ -53,6 +53,21 @@ export function getDB() {
       ];
       storage.setItem(STORAGE_KEYS.DB, JSON.stringify(parsed));
     }
+
+    let migrated = false;
+    if (!Array.isArray(parsed.teachers) && Array.isArray(INITIAL_DATASET.teachers)) {
+      parsed.teachers = JSON.parse(JSON.stringify(INITIAL_DATASET.teachers));
+      migrated = true;
+    }
+    (parsed.users || []).forEach(u => {
+      if (!u.cardName && (u.role === 'teacher' || u.role === 'subject_teacher')) {
+        u.cardName = u.shortName;
+        migrated = true;
+      }
+    });
+    if (migrated) {
+      storage.setItem(STORAGE_KEYS.DB, JSON.stringify(parsed));
+    }
     return parsed;
   } catch (e) {
     console.error('Ошибка чтения БД из хранилища, сброс к начальному состоянию', e);

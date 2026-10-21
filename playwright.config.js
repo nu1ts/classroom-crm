@@ -31,7 +31,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'python -m http.server 8080',
+    command: 'python tests/server.py',
     url: 'http://127.0.0.1:8080/reference/index.html',
     reuseExistingServer: !process.env.CI,
     timeout: 30 * 1000,

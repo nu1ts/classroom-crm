@@ -452,7 +452,8 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     }
 
     await navigationPage.gotoRoute('#/teachers');
-    await expect(page.locator('h2')).toContainText('Учителя');
+    await expect(page.locator('h1')).toContainText('Учителя');
+    await expect(page.locator('[data-teacher-card]')).toHaveCount(5);
   });
 
   test.skip('[TC-RM-11] Предметник видит только свои классы и предметы (Правило)', async () => {

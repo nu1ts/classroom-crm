@@ -112,6 +112,151 @@ export const INITIAL_DATASET = {
       "status": "active"
     }
   ],
+  "teachers": [
+    {
+      "id": "t-01",
+      "fullName": "Смирнова Марина Васильевна",
+      "shortName": "Смирнова М. В.",
+      "subjectIds": [
+        "hist",
+        "talks"
+      ],
+      "status": "active",
+      "homeroomClassId": "class-7b",
+      "accountUserId": "user-smirnova",
+      "workload": [
+        {
+          "classId": "class-7b",
+          "className": "7Б",
+          "subjectId": "hist",
+          "subjectLabel": "История",
+          "hours": 5
+        },
+        {
+          "classId": "class-7b",
+          "className": "7Б",
+          "subjectId": "talks",
+          "subjectLabel": "Разговоры о важном",
+          "hours": 2
+        }
+      ]
+    },
+    {
+      "id": "t-02",
+      "fullName": "Козлов Андрей Павлович",
+      "shortName": "Козлов А. П.",
+      "subjectIds": [
+        "math"
+      ],
+      "status": "active",
+      "homeroomClassId": null,
+      "accountUserId": "user-kozlov",
+      "workload": [
+        {
+          "classId": "class-7b",
+          "className": "7Б",
+          "subjectId": "math",
+          "subjectLabel": "Математика (Алгебра)",
+          "hours": 5
+        },
+        {
+          "classId": "class-8a",
+          "className": "8А",
+          "subjectId": "math",
+          "subjectLabel": "Математика (Алгебра)",
+          "hours": 5
+        },
+        {
+          "classId": "class-9v",
+          "className": "9В",
+          "subjectId": "math",
+          "subjectLabel": "Алгебра",
+          "hours": 3
+        }
+      ]
+    },
+    {
+      "id": "t-03",
+      "fullName": "Иванова Елена Сергеевна",
+      "shortName": "Иванова Е. С.",
+      "subjectIds": [
+        "rus"
+      ],
+      "status": "active",
+      "homeroomClassId": null,
+      "accountUserId": null,
+      "workload": [
+        {
+          "classId": "class-7b",
+          "className": "7Б",
+          "subjectId": "rus",
+          "subjectLabel": "Русский язык",
+          "hours": 6
+        }
+      ]
+    },
+    {
+      "id": "t-04",
+      "fullName": "Дмитриев Дмитрий Константинович",
+      "shortName": "Дмитриев Д. К.",
+      "subjectIds": [
+        "phys"
+      ],
+      "status": "active",
+      "homeroomClassId": null,
+      "accountUserId": null,
+      "workload": [
+        {
+          "classId": "class-7b",
+          "className": "7Б",
+          "subjectId": "phys",
+          "subjectLabel": "Физика",
+          "hours": 3
+        },
+        {
+          "classId": "class-8a",
+          "className": "8А",
+          "subjectId": "phys",
+          "subjectLabel": "Физика",
+          "hours": 3
+        }
+      ]
+    },
+    {
+      "id": "t-05",
+      "fullName": "Новиков Сергей Андреевич",
+      "shortName": "Новиков С. А.",
+      "subjectIds": [
+        "pe"
+      ],
+      "status": "active",
+      "homeroomClassId": null,
+      "accountUserId": null,
+      "workload": [
+        {
+          "classId": "class-7b",
+          "className": "7Б",
+          "subjectId": "pe",
+          "subjectLabel": "Физкультура",
+          "hours": 2
+        },
+        {
+          "classId": "class-8a",
+          "className": "8А",
+          "subjectId": "pe",
+          "subjectLabel": "Физкультура",
+          "hours": 2
+        },
+        {
+          "classId": "class-9v",
+          "className": "9В",
+          "subjectId": "pe",
+          "subjectLabel": "Физкультура",
+          "hours": 2
+        }
+      ]
+    }
+  ],
   "subjects": [
     {
       "id": "math",
