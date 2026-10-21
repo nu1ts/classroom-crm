@@ -301,6 +301,102 @@ export function updateAccountRole(userId, newRole) {
 }
 
 /**
+ * Привязка учётной записи к учётной карточке.
+ *
+ * binding = null  — отвязать;
+ * binding = { cardId } — привязать к карточке (id зависит от роли):
+ *   · student        → id карточки ученика (db.students);
+ *   · parent         → id карточки ребёнка (db.students);
+ *   · teacher,
+ *     subject_teacher→ короткое имя учителя — карточка учителя (db.subjects).
+ * Одна карточка может быть связана не более чем с одной учётной записью.
+ */
+export function getAccountCardRef(user) {
+  if (!user) return null;
+  switch (user.role) {
+    case 'student':
+      return user.studentId ? { type: 'student', id: user.studentId } : null;
+    case 'parent':
+      return user.childStudentId ? { type: 'parent', id: user.childStudentId } : null;
+    case 'teacher':
+    case 'subject_teacher':
+      return user.cardName ? { type: 'teacher', id: user.cardName } : null;
+    default:
+      return null;
+  }
+}
+
+export function setAccountBinding(userId, binding) {
+  const db = getDB();
+  const user = db.users.find(u => u.id === userId);
+  if (!user) {
+    return { success: false, error: 'Учётная запись не найдена' };
+  }
+  if (user.role === 'admin') {
+    return { success: false, error: 'У учётной записи администратора нет учётной карточки' };
+  }
+
+  const className = (db.meta && db.meta.className) || '7Б';
+
+  if (!binding || !binding.cardId) {
+    if (user.role === 'student') {
+      user.studentId = null;
+      user.classId = null;
+    } else if (user.role === 'parent') {
+      user.childStudentId = null;
+      user.childName = null;
+    } else {
+      user.cardName = null;
+    }
+    saveDB(db);
+    return { success: true, message: 'Привязка к учётной карточке снята. Изменение применится при следующем входе.' };
+  }
+
+  let cardRef;
+  if (user.role === 'student' || user.role === 'parent') {
+    const card = (db.students || []).find(s => s.id === binding.cardId);
+    if (!card) {
+      return { success: false, error: 'Карточка не найдена' };
+    }
+    cardRef = { type: user.role === 'parent' ? 'parent' : 'student', id: card.id };
+
+    const taken = (db.users || []).some(u =>
+      u.id !== userId && JSON.stringify(getAccountCardRef(u)) === JSON.stringify(cardRef)
+    );
+    if (taken) {
+      return { success: false, error: 'Эта учётная карточка уже привязана к другой учётной записи' };
+    }
+
+    if (user.role === 'student') {
+      user.studentId = card.id;
+      user.classId = card.classId;
+    } else {
+      user.childStudentId = card.id;
+      user.childName = `${card.fullName} (${className})`;
+    }
+  } else {
+    const teacherNames = [...new Set((db.subjects || []).map(s => s.teacher))];
+    const card = teacherNames.find(name => name === binding.cardId) || (user.shortName === binding.cardId ? binding.cardId : null);
+    if (!card) {
+      return { success: false, error: 'Карточка учителя не найдена в справочнике' };
+    }
+    cardRef = { type: 'teacher', id: card };
+
+    const taken = (db.users || []).some(u =>
+      u.id !== userId && JSON.stringify(getAccountCardRef(u)) === JSON.stringify(cardRef)
+    );
+    if (taken) {
+      return { success: false, error: 'Эта учётная карточка уже привязана к другой учётной записи' };
+    }
+
+    user.cardName = card;
+  }
+
+  saveDB(db);
+  return { success: true, message: 'Привязка обновлена. Изменение применится при следующем входе.' };
+}
+
+/**
  * Блокировка / разблокировка учётной записи.
  * Блокировка действует при следующем входе: активная сессия не прерывается.
  * Разблокировка также сбрасывает счётчик неудачных попыток входа.

@@ -17,6 +17,8 @@ import {
   createAccount,
   updateAccountRole,
   setAccountStatus,
+  setAccountBinding,
+  getAccountCardRef,
   resetAccountPassword,
   ROLE_LABELS
 } from '../services/storage.js';
@@ -41,15 +43,19 @@ const ROLE_BADGE_CLASSES = {
 function getBindingLabel(user, db) {
   switch (user.role) {
     case 'teacher':
-      return user.className || 'Классный руководитель';
+      return user.cardName
+        ? `Учитель: ${user.cardName}`
+        : (user.className || 'Классный руководитель');
     case 'subject_teacher':
-      return user.subject || 'Без нагрузки';
+      return user.cardName
+        ? `Учитель: ${user.cardName}`
+        : (user.subject || 'Без нагрузки');
     case 'parent':
       return user.childName || 'Без привязки';
     case 'student': {
       const student = (db.students || []).find(s => s.id === user.studentId);
-      if (student && student.classId) {
-        return `Ученик ${(db.meta && db.meta.className) || '7Б'} класса`;
+      if (student) {
+        return `Ученик: ${student.shortName || student.fullName}`;
       }
       return user.className || 'Без привязки';
     }
@@ -58,6 +64,23 @@ function getBindingLabel(user, db) {
     default:
       return '—';
   }
+}
+
+/**
+ * Список учётных карточек, доступных для привязки по роли
+ */
+function getCardOptions(db, role, user = null) {
+  if (role === 'student' || role === 'parent') {
+    return (db.students || []).map(s => ({ id: s.id, label: s.fullName }));
+  }
+  if (role === 'teacher' || role === 'subject_teacher') {
+    const names = [...new Set((db.subjects || []).map(s => s.teacher))];
+    if (user && user.shortName && !names.includes(user.shortName)) {
+      names.push(user.shortName);
+    }
+    return names.map(name => ({ id: name, label: name }));
+  }
+  return [];
 }
 
 function formatLastLogin(isoValue, demoToday) {
@@ -272,6 +295,23 @@ export function renderAccountsView(options = {}) {
                 ${renderIcon('chevron-down', 'w-4 h-4')}
               </div>
             </div>
+          </div>
+
+          <div id="edit-binding-block">
+            <label for="select-edit-binding" class="block text-xs font-semibold text-slate-700 mb-1.5">Учётная карточка</label>
+            <div class="flex items-center space-x-2">
+              <div class="relative flex-1">
+                <select id="select-edit-binding"
+                        class="appearance-none w-full px-3.5 py-2.5 pr-9 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors cursor-pointer">
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                  ${renderIcon('chevron-down', 'w-4 h-4')}
+                </div>
+              </div>
+              <button type="button" id="btn-unlink-account" title="Отвязать учётную карточку"
+                      class="px-3 py-2.5 rounded-xl border border-slate-200 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 text-slate-500 font-medium text-xs transition-colors cursor-pointer whitespace-nowrap">Отвязать</button>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">Каждая учётная карточка может быть связана только с одной учётной записью.</p>
           </div>
 
           <div id="edit-account-error" class="hidden mt-3 py-2.5 px-3.5 rounded-xl bg-rose-50 border border-rose-200/80 text-rose-700 text-xs font-medium"></div>
@@ -505,6 +545,7 @@ export function setupAccountsListeners() {
     if (cells.length >= 7) {
       cells[2].innerHTML = roleBadgeHtml(user);
       cells[3].innerHTML = statusBadgeHtml(user.status === 'active');
+      cells[4].textContent = getBindingLabel(user, db);
       cells[6].innerHTML = actionsCellHtml(user, user.id === getCurrentUserId());
     }
     updateSubtitle();
@@ -665,12 +706,42 @@ export function setupAccountsListeners() {
   const modalEdit = document.getElementById('modal-edit-account');
   const modalEditDialog = document.getElementById('modal-edit-account-dialog');
   let editingUserId = null;
+  let editingUser = null;
+
+  function refreshBindingOptions(db, role, currentRef) {
+    const bindingBlock = document.getElementById('edit-binding-block');
+    const bindingSelect = document.getElementById('select-edit-binding');
+    const unlinkBtn = document.getElementById('btn-unlink-account');
+    if (!bindingSelect || !bindingBlock) return;
+
+    if (role === 'admin') {
+      bindingBlock.classList.add('hidden');
+      return;
+    }
+    bindingBlock.classList.remove('hidden');
+
+    const options = getCardOptions(db, role, editingUser);
+    bindingSelect.innerHTML = [
+      '<option value="">— без карточки —</option>',
+      ...options.map(o => `<option value="${escapeHtml(o.id)}">${escapeHtml(o.label)}</option>`)
+    ].join('');
+
+    const currentValue = currentRef ? String(currentRef.id) : '';
+    const hasCurrent = options.some(o => String(o.id) === currentValue);
+    bindingSelect.value = hasCurrent ? currentValue : '';
+    if (unlinkBtn) {
+      unlinkBtn.disabled = !hasCurrent;
+      unlinkBtn.classList.toggle('cursor-not-allowed', !hasCurrent);
+      unlinkBtn.classList.toggle('opacity-40', !hasCurrent);
+    }
+  }
 
   function openEditModal(userId) {
     const db = getDB();
     const user = (db.users || []).find(u => u.id === userId);
     if (!user || !modalEdit) return;
     editingUserId = userId;
+    editingUser = user;
     showEditError('');
     const resetResult = document.getElementById('reset-password-result');
     if (resetResult) resetResult.classList.add('hidden');
@@ -683,7 +754,10 @@ export function setupAccountsListeners() {
     if (bindingEl) bindingEl.textContent = getBindingLabel(user, db);
 
     const editRoleSelect = document.getElementById('select-edit-role');
-    if (editRoleSelect) editRoleSelect.value = user.role;
+    if (editRoleSelect) {
+      editRoleSelect.value = user.role;
+      refreshBindingOptions(db, user.role, getAccountCardRef(user));
+    }
 
     modalEdit.classList.remove('opacity-0', 'pointer-events-none');
     modalEdit.classList.add('opacity-100', 'pointer-events-auto');
@@ -696,12 +770,29 @@ export function setupAccountsListeners() {
   function closeEditModal() {
     if (!modalEdit) return;
     editingUserId = null;
+    editingUser = null;
     modalEdit.classList.remove('opacity-100', 'pointer-events-auto');
     modalEdit.classList.add('opacity-0', 'pointer-events-none');
     if (modalEditDialog) {
       modalEditDialog.classList.remove('scale-100');
       modalEditDialog.classList.add('scale-95');
     }
+  }
+
+  const editRoleSelect = document.getElementById('select-edit-role');
+  if (editRoleSelect) {
+    editRoleSelect.addEventListener('change', () => {
+      refreshBindingOptions(getDB(), editRoleSelect.value, null);
+    });
+  }
+
+  const unlinkBtn = document.getElementById('btn-unlink-account');
+  if (unlinkBtn) {
+    unlinkBtn.addEventListener('click', () => {
+      const bindingSelect = document.getElementById('select-edit-binding');
+      if (bindingSelect) bindingSelect.value = '';
+      unlinkBtn.disabled = true;
+    });
   }
 
   const submitEditBtn = document.getElementById('btn-submit-edit-account');
@@ -714,6 +805,20 @@ export function setupAccountsListeners() {
         showEditError(res.error);
         return;
       }
+
+      if (newRole !== 'admin') {
+        const bindingValue = (document.getElementById('select-edit-binding') || {}).value || '';
+        const bindingRes = setAccountBinding(editingUserId, bindingValue ? { cardId: bindingValue } : null);
+        if (!bindingRes.success) {
+          showEditError(bindingRes.error);
+          return;
+        }
+        closeEditModal();
+        refreshRowInPlace(editingUserId);
+        showToast(bindingRes.message);
+        return;
+      }
+
       closeEditModal();
       refreshRowInPlace(editingUserId);
       showToast(res.message);

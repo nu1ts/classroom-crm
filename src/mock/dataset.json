@@ -42,7 +42,8 @@
       "className": "7Б класс (28 учеников)",
       "phone": "+7 999 111-22-33",
       "status": "active",
-      "lastLoginAt": "2024-10-28T08:45:00"
+      "lastLoginAt": "2024-10-28T08:45:00",
+      "cardName": "Смирнова М. В."
     },
     {
       "id": "user-kozlov",
@@ -55,7 +56,8 @@
       "subject": "Математика",
       "phone": "+7 999 222-33-44",
       "status": "active",
-      "lastLoginAt": "2024-10-27T16:20:00"
+      "lastLoginAt": "2024-10-27T16:20:00",
+      "cardName": "Козлов А. П."
     },
     {
       "id": "user-admin",
