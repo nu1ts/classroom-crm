@@ -1,4 +1,4 @@
-import { renderSidebar, setupSidebarListeners, updateSidebarActiveItem } from './sidebar.js?v=5';
+import { renderSidebar, setupSidebarListeners, updateSidebarActiveItem } from './sidebar.js';
 
 export function renderLayout(currentUser, currentPath, contentHtml) {
   if (currentPath === '#/login' || !currentUser) {
