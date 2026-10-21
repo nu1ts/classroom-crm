@@ -508,4 +508,78 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await navigationPage.logout();
   });
 
+  // ────────────────────────
+  // ВНЕ ТАБЛИЦЫ ТЕСТ-КЕЙСОВ
+  // ────────────────────────
+  test.describe('Учётные записи: связывание с учётными карточками', () => {
+
+    test('[TC-ACC-01] Привязка учётной записи к карточке ученика (Позитивный)', async ({ page, loginPage }) => {
+      await loginPage.goto();
+      await loginPage.loginAs('admin');
+      await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+
+      await page.fill('#input-accounts-search', 'osipov.k@school.ru');
+      const osipovRow = page.locator('#accounts-table-body tr', { hasText: 'Осипов' });
+      await osipovRow.locator('[data-action="edit-account"]').click();
+
+      await expect(page.locator('#select-edit-binding')).toHaveValue('st-12');
+      await page.selectOption('#select-edit-binding', 'st-05');
+      await page.click('#btn-submit-edit-account');
+
+      await expect(page.locator('#accounts-toast-message')).toContainText('Привязка обновлена');
+      await expect(osipovRow).toContainText('Ученик: Зайцев В.');
+    });
+
+    test('[TC-ACC-02] Отвязка учётной записи от учётной карточки (Позитивный)', async ({ page, loginPage }) => {
+      await loginPage.goto();
+      await loginPage.loginAs('admin');
+      await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+
+      await page.fill('#input-accounts-search', 'osipov.k@school.ru');
+      const osipovRow = page.locator('#accounts-table-body tr', { hasText: 'Осипов' });
+      await osipovRow.locator('[data-action="edit-account"]').click();
+
+      await page.click('#btn-unlink-account');
+      await expect(page.locator('#select-edit-binding')).toHaveValue('');
+      await page.click('#btn-submit-edit-account');
+
+      await expect(osipovRow).toContainText('Без привязки');
+    });
+
+    test('[TC-ACC-03] Карточка не может быть привязана к двум учётным записям (Негативный)', async ({ page, loginPage }) => {
+      await loginPage.goto();
+      await loginPage.loginAs('admin');
+      await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+
+      await page.fill('#input-accounts-search', 'osipov.k@school.ru');
+      await page.locator('#accounts-table-body tr', { hasText: 'Осипов' }).locator('[data-action="edit-account"]').click();
+
+      await page.selectOption('#select-edit-binding', 'st-23');
+      await page.click('#btn-submit-edit-account');
+
+      await expect(page.locator('#edit-account-error')).toBeVisible();
+      await expect(page.locator('#edit-account-error')).toContainText('уже привязана к другой учётной записи');
+      await expect(page.locator('#modal-edit-account')).toBeVisible();
+    });
+
+    test('[TC-ACC-04] Карточка учителя: привязка по умолчанию и смена (Правило)', async ({ page, loginPage }) => {
+      await loginPage.goto();
+      await loginPage.loginAs('admin');
+      await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+
+      await expect(page.locator('[data-account-row="user-smirnova"]')).toContainText('Учитель: Смирнова М. В.');
+      await expect(page.locator('[data-account-row="user-kozlov"]')).toContainText('Учитель: Козлов А. П.');
+
+      await page.locator('[data-account-row="user-kozlov"] [data-action="edit-account"]').click();
+      await page.selectOption('#select-edit-binding', 'Иванова Е. С.');
+      await page.click('#btn-submit-edit-account');
+      await expect(page.locator('[data-account-row="user-kozlov"]')).toContainText('Учитель: Иванова Е. С.');
+
+      await page.locator('[data-account-row="user-admin"] [data-action="edit-account"]').click();
+      await expect(page.locator('#edit-binding-block')).toBeHidden();
+      await page.locator('[data-action="close-edit-modal"]').first().click();
+    });
+
+  });
+
 });
