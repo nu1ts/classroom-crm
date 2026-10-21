@@ -193,12 +193,7 @@ export function setupProfileListeners(onNavigate) {
         } catch (err) {
           console.error('Logout error:', err);
         }
-        window.location.hash = '#/login';
-        if (onNavigate) {
-          onNavigate('#/login');
-        } else {
-          window.location.replace('#/login');
-        }
+        window.location.replace('#/login');
       }
     });
   }

@@ -106,7 +106,7 @@ export const ROLE_NAVIGATION = {
 
 export function isRouteAllowedForRole(role, route) {
   const cleanRoute = (route || '').split('?')[0];
-  if (cleanRoute === '#/login' || cleanRoute === '#/forbidden') {
+  if (cleanRoute === '#/login' || cleanRoute === '#/forbidden' || cleanRoute === '#/change-password') {
     return true;
   }
   const config = ROLE_NAVIGATION[role];

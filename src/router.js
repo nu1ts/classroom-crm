@@ -12,6 +12,8 @@ import { renderStudentsView, setupStudentsListeners } from './views/students.js'
 import { renderStudentSummaryView, setupStudentSummaryListeners } from './views/student-summary.js';
 import { renderParentsView, setupParentsListeners, renderParentSummaryView, setupParentSummaryListeners } from './views/parents.js';
 import { renderAnalyticsView, setupAnalyticsListeners } from './views/analytics.js';
+import { renderAccountsView, setupAccountsListeners } from './views/accounts.js';
+import { renderChangePasswordView, setupChangePasswordListeners } from './views/change-password.js';
 
 const ROUTE_HANDLERS = {
   '#/login': {
@@ -191,8 +193,25 @@ const ROUTE_HANDLERS = {
 
   '#/accounts': {
     title: 'Учётные записи',
-    render: () => renderPlaceholderView('Учётные записи', 'Управление пользователями, ролями и блокировками', '#/accounts'),
-    setup: () => { }
+    render: () => {
+      const hash = window.location.hash || '';
+      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+      const params = new URLSearchParams(queryString);
+      const currentUser = getCurrentUser();
+      return renderAccountsView({
+        searchQuery: params.get('search') || '',
+        filterRole: params.get('role') || 'all',
+        page: params.get('page') || '1',
+        currentUserId: currentUser ? currentUser.id : null
+      });
+    },
+    setup: (navigate) => setupAccountsListeners(navigate)
+  },
+
+  '#/change-password': {
+    title: 'Смена временного пароля',
+    render: () => renderChangePasswordView(),
+    setup: (navigate) => setupChangePasswordListeners(navigate)
   },
   '#/teachers': {
     title: 'Учителя',

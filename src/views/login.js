@@ -107,7 +107,6 @@ export function renderLoginView() {
         </p>
       </div>
 
-      <!-- Карточка входа с локальным модальным окном -->
       <div id="login-card" class="relative overflow-hidden bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200/80 p-8 sm:p-9 transition-all duration-200">
         <h2 class="text-lg font-bold text-slate-800 mb-6">
           Вход в систему
@@ -145,7 +144,6 @@ export function renderLoginView() {
             </div>
           </div>
 
-          <!-- Аккуратный анимированный блок ошибки -->
           <div id="login-error-box" class="overflow-hidden transition-all duration-200 max-h-0 opacity-0 pointer-events-none mb-0">
             <div class="py-2.5 px-3.5 rounded-xl bg-rose-50 border border-rose-200/80 text-rose-700 text-xs flex items-center space-x-2.5">
               <span class="flex-shrink-0">${renderIcon('alert', 'w-4 h-4 text-rose-600')}</span>
@@ -179,6 +177,7 @@ export function renderLoginView() {
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-base font-bold text-slate-900">Восстановление пароля</h3>
           <button type="button" id="btn-close-modal-forgot-x"
+                  data-action="close-modal"
                   title="Закрыть"
                   class="text-slate-400 hover:text-slate-600 p-1 rounded-lg transition-colors">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -194,6 +193,7 @@ export function renderLoginView() {
           <div><span class="font-semibold text-slate-900">Кабинет:</span> 201 (учительская)</div>
         </div>
         <button type="button" id="btn-close-modal-forgot"
+                data-action="close-modal"
                 class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs transition-colors shadow-sm">
           Понятно
         </button>
@@ -211,7 +211,6 @@ export function setupLoginListeners(onLoginSuccess) {
         e.preventDefault();
         const defRoute = getDefaultRouteForRole(currentUser.role);
         window.location.replace(defRoute);
-        if (onLoginSuccess) onLoginSuccess(currentUser, defRoute);
       });
     }
 
@@ -221,7 +220,6 @@ export function setupLoginListeners(onLoginSuccess) {
         e.preventDefault();
         logout();
         window.location.replace('#/login');
-        if (onLoginSuccess) onLoginSuccess(null, '#/login');
       });
     }
     return;
@@ -335,9 +333,13 @@ export function setupLoginListeners(onLoginSuccess) {
         return;
       }
 
+      if (res.mustChangePassword) {
+        window.location.replace('#/change-password');
+        return;
+      }
+
       const defRoute = getDefaultRouteForRole(res.user.role);
       window.location.replace(defRoute);
-      if (onLoginSuccess) onLoginSuccess(res.user, defRoute);
     });
   }
 
@@ -349,7 +351,6 @@ export function setupLoginListeners(onLoginSuccess) {
       if (user) {
         const defRoute = getDefaultRouteForRole(user.role);
         window.location.replace(defRoute);
-        if (onLoginSuccess) onLoginSuccess(user, defRoute);
       }
     });
   });

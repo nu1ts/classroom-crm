@@ -259,17 +259,69 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await page.waitForURL(/#\/overview/, { timeout: 7000 });
   });
 
-  test.skip('[TC-AUTH-14] Заблокированная учётная запись (Негативный)', async () => {
-    // TODO: Будет реализовано после создания UI раздела «Учётные записи» администратора
+  test('[TC-AUTH-14] Заблокированная учётная запись (Негативный)', async ({ page, loginPage, navigationPage }) => {
+    const osipov = { username: 'osipov.k@school.ru', name: 'Осипов' };
+
+    await loginPage.goto();
+    await loginPage.loginAs('admin');
+    await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+
+    await page.fill('#input-accounts-search', osipov.username);
+    const osipovRow = page.locator('#accounts-table-body tr', { hasText: osipov.name });
+    await expect(osipovRow).toContainText('Активен');
+    await osipovRow.locator('[data-action="toggle-status"][data-next-status="blocked"]').click();
+    await expect(osipovRow).toContainText('Заблокирован');
+    await page.fill('#input-accounts-search', '');
+    await navigationPage.logout();
+
+    await loginPage.login(osipov.username, 'Osipov#2024');
+    await loginPage.expectErrorMessage('заблокирована');
+
+    await loginPage.loginAs('admin');
+    await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+    await page.fill('#input-accounts-search', osipov.username);
+    await osipovRow.locator('[data-action="toggle-status"][data-next-status="active"]').click();
+    await expect(osipovRow).toContainText('Активен');
+    await page.fill('#input-accounts-search', '');
+    await navigationPage.logout();
+
+    await loginPage.login(osipov.username, 'Osipov#2024');
+    await page.waitForURL(/#\/schedule/, { timeout: 7000 });
   });
 
-  test('[TC-AUTH-15] Самостоятельный сброс пароля недоступен (Негативный)', async ({ page, loginPage }) => {
+  test('[TC-AUTH-15] Самостоятельный сброс пароля недоступен (Негативный)', async ({ page, loginPage, navigationPage }) => {
     await loginPage.goto();
 
     await loginPage.openForgotPasswordModal();
 
     await expect(page.locator('#modal-forgot-password')).toContainText(/обратитесь к администратору/i);
     await expect(page.locator('#modal-forgot-password input[type="email"]')).toHaveCount(0);
+
+    await loginPage.closeForgotPasswordModal();
+
+    await loginPage.loginAs('admin');
+    await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+    await page.fill('#input-accounts-search', TEST_USERS.teacher.username);
+    const teacherRow = page.locator('#accounts-table-body tr', { hasText: 'Смирнова' });
+    await teacherRow.locator('[data-action="edit-account"]').click();
+    await page.click('#btn-reset-account-password');
+    const resetBox = page.locator('#reset-password-result');
+    await expect(resetBox).toBeVisible();
+    const resetText = await resetBox.textContent();
+    const tempPassword = resetText.match(/Temp#\d{6}/)?.[0];
+    expect(tempPassword, 'временный пароль должен отображаться администратору').toBeTruthy();
+    await page.locator('[data-action="close-edit-modal"]').first().click();
+    await page.fill('#input-accounts-search', '');
+    await navigationPage.logout();
+
+    await loginPage.login(TEST_USERS.teacher.username, tempPassword);
+    await page.waitForURL(/#\/change-password/, { timeout: 7000 });
+
+    await page.fill('#cp-current', tempPassword);
+    await page.fill('#cp-new', TEST_USERS.teacher.password);
+    await page.fill('#cp-confirm', TEST_USERS.teacher.password);
+    await page.click('#btn-cp-submit');
+    await page.waitForURL(/#\/overview/, { timeout: 7000 });
   });
 
   test('[TC-RM-01] Навигация администратора (Позитивный)', async ({ page, loginPage, navigationPage }) => {
@@ -429,8 +481,105 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await expect(profilePage.roleInput).toHaveAttribute('readonly', '');
     await expect(profilePage.bindingInput).toHaveAttribute('readonly', '');
 
-    // TODO: Шаг 4 (смена роли классрука через UI раздела «Учётные записи» администратора)
-    // будет добавлен после реализации интерфейса администрирования пользователей.
+    await navigationPage.logout();
+    await loginPage.loginAs('admin');
+    await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+    await page.fill('#input-accounts-search', TEST_USERS.teacher.username);
+    const teacherRow = page.locator('#accounts-table-body tr', { hasText: 'Смирнова' });
+    await teacherRow.locator('[data-action="edit-account"]').click();
+    await page.selectOption('#select-edit-role', 'subject_teacher');
+    await page.click('#btn-submit-edit-account');
+    await page.fill('#input-accounts-search', '');
+    await navigationPage.logout();
+
+    await loginPage.loginAs('teacher');
+    await page.waitForURL(/#\/classes/, { timeout: 7000 });
+    await navigationPage.expectVisibleMenuItems(['nav-classes', 'nav-profile']);
+    await navigationPage.expectHiddenMenuItems(['nav-journal', 'nav-analytics']);
+
+    await navigationPage.logout();
+    await loginPage.loginAs('admin');
+    await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+    await page.fill('#input-accounts-search', TEST_USERS.teacher.username);
+    await teacherRow.locator('[data-action="edit-account"]').click();
+    await page.selectOption('#select-edit-role', 'teacher');
+    await page.click('#btn-submit-edit-account');
+    await page.fill('#input-accounts-search', '');
+    await navigationPage.logout();
+  });
+
+  // ────────────────────────
+  // ВНЕ ТАБЛИЦЫ ТЕСТ-КЕЙСОВ
+  // ────────────────────────
+  test.describe('Учётные записи: связывание с учётными карточками', () => {
+
+    test('[TC-ACC-01] Привязка учётной записи к карточке ученика (Позитивный)', async ({ page, loginPage }) => {
+      await loginPage.goto();
+      await loginPage.loginAs('admin');
+      await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+
+      await page.fill('#input-accounts-search', 'osipov.k@school.ru');
+      const osipovRow = page.locator('#accounts-table-body tr', { hasText: 'Осипов' });
+      await osipovRow.locator('[data-action="edit-account"]').click();
+
+      await expect(page.locator('#select-edit-binding')).toHaveValue('st-12');
+      await page.selectOption('#select-edit-binding', 'st-05');
+      await page.click('#btn-submit-edit-account');
+
+      await expect(page.locator('#accounts-toast-message')).toContainText('Привязка обновлена');
+      await expect(osipovRow).toContainText('Ученик: Зайцев В.');
+    });
+
+    test('[TC-ACC-02] Отвязка учётной записи от учётной карточки (Позитивный)', async ({ page, loginPage }) => {
+      await loginPage.goto();
+      await loginPage.loginAs('admin');
+      await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+
+      await page.fill('#input-accounts-search', 'osipov.k@school.ru');
+      const osipovRow = page.locator('#accounts-table-body tr', { hasText: 'Осипов' });
+      await osipovRow.locator('[data-action="edit-account"]').click();
+
+      await page.click('#btn-unlink-account');
+      await expect(page.locator('#select-edit-binding')).toHaveValue('');
+      await page.click('#btn-submit-edit-account');
+
+      await expect(osipovRow).toContainText('Без привязки');
+    });
+
+    test('[TC-ACC-03] Карточка не может быть привязана к двум учётным записям (Негативный)', async ({ page, loginPage }) => {
+      await loginPage.goto();
+      await loginPage.loginAs('admin');
+      await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+
+      await page.fill('#input-accounts-search', 'osipov.k@school.ru');
+      await page.locator('#accounts-table-body tr', { hasText: 'Осипов' }).locator('[data-action="edit-account"]').click();
+
+      await page.selectOption('#select-edit-binding', 'st-23');
+      await page.click('#btn-submit-edit-account');
+
+      await expect(page.locator('#edit-account-error')).toBeVisible();
+      await expect(page.locator('#edit-account-error')).toContainText('уже привязана к другой учётной записи');
+      await expect(page.locator('#modal-edit-account')).toBeVisible();
+    });
+
+    test('[TC-ACC-04] Карточка учителя: привязка по умолчанию и смена (Правило)', async ({ page, loginPage }) => {
+      await loginPage.goto();
+      await loginPage.loginAs('admin');
+      await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+
+      await expect(page.locator('[data-account-row="user-smirnova"]')).toContainText('Учитель: Смирнова М. В.');
+      await expect(page.locator('[data-account-row="user-kozlov"]')).toContainText('Учитель: Козлов А. П.');
+
+      await page.locator('[data-account-row="user-kozlov"] [data-action="edit-account"]').click();
+      await page.selectOption('#select-edit-binding', 'Иванова Е. С.');
+      await page.click('#btn-submit-edit-account');
+      await expect(page.locator('[data-account-row="user-kozlov"]')).toContainText('Учитель: Иванова Е. С.');
+
+      await page.locator('[data-account-row="user-admin"] [data-action="edit-account"]').click();
+      await expect(page.locator('#edit-binding-block')).toBeHidden();
+      await page.locator('[data-action="close-edit-modal"]').first().click();
+    });
+
   });
 
 });
