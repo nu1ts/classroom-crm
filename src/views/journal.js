@@ -533,7 +533,6 @@ export function renderJournalView(options = {}) {
         </div>
 
         <div class="pt-4 pb-3 space-y-3 text-xs">
-          <!-- Student Card -->
           <div class="p-3 rounded-2xl bg-slate-50/80 border border-slate-200 flex items-center justify-between">
             <div class="flex items-center space-x-3">
               <div id="entry-modal-student-avatar" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-sky-500 text-white font-bold text-xs flex items-center justify-center shadow-sm flex-shrink-0" style="width: 40px; height: 40px; min-width: 40px;">
@@ -553,7 +552,6 @@ export function renderJournalView(options = {}) {
             </a>
           </div>
 
-          <!-- Grade and Attendance 2-column cards -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
               <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Оценка за урок</div>

@@ -107,7 +107,6 @@ export function renderLoginView() {
         </p>
       </div>
 
-      <!-- Карточка входа с локальным модальным окном -->
       <div id="login-card" class="relative overflow-hidden bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200/80 p-8 sm:p-9 transition-all duration-200">
         <h2 class="text-lg font-bold text-slate-800 mb-6">
           Вход в систему
@@ -145,7 +144,6 @@ export function renderLoginView() {
             </div>
           </div>
 
-          <!-- Аккуратный анимированный блок ошибки -->
           <div id="login-error-box" class="overflow-hidden transition-all duration-200 max-h-0 opacity-0 pointer-events-none mb-0">
             <div class="py-2.5 px-3.5 rounded-xl bg-rose-50 border border-rose-200/80 text-rose-700 text-xs flex items-center space-x-2.5">
               <span class="flex-shrink-0">${renderIcon('alert', 'w-4 h-4 text-rose-600')}</span>
