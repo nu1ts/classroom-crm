@@ -62,7 +62,6 @@ export function setupHeaderListeners(onNavigate) {
       if (user) {
         const defRoute = ROLE_NAVIGATION[user.role]?.defaultRoute || '#/overview';
         window.location.hash = defRoute;
-        if (onNavigate) onNavigate(defRoute);
       }
     });
   }

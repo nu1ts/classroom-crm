@@ -57,10 +57,8 @@ export function filterLessons(lessons, options = {}) {
  * @returns {Object} { totalMarks, presentCount, absentCount, attendanceRate, absenceRate, lessonIds }
  */
 export function calculateAttendanceForDay(lessons, attendance, targetDate, options = {}) {
-  // Находим проведённые уроки за указанную дату
   let dayLessons = (lessons || []).filter(l => l.date === targetDate && (l.isMarked || l.status === 'closed'));
 
-  // Сортировка по номеру урока
   dayLessons.sort((a, b) => (a.lessonNumber || 0) - (b.lessonNumber || 0));
 
   if (options.onlyFirstLesson && dayLessons.length > 0) {
@@ -296,7 +294,6 @@ export function calculateClassAttendance(lessons, attendance, options = {}) {
 export function calculateWeeklyAbsences(lessons, attendance, options = {}) {
   const markedLessons = filterLessons(lessons, options);
   
-  // Группировка уроков по weekIndex
   const weeksMap = new Map();
   for (const lsn of markedLessons) {
     const wIdx = lsn.weekIndex;
@@ -412,7 +409,6 @@ export function getRiskZoneStudents(students, lessons, attendance, grades, subje
     const reasons = [];
     let isCritical = false;
 
-    // 1. Порог по пропускам (строго больше 20%)
     if (attStats.absenceRate !== null && attStats.absenceRate > absenceThreshold) {
       reasons.push({
         type: 'absence',
@@ -425,7 +421,6 @@ export function getRiskZoneStudents(students, lessons, attendance, grades, subje
       }
     }
 
-    // 2. Порог по общему среднему баллу (строго ниже 3.5)
     if (overallAvg !== null && overallAvg < gradeThreshold) {
       reasons.push({
         type: 'overall_grade',
@@ -436,7 +431,6 @@ export function getRiskZoneStudents(students, lessons, attendance, grades, subje
       isCritical = true;
     }
 
-    // 3. Порог по предметам (строго ниже 3.5)
     for (const subj of (subjects || [])) {
       const subjAvg = calculateStudentAverage(grades, sId, { ...options, subjectId: subj.id });
       if (subjAvg !== null && subjAvg < gradeThreshold) {
@@ -467,7 +461,6 @@ export function getRiskZoneStudents(students, lessons, attendance, grades, subje
     }
   }
 
-  // Сортировка: сначала критический риск, затем по убыванию процента пропусков
   riskStudents.sort((a, b) => {
     if (a.riskLevel === 'critical' && b.riskLevel !== 'critical') return -1;
     if (a.riskLevel !== 'critical' && b.riskLevel === 'critical') return 1;
@@ -546,7 +539,6 @@ export function getSurveyReport(surveyId, dataset) {
   const totalResponded = answeredList.length;
   const responseRate = totalTarget > 0 ? roundToOneDecimal((totalResponded / totalTarget) * 100) : 0.0;
 
-  // Распределение ответов по опциям
   const distribution = (survey.options || []).map(opt => {
     const count = responses.filter(r => r.answer === opt.id).length;
     const percentage = totalTarget > 0 ? roundToOneDecimal((count / totalTarget) * 100) : 0.0;

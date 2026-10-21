@@ -135,7 +135,6 @@ export function setupSidebarListeners(onNavigate) {
       if (confirm('Вы действительно хотите выйти из системы?')) {
         logout();
         window.location.replace('#/login');
-        if (onNavigate) onNavigate('#/login');
       }
     });
   }

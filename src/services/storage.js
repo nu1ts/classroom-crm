@@ -154,7 +154,6 @@ function resetFailedAttempts(username) {
       storage.setItem(STORAGE_KEYS.FAILED_ATTEMPTS, JSON.stringify(map));
     }
   } catch {
-    // noop
   }
 }
 

@@ -97,7 +97,6 @@ export function setupChangePasswordListeners(onNavigate) {
 
       const defRoute = getDefaultRouteForRole(currentUser.role);
       window.location.replace(defRoute);
-      if (onNavigate) onNavigate(defRoute);
     });
   }
 
@@ -106,7 +105,6 @@ export function setupChangePasswordListeners(onNavigate) {
     logoutBtn.addEventListener('click', () => {
       logout();
       window.location.replace('#/login');
-      if (onNavigate) onNavigate('#/login');
     });
   }
 }

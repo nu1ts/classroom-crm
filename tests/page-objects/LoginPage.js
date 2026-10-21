@@ -21,7 +21,7 @@ export class LoginPage {
     this.switchUserBtn = page.locator('#btn-login-switch-user');
 
     this.forgotPasswordModal = page.locator('#modal-forgot-password');
-    this.closeForgotPasswordModalBtn = page.locator('#modal-forgot-password button[data-action="close-modal"]');
+    this.closeForgotPasswordModalBtn = page.locator('#modal-forgot-password button[data-action="close-modal"]').first();
   }
 
   /**
@@ -114,5 +114,13 @@ export class LoginPage {
   async openForgotPasswordModal() {
     await this.forgotPasswordBtn.click();
     await expect(this.forgotPasswordModal).toBeVisible({ timeout: 5000 });
+  }
+
+  /**
+   * Закрытие модального окна восстановления пароля
+   */
+  async closeForgotPasswordModal() {
+    await this.closeForgotPasswordModalBtn.click();
+    await expect(this.forgotPasswordModal).toHaveClass(/opacity-0\s+pointer-events-none/, { timeout: 5000 });
   }
 }
