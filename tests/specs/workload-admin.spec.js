@@ -86,4 +86,23 @@ test.describe('Админ: страница «Нагрузка» (TC-WL, вне 
     await expect(page.locator('#workload-error')).toContainText('уже назначена');
   });
 
+  test('[TC-WL-06] Поиск фильтрует строки без перерисовки страницы', async ({ page }) => {
+    await openWorkloadAsAdmin(page);
+    const before = await page.locator('[data-workload-row]').count();
+
+    await page.click('#input-workload-search');
+    await page.fill('#input-workload-search', 'Козлов');
+    await page.waitForTimeout(300);
+
+    await expect(page.locator('[data-workload-row]')).toHaveCount(3);
+    await expect(page).toHaveURL(/search=/);
+
+    await expect(page.locator('#input-workload-search')).toBeFocused();
+
+    await page.click('#btn-clear-workload-search');
+    await page.waitForTimeout(300);
+    await expect(page.locator('[data-workload-row]')).toHaveCount(before);
+    await expect(page.locator('#input-workload-search')).toBeFocused();
+  });
+
 });

@@ -246,7 +246,7 @@ const ROUTE_HANDLERS = {
         filterClass: params.get('class') || 'all'
       });
     },
-    setup: (navigate) => setupWorkloadListeners(navigate)
+    setup: () => setupWorkloadListeners()
   },
   '#/school-year': {
     title: 'Учебный год',

@@ -90,13 +90,13 @@ export function renderWorkloadView(options = {}) {
         <div>
           <button type="button" id="btn-open-add-workload"
                   class="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-semibold text-xs transition-colors shadow-2xs cursor-pointer">
-            ${renderIcon('user-plus', 'w-4 h-4')}
+            ${renderIcon('plus', 'w-4 h-4')}
             <span>Назначить нагрузку</span>
           </button>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
         <div class="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Часов в неделю</div>
           <div class="text-2xl font-bold text-slate-900" id="workload-stat-hours">${totalHours}</div>
@@ -108,10 +108,6 @@ export function renderWorkloadView(options = {}) {
         <div class="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Классов</div>
           <div class="text-2xl font-bold text-slate-900" id="workload-stat-classes">${classCount}</div>
-        </div>
-        <div class="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Строк нагрузки</div>
-          <div class="text-2xl font-bold text-slate-900" id="workload-stat-rows">${rows.length}</div>
         </div>
       </div>
 
@@ -298,7 +294,7 @@ function workloadTableHtml(rows) {
   `;
 }
 
-export function setupWorkloadListeners(onNavigate) {
+export function setupWorkloadListeners() {
   const tableArea = document.getElementById('workload-table-area');
   const searchInput = document.getElementById('input-workload-search');
   const clearSearchBtn = document.getElementById('btn-clear-workload-search');
@@ -347,8 +343,6 @@ export function setupWorkloadListeners(onNavigate) {
     if (teachersStat) teachersStat.textContent = teacherCount;
     const classesStat = document.getElementById('workload-stat-classes');
     if (classesStat) classesStat.textContent = classCount;
-    const rowsStat = document.getElementById('workload-stat-rows');
-    if (rowsStat) rowsStat.textContent = rows.length;
   }
 
   function renderTable() {
@@ -365,11 +359,7 @@ export function setupWorkloadListeners(onNavigate) {
     if (state.filterClass !== 'all') params.set('class', state.filterClass);
     const queryStr = params.toString();
     const newHash = queryStr ? `#/workload?${queryStr}` : '#/workload';
-    if (onNavigate) {
-      onNavigate(newHash);
-    } else {
-      window.location.hash = newHash;
-    }
+    window.history.replaceState(null, '', newHash);
   }
 
   function showToast(message, isError = false) {
@@ -438,13 +428,20 @@ export function setupWorkloadListeners(onNavigate) {
 
   if (searchInput) {
     searchInput.addEventListener('input', () => {
+      if (clearSearchBtn) {
+        clearSearchBtn.classList.toggle('hidden', !searchInput.value.trim());
+      }
       renderTable();
       updateUrl(getFilterState());
     });
   }
   if (clearSearchBtn) {
     clearSearchBtn.addEventListener('click', () => {
-      searchInput.value = '';
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+      }
+      clearSearchBtn.classList.add('hidden');
       renderTable();
       updateUrl(getFilterState());
     });
