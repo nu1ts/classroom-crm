@@ -15,6 +15,7 @@ import { renderAnalyticsView, setupAnalyticsListeners } from './views/analytics.
 import { renderAccountsView, setupAccountsListeners } from './views/accounts.js';
 import { renderChangePasswordView, setupChangePasswordListeners } from './views/change-password.js';
 import { renderTeachersView, setupTeachersListeners } from './views/teachers.js';
+import { renderWorkloadView, setupWorkloadListeners } from './views/workload.js';
 
 const ROUTE_HANDLERS = {
   '#/login': {
@@ -235,8 +236,17 @@ const ROUTE_HANDLERS = {
   },
   '#/workload': {
     title: 'Нагрузка',
-    render: () => renderPlaceholderView('Нагрузка', 'Распределение учебных часов по преподавателям и классам', '#/workload'),
-    setup: () => { }
+    render: () => {
+      const hash = window.location.hash || '';
+      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+      const params = new URLSearchParams(queryString);
+      return renderWorkloadView({
+        searchQuery: params.get('search') || '',
+        filterSubject: params.get('subject') || 'all',
+        filterClass: params.get('class') || 'all'
+      });
+    },
+    setup: () => setupWorkloadListeners()
   },
   '#/school-year': {
     title: 'Учебный год',

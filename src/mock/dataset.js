@@ -112,6 +112,13 @@ export const INITIAL_DATASET = {
       "status": "active"
     }
   ],
+  "classes": [
+    {"id": "class-6v", "name": "6В"},
+    {"id": "class-7b", "name": "7Б"},
+    {"id": "class-7v", "name": "7В"},
+    {"id": "class-8a", "name": "8А"},
+    {"id": "class-9v", "name": "9В"}
+  ],
   "teachers": [
     {
       "id": "t-01",
@@ -130,14 +137,16 @@ export const INITIAL_DATASET = {
           "className": "7Б",
           "subjectId": "hist",
           "subjectLabel": "История",
-          "hours": 5
+          "hours": 5,
+          "id": "wl-t-01-class-7b-hist"
         },
         {
           "classId": "class-7b",
           "className": "7Б",
           "subjectId": "talks",
           "subjectLabel": "Разговоры о важном",
-          "hours": 2
+          "hours": 2,
+          "id": "wl-t-01-class-7b-talks"
         }
       ]
     },
@@ -157,21 +166,24 @@ export const INITIAL_DATASET = {
           "className": "7Б",
           "subjectId": "math",
           "subjectLabel": "Математика (Алгебра)",
-          "hours": 5
+          "hours": 5,
+          "id": "wl-t-02-class-7b-math"
         },
         {
           "classId": "class-8a",
           "className": "8А",
           "subjectId": "math",
           "subjectLabel": "Математика (Алгебра)",
-          "hours": 5
+          "hours": 5,
+          "id": "wl-t-02-class-8a-math"
         },
         {
           "classId": "class-9v",
           "className": "9В",
           "subjectId": "math",
           "subjectLabel": "Алгебра",
-          "hours": 3
+          "hours": 3,
+          "id": "wl-t-02-class-9v-math"
         }
       ]
     },
@@ -191,7 +203,8 @@ export const INITIAL_DATASET = {
           "className": "7Б",
           "subjectId": "rus",
           "subjectLabel": "Русский язык",
-          "hours": 6
+          "hours": 6,
+          "id": "wl-t-03-class-7b-rus"
         }
       ]
     },
@@ -211,14 +224,16 @@ export const INITIAL_DATASET = {
           "className": "7Б",
           "subjectId": "phys",
           "subjectLabel": "Физика",
-          "hours": 3
+          "hours": 3,
+          "id": "wl-t-04-class-7b-phys"
         },
         {
           "classId": "class-8a",
           "className": "8А",
           "subjectId": "phys",
           "subjectLabel": "Физика",
-          "hours": 3
+          "hours": 3,
+          "id": "wl-t-04-class-8a-phys"
         }
       ]
     },
@@ -238,21 +253,24 @@ export const INITIAL_DATASET = {
           "className": "7Б",
           "subjectId": "pe",
           "subjectLabel": "Физкультура",
-          "hours": 2
+          "hours": 2,
+          "id": "wl-t-05-class-7b-pe"
         },
         {
           "classId": "class-8a",
           "className": "8А",
           "subjectId": "pe",
           "subjectLabel": "Физкультура",
-          "hours": 2
+          "hours": 2,
+          "id": "wl-t-05-class-8a-pe"
         },
         {
           "classId": "class-9v",
           "className": "9В",
           "subjectId": "pe",
           "subjectLabel": "Физкультура",
-          "hours": 2
+          "hours": 2,
+          "id": "wl-t-05-class-9v-pe"
         }
       ]
     }
