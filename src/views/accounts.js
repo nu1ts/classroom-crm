@@ -1,17 +1,3 @@
-/**
- * Модуль представления страницы «Учётные записи» (администратор)
- * Реализует требования тест-кейсов:
- * - TC-RM-01: стартовый экран администратора, список учётных записей;
- * - RM-13: смена роли и статуса применяется при следующем входе;
- * - AUTH-14: блокировка/разблокировка учётной записи;
- * - AUTH-15: сброс пароля администратором (временный пароль + смена при первом входе);
- * - RM-07: раздел доступен только администратору, отказ не раскрывает данные.
- *
- * Колонки: ФИО · Логин · Роль · Статус · Привязка · Последний вход · Действия.
- * Поиск по ФИО или логину (мгновенный, как в «Учениках»), фильтр по роли, пагинация.
- * Изменение статуса и роли обновляет строку таблицы точечно, без перезагрузки страницы.
- */
-
 import {
   getDB,
   createAccount,
@@ -129,8 +115,8 @@ function toggleStatusButtonHtml(user, isSelf) {
     return `<button type="button" data-action="toggle-status" data-user-id="${user.id}" data-next-status="blocked"
               ${isSelf ? 'disabled title="Нельзя заблокировать собственную учётную запись"' : 'title="Заблокировать учётную запись"'}
               class="px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-colors ${isSelf
-      ? 'border-slate-200 text-slate-300 cursor-not-allowed'
-      : 'border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 cursor-pointer'}">Блок</button>`;
+        ? 'border-slate-200 text-slate-300 cursor-not-allowed'
+        : 'border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 cursor-pointer'}">Блок</button>`;
   }
   return `<button type="button" data-action="toggle-status" data-user-id="${user.id}" data-next-status="active" title="Разблокировать учётную запись"
             class="px-3 py-1.5 rounded-lg text-[11px] font-semibold border border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 cursor-pointer">Разблок</button>`;
@@ -160,15 +146,10 @@ export function renderAccountsView(options = {}) {
   `).join('');
 
   return `
-    <div class="space-y-6 animate-fadeIn pb-12">
+    <div id="accounts-view" class="space-y-6 animate-fadeIn pb-12">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div class="flex items-center space-x-2">
-            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Учётные записи</h1>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-              Администрирование
-            </span>
-          </div>
+          <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Учётные записи</h1>
           <p class="text-sm font-medium text-slate-500 mt-1" id="accounts-total-subtitle">
             ${rows.length} учётных записей · ${activeCount} активных · ${blockedCount} заблокированных
           </p>
@@ -464,8 +445,8 @@ export function setupAccountsListeners() {
       const pageButtons = pages.map(p => `
         <button type="button" data-action="goto-page" data-page="${p}"
                 class="w-8 h-8 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${p === state.page
-        ? 'bg-brand-500 text-white shadow-sm'
-        : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}">${p}</button>
+          ? 'bg-brand-500 text-white shadow-sm'
+          : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}">${p}</button>
       `).join('');
       paginationHtml = `
         <div class="flex items-center space-x-1.5">
@@ -610,7 +591,8 @@ export function setupAccountsListeners() {
     });
   }
 
-  document.addEventListener('click', (e) => {
+  const viewRoot = document.getElementById('accounts-view');
+  viewRoot.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
     const action = btn.getAttribute('data-action');

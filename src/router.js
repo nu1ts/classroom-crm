@@ -14,6 +14,7 @@ import { renderParentsView, setupParentsListeners, renderParentSummaryView, setu
 import { renderAnalyticsView, setupAnalyticsListeners } from './views/analytics.js';
 import { renderAccountsView, setupAccountsListeners } from './views/accounts.js';
 import { renderChangePasswordView, setupChangePasswordListeners } from './views/change-password.js';
+import { renderTeachersView, setupTeachersListeners } from './views/teachers.js';
 
 const ROUTE_HANDLERS = {
   '#/login': {
@@ -215,8 +216,17 @@ const ROUTE_HANDLERS = {
   },
   '#/teachers': {
     title: 'Учителя',
-    render: () => renderPlaceholderView('Учителя', 'Реестр преподавателей и назначение классных руководителей', '#/teachers'),
-    setup: () => { }
+    render: () => {
+      const hash = window.location.hash || '';
+      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+      const params = new URLSearchParams(queryString);
+      return renderTeachersView({
+        searchQuery: params.get('search') || '',
+        filterSubject: params.get('subject') || 'all',
+        filterAccount: params.get('account') || 'all'
+      });
+    },
+    setup: (navigate) => setupTeachersListeners(navigate)
   },
   '#/directories': {
     title: 'Справочники',
