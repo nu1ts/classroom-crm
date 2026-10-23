@@ -1,45 +1,55 @@
-import { ROLE_NAVIGATION } from '../config/navigation.js';
-import { renderIcon } from './icons.js';
-import { logout, quickLoginAsRole } from '../services/storage.js';
-import { isDevMode } from '../services/env.js';
-import { navigate } from '../services/navigation.js';
+import { ROLE_NAVIGATION } from "../config/navigation.js";
+import { renderIcon } from "./icons.js";
+import { logout, quickLoginAsRole } from "../services/storage.js";
+import { isDevMode } from "../services/env.js";
+import { navigate } from "../services/navigation.js";
 
 export function renderSidebar(currentUser, currentPath) {
-  if (!currentUser) return '';
+  if (!currentUser) return "";
 
-  const roleConfig = ROLE_NAVIGATION[currentUser.role] || ROLE_NAVIGATION.teacher;
+  const roleConfig =
+    ROLE_NAVIGATION[currentUser.role] || ROLE_NAVIGATION.teacher;
   const items = roleConfig.items || [];
 
-  let roleSubtitle = currentUser.className || currentUser.roleLabel || 'Пользователь';
-  if (currentUser.role === 'teacher') {
-    roleSubtitle = 'Классный руководитель 7Б';
-  } else if (currentUser.role === 'subject_teacher') {
-    roleSubtitle = `${currentUser.subject || 'Предметник'} (7Б, 8А, 9В)`;
-  } else if (currentUser.role === 'parent') {
-    roleSubtitle = currentUser.childName || 'Родитель 7Б';
-  } else if (currentUser.role === 'student') {
-    roleSubtitle = 'Ученик 7Б класса';
-  } else if (currentUser.role === 'admin') {
-    roleSubtitle = 'Администратор школы';
+  let roleSubtitle =
+    currentUser.className || currentUser.roleLabel || "Пользователь";
+  if (currentUser.role === "teacher") {
+    roleSubtitle = "Классный руководитель 7Б";
+  } else if (currentUser.role === "subject_teacher") {
+    roleSubtitle = `${currentUser.subject || "Предметник"} (7Б, 8А, 9В)`;
+  } else if (currentUser.role === "parent") {
+    roleSubtitle = currentUser.childName || "Родитель 7Б";
+  } else if (currentUser.role === "student") {
+    roleSubtitle = "Ученик 7Б класса";
+  } else if (currentUser.role === "admin") {
+    roleSubtitle = "Администратор школы";
   }
 
-  const navHtml = items.map(item => {
-    const isStudentDetail = item.path === '/students' && (currentPath === '/student' || currentPath === '/student-summary');
-    const isActive = (currentPath === item.path) || isStudentDetail || (item.path === roleConfig.defaultRoute && (!currentPath || currentPath === '/' || currentPath === ''));
-    const activeClasses = isActive
-      ? 'bg-brand-sidebarActive text-white shadow-sm'
-      : 'text-slate-300 hover:text-white hover:bg-brand-sidebarHover';
+  const navHtml = items
+    .map((item) => {
+      const isStudentDetail =
+        item.path === "/students" &&
+        (currentPath === "/student" || currentPath === "/student-summary");
+      const isActive =
+        currentPath === item.path ||
+        isStudentDetail ||
+        (item.path === roleConfig.defaultRoute &&
+          (!currentPath || currentPath === "/" || currentPath === ""));
+      const activeClasses = isActive
+        ? "bg-brand-sidebarActive text-white shadow-sm"
+        : "text-slate-300 hover:text-white hover:bg-brand-sidebarHover";
 
-    return `
+      return `
       <a href="${item.path}" id="${item.id}"
          class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${activeClasses}">
         <span class="w-5 h-5 flex-shrink-0 flex items-center justify-center">
-          ${renderIcon(item.icon, 'w-5 h-5')}
+          ${renderIcon(item.icon, "w-5 h-5")}
         </span>
         <span class="truncate">${item.title}</span>
       </a>
     `;
-  }).join('');
+    })
+    .join("");
 
   const readOnlyBadge = roleConfig.isReadOnly
     ? `
@@ -47,18 +57,19 @@ export function renderSidebar(currentUser, currentPath) {
         Только для просмотра
       </div>
     `
-    : '';
+    : "";
 
-  const initials = (currentUser.shortName || currentUser.personName || 'П').split(' ')
+  const initials = (currentUser.shortName || currentUser.personName || "П")
+    .split(" ")
     .filter(Boolean)
-    .map(p => p[0])
-    .join('')
+    .map((p) => p[0])
+    .join("")
     .slice(0, 2);
 
   return `
     <aside id="app-sidebar" class="w-64 bg-brand-sidebar text-white flex flex-col flex-shrink-0 h-screen border-r border-slate-800 select-none">
       <div class="p-5 flex items-center space-x-3 border-b border-slate-800/80">
-        ${renderIcon('logo')}
+        ${renderIcon("logo")}
         <div class="overflow-hidden">
           <div class="font-bold text-sm tracking-tight text-white leading-tight truncate">
             Кабинет классного руководителя
@@ -75,19 +86,23 @@ export function renderSidebar(currentUser, currentPath) {
       </nav>
 
       ${(() => {
-        if (!isDevMode()) return '';
+        if (!isDevMode()) return "";
         const demoRoles = [
-          { key: 'teacher', name: 'Классрук: Смирнова М. В.' },
-          { key: 'subject_teacher', name: 'Предметник: Козлов А. П.' },
-          { key: 'parent', name: 'Родитель: Петров С. В.' },
-          { key: 'student', name: 'Ученик: Петрова А.' },
-          { key: 'admin', name: 'Админ: Никитин П. А.' }
+          { key: "teacher", name: "Классрук: Смирнова М. В." },
+          { key: "subject_teacher", name: "Предметник: Козлов А. П." },
+          { key: "parent", name: "Родитель: Петров С. В." },
+          { key: "student", name: "Ученик: Петрова А." },
+          { key: "admin", name: "Админ: Никитин П. А." },
         ];
-        const roleOptionsHtml = demoRoles.map(r => `
-          <option value="${r.key}" ${currentUser.role === r.key ? 'selected' : ''} class="bg-slate-900 text-white">
+        const roleOptionsHtml = demoRoles
+          .map(
+            (r) => `
+          <option value="${r.key}" ${currentUser.role === r.key ? "selected" : ""} class="bg-slate-900 text-white">
             ${r.name}
           </option>
-        `).join('');
+        `,
+          )
+          .join("");
 
         return `
           <div class="px-3 pt-2 pb-1 border-t border-slate-800/80 bg-slate-900/60">
@@ -114,13 +129,13 @@ export function renderSidebar(currentUser, currentPath) {
                 ${currentUser.shortName || currentUser.personName}
               </div>
               <div class="text-[11px] text-slate-400 truncate">
-                ${currentUser.roleLabel || 'Профиль'}
+                ${currentUser.roleLabel || "Профиль"}
               </div>
             </div>
           </a>
           <button id="btn-sidebar-logout" title="Выйти из системы"
                   class="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors ml-1">
-            ${renderIcon('logout', 'w-4 h-4')}
+            ${renderIcon("logout", "w-4 h-4")}
           </button>
         </div>
       </div>
@@ -129,34 +144,35 @@ export function renderSidebar(currentUser, currentPath) {
 }
 
 export function setupSidebarListeners(onNavigate) {
-  const nav = document.getElementById('app-sidebar');
+  const nav = document.getElementById("app-sidebar");
   if (nav) {
-    nav.addEventListener('click', (e) => {
+    nav.addEventListener("click", (e) => {
       const link = e.target.closest('a[href^="/"]');
       if (link) {
         e.preventDefault();
-        navigate(link.getAttribute('href'));
+        navigate(link.getAttribute("href"));
       }
     });
   }
-  const logoutBtn = document.getElementById('btn-sidebar-logout');
+  const logoutBtn = document.getElementById("btn-sidebar-logout");
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', (e) => {
+    logoutBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      if (confirm('Вы действительно хотите выйти из системы?')) {
+      if (confirm("Вы действительно хотите выйти из системы?")) {
         logout();
-        navigate('/login');
+        navigate("/login");
       }
     });
   }
 
-  const roleSwitcher = document.getElementById('demo-role-switcher');
+  const roleSwitcher = document.getElementById("demo-role-switcher");
   if (roleSwitcher) {
-    roleSwitcher.addEventListener('change', (e) => {
+    roleSwitcher.addEventListener("change", (e) => {
       const targetRole = e.target.value;
       const user = quickLoginAsRole(targetRole);
       if (user) {
-        const defRoute = ROLE_NAVIGATION[user.role]?.defaultRoute || '/overview';
+        const defRoute =
+          ROLE_NAVIGATION[user.role]?.defaultRoute || "/overview";
         navigate(defRoute);
         if (onNavigate) onNavigate(defRoute);
       }
@@ -165,21 +181,39 @@ export function setupSidebarListeners(onNavigate) {
 }
 
 export function updateSidebarActiveItem(currentPath) {
-  const sidebar = document.getElementById('app-sidebar');
+  const sidebar = document.getElementById("app-sidebar");
   if (!sidebar) return;
 
-  const links = sidebar.querySelectorAll('nav a[href]');
-  links.forEach(link => {
-    const href = link.getAttribute('href');
-    const cleanPath = (currentPath || '').split('?')[0];
-    const isStudentDetail = href === '/students' && (cleanPath === '/student' || cleanPath === '/student-summary');
-    const isActive = (href === cleanPath) || isStudentDetail || (href === '/overview' && (!cleanPath || cleanPath === '/' || cleanPath === ''));
+  const links = sidebar.querySelectorAll("nav a[href]");
+  links.forEach((link) => {
+    const href = link.getAttribute("href");
+    const cleanPath = (currentPath || "").split("?")[0];
+    const isStudentDetail =
+      href === "/students" &&
+      (cleanPath === "/student" || cleanPath === "/student-summary");
+    const isActive =
+      href === cleanPath ||
+      isStudentDetail ||
+      (href === "/overview" &&
+        (!cleanPath || cleanPath === "/" || cleanPath === ""));
     if (isActive) {
-      link.classList.remove('text-slate-300', 'hover:text-white', 'hover:bg-brand-sidebarHover');
-      link.classList.add('bg-brand-sidebarActive', 'text-white', 'shadow-sm');
+      link.classList.remove(
+        "text-slate-300",
+        "hover:text-white",
+        "hover:bg-brand-sidebarHover",
+      );
+      link.classList.add("bg-brand-sidebarActive", "text-white", "shadow-sm");
     } else {
-      link.classList.remove('bg-brand-sidebarActive', 'text-white', 'shadow-sm');
-      link.classList.add('text-slate-300', 'hover:text-white', 'hover:bg-brand-sidebarHover');
+      link.classList.remove(
+        "bg-brand-sidebarActive",
+        "text-white",
+        "shadow-sm",
+      );
+      link.classList.add(
+        "text-slate-300",
+        "hover:text-white",
+        "hover:bg-brand-sidebarHover",
+      );
     }
   });
 }

@@ -23,7 +23,7 @@ const SRC = path.join(ROOT, 'src');
 // --- 1. Список маршрутов из конфига навигации + служебные ---
 const navSource = await readFile(path.join(SRC, 'config', 'navigation.js'), 'utf8');
 const routePaths = [...new Set(
-  [...navSource.matchAll(/'\/([a-z0-9-]+)'/g)].map((m) => m[1])
+  [...navSource.matchAll(/['"]\/([a-z0-9-]+)['"]/g)].map((m) => m[1])
 )].sort();
 
 for (const extra of ['login', 'forbidden', 'change-password']) {

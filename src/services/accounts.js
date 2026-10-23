@@ -9,7 +9,14 @@
  * - Сброс пароля с выдачей временного пароля
  */
 
-import { getDB, saveDB, validateNewPassword, shortenName, resetFailedAttempts, ROLE_LABELS } from './storage.js';
+import {
+  getDB,
+  saveDB,
+  validateNewPassword,
+  shortenName,
+  resetFailedAttempts,
+  ROLE_LABELS,
+} from "./storage.js";
 
 /**
  * Смена роли учётной записи администратором.
@@ -19,26 +26,32 @@ import { getDB, saveDB, validateNewPassword, shortenName, resetFailedAttempts, R
  * @returns {Object} { success, message?, error? }
  */
 export function updateAccountRole(userId, newRole) {
-    const db = getDB();
-    const user = db.users.find(u => u.id === userId);
-    if (!user) {
-        return { success: false, error: 'Учётная запись не найдена' };
+  const db = getDB();
+  const user = db.users.find((u) => u.id === userId);
+  if (!user) {
+    return { success: false, error: "Учётная запись не найдена" };
+  }
+  if (!ROLE_LABELS[newRole]) {
+    return { success: false, error: "Неизвестная роль" };
+  }
+  if (user.role === "admin" && newRole !== "admin") {
+    const activeAdmins = db.users.filter((u) => u.role === "admin").length;
+    if (activeAdmins <= 1) {
+      return {
+        success: false,
+        error: "Нельзя снять роль администратора с последнего администратора",
+      };
     }
-    if (!ROLE_LABELS[newRole]) {
-        return { success: false, error: 'Неизвестная роль' };
-    }
-    if (user.role === 'admin' && newRole !== 'admin') {
-        const activeAdmins = db.users.filter(u => u.role === 'admin').length;
-        if (activeAdmins <= 1) {
-            return { success: false, error: 'Нельзя снять роль администратора с последнего администратора' };
-        }
-    }
+  }
 
-    user.role = newRole;
-    user.roleLabel = ROLE_LABELS[newRole];
-    saveDB(db);
+  user.role = newRole;
+  user.roleLabel = ROLE_LABELS[newRole];
+  saveDB(db);
 
-    return { success: true, message: `Роль изменена. Изменение применится при следующем входе` };
+  return {
+    success: true,
+    message: `Роль изменена. Изменение применится при следующем входе`,
+  };
 }
 
 /**
@@ -53,18 +66,20 @@ export function updateAccountRole(userId, newRole) {
  * Одна карточка может быть связана не более чем с одной учётной записью.
  */
 export function getAccountCardRef(user) {
-    if (!user) return null;
-    switch (user.role) {
-        case 'student':
-            return user.studentId ? { type: 'student', id: user.studentId } : null;
-        case 'parent':
-            return user.childStudentId ? { type: 'parent', id: user.childStudentId } : null;
-        case 'teacher':
-        case 'subject_teacher':
-            return user.cardName ? { type: 'teacher', id: user.cardName } : null;
-        default:
-            return null;
-    }
+  if (!user) return null;
+  switch (user.role) {
+    case "student":
+      return user.studentId ? { type: "student", id: user.studentId } : null;
+    case "parent":
+      return user.childStudentId
+        ? { type: "parent", id: user.childStudentId }
+        : null;
+    case "teacher":
+    case "subject_teacher":
+      return user.cardName ? { type: "teacher", id: user.cardName } : null;
+    default:
+      return null;
+  }
 }
 
 /**
@@ -82,73 +97,103 @@ export function getAccountCardRef(user) {
  * @returns {Object} { success, message?, error? }
  */
 export function setAccountBinding(userId, binding) {
-    const db = getDB();
-    const user = db.users.find(u => u.id === userId);
-    if (!user) {
-        return { success: false, error: 'Учётная запись не найдена' };
-    }
-    if (user.role === 'admin') {
-        return { success: false, error: 'У учётной записи администратора нет учётной карточки' };
-    }
+  const db = getDB();
+  const user = db.users.find((u) => u.id === userId);
+  if (!user) {
+    return { success: false, error: "Учётная запись не найдена" };
+  }
+  if (user.role === "admin") {
+    return {
+      success: false,
+      error: "У учётной записи администратора нет учётной карточки",
+    };
+  }
 
-    const className = (db.meta && db.meta.className) || '7Б';
+  const className = (db.meta && db.meta.className) || "7Б";
 
-    if (!binding || !binding.cardId) {
-        if (user.role === 'student') {
-            user.studentId = null;
-            user.classId = null;
-        } else if (user.role === 'parent') {
-            user.childStudentId = null;
-            user.childName = null;
-        } else {
-            user.cardName = null;
-        }
-        saveDB(db);
-        return { success: true, message: 'Привязка к учётной карточке снята. Изменение применится при следующем входе.' };
-    }
-
-    let cardRef;
-    if (user.role === 'student' || user.role === 'parent') {
-        const card = (db.students || []).find(s => s.id === binding.cardId);
-        if (!card) {
-            return { success: false, error: 'Карточка не найдена' };
-        }
-        cardRef = { type: user.role === 'parent' ? 'parent' : 'student', id: card.id };
-
-        const taken = (db.users || []).some(u =>
-            u.id !== userId && JSON.stringify(getAccountCardRef(u)) === JSON.stringify(cardRef)
-        );
-        if (taken) {
-            return { success: false, error: 'Эта учётная карточка уже привязана к другой учётной записи' };
-        }
-
-        if (user.role === 'student') {
-            user.studentId = card.id;
-            user.classId = card.classId;
-        } else {
-            user.childStudentId = card.id;
-            user.childName = `${card.fullName} (${className})`;
-        }
+  if (!binding || !binding.cardId) {
+    if (user.role === "student") {
+      user.studentId = null;
+      user.classId = null;
+    } else if (user.role === "parent") {
+      user.childStudentId = null;
+      user.childName = null;
     } else {
-        const teacherNames = [...new Set((db.subjects || []).map(s => s.teacher))];
-        const card = teacherNames.find(name => name === binding.cardId) || (user.shortName === binding.cardId ? binding.cardId : null);
-        if (!card) {
-            return { success: false, error: 'Карточка учителя не найдена в справочнике' };
-        }
-        cardRef = { type: 'teacher', id: card };
+      user.cardName = null;
+    }
+    saveDB(db);
+    return {
+      success: true,
+      message:
+        "Привязка к учётной карточке снята. Изменение применится при следующем входе.",
+    };
+  }
 
-        const taken = (db.users || []).some(u =>
-            u.id !== userId && JSON.stringify(getAccountCardRef(u)) === JSON.stringify(cardRef)
-        );
-        if (taken) {
-            return { success: false, error: 'Эта учётная карточка уже привязана к другой учётной записи' };
-        }
+  let cardRef;
+  if (user.role === "student" || user.role === "parent") {
+    const card = (db.students || []).find((s) => s.id === binding.cardId);
+    if (!card) {
+      return { success: false, error: "Карточка не найдена" };
+    }
+    cardRef = {
+      type: user.role === "parent" ? "parent" : "student",
+      id: card.id,
+    };
 
-        user.cardName = card;
+    const taken = (db.users || []).some(
+      (u) =>
+        u.id !== userId &&
+        JSON.stringify(getAccountCardRef(u)) === JSON.stringify(cardRef),
+    );
+    if (taken) {
+      return {
+        success: false,
+        error: "Эта учётная карточка уже привязана к другой учётной записи",
+      };
     }
 
-    saveDB(db);
-    return { success: true, message: 'Привязка обновлена. Изменение применится при следующем входе.' };
+    if (user.role === "student") {
+      user.studentId = card.id;
+      user.classId = card.classId;
+    } else {
+      user.childStudentId = card.id;
+      user.childName = `${card.fullName} (${className})`;
+    }
+  } else {
+    const teacherNames = [
+      ...new Set((db.subjects || []).map((s) => s.teacher)),
+    ];
+    const card =
+      teacherNames.find((name) => name === binding.cardId) ||
+      (user.shortName === binding.cardId ? binding.cardId : null);
+    if (!card) {
+      return {
+        success: false,
+        error: "Карточка учителя не найдена в справочнике",
+      };
+    }
+    cardRef = { type: "teacher", id: card };
+
+    const taken = (db.users || []).some(
+      (u) =>
+        u.id !== userId &&
+        JSON.stringify(getAccountCardRef(u)) === JSON.stringify(cardRef),
+    );
+    if (taken) {
+      return {
+        success: false,
+        error: "Эта учётная карточка уже привязана к другой учётной записи",
+      };
+    }
+
+    user.cardName = card;
+  }
+
+  saveDB(db);
+  return {
+    success: true,
+    message: "Привязка обновлена. Изменение применится при следующем входе.",
+  };
 }
 
 /**
@@ -157,33 +202,39 @@ export function setAccountBinding(userId, binding) {
  * Разблокировка также сбрасывает счётчик неудачных попыток входа.
  */
 export function setAccountStatus(userId, status) {
-    const db = getDB();
-    const user = db.users.find(u => u.id === userId);
-    if (!user) {
-        return { success: false, error: 'Учётная запись не найдена' };
+  const db = getDB();
+  const user = db.users.find((u) => u.id === userId);
+  if (!user) {
+    return { success: false, error: "Учётная запись не найдена" };
+  }
+  if (status !== "active" && status !== "blocked") {
+    return { success: false, error: "Недопустимый статус" };
+  }
+  if (status === "blocked" && user.role === "admin") {
+    const activeAdmins = db.users.filter(
+      (u) => u.role === "admin" && u.status === "active",
+    ).length;
+    if (activeAdmins <= 1) {
+      return {
+        success: false,
+        error: "Нельзя заблокировать последнего активного администратора",
+      };
     }
-    if (status !== 'active' && status !== 'blocked') {
-        return { success: false, error: 'Недопустимый статус' };
-    }
-    if (status === 'blocked' && user.role === 'admin') {
-        const activeAdmins = db.users.filter(u => u.role === 'admin' && u.status === 'active').length;
-        if (activeAdmins <= 1) {
-            return { success: false, error: 'Нельзя заблокировать последнего активного администратора' };
-        }
-    }
+  }
 
-    user.status = status;
-    if (status === 'active') {
-        resetFailedAttempts(user.username);
-    }
-    saveDB(db);
+  user.status = status;
+  if (status === "active") {
+    resetFailedAttempts(user.username);
+  }
+  saveDB(db);
 
-    return {
-        success: true,
-        message: status === 'blocked'
-            ? 'Учётная запись заблокирована. Вход будет запрещён при следующей попытке.'
-            : 'Учётная запись разблокирована. Вход снова доступен.'
-    };
+  return {
+    success: true,
+    message:
+      status === "blocked"
+        ? "Учётная запись заблокирована. Вход будет запрещён при следующей попытке."
+        : "Учётная запись разблокирована. Вход снова доступен.",
+  };
 }
 
 /**
@@ -191,43 +242,46 @@ export function setAccountStatus(userId, status) {
  * пользователь обязан сменить его при первом входе.
  */
 export function createAccount({ personName, username, role, tempPassword }) {
-    const db = getDB();
-    const name = (personName || '').trim();
-    const login = (username || '').trim().toLowerCase();
-    const pwd = (tempPassword || '').trim();
+  const db = getDB();
+  const name = (personName || "").trim();
+  const login = (username || "").trim().toLowerCase();
+  const pwd = (tempPassword || "").trim();
 
-    if (!name) {
-        return { success: false, error: 'Укажите ФИО пользователя' };
-    }
-    if (!login) {
-        return { success: false, error: 'Укажите логин (электронную почту)' };
-    }
-    if (!ROLE_LABELS[role]) {
-        return { success: false, error: 'Выберите роль' };
-    }
-    if (db.users.some(u => u.username.toLowerCase() === login)) {
-        return { success: false, error: 'Пользователь с таким логином уже существует' };
-    }
-    const pwdCheck = validateNewPassword(pwd);
-    if (!pwdCheck.valid) {
-        return { success: false, error: pwdCheck.error };
-    }
-
-    const newUser = {
-        id: `user-${Date.now()}`,
-        username: login,
-        password: pwd,
-        role,
-        roleLabel: ROLE_LABELS[role],
-        personName: name,
-        shortName: shortenName(name),
-        status: 'active',
-        mustChangePassword: true
+  if (!name) {
+    return { success: false, error: "Укажите ФИО пользователя" };
+  }
+  if (!login) {
+    return { success: false, error: "Укажите логин (электронную почту)" };
+  }
+  if (!ROLE_LABELS[role]) {
+    return { success: false, error: "Выберите роль" };
+  }
+  if (db.users.some((u) => u.username.toLowerCase() === login)) {
+    return {
+      success: false,
+      error: "Пользователь с таким логином уже существует",
     };
-    db.users.push(newUser);
-    saveDB(db);
+  }
+  const pwdCheck = validateNewPassword(pwd);
+  if (!pwdCheck.valid) {
+    return { success: false, error: pwdCheck.error };
+  }
 
-    return { success: true, user: newUser, message: 'Учётная запись создана' };
+  const newUser = {
+    id: `user-${Date.now()}`,
+    username: login,
+    password: pwd,
+    role,
+    roleLabel: ROLE_LABELS[role],
+    personName: name,
+    shortName: shortenName(name),
+    status: "active",
+    mustChangePassword: true,
+  };
+  db.users.push(newUser);
+  saveDB(db);
+
+  return { success: true, user: newUser, message: "Учётная запись создана" };
 }
 
 /**
@@ -235,17 +289,21 @@ export function createAccount({ personName, username, role, tempPassword }) {
  * обязательный к смене при первом входе.
  */
 export function resetAccountPassword(userId) {
-    const db = getDB();
-    const user = db.users.find(u => u.id === userId);
-    if (!user) {
-        return { success: false, error: 'Учётная запись не найдена' };
-    }
+  const db = getDB();
+  const user = db.users.find((u) => u.id === userId);
+  if (!user) {
+    return { success: false, error: "Учётная запись не найдена" };
+  }
 
-    const tempPassword = `Temp#${Math.floor(1000 + Math.random() * 9000)}${new Date().getFullYear() % 100}`;
-    user.password = tempPassword;
-    user.mustChangePassword = true;
-    resetFailedAttempts(user.username);
-    saveDB(db);
+  const tempPassword = `Temp#${Math.floor(1000 + Math.random() * 9000)}${new Date().getFullYear() % 100}`;
+  user.password = tempPassword;
+  user.mustChangePassword = true;
+  resetFailedAttempts(user.username);
+  saveDB(db);
 
-    return { success: true, tempPassword, message: 'Пароль сброшен. Сообщите временный пароль пользователю.' };
+  return {
+    success: true,
+    tempPassword,
+    message: "Пароль сброшен. Сообщите временный пароль пользователю.",
+  };
 }

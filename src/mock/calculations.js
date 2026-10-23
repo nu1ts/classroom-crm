@@ -20,16 +20,16 @@ export function roundToOneDecimal(value) {
 export function filterLessons(lessons, options = {}) {
   let result = lessons || [];
   if (options.periodId) {
-    result = result.filter(l => l.periodId === options.periodId);
+    result = result.filter((l) => l.periodId === options.periodId);
   }
   if (options.dateFrom) {
-    result = result.filter(l => l.date >= options.dateFrom);
+    result = result.filter((l) => l.date >= options.dateFrom);
   }
   if (options.dateTo) {
-    result = result.filter(l => l.date <= options.dateTo);
+    result = result.filter((l) => l.date <= options.dateTo);
   }
   if (options.onlyMarked !== false) {
-    result = result.filter(l => l.isMarked || l.status === 'closed');
+    result = result.filter((l) => l.isMarked || l.status === "closed");
   }
   return result;
 }
@@ -43,8 +43,15 @@ export function filterLessons(lessons, options = {}) {
  * @param {Object} options { onlyFirstLesson: boolean }
  * @returns {Object} { totalMarks, presentCount, absentCount, attendanceRate, absenceRate, lessonIds }
  */
-export function calculateAttendanceForDay(lessons, attendance, targetDate, options = {}) {
-  let dayLessons = (lessons || []).filter(l => l.date === targetDate && (l.isMarked || l.status === 'closed'));
+export function calculateAttendanceForDay(
+  lessons,
+  attendance,
+  targetDate,
+  options = {},
+) {
+  let dayLessons = (lessons || []).filter(
+    (l) => l.date === targetDate && (l.isMarked || l.status === "closed"),
+  );
 
   dayLessons.sort((a, b) => (a.lessonNumber || 0) - (b.lessonNumber || 0));
 
@@ -52,8 +59,10 @@ export function calculateAttendanceForDay(lessons, attendance, targetDate, optio
     dayLessons = [dayLessons[0]];
   }
 
-  const lessonIds = new Set(dayLessons.map(l => l.id));
-  const dayAttendance = (attendance || []).filter(a => lessonIds.has(a.lessonId) && a.date === targetDate);
+  const lessonIds = new Set(dayLessons.map((l) => l.id));
+  const dayAttendance = (attendance || []).filter(
+    (a) => lessonIds.has(a.lessonId) && a.date === targetDate,
+  );
 
   const totalMarks = dayAttendance.length;
   if (totalMarks === 0) {
@@ -64,12 +73,14 @@ export function calculateAttendanceForDay(lessons, attendance, targetDate, optio
       absentCount: 0,
       attendanceRate: null,
       absenceRate: null,
-      lessonIds: Array.from(lessonIds)
+      lessonIds: Array.from(lessonIds),
     };
   }
 
-  const presentCount = dayAttendance.filter(a => a.value === 'present').length;
-  const absentCount = dayAttendance.filter(a => a.value === 'absent').length;
+  const presentCount = dayAttendance.filter(
+    (a) => a.value === "present",
+  ).length;
+  const absentCount = dayAttendance.filter((a) => a.value === "absent").length;
 
   const attendanceRate = roundToOneDecimal((presentCount / totalMarks) * 100);
   const absenceRate = roundToOneDecimal((absentCount / totalMarks) * 100);
@@ -81,7 +92,7 @@ export function calculateAttendanceForDay(lessons, attendance, targetDate, optio
     absentCount,
     attendanceRate,
     absenceRate,
-    lessonIds: Array.from(lessonIds)
+    lessonIds: Array.from(lessonIds),
   };
 }
 
@@ -97,19 +108,19 @@ export function calculateAttendanceForDay(lessons, attendance, targetDate, optio
  * @returns {number|null}
  */
 export function calculateStudentAverage(grades, studentId, options = {}) {
-  let stGrades = (grades || []).filter(g => g.studentId === studentId);
+  let stGrades = (grades || []).filter((g) => g.studentId === studentId);
 
   if (options.subjectId) {
-    stGrades = stGrades.filter(g => g.subjectId === options.subjectId);
+    stGrades = stGrades.filter((g) => g.subjectId === options.subjectId);
   }
   if (options.periodId) {
-    stGrades = stGrades.filter(g => g.periodId === options.periodId);
+    stGrades = stGrades.filter((g) => g.periodId === options.periodId);
   }
   if (options.dateFrom) {
-    stGrades = stGrades.filter(g => g.date >= options.dateFrom);
+    stGrades = stGrades.filter((g) => g.date >= options.dateFrom);
   }
   if (options.dateTo) {
-    stGrades = stGrades.filter(g => g.date <= options.dateTo);
+    stGrades = stGrades.filter((g) => g.date <= options.dateTo);
   }
 
   if (stGrades.length === 0) {
@@ -131,16 +142,16 @@ export function calculateClassAverage(grades, options = {}) {
   let filtered = grades || [];
 
   if (options.subjectId) {
-    filtered = filtered.filter(g => g.subjectId === options.subjectId);
+    filtered = filtered.filter((g) => g.subjectId === options.subjectId);
   }
   if (options.periodId) {
-    filtered = filtered.filter(g => g.periodId === options.periodId);
+    filtered = filtered.filter((g) => g.periodId === options.periodId);
   }
   if (options.dateFrom) {
-    filtered = filtered.filter(g => g.date >= options.dateFrom);
+    filtered = filtered.filter((g) => g.date >= options.dateFrom);
   }
   if (options.dateTo) {
-    filtered = filtered.filter(g => g.date <= options.dateTo);
+    filtered = filtered.filter((g) => g.date <= options.dateTo);
   }
 
   if (filtered.length === 0) {
@@ -161,9 +172,12 @@ export function calculateClassAverage(grades, options = {}) {
 export function calculateSubjectAverages(grades, subjects, options = {}) {
   const threshold = options.threshold ?? 3.5;
 
-  return (subjects || []).map(subj => {
-    const avg = calculateClassAverage(grades, { ...options, subjectId: subj.id });
-    const count = (grades || []).filter(g => {
+  return (subjects || []).map((subj) => {
+    const avg = calculateClassAverage(grades, {
+      ...options,
+      subjectId: subj.id,
+    });
+    const count = (grades || []).filter((g) => {
       let match = g.subjectId === subj.id;
       if (options.periodId) match = match && g.periodId === options.periodId;
       if (options.dateFrom) match = match && g.date >= options.dateFrom;
@@ -181,7 +195,7 @@ export function calculateSubjectAverages(grades, subjects, options = {}) {
       average: avg,
       gradesCount: count,
       threshold,
-      isBelowThreshold: avg !== null && avg < threshold
+      isBelowThreshold: avg !== null && avg < threshold,
     };
   });
 }
@@ -195,11 +209,18 @@ export function calculateSubjectAverages(grades, subjects, options = {}) {
  * @param {Object} options { periodId, dateFrom, dateTo }
  * @returns {Object} { totalLessons, presentCount, absentCount, attendanceRate, absenceRate }
  */
-export function calculateStudentAttendance(lessons, attendance, studentId, options = {}) {
+export function calculateStudentAttendance(
+  lessons,
+  attendance,
+  studentId,
+  options = {},
+) {
   const markedLessons = filterLessons(lessons, options);
-  const lessonIds = new Set(markedLessons.map(l => l.id));
+  const lessonIds = new Set(markedLessons.map((l) => l.id));
 
-  const stAttendance = (attendance || []).filter(a => a.studentId === studentId && lessonIds.has(a.lessonId));
+  const stAttendance = (attendance || []).filter(
+    (a) => a.studentId === studentId && lessonIds.has(a.lessonId),
+  );
 
   const totalLessons = markedLessons.length;
   if (totalLessons === 0) {
@@ -209,11 +230,11 @@ export function calculateStudentAttendance(lessons, attendance, studentId, optio
       presentCount: 0,
       absentCount: 0,
       attendanceRate: null,
-      absenceRate: null
+      absenceRate: null,
     };
   }
 
-  const absentCount = stAttendance.filter(a => a.value === 'absent').length;
+  const absentCount = stAttendance.filter((a) => a.value === "absent").length;
   const presentCount = totalLessons - absentCount;
 
   const attendanceRate = roundToOneDecimal((presentCount / totalLessons) * 100);
@@ -225,7 +246,7 @@ export function calculateStudentAttendance(lessons, attendance, studentId, optio
     presentCount,
     absentCount,
     attendanceRate,
-    absenceRate
+    absenceRate,
   };
 }
 
@@ -239,9 +260,11 @@ export function calculateStudentAttendance(lessons, attendance, studentId, optio
  */
 export function calculateClassAttendance(lessons, attendance, options = {}) {
   const markedLessons = filterLessons(lessons, options);
-  const lessonIds = new Set(markedLessons.map(l => l.id));
+  const lessonIds = new Set(markedLessons.map((l) => l.id));
 
-  const periodAttendance = (attendance || []).filter(a => lessonIds.has(a.lessonId));
+  const periodAttendance = (attendance || []).filter((a) =>
+    lessonIds.has(a.lessonId),
+  );
   const totalMarks = periodAttendance.length;
 
   if (totalMarks === 0) {
@@ -251,11 +274,13 @@ export function calculateClassAttendance(lessons, attendance, options = {}) {
       presentCount: 0,
       absentCount: 0,
       attendanceRate: null,
-      absenceRate: null
+      absenceRate: null,
     };
   }
 
-  const absentCount = periodAttendance.filter(a => a.value === 'absent').length;
+  const absentCount = periodAttendance.filter(
+    (a) => a.value === "absent",
+  ).length;
   const presentCount = totalMarks - absentCount;
 
   const attendanceRate = roundToOneDecimal((presentCount / totalMarks) * 100);
@@ -267,7 +292,7 @@ export function calculateClassAttendance(lessons, attendance, options = {}) {
     presentCount,
     absentCount,
     attendanceRate,
-    absenceRate
+    absenceRate,
   };
 }
 
@@ -295,11 +320,12 @@ export function calculateWeeklyAbsences(lessons, attendance, options = {}) {
 
   for (const wIdx of sortedWeeks) {
     const wLessons = weeksMap.get(wIdx);
-    const lIds = new Set(wLessons.map(l => l.id));
-    const wAtt = (attendance || []).filter(a => lIds.has(a.lessonId));
+    const lIds = new Set(wLessons.map((l) => l.id));
+    const wAtt = (attendance || []).filter((a) => lIds.has(a.lessonId));
     const totalMarks = wAtt.length;
-    const absences = wAtt.filter(a => a.value === 'absent').length;
-    const rate = totalMarks > 0 ? roundToOneDecimal((absences / totalMarks) * 100) : 0.0;
+    const absences = wAtt.filter((a) => a.value === "absent").length;
+    const rate =
+      totalMarks > 0 ? roundToOneDecimal((absences / totalMarks) * 100) : 0.0;
 
     result.push({
       weekIndex: wIdx,
@@ -307,7 +333,7 @@ export function calculateWeeklyAbsences(lessons, attendance, options = {}) {
       totalLessons: wLessons.length,
       totalMarks,
       absentCount: absences,
-      absencePercentage: rate
+      absencePercentage: rate,
     });
   }
 
@@ -324,29 +350,36 @@ export function calculateWeeklyAbsences(lessons, attendance, options = {}) {
  * @param {Object} options { periodId, date, dateFrom, dateTo }
  * @returns {Array} Список неподтверждённых пропусков с подробной информацией
  */
-export function getUnconfirmedAbsences(attendance, lessons, students, options = {}) {
-  const lessonMap = new Map((lessons || []).map(l => [l.id, l]));
-  const studentMap = new Map((students || []).map(s => [s.id, s]));
+export function getUnconfirmedAbsences(
+  attendance,
+  lessons,
+  students,
+  options = {},
+) {
+  const lessonMap = new Map((lessons || []).map((l) => [l.id, l]));
+  const studentMap = new Map((students || []).map((s) => [s.id, s]));
 
-  let records = (attendance || []).filter(a => a.status === 'unconfirmed' && a.value === 'absent');
+  let records = (attendance || []).filter(
+    (a) => a.status === "unconfirmed" && a.value === "absent",
+  );
 
   if (options.periodId) {
-    records = records.filter(a => {
+    records = records.filter((a) => {
       const lsn = lessonMap.get(a.lessonId);
       return lsn && lsn.periodId === options.periodId;
     });
   }
   if (options.date) {
-    records = records.filter(a => a.date === options.date);
+    records = records.filter((a) => a.date === options.date);
   }
   if (options.dateFrom) {
-    records = records.filter(a => a.date >= options.dateFrom);
+    records = records.filter((a) => a.date >= options.dateFrom);
   }
   if (options.dateTo) {
-    records = records.filter(a => a.date <= options.dateTo);
+    records = records.filter((a) => a.date <= options.dateTo);
   }
 
-  return records.map(att => {
+  return records.map((att) => {
     const lsn = lessonMap.get(att.lessonId);
     const st = studentMap.get(att.studentId);
     return {
@@ -354,15 +387,15 @@ export function getUnconfirmedAbsences(attendance, lessons, students, options = 
       lessonId: att.lessonId,
       lessonNumber: lsn ? lsn.lessonNumber : null,
       studentId: att.studentId,
-      studentName: st ? st.fullName : 'Неизвестный ученик',
+      studentName: st ? st.fullName : "Неизвестный ученик",
       date: att.date,
-      time: lsn ? lsn.time : '',
-      subjectId: lsn ? lsn.subjectId : '',
-      subjectName: lsn ? lsn.subjectName : '',
-      teacher: lsn ? lsn.teacher : '',
-      reason: att.reason || 'Причина не указана',
-      code: att.code || 'Н (без)',
-      statusLabel: 'Ожидает подтверждения'
+      time: lsn ? lsn.time : "",
+      subjectId: lsn ? lsn.subjectId : "",
+      subjectName: lsn ? lsn.subjectName : "",
+      teacher: lsn ? lsn.teacher : "",
+      reason: att.reason || "Причина не указана",
+      code: att.code || "Н (без)",
+      statusLabel: "Ожидает подтверждения",
     };
   });
 }
@@ -382,26 +415,41 @@ export function getUnconfirmedAbsences(attendance, lessons, students, options = 
  * @param {Object} options { periodId, dateFrom, dateTo, absenceThreshold = 20.0, gradeThreshold = 3.5 }
  * @returns {Array} Список учеников в зоне риска с подробными причинами и уровнем риска
  */
-export function getRiskZoneStudents(students, lessons, attendance, grades, subjects, options = {}) {
+export function getRiskZoneStudents(
+  students,
+  lessons,
+  attendance,
+  grades,
+  subjects,
+  options = {},
+) {
   const absenceThreshold = options.absenceThreshold ?? 20.0;
   const gradeThreshold = options.gradeThreshold ?? 3.5;
 
   const riskStudents = [];
 
-  for (const st of (students || [])) {
+  for (const st of students || []) {
     const sId = st.id;
-    const attStats = calculateStudentAttendance(lessons, attendance, sId, options);
+    const attStats = calculateStudentAttendance(
+      lessons,
+      attendance,
+      sId,
+      options,
+    );
     const overallAvg = calculateStudentAverage(grades, sId, options);
 
     const reasons = [];
     let isCritical = false;
 
-    if (attStats.absenceRate !== null && attStats.absenceRate > absenceThreshold) {
+    if (
+      attStats.absenceRate !== null &&
+      attStats.absenceRate > absenceThreshold
+    ) {
       reasons.push({
-        type: 'absence',
-        title: 'Пропуски уроков',
+        type: "absence",
+        title: "Пропуски уроков",
         description: `Пропуски ${attStats.absentCount} из ${attStats.totalLessons} уроков (${attStats.absenceRate}%)`,
-        value: attStats.absenceRate
+        value: attStats.absenceRate,
       });
       if (attStats.absenceRate >= 30.0) {
         isCritical = true;
@@ -410,24 +458,27 @@ export function getRiskZoneStudents(students, lessons, attendance, grades, subje
 
     if (overallAvg !== null && overallAvg < gradeThreshold) {
       reasons.push({
-        type: 'overall_grade',
-        title: 'Низкий средний балл',
+        type: "overall_grade",
+        title: "Низкий средний балл",
         description: `Общий средний балл ${overallAvg} (ниже порога ${gradeThreshold})`,
-        value: overallAvg
+        value: overallAvg,
       });
       isCritical = true;
     }
 
-    for (const subj of (subjects || [])) {
-      const subjAvg = calculateStudentAverage(grades, sId, { ...options, subjectId: subj.id });
+    for (const subj of subjects || []) {
+      const subjAvg = calculateStudentAverage(grades, sId, {
+        ...options,
+        subjectId: subj.id,
+      });
       if (subjAvg !== null && subjAvg < gradeThreshold) {
         reasons.push({
-          type: 'subject_grade',
+          type: "subject_grade",
           subjectId: subj.id,
           subjectName: subj.name,
           title: `Низкий балл: ${subj.name}`,
           description: `Средний балл по предмету «${subj.name}» ${subjAvg} (ниже порога ${gradeThreshold})`,
-          value: subjAvg
+          value: subjAvg,
         });
       }
     }
@@ -441,16 +492,16 @@ export function getRiskZoneStudents(students, lessons, attendance, grades, subje
         attendanceRate: attStats.attendanceRate,
         absenceRate: attStats.absenceRate,
         overallAverage: overallAvg,
-        riskLevel: isCritical ? 'critical' : 'moderate',
-        riskLevelLabel: isCritical ? 'Критический риск' : 'Умеренный риск',
-        reasons
+        riskLevel: isCritical ? "critical" : "moderate",
+        riskLevelLabel: isCritical ? "Критический риск" : "Умеренный риск",
+        reasons,
       });
     }
   }
 
   riskStudents.sort((a, b) => {
-    if (a.riskLevel === 'critical' && b.riskLevel !== 'critical') return -1;
-    if (a.riskLevel !== 'critical' && b.riskLevel === 'critical') return 1;
+    if (a.riskLevel === "critical" && b.riskLevel !== "critical") return -1;
+    if (a.riskLevel !== "critical" && b.riskLevel === "critical") return 1;
     return (b.absenceRate || 0) - (a.absenceRate || 0);
   });
 
@@ -465,46 +516,60 @@ export function getRiskZoneStudents(students, lessons, attendance, grades, subje
  * @returns {Object}
  */
 export function generateClassReport(dataset, options = {}) {
-  const periodId = options.periodId || 'q1_2024';
+  const periodId = options.periodId || "q1_2024";
   const periodOptions = { periodId, ...options };
 
   const classAvg = calculateClassAverage(dataset.grades, periodOptions);
-  const classAtt = calculateClassAttendance(dataset.lessons, dataset.attendance, periodOptions);
-  const subjectAverages = calculateSubjectAverages(dataset.grades, dataset.subjects, periodOptions);
+  const classAtt = calculateClassAttendance(
+    dataset.lessons,
+    dataset.attendance,
+    periodOptions,
+  );
+  const subjectAverages = calculateSubjectAverages(
+    dataset.grades,
+    dataset.subjects,
+    periodOptions,
+  );
   const riskZone = getRiskZoneStudents(
     dataset.students,
     dataset.lessons,
     dataset.attendance,
     dataset.grades,
     dataset.subjects,
-    periodOptions
+    periodOptions,
   );
   const unconfirmed = getUnconfirmedAbsences(
     dataset.attendance,
     dataset.lessons,
     dataset.students,
-    periodOptions
+    periodOptions,
   );
 
   return {
     periodId,
-    periodTitle: periodId === 'q1_2024' ? 'I четверть (02.09–25.10.2024)' : periodId,
+    periodTitle:
+      periodId === "q1_2024" ? "I четверть (02.09–25.10.2024)" : periodId,
     generatedAt: new Date().toISOString(),
     metrics: {
       studentsCount: (dataset.students || []).length,
       classAverageGrade: classAvg,
-      totalGradesCount: (dataset.grades || []).filter(g => (!periodId || g.periodId === periodId) && (!options.dateFrom || g.date >= options.dateFrom) && (!options.dateTo || g.date <= options.dateTo)).length,
+      totalGradesCount: (dataset.grades || []).filter(
+        (g) =>
+          (!periodId || g.periodId === periodId) &&
+          (!options.dateFrom || g.date >= options.dateFrom) &&
+          (!options.dateTo || g.date <= options.dateTo),
+      ).length,
       attendanceRate: classAtt.attendanceRate,
       absenceRate: classAtt.absenceRate,
       totalMarkedLessons: classAtt.totalLessons,
       totalAttendanceMarks: classAtt.totalMarks,
       totalAbsences: classAtt.absentCount,
       unconfirmedAbsencesCount: unconfirmed.length,
-      riskZoneCount: riskZone.length
+      riskZoneCount: riskZone.length,
     },
     subjectAverages,
     riskZone,
-    unconfirmedAbsences: unconfirmed
+    unconfirmedAbsences: unconfirmed,
   };
 }
 
@@ -515,36 +580,45 @@ export function generateClassReport(dataset, options = {}) {
  * @returns {Object}
  */
 export function getSurveyReport(surveyId, dataset) {
-  const survey = (dataset.surveys || []).find(s => s.id === surveyId);
+  const survey = (dataset.surveys || []).find((s) => s.id === surveyId);
   if (!survey) {
     return null;
   }
 
-  const responses = (dataset.surveyResponses || []).filter(r => r.surveyId === surveyId);
+  const responses = (dataset.surveyResponses || []).filter(
+    (r) => r.surveyId === surveyId,
+  );
   const totalTarget = responses.length;
-  const answeredList = responses.filter(r => r.answered);
+  const answeredList = responses.filter((r) => r.answered);
   const totalResponded = answeredList.length;
-  const responseRate = totalTarget > 0 ? roundToOneDecimal((totalResponded / totalTarget) * 100) : 0.0;
+  const responseRate =
+    totalTarget > 0
+      ? roundToOneDecimal((totalResponded / totalTarget) * 100)
+      : 0.0;
 
-  const distribution = (survey.options || []).map(opt => {
-    const count = responses.filter(r => r.answer === opt.id).length;
-    const percentage = totalTarget > 0 ? roundToOneDecimal((count / totalTarget) * 100) : 0.0;
+  const distribution = (survey.options || []).map((opt) => {
+    const count = responses.filter((r) => r.answer === opt.id).length;
+    const percentage =
+      totalTarget > 0 ? roundToOneDecimal((count / totalTarget) * 100) : 0.0;
     return {
       optionId: opt.id,
       text: opt.text,
       count,
-      percentage
+      percentage,
     };
   });
 
-  const noAnswerCount = responses.filter(r => !r.answered).length;
-  const noAnswerPercentage = totalTarget > 0 ? roundToOneDecimal((noAnswerCount / totalTarget) * 100) : 0.0;
+  const noAnswerCount = responses.filter((r) => !r.answered).length;
+  const noAnswerPercentage =
+    totalTarget > 0
+      ? roundToOneDecimal((noAnswerCount / totalTarget) * 100)
+      : 0.0;
 
   distribution.push({
-    optionId: 'no_answer',
-    text: 'Нет ответа',
+    optionId: "no_answer",
+    text: "Нет ответа",
     count: noAnswerCount,
-    percentage: noAnswerPercentage
+    percentage: noAnswerPercentage,
   });
 
   return {
@@ -556,7 +630,7 @@ export function getSurveyReport(surveyId, dataset) {
     totalResponded,
     responseRate,
     distribution,
-    responses
+    responses,
   };
 }
 
@@ -567,20 +641,31 @@ export function getSurveyReport(surveyId, dataset) {
  * @returns {Object}
  */
 export function getMeetingAttendanceReport(meetingId, dataset) {
-  const meeting = (dataset.meetings || []).find(m => m.id === meetingId);
+  const meeting = (dataset.meetings || []).find((m) => m.id === meetingId);
   if (!meeting) {
     return null;
   }
 
-  const attendanceList = (dataset.meetingAttendance || []).filter(a => a.meetingId === meetingId);
+  const attendanceList = (dataset.meetingAttendance || []).filter(
+    (a) => a.meetingId === meetingId,
+  );
   const totalInvited = attendanceList.length;
-  const respondedList = attendanceList.filter(a => a.responded);
+  const respondedList = attendanceList.filter((a) => a.responded);
   const totalResponded = respondedList.length;
-  const responseRate = totalInvited > 0 ? roundToOneDecimal((totalResponded / totalInvited) * 100) : 0.0;
+  const responseRate =
+    totalInvited > 0
+      ? roundToOneDecimal((totalResponded / totalInvited) * 100)
+      : 0.0;
 
-  const presentCount = attendanceList.filter(a => a.status === 'present').length;
-  const absentCount = attendanceList.filter(a => a.status === 'absent').length;
-  const noAnswerCount = attendanceList.filter(a => a.status === 'no_answer').length;
+  const presentCount = attendanceList.filter(
+    (a) => a.status === "present",
+  ).length;
+  const absentCount = attendanceList.filter(
+    (a) => a.status === "absent",
+  ).length;
+  const noAnswerCount = attendanceList.filter(
+    (a) => a.status === "no_answer",
+  ).length;
 
   return {
     meetingId: meeting.id,
@@ -594,8 +679,8 @@ export function getMeetingAttendanceReport(meetingId, dataset) {
     stats: {
       presentCount,
       absentCount,
-      noAnswerCount
+      noAnswerCount,
     },
-    records: attendanceList
+    records: attendanceList,
   };
 }

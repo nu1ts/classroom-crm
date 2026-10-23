@@ -21291,13 +21291,19 @@
     if (user.role === "admin" && newRole !== "admin") {
       const activeAdmins = db.users.filter((u) => u.role === "admin").length;
       if (activeAdmins <= 1) {
-        return { success: false, error: "Нельзя снять роль администратора с последнего администратора" };
+        return {
+          success: false,
+          error: "Нельзя снять роль администратора с последнего администратора"
+        };
       }
     }
     user.role = newRole;
     user.roleLabel = ROLE_LABELS[newRole];
     saveDB(db);
-    return { success: true, message: `Роль изменена. Изменение применится при следующем входе` };
+    return {
+      success: true,
+      message: `Роль изменена. Изменение применится при следующем входе`
+    };
   }
   function getAccountCardRef(user) {
     if (!user) return null;
@@ -21320,7 +21326,10 @@
       return { success: false, error: "Учётная запись не найдена" };
     }
     if (user.role === "admin") {
-      return { success: false, error: "У учётной записи администратора нет учётной карточки" };
+      return {
+        success: false,
+        error: "У учётной записи администратора нет учётной карточки"
+      };
     }
     const className = db.meta && db.meta.className || "7Б";
     if (!binding || !binding.cardId) {
@@ -21334,7 +21343,10 @@
         user.cardName = null;
       }
       saveDB(db);
-      return { success: true, message: "Привязка к учётной карточке снята. Изменение применится при следующем входе." };
+      return {
+        success: true,
+        message: "Привязка к учётной карточке снята. Изменение применится при следующем входе."
+      };
     }
     let cardRef;
     if (user.role === "student" || user.role === "parent") {
@@ -21342,12 +21354,18 @@
       if (!card) {
         return { success: false, error: "Карточка не найдена" };
       }
-      cardRef = { type: user.role === "parent" ? "parent" : "student", id: card.id };
+      cardRef = {
+        type: user.role === "parent" ? "parent" : "student",
+        id: card.id
+      };
       const taken = (db.users || []).some(
         (u) => u.id !== userId && JSON.stringify(getAccountCardRef(u)) === JSON.stringify(cardRef)
       );
       if (taken) {
-        return { success: false, error: "Эта учётная карточка уже привязана к другой учётной записи" };
+        return {
+          success: false,
+          error: "Эта учётная карточка уже привязана к другой учётной записи"
+        };
       }
       if (user.role === "student") {
         user.studentId = card.id;
@@ -21357,22 +21375,33 @@
         user.childName = `${card.fullName} (${className})`;
       }
     } else {
-      const teacherNames = [...new Set((db.subjects || []).map((s) => s.teacher))];
+      const teacherNames = [
+        ...new Set((db.subjects || []).map((s) => s.teacher))
+      ];
       const card = teacherNames.find((name) => name === binding.cardId) || (user.shortName === binding.cardId ? binding.cardId : null);
       if (!card) {
-        return { success: false, error: "Карточка учителя не найдена в справочнике" };
+        return {
+          success: false,
+          error: "Карточка учителя не найдена в справочнике"
+        };
       }
       cardRef = { type: "teacher", id: card };
       const taken = (db.users || []).some(
         (u) => u.id !== userId && JSON.stringify(getAccountCardRef(u)) === JSON.stringify(cardRef)
       );
       if (taken) {
-        return { success: false, error: "Эта учётная карточка уже привязана к другой учётной записи" };
+        return {
+          success: false,
+          error: "Эта учётная карточка уже привязана к другой учётной записи"
+        };
       }
       user.cardName = card;
     }
     saveDB(db);
-    return { success: true, message: "Привязка обновлена. Изменение применится при следующем входе." };
+    return {
+      success: true,
+      message: "Привязка обновлена. Изменение применится при следующем входе."
+    };
   }
   function setAccountStatus(userId, status) {
     const db = getDB();
@@ -21384,9 +21413,14 @@
       return { success: false, error: "Недопустимый статус" };
     }
     if (status === "blocked" && user.role === "admin") {
-      const activeAdmins = db.users.filter((u) => u.role === "admin" && u.status === "active").length;
+      const activeAdmins = db.users.filter(
+        (u) => u.role === "admin" && u.status === "active"
+      ).length;
       if (activeAdmins <= 1) {
-        return { success: false, error: "Нельзя заблокировать последнего активного администратора" };
+        return {
+          success: false,
+          error: "Нельзя заблокировать последнего активного администратора"
+        };
       }
     }
     user.status = status;
@@ -21414,7 +21448,10 @@
       return { success: false, error: "Выберите роль" };
     }
     if (db.users.some((u) => u.username.toLowerCase() === login2)) {
-      return { success: false, error: "Пользователь с таким логином уже существует" };
+      return {
+        success: false,
+        error: "Пользователь с таким логином уже существует"
+      };
     }
     const pwdCheck = validateNewPassword(pwd);
     if (!pwdCheck.valid) {
@@ -21446,7 +21483,11 @@
     user.mustChangePassword = true;
     resetFailedAttempts(user.username);
     saveDB(db);
-    return { success: true, tempPassword, message: "Пароль сброшен. Сообщите временный пароль пользователю." };
+    return {
+      success: true,
+      tempPassword,
+      message: "Пароль сброшен. Сообщите временный пароль пользователю."
+    };
   }
 
   // src/services/directories.js
@@ -21484,7 +21525,9 @@
     if (!subjectIds.length) {
       return { success: false, error: "Выберите хотя бы один предмет" };
     }
-    if (db.teachers.some((t) => (t.fullName || "").toLowerCase() === fullName.toLowerCase())) {
+    if (db.teachers.some(
+      (t) => (t.fullName || "").toLowerCase() === fullName.toLowerCase()
+    )) {
       return { success: false, error: "Карточка с таким ФИО уже существует" };
     }
     const account = data.accountUserId ? (db.users || []).find((u) => u.id === data.accountUserId) : null;
@@ -21493,10 +21536,16 @@
     }
     if (account) {
       if (account.role !== "teacher" && account.role !== "subject_teacher") {
-        return { success: false, error: "Привязать можно только учётную запись с ролью учителя" };
+        return {
+          success: false,
+          error: "Привязать можно только учётную запись с ролью учителя"
+        };
       }
       if (db.teachers.some((t) => t.accountUserId === account.id)) {
-        return { success: false, error: "Эта учётная запись уже привязана к другому учителю" };
+        return {
+          success: false,
+          error: "Эта учётная запись уже привязана к другому учителю"
+        };
       }
     }
     const teacher = {
@@ -21527,7 +21576,9 @@
       if (!fullName) {
         return { success: false, error: "Укажите ФИО учителя" };
       }
-      if (db.teachers.some((t) => t.id !== teacherId && (t.fullName || "").toLowerCase() === fullName.toLowerCase())) {
+      if (db.teachers.some(
+        (t) => t.id !== teacherId && (t.fullName || "").toLowerCase() === fullName.toLowerCase()
+      )) {
         return { success: false, error: "Карточка с таким ФИО уже существует" };
       }
       teacher.fullName = fullName;
@@ -21553,10 +21604,18 @@
       }
       if (account) {
         if (account.role !== "teacher" && account.role !== "subject_teacher") {
-          return { success: false, error: "Привязать можно только учётную запись с ролью учителя" };
+          return {
+            success: false,
+            error: "Привязать можно только учётную запись с ролью учителя"
+          };
         }
-        if (db.teachers.some((t) => t.id !== teacherId && t.accountUserId === account.id)) {
-          return { success: false, error: "Эта учётная запись уже привязана к другому учителю" };
+        if (db.teachers.some(
+          (t) => t.id !== teacherId && t.accountUserId === account.id
+        )) {
+          return {
+            success: false,
+            error: "Эта учётная запись уже привязана к другому учителю"
+          };
         }
       }
       (db.users || []).forEach((u) => {
@@ -21579,7 +21638,10 @@
       return { success: false, error: "Карточка учителя не найдена" };
     }
     if ((teacher.workload || []).length) {
-      return { success: false, error: "Сначала снимите учебную нагрузку учителя" };
+      return {
+        success: false,
+        error: "Сначала снимите учебную нагрузку учителя"
+      };
     }
     if (teacher.accountUserId) {
       return { success: false, error: "Сначала отвяжите учётную запись учителя" };
@@ -21611,7 +21673,9 @@
   }
   function findWorkloadOwner(db, rowId) {
     for (const teacher of db.teachers || []) {
-      const row = (teacher.workload || []).find((w) => (w.id || `wl-${teacher.id}-${w.classId}-${w.subjectId}`) === rowId);
+      const row = (teacher.workload || []).find(
+        (w) => (w.id || `wl-${teacher.id}-${w.classId}-${w.subjectId}`) === rowId
+      );
       if (row) return { teacher, row };
     }
     return null;
@@ -21634,11 +21698,13 @@
     if (!Number.isInteger(hours) || hours < 1 || hours > 40) {
       return { error: "Количество часов должно быть целым числом от 1 до 40" };
     }
-    const duplicate = (db.teachers || []).some((t) => (t.workload || []).some((w) => {
-      const wId = w.id || `wl-${t.id}-${w.classId}-${w.subjectId}`;
-      if (wId === excludeRowId) return false;
-      return t.id === values.teacherId && w.subjectId === values.subjectId && w.classId === classId;
-    }));
+    const duplicate = (db.teachers || []).some(
+      (t) => (t.workload || []).some((w) => {
+        const wId = w.id || `wl-${t.id}-${w.classId}-${w.subjectId}`;
+        if (wId === excludeRowId) return false;
+        return t.id === values.teacherId && w.subjectId === values.subjectId && w.classId === classId;
+      })
+    );
     if (duplicate) {
       return { error: "Такая нагрузка уже назначена" };
     }
@@ -21686,7 +21752,9 @@
     }
     const { teacher, subject, classId, hours } = checked;
     if (teacher.id !== owner.teacher.id) {
-      owner.teacher.workload = owner.teacher.workload.filter((w) => w !== owner.row);
+      owner.teacher.workload = owner.teacher.workload.filter(
+        (w) => w !== owner.row
+      );
       teacher.workload = teacher.workload || [];
       if (!(teacher.subjectIds || []).includes(subject.id)) {
         teacher.subjectIds = [...teacher.subjectIds || [], subject.id];
@@ -21719,7 +21787,9 @@
     if (!owner) {
       return { success: false, error: "Строка нагрузки не найдена" };
     }
-    owner.teacher.workload = owner.teacher.workload.filter((w) => w !== owner.row);
+    owner.teacher.workload = owner.teacher.workload.filter(
+      (w) => w !== owner.row
+    );
     saveDB(db);
     return { success: true, message: "Нагрузка снята" };
   }
@@ -21740,7 +21810,9 @@
     record.confirmedBy = data.confirmedBy || "Смирнова М. В.";
     record.confirmedAt = (/* @__PURE__ */ new Date()).toISOString();
     if (db.meta) {
-      const q1LessonIds = new Set((db.lessons || []).filter((l) => l.periodId === "q1_2024").map((l) => l.id));
+      const q1LessonIds = new Set(
+        (db.lessons || []).filter((l) => l.periodId === "q1_2024").map((l) => l.id)
+      );
       db.meta.unconfirmedAbsencesCount = (db.attendance || []).filter(
         (a) => a.status === "unconfirmed" && a.value === "absent" && q1LessonIds.has(a.lessonId)
       ).length;
@@ -21751,7 +21823,9 @@
   function getJournalComments(lessonId, studentId) {
     const db = getDB();
     if (!db.journalComments) return [];
-    return db.journalComments.filter((c) => c.lessonId === lessonId && c.studentId === studentId);
+    return db.journalComments.filter(
+      (c) => c.lessonId === lessonId && c.studentId === studentId
+    );
   }
   function addJournalComment(data = {}) {
     const text = (data.text || "").trim();
@@ -21811,10 +21885,13 @@
     const newContact = {
       id: `pc-${Date.now()}-${Math.floor(Math.random() * 1e3)}`,
       studentId,
-      parentId: parentId || (db.parentStudentRelations?.find((r) => r.studentId === studentId)?.parentId || "pr-unknown"),
+      parentId: parentId || db.parentStudentRelations?.find((r) => r.studentId === studentId)?.parentId || "pr-unknown",
       author: data.author || "Смирнова М. В.",
       date: data.date || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
-      time: data.time || (/* @__PURE__ */ new Date()).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
+      time: data.time || (/* @__PURE__ */ new Date()).toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit"
+      }),
       channel,
       channelLabel: channelLabels[channel] || data.channelLabel || "Звонок",
       summary,
@@ -21829,7 +21906,10 @@
     const text = (data.text || "").trim();
     const studentId = (data.studentId || "").trim();
     if (!text) {
-      return { success: false, error: "Поле «Текст заметки» обязательно для заполнения" };
+      return {
+        success: false,
+        error: "Поле «Текст заметки» обязательно для заполнения"
+      };
     }
     if (!studentId) {
       return { success: false, error: "Ученик не указан" };
@@ -21917,7 +21997,9 @@
       parent.phone = data.phone.trim();
     }
     if (data.relationRole || data.isPrimary !== void 0) {
-      const rels = (db.parentStudentRelations || []).filter((r) => r.parentId === parentId);
+      const rels = (db.parentStudentRelations || []).filter(
+        (r) => r.parentId === parentId
+      );
       rels.forEach((rel) => {
         if (data.relationRole) rel.relationRole = data.relationRole;
         if (data.isPrimary !== void 0) {
@@ -21938,9 +22020,14 @@
   function deleteParent(parentId) {
     if (!parentId) return { success: false, error: "ID родителя не указан" };
     const db = getDB();
-    const rels = (db.parentStudentRelations || []).filter((r) => r.parentId === parentId);
+    const rels = (db.parentStudentRelations || []).filter(
+      (r) => r.parentId === parentId
+    );
     if (rels.length > 0) {
-      return { success: false, error: "Сначала снимите связь с учеником в карточке или сводке" };
+      return {
+        success: false,
+        error: "Сначала снимите связь с учеником в карточке или сводке"
+      };
     }
     db.parents = (db.parents || []).filter((p) => p.id !== parentId);
     saveDB(db);
@@ -21961,7 +22048,9 @@
         }
       });
     }
-    const existing = db.parentStudentRelations.find((r) => r.parentId === parentId && r.studentId === studentId);
+    const existing = db.parentStudentRelations.find(
+      (r) => r.parentId === parentId && r.studentId === studentId
+    );
     if (existing) {
       existing.relationRole = relationRole;
       existing.isPrimary = isPrimary;
@@ -22035,15 +22124,32 @@
     const endDate = (data.endDate || "").trim();
     if (!name) return { success: false, error: "Укажите название учебного года" };
     if (!/^\d{4}[\/\-]\d{4}$/.test(name)) {
-      return { success: false, error: "Формат года должен быть ГГГГ/ГГГГ (например, 2025/2026)" };
+      return {
+        success: false,
+        error: "Формат года должен быть ГГГГ/ГГГГ (например, 2025/2026)"
+      };
     }
-    if (!startDate || !endDate) return { success: false, error: "Укажите даты начала и окончания учебного года" };
-    if (startDate >= endDate) return { success: false, error: "Дата начала года должна быть раньше даты окончания" };
+    if (!startDate || !endDate)
+      return {
+        success: false,
+        error: "Укажите даты начала и окончания учебного года"
+      };
+    if (startDate >= endDate)
+      return {
+        success: false,
+        error: "Дата начала года должна быть раньше даты окончания"
+      };
     const db = getDB();
     if (!db.academicYears) db.academicYears = [];
     const formattedName = name.replace("-", "/");
-    const exists = db.academicYears.some((y) => y.name === formattedName || y.id === `ay-${formattedName.replace("/", "-")}`);
-    if (exists) return { success: false, error: `Учебный год «${formattedName}» уже существует` };
+    const exists = db.academicYears.some(
+      (y) => y.name === formattedName || y.id === `ay-${formattedName.replace("/", "-")}`
+    );
+    if (exists)
+      return {
+        success: false,
+        error: `Учебный год «${formattedName}» уже существует`
+      };
     const [startYearStr, endYearStr] = formattedName.split("/");
     const startYearNum = parseInt(startYearStr, 10);
     const endYearNum = parseInt(endYearStr, 10);
@@ -22085,9 +22191,24 @@
       isActive: false,
       quarters: Array.isArray(data.quarters) && data.quarters.length > 0 ? data.quarters : defaultQuarters,
       vacations: Array.isArray(data.vacations) ? data.vacations : [
-        { id: `vac-${Date.now()}-1`, name: "Осенние каникулы", startDate: `${startYearNum}-10-26`, endDate: `${startYearNum}-11-04` },
-        { id: `vac-${Date.now()}-2`, name: "Зимние каникулы", startDate: `${startYearNum}-12-29`, endDate: `${endYearNum}-01-09` },
-        { id: `vac-${Date.now()}-3`, name: "Весенние каникулы", startDate: `${endYearNum}-03-22`, endDate: `${endYearNum}-03-30` }
+        {
+          id: `vac-${Date.now()}-1`,
+          name: "Осенние каникулы",
+          startDate: `${startYearNum}-10-26`,
+          endDate: `${startYearNum}-11-04`
+        },
+        {
+          id: `vac-${Date.now()}-2`,
+          name: "Зимние каникулы",
+          startDate: `${startYearNum}-12-29`,
+          endDate: `${endYearNum}-01-09`
+        },
+        {
+          id: `vac-${Date.now()}-3`,
+          name: "Весенние каникулы",
+          startDate: `${endYearNum}-03-22`,
+          endDate: `${endYearNum}-03-30`
+        }
       ]
     };
     db.academicYears.push(newYear);
@@ -22101,17 +22222,34 @@
     const endDate = (data.endDate || "").trim();
     if (!name) return { success: false, error: "Укажите название учебного года" };
     if (!/^\d{4}[\/\-]\d{4}$/.test(name)) {
-      return { success: false, error: "Формат года должен быть ГГГГ/ГГГГ (например, 2025/2026)" };
+      return {
+        success: false,
+        error: "Формат года должен быть ГГГГ/ГГГГ (например, 2025/2026)"
+      };
     }
-    if (!startDate || !endDate) return { success: false, error: "Укажите даты начала и окончания учебного года" };
-    if (startDate >= endDate) return { success: false, error: "Дата начала года должна быть раньше даты окончания" };
+    if (!startDate || !endDate)
+      return {
+        success: false,
+        error: "Укажите даты начала и окончания учебного года"
+      };
+    if (startDate >= endDate)
+      return {
+        success: false,
+        error: "Дата начала года должна быть раньше даты окончания"
+      };
     const db = getDB();
     const years = getAcademicYears(db);
     const targetYear = years.find((y) => y.id === yearId);
     if (!targetYear) return { success: false, error: "Учебный год не найден" };
     const formattedName = name.replace("-", "/");
-    const duplicate = years.find((y) => y.id !== yearId && y.name.toLowerCase() === formattedName.toLowerCase());
-    if (duplicate) return { success: false, error: `Учебный год «${formattedName}» уже существует` };
+    const duplicate = years.find(
+      (y) => y.id !== yearId && y.name.toLowerCase() === formattedName.toLowerCase()
+    );
+    if (duplicate)
+      return {
+        success: false,
+        error: `Учебный год «${formattedName}» уже существует`
+      };
     targetYear.name = formattedName;
     targetYear.startDate = startDate;
     targetYear.endDate = endDate;
@@ -22127,7 +22265,8 @@
     const db = getDB();
     const year = (db.academicYears || []).find((y) => y.id === yearId);
     if (!year) return { success: false, error: "Учебный год не найден" };
-    if (year.isActive) return { success: false, error: "Нельзя удалить активный учебный год" };
+    if (year.isActive)
+      return { success: false, error: "Нельзя удалить активный учебный год" };
     db.academicYears = db.academicYears.filter((y) => y.id !== yearId);
     saveDB(db);
     return { success: true };
@@ -22137,9 +22276,14 @@
     const db = getDB();
     const years = getAcademicYears(db);
     let targetYear = yearId ? years.find((y) => y.id === yearId) : years.find((y) => y.isActive);
-    if (!targetYear) targetYear = years.find((y) => (y.quarters || []).some((q) => q.id === quarterId));
+    if (!targetYear)
+      targetYear = years.find(
+        (y) => (y.quarters || []).some((q) => q.id === quarterId)
+      );
     if (!targetYear) return { success: false, error: "Учебный год не найден" };
-    const targetQuarter = (targetYear.quarters || []).find((q) => q.id === quarterId);
+    const targetQuarter = (targetYear.quarters || []).find(
+      (q) => q.id === quarterId
+    );
     if (!targetQuarter) return { success: false, error: "Четверть не найдена" };
     years.forEach((y) => {
       y.isActive = y.id === targetYear.id;
@@ -22163,31 +22307,54 @@
     const startDate = (data.startDate || "").trim();
     const endDate = (data.endDate || "").trim();
     const name = (data.name || "").trim();
-    if (!startDate || !endDate) return { success: false, error: "Укажите даты начала и окончания четверти" };
-    if (startDate > endDate) return { success: false, error: "Дата начала четверти не может быть позже даты окончания" };
+    if (!startDate || !endDate)
+      return {
+        success: false,
+        error: "Укажите даты начала и окончания четверти"
+      };
+    if (startDate > endDate)
+      return {
+        success: false,
+        error: "Дата начала четверти не может быть позже даты окончания"
+      };
     const db = getDB();
     const years = getAcademicYears(db);
     let targetYear = yearId ? years.find((y) => y.id === yearId) : years.find((y) => y.isActive);
-    if (!targetYear) targetYear = years.find((y) => (y.quarters || []).some((q) => q.id === quarterId));
+    if (!targetYear)
+      targetYear = years.find(
+        (y) => (y.quarters || []).some((q) => q.id === quarterId)
+      );
     if (!targetYear) return { success: false, error: "Учебный год не найден" };
     if (targetYear.startDate && startDate < targetYear.startDate) {
-      return { success: false, error: "Дата начала четверти не может быть раньше начала учебного года" };
+      return {
+        success: false,
+        error: "Дата начала четверти не может быть раньше начала учебного года"
+      };
     }
     if (targetYear.endDate && endDate > targetYear.endDate) {
-      return { success: false, error: "Дата окончания четверти не может быть позже окончания учебного года" };
+      return {
+        success: false,
+        error: "Дата окончания четверти не может быть позже окончания учебного года"
+      };
     }
     const quartersList = targetYear.quarters || [];
     const currentIndex = quartersList.findIndex((q) => q.id === quarterId);
     if (currentIndex > 0) {
       const prevQuarter = quartersList[currentIndex - 1];
       if (prevQuarter.endDate && startDate <= prevQuarter.endDate) {
-        return { success: false, error: `Дата начала четверти должна быть позже окончания ${prevQuarter.name}` };
+        return {
+          success: false,
+          error: `Дата начала четверти должна быть позже окончания ${prevQuarter.name}`
+        };
       }
     }
     if (currentIndex >= 0 && currentIndex < quartersList.length - 1) {
       const nextQuarter = quartersList[currentIndex + 1];
       if (nextQuarter.startDate && endDate >= nextQuarter.startDate) {
-        return { success: false, error: `Дата окончания четверти должна быть раньше начала ${nextQuarter.name}` };
+        return {
+          success: false,
+          error: `Дата окончания четверти должна быть раньше начала ${nextQuarter.name}`
+        };
       }
     }
     const targetQuarter = quartersList.find((q) => q.id === quarterId);
@@ -22212,17 +22379,28 @@
     const name = (data.name || "").trim();
     const startDate = (data.startDate || "").trim();
     const endDate = (data.endDate || "").trim();
-    if (!startDate || !endDate) return { success: false, error: "Укажите даты начала и окончания каникул" };
-    if (startDate > endDate) return { success: false, error: "Дата начала каникул не может быть позже окончания" };
+    if (!startDate || !endDate)
+      return { success: false, error: "Укажите даты начала и окончания каникул" };
+    if (startDate > endDate)
+      return {
+        success: false,
+        error: "Дата начала каникул не может быть позже окончания"
+      };
     const db = getDB();
     const years = getAcademicYears(db);
     let targetYear = yearId ? years.find((y) => y.id === yearId) : years.find((y) => y.isActive);
     if (!targetYear) return { success: false, error: "Учебный год не найден" };
     if (targetYear.startDate && startDate < targetYear.startDate) {
-      return { success: false, error: "Дата начала каникул не может быть раньше начала учебного года" };
+      return {
+        success: false,
+        error: "Дата начала каникул не может быть раньше начала учебного года"
+      };
     }
     if (targetYear.endDate && endDate > targetYear.endDate) {
-      return { success: false, error: "Дата окончания каникул не может быть позже окончания учебного года" };
+      return {
+        success: false,
+        error: "Дата окончания каникул не может быть позже окончания учебного года"
+      };
     }
     if (!Array.isArray(targetYear.vacations)) targetYear.vacations = [];
     const vac = targetYear.vacations.find((v) => v.id === vacationId);
@@ -22238,17 +22416,28 @@
     const startDate = (data.startDate || "").trim();
     const endDate = (data.endDate || "").trim();
     if (!name) return { success: false, error: "Укажите название каникул" };
-    if (!startDate || !endDate) return { success: false, error: "Укажите даты начала и окончания каникул" };
-    if (startDate > endDate) return { success: false, error: "Дата начала каникул не может быть позже окончания" };
+    if (!startDate || !endDate)
+      return { success: false, error: "Укажите даты начала и окончания каникул" };
+    if (startDate > endDate)
+      return {
+        success: false,
+        error: "Дата начала каникул не может быть позже окончания"
+      };
     const db = getDB();
     const years = getAcademicYears(db);
     let targetYear = yearId ? years.find((y) => y.id === yearId) : years.find((y) => y.isActive);
     if (!targetYear) return { success: false, error: "Учебный год не найден" };
     if (targetYear.startDate && startDate < targetYear.startDate) {
-      return { success: false, error: "Дата начала каникул не может быть раньше начала учебного года" };
+      return {
+        success: false,
+        error: "Дата начала каникул не может быть раньше начала учебного года"
+      };
     }
     if (targetYear.endDate && endDate > targetYear.endDate) {
-      return { success: false, error: "Дата окончания каникул не может быть позже окончания учебного года" };
+      return {
+        success: false,
+        error: "Дата окончания каникул не может быть позже окончания учебного года"
+      };
     }
     if (!Array.isArray(targetYear.vacations)) targetYear.vacations = [];
     const newVac = {
@@ -22268,7 +22457,9 @@
     let targetYear = yearId ? years.find((y) => y.id === yearId) : years.find((y) => y.isActive);
     if (!targetYear) return { success: false, error: "Учебный год не найден" };
     if (!Array.isArray(targetYear.vacations)) return { success: true };
-    targetYear.vacations = targetYear.vacations.filter((v) => v.id !== vacationId);
+    targetYear.vacations = targetYear.vacations.filter(
+      (v) => v.id !== vacationId
+    );
     saveDB(db);
     return { success: true };
   }
@@ -22317,9 +22508,24 @@
         }
       ],
       vacations: [
-        { id: "vac-1", name: "Осенние каникулы", startDate: "2024-10-26", endDate: "2024-11-04" },
-        { id: "vac-2", name: "Зимние каникулы", startDate: "2024-12-28", endDate: "2025-01-08" },
-        { id: "vac-3", name: "Весенние каникулы", startDate: "2025-03-22", endDate: "2025-03-30" }
+        {
+          id: "vac-1",
+          name: "Осенние каникулы",
+          startDate: "2024-10-26",
+          endDate: "2024-11-04"
+        },
+        {
+          id: "vac-2",
+          name: "Зимние каникулы",
+          startDate: "2024-12-28",
+          endDate: "2025-01-08"
+        },
+        {
+          id: "vac-3",
+          name: "Весенние каникулы",
+          startDate: "2025-03-22",
+          endDate: "2025-03-30"
+        }
       ]
     },
     {
@@ -22329,15 +22535,54 @@
       endDate: "2024-05-25",
       isActive: false,
       quarters: [
-        { id: "q1_2023", name: "I четверть", startDate: "2023-09-01", endDate: "2023-10-27", isActive: false },
-        { id: "q2_2023", name: "II четверть", startDate: "2023-11-07", endDate: "2023-12-29", isActive: false },
-        { id: "q3_2024", name: "III четверть", startDate: "2024-01-09", endDate: "2024-03-22", isActive: false },
-        { id: "q4_2024", name: "IV четверть", startDate: "2024-04-01", endDate: "2024-05-24", isActive: false }
+        {
+          id: "q1_2023",
+          name: "I четверть",
+          startDate: "2023-09-01",
+          endDate: "2023-10-27",
+          isActive: false
+        },
+        {
+          id: "q2_2023",
+          name: "II четверть",
+          startDate: "2023-11-07",
+          endDate: "2023-12-29",
+          isActive: false
+        },
+        {
+          id: "q3_2024",
+          name: "III четверть",
+          startDate: "2024-01-09",
+          endDate: "2024-03-22",
+          isActive: false
+        },
+        {
+          id: "q4_2024",
+          name: "IV четверть",
+          startDate: "2024-04-01",
+          endDate: "2024-05-24",
+          isActive: false
+        }
       ],
       vacations: [
-        { id: "vac-prev-1", name: "Осенние каникулы", startDate: "2023-10-28", endDate: "2023-11-06" },
-        { id: "vac-prev-2", name: "Зимние каникулы", startDate: "2023-12-30", endDate: "2024-01-08" },
-        { id: "vac-prev-3", name: "Весенние каникулы", startDate: "2024-03-23", endDate: "2024-03-31" }
+        {
+          id: "vac-prev-1",
+          name: "Осенние каникулы",
+          startDate: "2023-10-28",
+          endDate: "2023-11-06"
+        },
+        {
+          id: "vac-prev-2",
+          name: "Зимние каникулы",
+          startDate: "2023-12-30",
+          endDate: "2024-01-08"
+        },
+        {
+          id: "vac-prev-3",
+          name: "Весенние каникулы",
+          startDate: "2024-03-23",
+          endDate: "2024-03-31"
+        }
       ]
     }
   ];
@@ -22407,7 +22652,10 @@
       }
       return parsed;
     } catch (e) {
-      console.error("Ошибка чтения БД из хранилища, сброс к начальному состоянию", e);
+      console.error(
+        "Ошибка чтения БД из хранилища, сброс к начальному состоянию",
+        e
+      );
       const clone = JSON.parse(JSON.stringify(INITIAL_DATASET));
       storage.setItem(STORAGE_KEYS.DB, JSON.stringify(clone));
       return clone;
@@ -22439,7 +22687,9 @@
     const session = getSession();
     if (!session || !session.userId) return null;
     const db = getDB();
-    const user = db.users.find((u) => u.id === session.userId || u.username === session.username);
+    const user = db.users.find(
+      (u) => u.id === session.userId || u.username === session.username
+    );
     if (!user) {
       clearSession();
       return null;
@@ -22498,7 +22748,9 @@
       return { success: false, error: "Заполните все поля" };
     }
     const db = getDB();
-    const user = db.users.find((u) => u.username.toLowerCase() === username.toLowerCase());
+    const user = db.users.find(
+      (u) => u.username.toLowerCase() === username.toLowerCase()
+    );
     const failedCount = getFailedAttempts(username);
     if (failedCount >= 5 || user && user.status === "blocked") {
       if (user && user.status !== "blocked") {
@@ -22546,7 +22798,9 @@
   }
   function quickLoginAsRole(roleKey) {
     const db = getDB();
-    const user = db.users.find((u) => u.role === roleKey && u.status !== "blocked");
+    const user = db.users.find(
+      (u) => u.role === roleKey && u.status !== "blocked"
+    );
     if (!user) return null;
     resetFailedAttempts(user.username);
     const session = {
@@ -22571,13 +22825,19 @@
       return { success: false, error: "Текущий пароль указан неверно" };
     }
     if (!newPwd || newPwd.length < 8) {
-      return { success: false, error: "Новый пароль должен содержать не менее 8 символов" };
+      return {
+        success: false,
+        error: "Новый пароль должен содержать не менее 8 символов"
+      };
     }
     const hasLower = /[a-zа-я]/.test(newPwd);
     const hasUpper = /[A-ZА-Я]/.test(newPwd);
     const hasDigit = /\d/.test(newPwd);
     if (!hasLower || !hasUpper || !hasDigit) {
-      return { success: false, error: "Пароль должен содержать буквы в обоих регистрах и хотя бы одну цифру" };
+      return {
+        success: false,
+        error: "Пароль должен содержать буквы в обоих регистрах и хотя бы одну цифру"
+      };
     }
     if (newPwd !== confPwd) {
       return { success: false, error: "Пароли не совпадают" };
@@ -22591,13 +22851,19 @@
   }
   function validateNewPassword(pwd) {
     if (!pwd || pwd.length < 8) {
-      return { valid: false, error: "Пароль должен содержать не менее 8 символов" };
+      return {
+        valid: false,
+        error: "Пароль должен содержать не менее 8 символов"
+      };
     }
     const hasLower = /[a-zа-я]/.test(pwd);
     const hasUpper = /[A-ZА-Я]/.test(pwd);
     const hasDigit = /\d/.test(pwd);
     if (!hasLower || !hasUpper || !hasDigit) {
-      return { valid: false, error: "Пароль должен содержать буквы в обоих регистрах и хотя бы одну цифру" };
+      return {
+        valid: false,
+        error: "Пароль должен содержать буквы в обоих регистрах и хотя бы одну цифру"
+      };
     }
     return { valid: true };
   }
@@ -22614,15 +22880,55 @@
       label: "Классный руководитель",
       defaultRoute: "/overview",
       items: [
-        { id: "nav-overview", title: "Обзор класса", path: "/overview", icon: "grid" },
-        { id: "nav-students", title: "Ученики", path: "/students", icon: "users" },
-        { id: "nav-journal", title: "Журнал", path: "/journal", icon: "book-open" },
-        { id: "nav-attendance", title: "Посещаемость", path: "/attendance", icon: "check-square" },
-        { id: "nav-schedule", title: "Расписание", path: "/schedule", icon: "calendar" },
+        {
+          id: "nav-overview",
+          title: "Обзор класса",
+          path: "/overview",
+          icon: "grid"
+        },
+        {
+          id: "nav-students",
+          title: "Ученики",
+          path: "/students",
+          icon: "users"
+        },
+        {
+          id: "nav-journal",
+          title: "Журнал",
+          path: "/journal",
+          icon: "book-open"
+        },
+        {
+          id: "nav-attendance",
+          title: "Посещаемость",
+          path: "/attendance",
+          icon: "check-square"
+        },
+        {
+          id: "nav-schedule",
+          title: "Расписание",
+          path: "/schedule",
+          icon: "calendar"
+        },
         { id: "nav-parents", title: "Родители", path: "/parents", icon: "heart" },
-        { id: "nav-meetings", title: "Собрания", path: "/meetings", icon: "users-group" },
-        { id: "nav-announcements", title: "Объявления", path: "/announcements", icon: "megaphone" },
-        { id: "nav-analytics", title: "Аналитика", path: "/analytics", icon: "chart-bar" }
+        {
+          id: "nav-meetings",
+          title: "Собрания",
+          path: "/meetings",
+          icon: "users-group"
+        },
+        {
+          id: "nav-announcements",
+          title: "Объявления",
+          path: "/announcements",
+          icon: "megaphone"
+        },
+        {
+          id: "nav-analytics",
+          title: "Аналитика",
+          path: "/analytics",
+          icon: "chart-bar"
+        }
       ],
       allowedRoutes: [
         "/overview",
@@ -22645,60 +22951,105 @@
       label: "Учитель-предметник",
       defaultRoute: "/classes",
       items: [
-        { id: "nav-classes", title: "Мои классы", path: "/classes", icon: "grid" },
-        { id: "nav-schedule", title: "Расписание", path: "/schedule", icon: "calendar" },
-        { id: "nav-attendance", title: "Посещаемость", path: "/attendance", icon: "check-square" },
+        {
+          id: "nav-classes",
+          title: "Мои классы",
+          path: "/classes",
+          icon: "grid"
+        },
+        {
+          id: "nav-schedule",
+          title: "Расписание",
+          path: "/schedule",
+          icon: "calendar"
+        },
+        {
+          id: "nav-attendance",
+          title: "Посещаемость",
+          path: "/attendance",
+          icon: "check-square"
+        },
         { id: "nav-profile", title: "Профиль", path: "/profile", icon: "user" }
       ],
-      allowedRoutes: [
-        "/classes",
-        "/schedule",
-        "/attendance",
-        "/profile"
-      ]
+      allowedRoutes: ["/classes", "/schedule", "/attendance", "/profile"]
     },
     parent: {
       label: "Родитель",
       defaultRoute: "/child",
       items: [
         { id: "nav-child", title: "Ребёнок", path: "/child", icon: "user" },
-        { id: "nav-schedule", title: "Расписание", path: "/schedule", icon: "calendar" },
-        { id: "nav-announcements", title: "Объявления", path: "/announcements", icon: "megaphone" },
+        {
+          id: "nav-schedule",
+          title: "Расписание",
+          path: "/schedule",
+          icon: "calendar"
+        },
+        {
+          id: "nav-announcements",
+          title: "Объявления",
+          path: "/announcements",
+          icon: "megaphone"
+        },
         { id: "nav-profile", title: "Профиль", path: "/profile", icon: "user" }
       ],
-      allowedRoutes: [
-        "/child",
-        "/schedule",
-        "/announcements",
-        "/profile"
-      ]
+      allowedRoutes: ["/child", "/schedule", "/announcements", "/profile"]
     },
     student: {
       label: "Ученик",
       isReadOnly: true,
       defaultRoute: "/schedule",
       items: [
-        { id: "nav-schedule", title: "Расписание", path: "/schedule", icon: "calendar" },
+        {
+          id: "nav-schedule",
+          title: "Расписание",
+          path: "/schedule",
+          icon: "calendar"
+        },
         { id: "nav-grades", title: "Оценки", path: "/grades", icon: "award" },
-        { id: "nav-announcements", title: "Объявления", path: "/announcements", icon: "megaphone" },
+        {
+          id: "nav-announcements",
+          title: "Объявления",
+          path: "/announcements",
+          icon: "megaphone"
+        },
         { id: "nav-profile", title: "Профиль", path: "/profile", icon: "user" }
       ],
-      allowedRoutes: [
-        "/schedule",
-        "/grades",
-        "/announcements",
-        "/profile"
-      ]
+      allowedRoutes: ["/schedule", "/grades", "/announcements", "/profile"]
     },
     admin: {
       label: "Администратор",
       defaultRoute: "/accounts",
       items: [
-        { id: "nav-accounts", title: "Учётные записи", path: "/accounts", icon: "shield" },
-        { id: "nav-teachers", title: "Учителя", path: "/teachers", icon: "users" },
-        { id: "nav-directories", title: "Справочники", path: "/directories", icon: "book" },
-        { id: "nav-workload", title: "Нагрузка", path: "/workload", icon: "briefcase" },
-        { id: "nav-school-year", title: "Учебный год", path: "/school-year", icon: "calendar" }
+        {
+          id: "nav-accounts",
+          title: "Учётные записи",
+          path: "/accounts",
+          icon: "shield"
+        },
+        {
+          id: "nav-teachers",
+          title: "Учителя",
+          path: "/teachers",
+          icon: "users"
+        },
+        {
+          id: "nav-directories",
+          title: "Справочники",
+          path: "/directories",
+          icon: "book"
+        },
+        {
+          id: "nav-workload",
+          title: "Нагрузка",
+          path: "/workload",
+          icon: "briefcase"
+        },
+        {
+          id: "nav-school-year",
+          title: "Учебный год",
+          path: "/school-year",
+          icon: "calendar"
+        }
       ],
       allowedRoutes: [
         "/accounts",
@@ -22728,8 +23079,12 @@
   var PUBLIC_ROUTES = ["login", "forbidden", "change-password"];
   var routeNames = new Set(PUBLIC_ROUTES);
   Object.values(ROLE_NAVIGATION).forEach((role) => {
-    (role.items || []).forEach((item) => routeNames.add(item.path.replace(/^\//, "")));
-    (role.allowedRoutes || []).forEach((route) => routeNames.add(route.replace(/^\//, "")));
+    (role.items || []).forEach(
+      (item) => routeNames.add(item.path.replace(/^\//, ""))
+    );
+    (role.allowedRoutes || []).forEach(
+      (route) => routeNames.add(route.replace(/^\//, ""))
+    );
   });
   var APP_BASE = "/";
   function detectBase() {
@@ -23111,11 +23466,13 @@
         { key: "student", name: "Ученик: Петрова А." },
         { key: "admin", name: "Админ: Никитин П. А." }
       ];
-      const roleOptionsHtml = demoRoles.map((r) => `
+      const roleOptionsHtml = demoRoles.map(
+        (r) => `
           <option value="${r.key}" ${currentUser.role === r.key ? "selected" : ""} class="bg-slate-900 text-white">
             ${r.name}
           </option>
-        `).join("");
+        `
+      ).join("");
       return `
           <div class="px-3 pt-2 pb-1 border-t border-slate-800/80 bg-slate-900/60">
             <div class="flex items-center justify-between mb-1.5 px-0.5">
@@ -23198,11 +23555,23 @@
       const isStudentDetail = href === "/students" && (cleanPath === "/student" || cleanPath === "/student-summary");
       const isActive = href === cleanPath || isStudentDetail || href === "/overview" && (!cleanPath || cleanPath === "/" || cleanPath === "");
       if (isActive) {
-        link.classList.remove("text-slate-300", "hover:text-white", "hover:bg-brand-sidebarHover");
+        link.classList.remove(
+          "text-slate-300",
+          "hover:text-white",
+          "hover:bg-brand-sidebarHover"
+        );
         link.classList.add("bg-brand-sidebarActive", "text-white", "shadow-sm");
       } else {
-        link.classList.remove("bg-brand-sidebarActive", "text-white", "shadow-sm");
-        link.classList.add("text-slate-300", "hover:text-white", "hover:bg-brand-sidebarHover");
+        link.classList.remove(
+          "bg-brand-sidebarActive",
+          "text-white",
+          "shadow-sm"
+        );
+        link.classList.add(
+          "text-slate-300",
+          "hover:text-white",
+          "hover:bg-brand-sidebarHover"
+        );
       }
     });
   }
@@ -23230,6 +23599,29 @@
   }
   function setupLayoutListeners(onNavigate) {
     setupSidebarListeners(onNavigate);
+  }
+
+  // src/views/forbidden.js
+  function renderForbiddenView() {
+    const user = getCurrentUser();
+    const returnRoute = user ? getDefaultRouteForRole(user.role) : "/login";
+    return `
+    <div class="max-w-md mx-auto my-12 text-center animate-fadeIn p-8 bg-white rounded-2xl border border-slate-200/80 shadow-sm">
+      <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 mb-5">
+        ${renderIcon("alert", "w-7 h-7")}
+      </div>
+      <h2 class="text-xl font-bold text-slate-900 mb-2">
+        Доступ ограничен
+      </h2>
+      <p class="text-xs text-slate-600 leading-relaxed mb-6">
+        У вас нет прав для просмотра данного раздела или объекта системы.
+      </p>
+      <a href="${returnRoute}"
+         class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition-colors shadow-sm">
+        Вернуться в свой раздел
+      </a>
+    </div>
+  `;
   }
 
   // src/views/login/render.js
@@ -23677,13 +24069,17 @@
     return result;
   }
   function calculateAttendanceForDay(lessons, attendance, targetDate, options = {}) {
-    let dayLessons = (lessons || []).filter((l) => l.date === targetDate && (l.isMarked || l.status === "closed"));
+    let dayLessons = (lessons || []).filter(
+      (l) => l.date === targetDate && (l.isMarked || l.status === "closed")
+    );
     dayLessons.sort((a, b) => (a.lessonNumber || 0) - (b.lessonNumber || 0));
     if (options.onlyFirstLesson && dayLessons.length > 0) {
       dayLessons = [dayLessons[0]];
     }
     const lessonIds = new Set(dayLessons.map((l) => l.id));
-    const dayAttendance = (attendance || []).filter((a) => lessonIds.has(a.lessonId) && a.date === targetDate);
+    const dayAttendance = (attendance || []).filter(
+      (a) => lessonIds.has(a.lessonId) && a.date === targetDate
+    );
     const totalMarks = dayAttendance.length;
     if (totalMarks === 0) {
       return {
@@ -23696,7 +24092,9 @@
         lessonIds: Array.from(lessonIds)
       };
     }
-    const presentCount = dayAttendance.filter((a) => a.value === "present").length;
+    const presentCount = dayAttendance.filter(
+      (a) => a.value === "present"
+    ).length;
     const absentCount = dayAttendance.filter((a) => a.value === "absent").length;
     const attendanceRate = roundToOneDecimal(presentCount / totalMarks * 100);
     const absenceRate = roundToOneDecimal(absentCount / totalMarks * 100);
@@ -23753,7 +24151,10 @@
   function calculateSubjectAverages(grades, subjects, options = {}) {
     const threshold = options.threshold ?? 3.5;
     return (subjects || []).map((subj) => {
-      const avg = calculateClassAverage(grades, { ...options, subjectId: subj.id });
+      const avg = calculateClassAverage(grades, {
+        ...options,
+        subjectId: subj.id
+      });
       const count = (grades || []).filter((g) => {
         let match = g.subjectId === subj.id;
         if (options.periodId) match = match && g.periodId === options.periodId;
@@ -23778,7 +24179,9 @@
   function calculateStudentAttendance(lessons, attendance, studentId, options = {}) {
     const markedLessons = filterLessons(lessons, options);
     const lessonIds = new Set(markedLessons.map((l) => l.id));
-    const stAttendance = (attendance || []).filter((a) => a.studentId === studentId && lessonIds.has(a.lessonId));
+    const stAttendance = (attendance || []).filter(
+      (a) => a.studentId === studentId && lessonIds.has(a.lessonId)
+    );
     const totalLessons = markedLessons.length;
     if (totalLessons === 0) {
       return {
@@ -23806,7 +24209,9 @@
   function calculateClassAttendance(lessons, attendance, options = {}) {
     const markedLessons = filterLessons(lessons, options);
     const lessonIds = new Set(markedLessons.map((l) => l.id));
-    const periodAttendance = (attendance || []).filter((a) => lessonIds.has(a.lessonId));
+    const periodAttendance = (attendance || []).filter(
+      (a) => lessonIds.has(a.lessonId)
+    );
     const totalMarks = periodAttendance.length;
     if (totalMarks === 0) {
       return {
@@ -23818,7 +24223,9 @@
         absenceRate: null
       };
     }
-    const absentCount = periodAttendance.filter((a) => a.value === "absent").length;
+    const absentCount = periodAttendance.filter(
+      (a) => a.value === "absent"
+    ).length;
     const presentCount = totalMarks - absentCount;
     const attendanceRate = roundToOneDecimal(presentCount / totalMarks * 100);
     const absenceRate = roundToOneDecimal(absentCount / totalMarks * 100);
@@ -23864,7 +24271,9 @@
   function getUnconfirmedAbsences(attendance, lessons, students, options = {}) {
     const lessonMap = new Map((lessons || []).map((l) => [l.id, l]));
     const studentMap = new Map((students || []).map((s) => [s.id, s]));
-    let records = (attendance || []).filter((a) => a.status === "unconfirmed" && a.value === "absent");
+    let records = (attendance || []).filter(
+      (a) => a.status === "unconfirmed" && a.value === "absent"
+    );
     if (options.periodId) {
       records = records.filter((a) => {
         const lsn = lessonMap.get(a.lessonId);
@@ -23906,7 +24315,12 @@
     const riskStudents = [];
     for (const st of students || []) {
       const sId = st.id;
-      const attStats = calculateStudentAttendance(lessons, attendance, sId, options);
+      const attStats = calculateStudentAttendance(
+        lessons,
+        attendance,
+        sId,
+        options
+      );
       const overallAvg = calculateStudentAverage(grades, sId, options);
       const reasons = [];
       let isCritical = false;
@@ -23931,7 +24345,10 @@
         isCritical = true;
       }
       for (const subj of subjects || []) {
-        const subjAvg = calculateStudentAverage(grades, sId, { ...options, subjectId: subj.id });
+        const subjAvg = calculateStudentAverage(grades, sId, {
+          ...options,
+          subjectId: subj.id
+        });
         if (subjAvg !== null && subjAvg < gradeThreshold) {
           reasons.push({
             type: "subject_grade",
@@ -23969,8 +24386,16 @@
     const periodId = options.periodId || "q1_2024";
     const periodOptions = { periodId, ...options };
     const classAvg = calculateClassAverage(dataset.grades, periodOptions);
-    const classAtt = calculateClassAttendance(dataset.lessons, dataset.attendance, periodOptions);
-    const subjectAverages = calculateSubjectAverages(dataset.grades, dataset.subjects, periodOptions);
+    const classAtt = calculateClassAttendance(
+      dataset.lessons,
+      dataset.attendance,
+      periodOptions
+    );
+    const subjectAverages = calculateSubjectAverages(
+      dataset.grades,
+      dataset.subjects,
+      periodOptions
+    );
     const riskZone = getRiskZoneStudents(
       dataset.students,
       dataset.lessons,
@@ -23992,7 +24417,9 @@
       metrics: {
         studentsCount: (dataset.students || []).length,
         classAverageGrade: classAvg,
-        totalGradesCount: (dataset.grades || []).filter((g) => (!periodId || g.periodId === periodId) && (!options.dateFrom || g.date >= options.dateFrom) && (!options.dateTo || g.date <= options.dateTo)).length,
+        totalGradesCount: (dataset.grades || []).filter(
+          (g) => (!periodId || g.periodId === periodId) && (!options.dateFrom || g.date >= options.dateFrom) && (!options.dateTo || g.date <= options.dateTo)
+        ).length,
         attendanceRate: classAtt.attendanceRate,
         absenceRate: classAtt.absenceRate,
         totalMarkedLessons: classAtt.totalLessons,
@@ -25145,29 +25572,6 @@
         }
       });
     }
-  }
-
-  // src/views/forbidden.js
-  function renderForbiddenView() {
-    const user = getCurrentUser();
-    const returnRoute = user ? getDefaultRouteForRole(user.role) : "/login";
-    return `
-    <div class="max-w-md mx-auto my-12 text-center animate-fadeIn p-8 bg-white rounded-2xl border border-slate-200/80 shadow-sm">
-      <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 mb-5">
-        ${renderIcon("alert", "w-7 h-7")}
-      </div>
-      <h2 class="text-xl font-bold text-slate-900 mb-2">
-        Доступ ограничен
-      </h2>
-      <p class="text-xs text-slate-600 leading-relaxed mb-6">
-        У вас нет прав для просмотра данного раздела или объекта системы.
-      </p>
-      <a href="${returnRoute}"
-         class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition-colors shadow-sm">
-        Вернуться в свой раздел
-      </a>
-    </div>
-  `;
   }
 
   // src/views/placeholder.js
@@ -34556,7 +34960,7 @@
     }
   }
 
-  // src/router.js
+  // src/config/routes.js
   var ROUTE_HANDLERS = {
     "/login": {
       title: "Вход в систему",
@@ -34632,7 +35036,11 @@
     },
     "/schedule": {
       title: "Расписание",
-      render: () => renderPlaceholderView("Расписание", "Расписание уроков и звонков на учебную неделю", "/schedule"),
+      render: () => renderPlaceholderView(
+        "Расписание",
+        "Расписание уроков и звонков на учебную неделю",
+        "/schedule"
+      ),
       setup: () => {
       }
     },
@@ -34670,13 +35078,21 @@
     },
     "/meetings": {
       title: "Собрания",
-      render: () => renderPlaceholderView("Собрания", "Родительские собрания, повестка, протоколы и опросы", "/meetings"),
+      render: () => renderPlaceholderView(
+        "Собрания",
+        "Родительские собрания, повестка, протоколы и опросы",
+        "/meetings"
+      ),
       setup: () => {
       }
     },
     "/announcements": {
       title: "Объявления",
-      render: () => renderPlaceholderView("Объявления", "Информационные сообщения и объявления для родителей", "/announcements"),
+      render: () => renderPlaceholderView(
+        "Объявления",
+        "Информационные сообщения и объявления для родителей",
+        "/announcements"
+      ),
       setup: () => {
       }
     },
@@ -34704,19 +35120,31 @@
     },
     "/classes": {
       title: "Мои классы",
-      render: () => renderPlaceholderView("Мои классы", "Классы с учебной нагрузкой учителя (7Б, 8А, 9В)", "/classes"),
+      render: () => renderPlaceholderView(
+        "Мои классы",
+        "Классы с учебной нагрузкой учителя (7Б, 8А, 9В)",
+        "/classes"
+      ),
       setup: () => {
       }
     },
     "/child": {
       title: "Ребёнок",
-      render: () => renderPlaceholderView("Ребёнок", "Карточка успеваемости и посещаемости ученика (Петрова Анна)", "/child"),
+      render: () => renderPlaceholderView(
+        "Ребёнок",
+        "Карточка успеваемости и посещаемости ученика (Петрова Анна)",
+        "/child"
+      ),
       setup: () => {
       }
     },
     "/grades": {
       title: "Оценки",
-      render: () => renderPlaceholderView("Оценки", "Текущие оценки и средний балл по четвертям", "/grades"),
+      render: () => renderPlaceholderView(
+        "Оценки",
+        "Текущие оценки и средний балл по четвертям",
+        "/grades"
+      ),
       setup: () => {
       }
     },
@@ -34753,7 +35181,11 @@
     },
     "/directories": {
       title: "Справочники",
-      render: () => renderPlaceholderView("Справочники", "Справочники предметов, кабинетов и причин отсутствия", "/directories"),
+      render: () => renderPlaceholderView(
+        "Справочники",
+        "Справочники предметов, кабинетов и причин отсутствия",
+        "/directories"
+      ),
       setup: () => {
       }
     },
@@ -34780,6 +35212,8 @@
       setup: (navigate2) => setupSchoolYearListeners(navigate2)
     }
   };
+
+  // src/router.js
   var Router = class {
     constructor(rootElementId = "app") {
       this.rootElementId = rootElementId;
@@ -34863,7 +35297,8 @@
 
   // src/app.js
   document.addEventListener("click", (e) => {
-    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
+      return;
     const link = e.target.closest('a[href^="/"]');
     if (!link) return;
     e.preventDefault();
@@ -34881,21 +35316,25 @@
       }
     }
   });
-  document.addEventListener("submit", (e) => {
-    const form = e.target;
-    if (form && form.elements) {
-      Array.from(form.elements).forEach((el) => {
-        if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA")) {
-          const type = el.type;
-          if (type !== "file" && type !== "checkbox" && type !== "radio" && type !== "button" && type !== "submit") {
-            if (typeof el.value === "string" && el.value !== el.value.trim()) {
-              el.value = el.value.trim();
+  document.addEventListener(
+    "submit",
+    (e) => {
+      const form = e.target;
+      if (form && form.elements) {
+        Array.from(form.elements).forEach((el) => {
+          if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA")) {
+            const type = el.type;
+            if (type !== "file" && type !== "checkbox" && type !== "radio" && type !== "button" && type !== "submit") {
+              if (typeof el.value === "string" && el.value !== el.value.trim()) {
+                el.value = el.value.trim();
+              }
             }
           }
-        }
-      });
-    }
-  }, true);
+        });
+      }
+    },
+    true
+  );
   document.addEventListener("DOMContentLoaded", () => {
     router.init();
   });
