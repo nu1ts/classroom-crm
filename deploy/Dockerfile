@@ -1,5 +1,5 @@
 # ===================================================
-# Stage 1: Build CSS with Tailwind
+# Stage 1: Build the self-contained site from src/
 # ===================================================
 FROM node:20-alpine AS builder
 
@@ -9,13 +9,13 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# Copy sources needed for Tailwind CSS compilation
+# Copy sources needed for the build (esbuild bundle + Tailwind CSS + route pages)
 COPY tailwind.config.js ./
 COPY src/ ./src/
-COPY reference/ ./reference/
+COPY scripts/ ./scripts/
 
-# Compile production CSS
-RUN npm run build
+# Build the self-contained site into reference/
+RUN npm run build:site
 
 # ===================================================
 # Stage 2: Production Nginx Server
@@ -25,12 +25,11 @@ FROM nginx:1.27-alpine AS runner
 # Clean default Nginx files
 RUN rm -rf /usr/share/nginx/html/*
 
-# Copy compiled application and sources
-COPY --from=builder /app/reference /usr/share/nginx/html/reference
-COPY --from=builder /app/src /usr/share/nginx/html/src
+# Copy the built site (path-based routing: routes are subdirectories)
+COPY --from=builder /app/reference /usr/share/nginx/html
 
 # Copy custom Nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Install curl for healthcheck probe
 RUN apk add --no-cache curl

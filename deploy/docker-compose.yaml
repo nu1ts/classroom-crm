@@ -2,7 +2,7 @@ services:
   classroom-crm:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: deploy/Dockerfile
     image: classroom-crm:local
     container_name: classroom-crm-local
     restart: unless-stopped
