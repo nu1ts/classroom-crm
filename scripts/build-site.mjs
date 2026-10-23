@@ -44,7 +44,7 @@ await build({
 });
 
 // --- 3. Tailwind CSS ---
-execFileSync('npx', ['tailwindcss', '-i', './src/input.css', '-o', './build/css/styles.css', '--minify'], {
+execFileSync('npx', ['tailwindcss', '-i', './src/input.css', '-o', './reference/css/styles.css', '--minify'], {
   cwd: ROOT, stdio: 'inherit', shell: true,
 });
 
