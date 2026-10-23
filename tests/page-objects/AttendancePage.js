@@ -34,8 +34,8 @@ export class AttendancePage {
    * @param {string} [queryString='']
    */
   async goto(queryString = '') {
-    const hash = queryString ? `#/attendance?${queryString}` : '#/attendance';
-    await this.page.goto(`index.html${hash}`);
+    const route = queryString ? `attendance/?${queryString}` : 'attendance/';
+    await this.page.goto(route);
     await expect(this.title).toBeVisible({ timeout: 10000 });
   }
 

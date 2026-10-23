@@ -1,6 +1,7 @@
 import { getDB, confirmAbsenceRecord, batchConfirmAbsences } from '../services/storage.js';
 import { getUnconfirmedAbsences } from '../mock/calculations.js';
 import { renderIcon } from '../components/icons.js';
+import { navigate } from '../services/navigation.js';
 
 /**
  * Генерация 5 учебных дней (ПН-ПТ) для выбранной недели
@@ -87,8 +88,7 @@ export function renderAttendanceView(options = {}) {
     { id: 'w1', label: '02.09.2024 – 06.09.2024', from: '2024-09-02', to: '2024-09-06' }
   ];
 
-  const hash = (typeof window !== 'undefined' && window.location.hash) || '';
-  const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+  const queryString = window.location.search || '';
   const urlParams = new URLSearchParams(queryString);
   const activeWeekId = options.weekId || urlParams.get('week') || 'w8';
   const selectedWeek = weeks.find(w => w.id === activeWeekId) || weeks[0];
@@ -576,11 +576,11 @@ export function setupAttendanceListeners(onNavigate) {
   const selectWeek = document.getElementById('select-attendance-week');
   if (selectWeek) {
     selectWeek.addEventListener('change', () => {
-      const targetHash = `#/attendance?week=${selectWeek.value}`;
+      const targetHash = `/attendance?week=${selectWeek.value}`;
       if (onNavigate) {
         onNavigate(targetHash);
       } else {
-        window.location.hash = targetHash;
+        navigate(targetHash);
       }
     });
   }
@@ -611,7 +611,7 @@ export function setupAttendanceListeners(onNavigate) {
 
       closeConfirmModal();
 
-      const currentHash = window.location.hash || '#/attendance';
+      const currentHash = '/attendance' + (window.location.search || '');
       if (onNavigate) {
         onNavigate(currentHash);
       } else {

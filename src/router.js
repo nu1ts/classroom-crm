@@ -1,5 +1,6 @@
 import { getCurrentUser } from './services/storage.js';
 import { isRouteAllowedForRole, getDefaultRouteForRole } from './config/navigation.js';
+import { detectBase, currentPath, getRouteParams, replacePath, navigate } from './services/navigation.js';
 import { renderLayout, setupLayoutListeners, updateSidebarActiveItem } from './components/layout.js';
 import { renderLoginView, setupLoginListeners } from './views/login.js';
 import { renderOverviewView, setupOverviewListeners } from './views/overview.js';
@@ -19,22 +20,20 @@ import { renderWorkloadView, setupWorkloadListeners } from './views/workload.js'
 import { renderSchoolYearView, setupSchoolYearListeners } from './views/school-year.js';
 
 const ROUTE_HANDLERS = {
-  '#/login': {
+  '/login': {
     title: 'Вход в систему',
     render: () => renderLoginView(),
     setup: (navigate) => setupLoginListeners((user, targetRoute) => navigate(targetRoute))
   },
-  '#/overview': {
+  '/overview': {
     title: 'Обзор класса',
     render: () => renderOverviewView(),
     setup: (navigate) => setupOverviewListeners(navigate)
   },
-  '#/students': {
+  '/students': {
     title: 'Ученики',
     render: () => {
-      const hash = window.location.hash || '';
-      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
-      const params = new URLSearchParams(queryString);
+      const params = getRouteParams();
       return renderStudentsView({
         periodId: params.get('period') || 'q1_2024',
         searchQuery: params.get('search') || '',
@@ -47,12 +46,10 @@ const ROUTE_HANDLERS = {
     },
     setup: (navigate) => setupStudentsListeners(navigate)
   },
-  '#/student': {
+  '/student': {
     title: 'Сводка ученика',
     render: () => {
-      const hash = window.location.hash || '';
-      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
-      const params = new URLSearchParams(queryString);
+      const params = getRouteParams();
       return renderStudentSummaryView({
         studentId: params.get('id') || params.get('student') || 'st-23',
         periodId: params.get('period') || 'q1_2024'
@@ -60,12 +57,10 @@ const ROUTE_HANDLERS = {
     },
     setup: (navigate) => setupStudentSummaryListeners(navigate)
   },
-  '#/student-summary': {
+  '/student-summary': {
     title: 'Сводка ученика',
     render: () => {
-      const hash = window.location.hash || '';
-      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
-      const params = new URLSearchParams(queryString);
+      const params = getRouteParams();
       return renderStudentSummaryView({
         studentId: params.get('id') || params.get('student') || 'st-23',
         periodId: params.get('period') || 'q1_2024'
@@ -73,12 +68,10 @@ const ROUTE_HANDLERS = {
     },
     setup: (navigate) => setupStudentSummaryListeners(navigate)
   },
-  '#/journal': {
+  '/journal': {
     title: 'Журнал класса',
     render: () => {
-      const hash = window.location.hash || '';
-      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
-      const params = new URLSearchParams(queryString);
+      const params = getRouteParams();
       const unconfirmed = params.get('unconfirmed') === 'true';
       const absences = params.get('absences') === 'true';
       const statusParam = params.get('status') || (unconfirmed ? 'unconfirmed' : (absences ? 'absences' : 'all'));
@@ -94,22 +87,20 @@ const ROUTE_HANDLERS = {
     },
     setup: (navigate) => setupJournalListeners(navigate)
   },
-  '#/attendance': {
+  '/attendance': {
     title: 'Посещаемость',
     render: () => renderAttendanceView(),
     setup: (navigate) => setupAttendanceListeners(navigate)
   },
-  '#/schedule': {
+  '/schedule': {
     title: 'Расписание',
-    render: () => renderPlaceholderView('Расписание', 'Расписание уроков и звонков на учебную неделю', '#/schedule'),
+    render: () => renderPlaceholderView('Расписание', 'Расписание уроков и звонков на учебную неделю', '/schedule'),
     setup: () => { }
   },
-  '#/parents': {
+  '/parents': {
     title: 'Родители',
     render: () => {
-      const hash = window.location.hash || '';
-      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
-      const params = new URLSearchParams(queryString);
+      const params = getRouteParams();
       return renderParentsView({
         searchQuery: params.get('search') || '',
         filterLink: params.get('filter') || 'all',
@@ -118,46 +109,40 @@ const ROUTE_HANDLERS = {
     },
     setup: (navigate) => setupParentsListeners(navigate)
   },
-  '#/parent': {
+  '/parent': {
     title: 'Сводка по родителю',
     render: () => {
-      const hash = window.location.hash || '';
-      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
-      const params = new URLSearchParams(queryString);
+      const params = getRouteParams();
       return renderParentSummaryView({
         parentId: params.get('id') || params.get('parent') || 'pr-23'
       });
     },
     setup: (navigate) => setupParentSummaryListeners(navigate)
   },
-  '#/parent-summary': {
+  '/parent-summary': {
     title: 'Сводка по родителю',
     render: () => {
-      const hash = window.location.hash || '';
-      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
-      const params = new URLSearchParams(queryString);
+      const params = getRouteParams();
       return renderParentSummaryView({
         parentId: params.get('id') || params.get('parent') || 'pr-23'
       });
     },
     setup: (navigate) => setupParentSummaryListeners(navigate)
   },
-  '#/meetings': {
+  '/meetings': {
     title: 'Собрания',
-    render: () => renderPlaceholderView('Собрания', 'Родительские собрания, повестка, протоколы и опросы', '#/meetings'),
+    render: () => renderPlaceholderView('Собрания', 'Родительские собрания, повестка, протоколы и опросы', '/meetings'),
     setup: () => { }
   },
-  '#/announcements': {
+  '/announcements': {
     title: 'Объявления',
-    render: () => renderPlaceholderView('Объявления', 'Информационные сообщения и объявления для родителей', '#/announcements'),
+    render: () => renderPlaceholderView('Объявления', 'Информационные сообщения и объявления для родителей', '/announcements'),
     setup: () => { }
   },
-  '#/analytics': {
+  '/analytics': {
     title: 'Аналитика',
     render: () => {
-      const hash = window.location.hash || '';
-      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
-      const params = new URLSearchParams(queryString);
+      const params = getRouteParams();
       return renderAnalyticsView({
         periodId: params.get('periodId') || params.get('period') || 'q1_2024',
         showReport: params.get('showReport') === 'true'
@@ -165,41 +150,39 @@ const ROUTE_HANDLERS = {
     },
     setup: (navigate) => setupAnalyticsListeners(navigate)
   },
-  '#/profile': {
+  '/profile': {
     title: 'Мой профиль',
     render: () => renderProfileView(),
     setup: (navigate) => setupProfileListeners(navigate)
   },
-  '#/forbidden': {
+  '/forbidden': {
     title: 'Доступ ограничен',
     render: () => renderForbiddenView(),
     setup: () => { }
   },
 
-  '#/classes': {
+  '/classes': {
     title: 'Мои классы',
-    render: () => renderPlaceholderView('Мои классы', 'Классы с учебной нагрузкой учителя (7Б, 8А, 9В)', '#/classes'),
+    render: () => renderPlaceholderView('Мои классы', 'Классы с учебной нагрузкой учителя (7Б, 8А, 9В)', '/classes'),
     setup: () => { }
   },
 
-  '#/child': {
+  '/child': {
     title: 'Ребёнок',
-    render: () => renderPlaceholderView('Ребёнок', 'Карточка успеваемости и посещаемости ученика (Петрова Анна)', '#/child'),
+    render: () => renderPlaceholderView('Ребёнок', 'Карточка успеваемости и посещаемости ученика (Петрова Анна)', '/child'),
     setup: () => { }
   },
 
-  '#/grades': {
+  '/grades': {
     title: 'Оценки',
-    render: () => renderPlaceholderView('Оценки', 'Текущие оценки и средний балл по четвертям', '#/grades'),
+    render: () => renderPlaceholderView('Оценки', 'Текущие оценки и средний балл по четвертям', '/grades'),
     setup: () => { }
   },
 
-  '#/accounts': {
+  '/accounts': {
     title: 'Учётные записи',
     render: () => {
-      const hash = window.location.hash || '';
-      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
-      const params = new URLSearchParams(queryString);
+      const params = getRouteParams();
       const currentUser = getCurrentUser();
       return renderAccountsView({
         searchQuery: params.get('search') || '',
@@ -211,17 +194,15 @@ const ROUTE_HANDLERS = {
     setup: (navigate) => setupAccountsListeners(navigate)
   },
 
-  '#/change-password': {
+  '/change-password': {
     title: 'Смена временного пароля',
     render: () => renderChangePasswordView(),
     setup: (navigate) => setupChangePasswordListeners(navigate)
   },
-  '#/teachers': {
+  '/teachers': {
     title: 'Учителя',
     render: () => {
-      const hash = window.location.hash || '';
-      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
-      const params = new URLSearchParams(queryString);
+      const params = getRouteParams();
       return renderTeachersView({
         searchQuery: params.get('search') || '',
         filterSubject: params.get('subject') || 'all',
@@ -230,17 +211,15 @@ const ROUTE_HANDLERS = {
     },
     setup: (navigate) => setupTeachersListeners(navigate)
   },
-  '#/directories': {
+  '/directories': {
     title: 'Справочники',
-    render: () => renderPlaceholderView('Справочники', 'Справочники предметов, кабинетов и причин отсутствия', '#/directories'),
+    render: () => renderPlaceholderView('Справочники', 'Справочники предметов, кабинетов и причин отсутствия', '/directories'),
     setup: () => { }
   },
-  '#/workload': {
+  '/workload': {
     title: 'Нагрузка',
     render: () => {
-      const hash = window.location.hash || '';
-      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
-      const params = new URLSearchParams(queryString);
+      const params = getRouteParams();
       return renderWorkloadView({
         searchQuery: params.get('search') || '',
         filterSubject: params.get('subject') || 'all',
@@ -249,12 +228,10 @@ const ROUTE_HANDLERS = {
     },
     setup: () => setupWorkloadListeners()
   },
-  '#/school-year': {
+  '/school-year': {
     title: 'Учебный год',
     render: () => {
-      const hash = window.location.hash || '';
-      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
-      const params = new URLSearchParams(queryString);
+      const params = getRouteParams();
       return renderSchoolYearView({
         yearId: params.get('year') || null
       });
@@ -271,18 +248,15 @@ class Router {
   }
 
   init() {
-    window.addEventListener('hashchange', () => this.handleRoute());
-    window.addEventListener('pageshow', () => this.handleRoute());
+    detectBase();
+    window.addEventListener('app:navigate', () => this.handleRoute());
+    window.addEventListener('popstate', () => this.handleRoute());
     window.addEventListener('load', () => this.handleRoute());
     this.handleRoute();
   }
 
-  navigate(hash) {
-    if (window.location.hash !== hash) {
-      window.location.hash = hash;
-    } else {
-      this.handleRoute();
-    }
+  navigate(pathWithQuery) {
+    navigate(pathWithQuery);
   }
 
   handleRoute() {
@@ -296,32 +270,25 @@ class Router {
   }
 
   _processRoute() {
-    const rawHash = window.location.hash || '';
-    const cleanHash = rawHash.split('?')[0];
+    const path = currentPath();
     const user = getCurrentUser();
 
-    let activeHash = cleanHash;
+    let activePath = path;
 
     if (!user) {
-      if (cleanHash !== '#/login') {
-        if (window.location.hash !== '#/login') {
-          window.location.replace('#/login');
-        }
-        activeHash = '#/login';
+      if (path !== '/login') {
+        replacePath('/login');
+        activePath = '/login';
       }
-    } else {
-      if (cleanHash === '#/login' || cleanHash === '#/' || cleanHash === '') {
-        const defRoute = getDefaultRouteForRole(user.role);
-        if (window.location.hash !== defRoute) {
-          window.location.replace(defRoute);
-        }
-        activeHash = defRoute;
-      } else if (!isRouteAllowedForRole(user.role, cleanHash)) {
-        activeHash = '#/forbidden';
-      }
+    } else if (path === '/login' || path === '/') {
+      const defRoute = getDefaultRouteForRole(user.role);
+      replacePath(defRoute);
+      activePath = defRoute;
+    } else if (!isRouteAllowedForRole(user.role, path)) {
+      activePath = '/forbidden';
     }
 
-    const handler = ROUTE_HANDLERS[activeHash] || {
+    const handler = ROUTE_HANDLERS[activePath] || {
       title: 'Страница не найдена',
       render: () => renderForbiddenView(),
       setup: () => { }
@@ -335,7 +302,7 @@ class Router {
     if (!rootEl) return;
 
     const existingMainLayout = rootEl.querySelector('#main-layout');
-    const isAuthRoute = activeHash === '#/login' || !user;
+    const isAuthRoute = activePath === '/login' || !user;
     const isSameUserAndRole = user && this.lastUserId === user.id && this.lastUserRole === user.role;
 
     if (existingMainLayout && !isAuthRoute && isSameUserAndRole) {
@@ -347,7 +314,7 @@ class Router {
       if (appContent) {
         appContent.scrollTop = 0;
       }
-      updateSidebarActiveItem(activeHash);
+      updateSidebarActiveItem(activePath);
 
       if (handler.setup) {
         handler.setup((h) => this.navigate(h));
@@ -356,7 +323,7 @@ class Router {
       this.lastUserId = user ? user.id : null;
       this.lastUserRole = user ? user.role : null;
 
-      const fullHtml = renderLayout(user, activeHash, contentHtml);
+      const fullHtml = renderLayout(user, activePath, contentHtml);
       rootEl.innerHTML = fullHtml;
       setupLayoutListeners((h) => this.navigate(h));
       if (handler.setup) {

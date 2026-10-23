@@ -241,7 +241,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await analyticsPage.goto();
     await expect(page.locator('#analytics-view')).not.toContainText('8А класс');
 
-    await page.goto('index.html#/analytics?class=8A');
+    await page.goto('analytics?class=8A');
     await expect(page.locator('#analytics-view')).not.toContainText('8А класс');
     await expect(analyticsPage.title).toBeVisible();
   });
@@ -251,7 +251,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await loginPage.goto();
     await loginPage.loginAs('subject_teacher');
 
-    await page.goto('index.html#/analytics');
+    await page.goto('analytics');
     await expect(page.locator('text=Доступ ограничен')).toBeVisible();
   });
 
@@ -260,7 +260,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await loginPage.goto();
     await loginPage.loginAs('parent');
 
-    await page.goto('index.html#/analytics');
+    await page.goto('analytics');
     await expect(page.locator('text=Доступ ограничен')).toBeVisible();
   });
 
@@ -512,11 +512,11 @@ test.describe('Аналитика и Обзор класса', () => {
     await studentsPage.search('Петрова');
     await studentsPage.openFullSummary('Петрова Анна');
 
-    await expect(page).toHaveURL(/#\/student\?id=st-23/);
+    await expect(page).toHaveURL(/\/student\/?\?id=st-23/);
     await expect(page.locator('h1')).toHaveText('Петрова Анна Сергеевна');
 
     await page.locator('#student-summary-view nav a:has-text("Ученики")').click();
-    await expect(page).toHaveURL(/#\/students/);
+    await expect(page).toHaveURL(/\/students\/?/);
   });
 
   test('TC-OV-12: Детальная сводка: состав данных', async ({ page }) => {
@@ -659,14 +659,14 @@ test.describe('Аналитика и Обзор класса', () => {
     await loginPage.goto();
     await loginPage.loginAs('parent');
 
-    await page.goto('index.html#/student?id=st-14');
+    await page.goto('student?id=st-14');
     await expect(page.locator('text=Доступ ограничен')).toBeVisible();
 
     await navPage.logout();
 
     await loginPage.loginAs('student');
 
-    await page.goto('index.html#/student?id=st-14');
+    await page.goto('student?id=st-14');
     await expect(page.locator('text=Доступ ограничен')).toBeVisible();
   });
 

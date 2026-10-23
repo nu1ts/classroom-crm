@@ -2,6 +2,7 @@ import { ROLE_NAVIGATION } from '../config/navigation.js';
 import { renderIcon } from './icons.js';
 import { logout, quickLoginAsRole } from '../services/storage.js';
 import { isDevMode } from '../services/env.js';
+import { navigate } from '../services/navigation.js';
 
 export function renderSidebar(currentUser, currentPath) {
   if (!currentUser) return '';
@@ -23,8 +24,8 @@ export function renderSidebar(currentUser, currentPath) {
   }
 
   const navHtml = items.map(item => {
-    const isStudentDetail = item.path === '#/students' && (currentPath === '#/student' || currentPath === '#/student-summary');
-    const isActive = (currentPath === item.path) || isStudentDetail || (item.path === roleConfig.defaultRoute && (!currentPath || currentPath === '#/' || currentPath === ''));
+    const isStudentDetail = item.path === '/students' && (currentPath === '/student' || currentPath === '/student-summary');
+    const isActive = (currentPath === item.path) || isStudentDetail || (item.path === roleConfig.defaultRoute && (!currentPath || currentPath === '/' || currentPath === ''));
     const activeClasses = isActive
       ? 'bg-brand-sidebarActive text-white shadow-sm'
       : 'text-slate-300 hover:text-white hover:bg-brand-sidebarHover';
@@ -104,7 +105,7 @@ export function renderSidebar(currentUser, currentPath) {
 
       <div class="p-3 border-t border-slate-800/80 bg-slate-900/40">
         <div class="flex items-center justify-between p-2 rounded-xl hover:bg-brand-sidebarHover/80 transition-colors">
-          <a href="#/profile" id="sidebar-profile-link" class="flex items-center space-x-3 overflow-hidden flex-1 group">
+          <a href="/profile" id="sidebar-profile-link" class="flex items-center space-x-3 overflow-hidden flex-1 group">
             <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-600 to-sky-500 flex items-center justify-center text-white font-semibold text-xs shadow-inner flex-shrink-0">
               ${initials}
             </div>
@@ -128,13 +129,23 @@ export function renderSidebar(currentUser, currentPath) {
 }
 
 export function setupSidebarListeners(onNavigate) {
+  const nav = document.getElementById('app-sidebar');
+  if (nav) {
+    nav.addEventListener('click', (e) => {
+      const link = e.target.closest('a[href^="/"]');
+      if (link) {
+        e.preventDefault();
+        navigate(link.getAttribute('href'));
+      }
+    });
+  }
   const logoutBtn = document.getElementById('btn-sidebar-logout');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', (e) => {
       e.preventDefault();
       if (confirm('Вы действительно хотите выйти из системы?')) {
         logout();
-        window.location.replace('#/login');
+        navigate('/login');
       }
     });
   }
@@ -145,8 +156,8 @@ export function setupSidebarListeners(onNavigate) {
       const targetRole = e.target.value;
       const user = quickLoginAsRole(targetRole);
       if (user) {
-        const defRoute = ROLE_NAVIGATION[user.role]?.defaultRoute || '#/overview';
-        window.location.hash = defRoute;
+        const defRoute = ROLE_NAVIGATION[user.role]?.defaultRoute || '/overview';
+        navigate(defRoute);
         if (onNavigate) onNavigate(defRoute);
       }
     });
@@ -161,8 +172,8 @@ export function updateSidebarActiveItem(currentPath) {
   links.forEach(link => {
     const href = link.getAttribute('href');
     const cleanPath = (currentPath || '').split('?')[0];
-    const isStudentDetail = href === '#/students' && (cleanPath === '#/student' || cleanPath === '#/student-summary');
-    const isActive = (href === cleanPath) || isStudentDetail || (href === '#/overview' && (!cleanPath || cleanPath === '#/' || cleanPath === ''));
+    const isStudentDetail = href === '/students' && (cleanPath === '/student' || cleanPath === '/student-summary');
+    const isActive = (href === cleanPath) || isStudentDetail || (href === '/overview' && (!cleanPath || cleanPath === '/' || cleanPath === ''));
     if (isActive) {
       link.classList.remove('text-slate-300', 'hover:text-white', 'hover:bg-brand-sidebarHover');
       link.classList.add('bg-brand-sidebarActive', 'text-white', 'shadow-sm');

@@ -1,5 +1,14 @@
 import { getDB, getCurrentUser } from './services/storage.js';
 import { router } from './router.js';
+import { navigate } from './services/navigation.js';
+
+document.addEventListener('click', (e) => {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  const link = e.target.closest('a[href^="/"]');
+  if (!link) return;
+  e.preventDefault();
+  navigate(link.getAttribute('href'));
+});
 
 getDB();
 

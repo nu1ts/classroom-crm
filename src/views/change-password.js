@@ -1,6 +1,7 @@
 import { getCurrentUser, changePassword, logout } from '../services/storage.js';
 import { getDefaultRouteForRole } from '../config/navigation.js';
 import { renderIcon } from '../components/icons.js';
+import { navigate } from '../services/navigation.js';
 
 export function renderChangePasswordView() {
   const currentUser = getCurrentUser();
@@ -96,7 +97,7 @@ export function setupChangePasswordListeners(onNavigate) {
       }
 
       const defRoute = getDefaultRouteForRole(currentUser.role);
-      window.location.replace(defRoute);
+      navigate(defRoute);
     });
   }
 
@@ -104,7 +105,7 @@ export function setupChangePasswordListeners(onNavigate) {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
       logout();
-      window.location.replace('#/login');
+      navigate('/login');
     });
   }
 }

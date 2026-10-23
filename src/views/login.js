@@ -2,6 +2,7 @@ import { login, quickLoginAsRole, getCurrentUser, logout } from '../services/sto
 import { getDefaultRouteForRole } from '../config/navigation.js';
 import { isDevMode } from '../services/env.js';
 import { renderIcon } from '../components/icons.js';
+import { navigate } from '../services/navigation.js';
 
 export function renderLoginView() {
   const currentUser = getCurrentUser();
@@ -210,7 +211,7 @@ export function setupLoginListeners(onLoginSuccess) {
       toCabinetBtn.addEventListener('click', (e) => {
         e.preventDefault();
         const defRoute = getDefaultRouteForRole(currentUser.role);
-        window.location.replace(defRoute);
+        navigate(defRoute);
       });
     }
 
@@ -219,7 +220,7 @@ export function setupLoginListeners(onLoginSuccess) {
       switchBtn.addEventListener('click', (e) => {
         e.preventDefault();
         logout();
-        window.location.replace('#/login');
+        navigate('/login');
       });
     }
     return;
@@ -334,12 +335,12 @@ export function setupLoginListeners(onLoginSuccess) {
       }
 
       if (res.mustChangePassword) {
-        window.location.replace('#/change-password');
+        navigate('/change-password');
         return;
       }
 
       const defRoute = getDefaultRouteForRole(res.user.role);
-      window.location.replace(defRoute);
+      navigate(defRoute);
     });
   }
 
@@ -350,7 +351,7 @@ export function setupLoginListeners(onLoginSuccess) {
       const user = quickLoginAsRole(roleKey);
       if (user) {
         const defRoute = getDefaultRouteForRole(user.role);
-        window.location.replace(defRoute);
+        navigate(defRoute);
       }
     });
   });

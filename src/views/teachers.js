@@ -1,5 +1,6 @@
 import { getDB, createTeacherCard, updateTeacherCard, deleteTeacherCard } from '../services/storage.js';
 import { renderIcon } from '../components/icons.js';
+import { replaceUrl } from '../services/navigation.js';
 
 function escapeHtml(text) {
   return String(text ?? '')
@@ -214,7 +215,7 @@ function teacherCardHtml(card) {
     : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-200 text-slate-600">В архиве</span>`;
 
   const accountBlock = account
-    ? `<a href="#/accounts?search=${encodeURIComponent(account.username)}" data-action="open-account" data-login="${escapeHtml(account.username)}"
+    ? `<a href="/accounts?search=${encodeURIComponent(account.username)}" data-action="open-account" data-login="${escapeHtml(account.username)}"
           class="group flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-brand-50/70 border border-brand-200/70 hover:bg-brand-50 hover:border-brand-300 transition-colors">
         <span class="min-w-0">
           <span class="block text-[11px] font-semibold text-slate-500">Учётная запись</span>
@@ -229,7 +230,7 @@ function teacherCardHtml(card) {
           <span class="block text-[11px] font-semibold text-slate-500">Учётная запись</span>
           <span class="block text-xs font-medium text-amber-700">не создана</span>
         </span>
-        <a href="#/accounts" data-action="create-account" class="flex-shrink-0 text-[11px] font-semibold text-amber-700 hover:text-amber-800 hover:underline whitespace-nowrap">Создать</a>
+        <a href="/accounts" data-action="create-account" class="flex-shrink-0 text-[11px] font-semibold text-amber-700 hover:text-amber-800 hover:underline whitespace-nowrap">Создать</a>
       </div>`;
 
   const workloadRows = workload.map(w => `
@@ -297,7 +298,7 @@ function teacherCardHtml(card) {
             <tbody>${workloadRows}</tbody>
           </table>
         </div>
-        <a href="#/workload" data-action="open-workload"
+        <a href="/workload" data-action="open-workload"
            class="mt-2.5 flex items-center justify-center gap-1.5 text-[11px] font-semibold text-brand-600 hover:text-brand-700 hover:underline">
           Перейти в раздел «Нагрузка»
           ${renderIcon('arrow-right', 'w-3.5 h-3.5')}
@@ -337,8 +338,7 @@ export function setupTeachersListeners(onNavigate) {
   }
 
   function readParams() {
-    const hash = window.location.hash || '';
-    const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+    const queryString = window.location.search || '';
     return new URLSearchParams(queryString);
   }
 
@@ -348,7 +348,7 @@ export function setupTeachersListeners(onNavigate) {
     if (state.filterSubject !== 'all') params.set('subject', state.filterSubject);
     if (state.filterAccount !== 'all') params.set('account', state.filterAccount);
     const queryStr = params.toString();
-    window.history.replaceState(null, '', queryStr ? `#/teachers?${queryStr}` : '#/teachers');
+    replaceUrl(queryStr ? `/teachers?${queryStr}` : '/teachers');
   }
 
   function renderCards() {

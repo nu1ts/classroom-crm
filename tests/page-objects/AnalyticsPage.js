@@ -34,8 +34,8 @@ export class AnalyticsPage {
    * @param {string} [queryString='']
    */
   async goto(queryString = '') {
-    const hash = queryString ? `#/analytics?${queryString}` : '#/analytics';
-    await this.page.goto(`index.html${hash}`);
+    const route = queryString ? `analytics/?${queryString}` : 'analytics/';
+    await this.page.goto(route);
     await expect(this.title).toBeVisible({ timeout: 10000 });
   }
 

@@ -1,6 +1,7 @@
 import { getDB, getCurrentUser, confirmAbsenceRecord, addJournalComment, getJournalComments } from '../services/storage.js';
 import { renderIcon } from '../components/icons.js';
 import { getUnconfirmedAbsences } from '../mock/calculations.js';
+import { hrefFor, navigate } from '../services/navigation.js';
 
 export function renderJournalView(options = {}) {
   const db = getDB();
@@ -220,7 +221,7 @@ export function renderJournalView(options = {}) {
         <td class="px-3.5 py-2.5 text-xs font-semibold text-slate-900 border-b border-slate-200 border-r border-slate-200 sticky left-0 bg-white group-hover:bg-slate-50 z-10 min-w-[210px] whitespace-nowrap shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
           <div class="flex items-center space-x-2.5">
             <span class="w-6 text-center text-slate-400 font-semibold flex-shrink-0">${idx + 1}</span>
-            <a href="#/overview?student=${s.id}" class="hover:text-brand-600 transition-colors truncate font-semibold text-slate-900">
+            <a href="/overview?student=${s.id}" class="hover:text-brand-600 transition-colors truncate font-semibold text-slate-900">
               ${s.fullName}
             </a>
           </div>
@@ -254,7 +255,7 @@ export function renderJournalView(options = {}) {
         </div>
 
         <div class="flex items-center space-x-2.5">
-          <a href="#/attendance"
+          <a href="/attendance"
              class="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors shadow-xs">
             ${renderIcon('check-square', 'w-4 h-4 text-brand-500')}
             <span>Подтверждение пропусков</span>
@@ -546,7 +547,7 @@ export function renderJournalView(options = {}) {
                 <p class="text-[11px] text-slate-500 mt-0.5">Ученик класса · Полная сводка успеваемости</p>
               </div>
             </div>
-            <a id="entry-modal-student-link" href="#/overview" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-brand-50 text-brand-600 border border-slate-200 text-xs font-semibold transition-colors flex items-center space-x-1 flex-shrink-0 shadow-sm">
+            <a id="entry-modal-student-link" href="/overview" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-brand-50 text-brand-600 border border-slate-200 text-xs font-semibold transition-colors flex items-center space-x-1 flex-shrink-0 shadow-sm">
               <span>Профиль</span>
               ${renderIcon('external-link', 'w-3.5 h-3.5')}
             </a>
@@ -727,7 +728,7 @@ export function setupJournalListeners(onNavigate) {
   const tableContainer = document.getElementById('journal-table-container');
 
   function getUrlParams() {
-    const rawHash = window.location.hash || '#/journal';
+    const rawHash = '/journal' + (window.location.search || '');
     const queryString = rawHash.includes('?') ? rawHash.split('?')[1] : '';
     const params = new URLSearchParams(queryString);
     const unconfirmed = params.get('unconfirmed') === 'true';
@@ -760,12 +761,12 @@ export function setupJournalListeners(onNavigate) {
     if (merged.searchQuery) params.set('search', merged.searchQuery);
 
     const queryStr = params.toString();
-    const newHash = queryStr ? `#/journal?${queryStr}` : '#/journal';
+    const newHash = queryStr ? `/journal?${queryStr}` : '/journal';
 
     if (onNavigate) {
       onNavigate(newHash);
     } else {
-      window.location.hash = newHash;
+      navigate(newHash);
     }
   }
 
@@ -1028,7 +1029,7 @@ export function setupJournalListeners(onNavigate) {
       elStudentAvatar.textContent = initials.toUpperCase();
     }
     if (elStudentLink && student) {
-      elStudentLink.href = `#/overview?student=${student.id}`;
+      elStudentLink.href = hrefFor(`/overview?student=${student.id}`);
     }
 
     if (elGrade) {
@@ -1220,7 +1221,7 @@ export function setupJournalListeners(onNavigate) {
       closeJournalConfirmModal();
       closeModal();
 
-      const currentHash = window.location.hash || '#/journal';
+      const currentHash = '/journal' + (window.location.search || '');
       if (onNavigate) {
         onNavigate(currentHash);
       } else {

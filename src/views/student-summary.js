@@ -142,7 +142,7 @@ export function renderStudentSummaryView(options = {}) {
         <h2 class="text-xl font-bold text-slate-900">Ученик не найден</h2>
         <p class="text-sm text-slate-500">Ученик с идентификатором «${studentId}» не зарегистрирован в системе или был удалён.</p>
         <div class="pt-2">
-          <a href="#/students" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition-colors">
+          <a href="/students" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition-colors">
             Вернуться к списку учеников
           </a>
         </div>
@@ -234,9 +234,9 @@ export function renderStudentSummaryView(options = {}) {
   return `
     <div id="student-summary-view" class="p-6 sm:p-8 max-w-7xl mx-auto space-y-6">
       <nav class="flex items-center space-x-2 text-xs font-medium text-slate-500">
-        <a href="#/overview" class="hover:text-brand-600 transition-colors">${isOtherClassStudent ? `Класс ${student.className || '9В'}` : 'Класс 7Б'}</a>
+        <a href="/overview" class="hover:text-brand-600 transition-colors">${isOtherClassStudent ? `Класс ${student.className || '9В'}` : 'Класс 7Б'}</a>
         <span class="text-slate-300">/</span>
-        <a href="${isOtherClassStudent && student.parentId ? `#/parent?id=${student.parentId}` : '#/students'}" class="hover:text-brand-600 transition-colors">${isOtherClassStudent ? 'Родители' : 'Ученики'}</a>
+        <a href="${isOtherClassStudent && student.parentId ? `/parent?id=${student.parentId}` : '/students'}" class="hover:text-brand-600 transition-colors">${isOtherClassStudent ? 'Родители' : 'Ученики'}</a>
         <span class="text-slate-300">/</span>
         <span class="text-slate-900 font-semibold truncate">${student.fullName}</span>
       </nav>
@@ -247,7 +247,7 @@ export function renderStudentSummaryView(options = {}) {
             ${renderIcon('alert', 'w-4 h-4 text-amber-600')}
             <span>Данные ученика из другого класса (${student.className || '9В'}) доступны только для чтения</span>
           </div>
-          <a href="#/parent?id=${student.parentId || 'pr-10'}" class="px-3.5 py-1.5 bg-amber-200/80 hover:bg-amber-300 rounded-xl transition-colors text-amber-950 font-bold">
+          <a href="/parent?id=${student.parentId || 'pr-10'}" class="px-3.5 py-1.5 bg-amber-200/80 hover:bg-amber-300 rounded-xl transition-colors text-amber-950 font-bold">
             Вернуться к родителю
           </a>
         </div>
@@ -825,8 +825,7 @@ export function renderStudentSummaryView(options = {}) {
 }
 
 export function setupStudentSummaryListeners(onNavigate) {
-  const hash = window.location.hash || '';
-  const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+  const queryString = window.location.search || '';
   const params = new URLSearchParams(queryString);
   const studentId = params.get('id') || params.get('student') || 'st-23';
 
@@ -977,7 +976,7 @@ export function setupStudentSummaryListeners(onNavigate) {
       showToast('Контакт с родителем успешно зафиксирован');
 
       if (onNavigate) {
-        onNavigate(window.location.hash || `#/student?id=${studentId}`);
+        onNavigate(window.location.search ? '/student' + window.location.search : `/student?id=${studentId}`);
       }
     });
   }
@@ -1062,7 +1061,7 @@ export function setupStudentSummaryListeners(onNavigate) {
       showToast('Педагогическая заметка сохранена');
 
       if (onNavigate) {
-        onNavigate(window.location.hash || `#/student?id=${studentId}`);
+        onNavigate(window.location.search ? '/student' + window.location.search : `/student?id=${studentId}`);
       }
     });
   }
@@ -1156,7 +1155,7 @@ export function setupStudentSummaryListeners(onNavigate) {
       showToast('Уважительная причина пропуска успешно подтверждена');
 
       if (onNavigate) {
-        onNavigate(window.location.hash || `#/student?id=${studentId}`);
+        onNavigate(window.location.search ? '/student' + window.location.search : `/student?id=${studentId}`);
       }
     });
   }

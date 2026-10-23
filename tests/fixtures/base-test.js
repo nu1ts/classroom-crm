@@ -25,9 +25,11 @@ export const test = baseTest.extend({
   page: async ({ page }, use) => {
     await page.addInitScript(({ dataset }) => {
       try {
+        if (window.sessionStorage.getItem('__crm_test_seeded__')) return;
         window.localStorage.setItem('classroom_crm_db', JSON.stringify(dataset));
         window.localStorage.removeItem('classroom_crm_session');
         window.localStorage.removeItem('classroom_crm_failed_attempts');
+        window.sessionStorage.setItem('__crm_test_seeded__', '1');
       } catch (err) {
         console.error('Ошибка сидирования localStorage в фикстуре теста:', err);
       }

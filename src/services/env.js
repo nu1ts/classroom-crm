@@ -13,7 +13,7 @@ export function isDevMode() {
       return true;
     }
 
-    if (window.location.hash.includes(`key=${DEBUG_SECRET_KEY}`)) {
+    if (window.location.search.includes(`key=${DEBUG_SECRET_KEY}`)) {
       if (typeof sessionStorage !== 'undefined') {
         sessionStorage.setItem(DEBUG_STORAGE_KEY, DEBUG_SECRET_KEY);
       }

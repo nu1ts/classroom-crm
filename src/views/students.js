@@ -20,6 +20,7 @@ import {
   getRiskZoneStudents
 } from '../mock/calculations.js';
 import { renderIcon } from '../components/icons.js';
+import { replaceUrl } from '../services/navigation.js';
 
 const PERIODS = [
   { id: 'q1_2024', name: 'I четверть (02.09 - 25.10.2024)' },
@@ -612,7 +613,7 @@ export function setupStudentsListeners(onNavigate) {
   let db = getDB();
 
   function getUrlParams() {
-    const rawHash = window.location.hash || '#/students';
+    const rawHash = '/students' + (window.location.search || '');
     const queryString = rawHash.includes('?') ? rawHash.split('?')[1] : '';
     const params = new URLSearchParams(queryString);
     return {
@@ -676,8 +677,8 @@ export function setupStudentsListeners(onNavigate) {
     if (state.page && state.page > 1) params.set('page', String(state.page));
 
     const queryStr = params.toString();
-    const newHash = queryStr ? `#/students?${queryStr}` : '#/students';
-    window.history.replaceState(null, '', newHash);
+    const newHash = queryStr ? `/students?${queryStr}` : '/students';
+    replaceUrl(newHash);
   }
 
   function updateFilterAbsencesBtnUI() {
@@ -937,7 +938,7 @@ export function setupStudentsListeners(onNavigate) {
         </button>
 
         <div class="flex items-center space-x-2">
-          <a href="#/student?id=${student.id}"
+          <a href="/student?id=${student.id}"
              class="py-2 px-3.5 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 font-semibold text-xs transition-colors inline-flex items-center space-x-1.5">
             <span>Полная сводка</span>
             ${renderIcon('chevron-right', 'w-3.5 h-3.5 text-brand-600')}

@@ -1,13 +1,14 @@
 import { ROLE_NAVIGATION } from '../config/navigation.js';
 import { quickLoginAsRole } from '../services/storage.js';
 import { isDevMode } from '../services/env.js';
+import { navigate } from '../services/navigation.js';
 
 export function renderHeader(currentUser, currentPath) {
   if (!currentUser) return '';
 
   const roleConfig = ROLE_NAVIGATION[currentUser.role] || ROLE_NAVIGATION.teacher;
   const currentItem = roleConfig.items.find(i => i.path === currentPath);
-  const pageTitle = currentItem ? currentItem.title : (currentPath === '#/profile' ? 'Мой профиль' : 'Кабинет');
+  const pageTitle = currentItem ? currentItem.title : (currentPath === '/profile' ? 'Мой профиль' : 'Кабинет');
 
   const showDevSwitcher = isDevMode();
   let devSwitcherHtml = '';
@@ -60,8 +61,8 @@ export function setupHeaderListeners(onNavigate) {
       const targetRole = e.target.value;
       const user = quickLoginAsRole(targetRole);
       if (user) {
-        const defRoute = ROLE_NAVIGATION[user.role]?.defaultRoute || '#/overview';
-        window.location.hash = defRoute;
+        const defRoute = ROLE_NAVIGATION[user.role]?.defaultRoute || '/overview';
+        navigate(defRoute);
       }
     });
   }

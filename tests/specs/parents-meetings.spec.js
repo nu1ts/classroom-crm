@@ -470,16 +470,16 @@ test.describe('Родители и Собрания', () => {
     await loginPage.goto();
     await loginPage.loginAs('subject_teacher');
 
-    await page.goto('index.html#/parents');
+    await page.goto('parents');
     await expect(page.locator('text=Доступ ограничен')).toBeVisible();
 
     await navPage.logout();
 
     await loginPage.loginAs('parent');
-    await page.goto('index.html#/parents');
+    await page.goto('parents');
     await expect(page.locator('text=Доступ ограничен')).toBeVisible();
 
-    await page.goto('index.html#/profile');
+    await page.goto('profile');
     await expect(page.locator('h2:has-text("Мой профиль")')).toBeVisible();
     await expect(page.locator('input[readonly]').first()).toHaveValue(/Петров/);
   });
@@ -491,7 +491,7 @@ test.describe('Родители и Собрания', () => {
     await loginPage.goto();
     await loginPage.loginAs('parent');
 
-    await page.goto('index.html#/student?id=st-23');
+    await page.goto('student?id=st-23');
     await expect(page.locator('text=История общения с родителями')).toHaveCount(0);
     await expect(page.locator('text=Заметки классрука')).toHaveCount(0);
 
@@ -499,7 +499,7 @@ test.describe('Родители и Собрания', () => {
 
     await loginPage.loginAs('student');
 
-    await page.goto('index.html#/student?id=st-23');
+    await page.goto('student?id=st-23');
     await expect(page.locator('text=История общения с родителями')).toHaveCount(0);
     await expect(page.locator('text=Заметки классрука')).toHaveCount(0);
   });

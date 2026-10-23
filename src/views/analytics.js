@@ -238,7 +238,7 @@ export function renderAnalyticsView(options = {}) {
               ${riskStudents.map(st => `
                 <div class="p-4 rounded-2xl border ${st.riskLevel === 'critical' ? 'border-rose-200 bg-rose-50/40' : 'border-amber-200 bg-amber-50/40'} space-y-2">
                   <div class="flex items-center justify-between">
-                    <a href="#/student?id=${st.studentId}" class="text-xs font-bold text-slate-900 hover:text-brand-600 hover:underline">
+                    <a href="/student?id=${st.studentId}" class="text-xs font-bold text-slate-900 hover:text-brand-600 hover:underline">
                       ${st.name}
                     </a>
                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${st.riskLevel === 'critical' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}">
@@ -285,7 +285,7 @@ export function renderAnalyticsView(options = {}) {
                     <tr class="hover:bg-slate-50 transition-colors">
                       <td class="py-2 px-3 text-slate-600">${a.date || '—'}</td>
                       <td class="py-2 px-3 font-medium text-slate-900">
-                        <a href="#/student?id=${a.studentId}" class="hover:text-brand-600 hover:underline">
+                        <a href="/student?id=${a.studentId}" class="hover:text-brand-600 hover:underline">
                           ${st ? st.fullName : a.studentId}
                         </a>
                       </td>
@@ -392,7 +392,7 @@ export function renderAnalyticsView(options = {}) {
               <div class="text-xs text-rose-900 leading-relaxed font-medium">
                 ${criticalRisk.length > 0 ? criticalRisk.map((s, idx) => {
     const reasonShort = s.reasons.some(r => r.type === 'absence') ? 'пропуски' : 'оценки';
-    return `<a href="#/student?id=${s.studentId}" class="font-bold underline hover:text-rose-700">${s.shortName || s.name.split(' ')[0] + ' ' + (s.name.split(' ')[1] ? s.name.split(' ')[1][0] + '.' : '')}</a> (${reasonShort})${idx < criticalRisk.length - 1 ? ', ' : ''}`;
+    return `<a href="/student?id=${s.studentId}" class="font-bold underline hover:text-rose-700">${s.shortName || s.name.split(' ')[0] + ' ' + (s.name.split(' ')[1] ? s.name.split(' ')[1][0] + '.' : '')}</a> (${reasonShort})${idx < criticalRisk.length - 1 ? ', ' : ''}`;
   }).join('') : 'Нет учеников в группе критического риска'}
               </div>
             </div>
@@ -449,7 +449,7 @@ export function setupAnalyticsListeners(onNavigate) {
       const selectedPeriod = periodSelect.value;
       const isReportOpen = reportContainer && !reportContainer.classList.contains('hidden');
       if (onNavigate) {
-        onNavigate(`#/analytics?periodId=${selectedPeriod}${isReportOpen ? '&showReport=true' : ''}`);
+        onNavigate(`/analytics?periodId=${selectedPeriod}${isReportOpen ? '&showReport=true' : ''}`);
       }
     });
   }

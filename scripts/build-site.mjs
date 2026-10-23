@@ -7,10 +7,6 @@
  *   index.html        — корневая страница (старт: вход)
  *   <route>/index.html — страница каждого маршрута (роутинг подкаталогами)
  *
- * Роутинг: hash-роутер не трогаем. Каждая сгенерированная страница перед
- * бандлом выставляет начальный hash из своего пути (window.__INITIAL_ROUTE__),
- * так что адрес /login/ открывает страницу входа, /journal/ — журнал и т.д.
- *
  * Запуск: npm run build:site
  */
 import { build } from 'esbuild';
@@ -27,7 +23,7 @@ const SRC = path.join(ROOT, 'src');
 // --- 1. Список маршрутов из конфига навигации + служебные ---
 const navSource = await readFile(path.join(SRC, 'config', 'navigation.js'), 'utf8');
 const routePaths = [...new Set(
-  [...navSource.matchAll(/'#\/([a-z0-9-]+)'/g)].map((m) => m[1])
+  [...navSource.matchAll(/'\/([a-z0-9-]+)'/g)].map((m) => m[1])
 )].sort();
 
 for (const extra of ['login', 'forbidden', 'change-password']) {
@@ -62,7 +58,7 @@ const headExtras = `
     .w-10 { width: 2.5rem !important; }
   </style>`;
 
-function renderPage(initialRoute, assetPrefix) {
+function renderPage(assetPrefix) {
   return `<!DOCTYPE html>
 <html lang="ru" class="h-full bg-slate-50">
 <head>
@@ -70,12 +66,6 @@ function renderPage(initialRoute, assetPrefix) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Кабинет классного руководителя — Classroom CRM</title>
   <link rel="stylesheet" href="${assetPrefix}css/styles.css" />${headExtras}
-  <script>
-    (function () {
-      var initial = ${JSON.stringify(initialRoute)};
-      if (!window.location.hash) { window.location.replace(initial); }
-    })();
-  </script>
 </head>
 <body class="h-full text-slate-800 antialiased">
   <div id="app" class="h-full"></div>
@@ -94,13 +84,13 @@ if (existsSync(OUT)) {
   }
 }
 await mkdir(OUT, { recursive: true });
-await writeFile(path.join(OUT, 'index.html'), renderPage('#/login', './'));
+await writeFile(path.join(OUT, 'index.html'), renderPage('./'));
 
 let written = 0;
 for (const route of routePaths) {
   const dir = path.join(OUT, route);
   await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, 'index.html'), renderPage(`#/${route}`, '../'));
+  await writeFile(path.join(dir, 'index.html'), renderPage('../'));
   written += 1;
 }
 

@@ -4,7 +4,7 @@ import { renderIcon } from '../components/icons.js';
 
 export function renderForbiddenView() {
   const user = getCurrentUser();
-  const returnRoute = user ? getDefaultRouteForRole(user.role) : '#/login';
+  const returnRoute = user ? getDefaultRouteForRole(user.role) : '/login';
 
   return `
     <div class="max-w-md mx-auto my-12 text-center animate-fadeIn p-8 bg-white rounded-2xl border border-slate-200/80 shadow-sm">

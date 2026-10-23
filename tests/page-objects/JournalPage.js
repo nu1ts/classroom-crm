@@ -55,8 +55,8 @@ export class JournalPage {
    * @param {string} [queryString='']
    */
   async goto(queryString = '') {
-    const hash = queryString ? `#/journal?${queryString}` : '#/journal';
-    await this.page.goto(`index.html${hash}`);
+    const route = queryString ? `journal/?${queryString}` : 'journal/';
+    await this.page.goto(route);
     await this.title.waitFor({ state: 'visible', timeout: 10000 });
   }
 

@@ -8,6 +8,7 @@ import {
   removeWorkloadRow
 } from '../services/storage.js';
 import { renderIcon } from '../components/icons.js';
+import { replaceUrl } from '../services/navigation.js';
 
 function escapeHtml(text) {
   return String(text ?? '')
@@ -364,8 +365,8 @@ export function setupWorkloadListeners() {
     if (state.filterSubject !== 'all') params.set('subject', state.filterSubject);
     if (state.filterClass !== 'all') params.set('class', state.filterClass);
     const queryStr = params.toString();
-    const newHash = queryStr ? `#/workload?${queryStr}` : '#/workload';
-    window.history.replaceState(null, '', newHash);
+    const newHash = queryStr ? `/workload?${queryStr}` : '/workload';
+    replaceUrl(newHash);
   }
 
   function showToast(message, isError = false) {

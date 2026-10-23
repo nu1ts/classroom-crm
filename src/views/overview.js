@@ -138,7 +138,7 @@ export function renderOverviewView() {
               <span class="text-slate-300 block text-[10px] leading-tight">Состав класса</span>
               <strong class="text-white font-semibold leading-tight">${boysCount} мал. / ${girlsCount} дев.</strong>
             </div>
-            <a href="#/students" class="h-10 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-sm shadow-brand-500/30 transition-all flex items-center space-x-1.5">
+            <a href="/students" class="h-10 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-sm shadow-brand-500/30 transition-all flex items-center space-x-1.5">
               <span>Список класса</span>
               ${renderIcon('arrow-right', 'w-3.5 h-3.5 text-white/80')}
             </a>
@@ -202,7 +202,7 @@ export function renderOverviewView() {
           </div>
           <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
             <span class="text-slate-500">Требуют справки</span>
-            <a href="#/attendance?filter=unconfirmed" class="font-semibold text-brand-600 hover:text-brand-700 hover:underline">
+            <a href="/attendance?filter=unconfirmed" class="font-semibold text-brand-600 hover:text-brand-700 hover:underline">
               К журналу →
             </a>
           </div>
@@ -245,7 +245,7 @@ export function renderOverviewView() {
               </div>
 
               ${allProcessed ? `
-                <a href="#/analytics" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors flex items-center space-x-1.5 self-start sm:self-auto">
+                <a href="/analytics" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors flex items-center space-x-1.5 self-start sm:self-auto">
                   ${renderIcon('file-text', 'w-3.5 h-3.5')}
                   <span>Сформировать отчёт</span>
                 </a>
@@ -265,7 +265,7 @@ export function renderOverviewView() {
                     <div class="text-emerald-700 mt-0.5">Контакты и заметки зафиксированы. Можно переходить к формированию отчёта.</div>
                   </div>
                 </div>
-                <a href="#/analytics" class="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs whitespace-nowrap">
+                <a href="/analytics" class="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs whitespace-nowrap">
                   К отчёту →
                 </a>
               </div>
@@ -282,7 +282,7 @@ export function renderOverviewView() {
                 ${renderIcon('calendar', 'w-5 h-5 text-brand-600')}
                 <h2 class="text-base font-bold text-slate-900">Расписание на сегодня (Пн, 28 окт)</h2>
               </div>
-              <a href="#/schedule" class="text-xs font-semibold text-brand-600 hover:text-brand-700 hover:underline">
+              <a href="/schedule" class="text-xs font-semibold text-brand-600 hover:text-brand-700 hover:underline">
                 Расписание недели →
               </a>
             </div>
@@ -363,7 +363,7 @@ export function renderOverviewView() {
               <p class="text-xs text-slate-600 leading-relaxed mb-4">
                 Повестка: Успеваемость, предстоящие каникулы, экскурсионная поездка в музей.
               </p>
-              <a href="#/meetings" class="block w-full py-2.5 px-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs text-center shadow-sm shadow-brand-500/20 transition-colors">
+              <a href="/meetings" class="block w-full py-2.5 px-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs text-center shadow-sm shadow-brand-500/20 transition-colors">
                 Список участников →
               </a>
             </div>
@@ -374,19 +374,19 @@ export function renderOverviewView() {
               Быстрые действия
             </h2>
             <div class="space-y-2.5">
-              <a href="#/announcements" class="flex items-center justify-between p-3 rounded-xl border border-brand-200 bg-brand-50/50 hover:bg-brand-50 text-brand-700 text-xs font-semibold transition-colors">
+              <a href="/announcements" class="flex items-center justify-between p-3 rounded-xl border border-brand-200 bg-brand-50/50 hover:bg-brand-50 text-brand-700 text-xs font-semibold transition-colors">
                 <span>Новое объявление родителям</span>
                 ${renderIcon('arrow-right', 'w-3.5 h-3.5 text-brand-500')}
               </a>
-              <a href="#/analytics" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors">
+              <a href="/analytics" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors">
                 <span>Сформировать отчёт 7Б</span>
                 ${renderIcon('arrow-right', 'w-3.5 h-3.5 text-slate-400')}
               </a>
-              <a href="#/meetings" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors">
+              <a href="/meetings" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors">
                 <span>Создать собрание</span>
                 ${renderIcon('arrow-right', 'w-3.5 h-3.5 text-slate-400')}
               </a>
-              <a href="#/attendance?filter=unconfirmed" class="flex items-center justify-between p-3 rounded-xl border border-amber-200/80 hover:bg-amber-50/40 text-amber-800 text-xs font-semibold transition-colors">
+              <a href="/attendance?filter=unconfirmed" class="flex items-center justify-between p-3 rounded-xl border border-amber-200/80 hover:bg-amber-50/40 text-amber-800 text-xs font-semibold transition-colors">
                 <span>Неподтверждённые пропуски (${unconfirmedCount})</span>
                 ${renderIcon('arrow-right', 'w-3.5 h-3.5 text-amber-600')}
               </a>
@@ -841,7 +841,7 @@ export function setupOverviewListeners(onNavigate) {
       closeContactModal();
 
       if (onNavigate) {
-        onNavigate('#/overview');
+        onNavigate('/overview');
       }
     });
   }
@@ -918,7 +918,7 @@ export function setupOverviewListeners(onNavigate) {
       closeNoteModal();
 
       if (onNavigate) {
-        onNavigate('#/overview');
+        onNavigate('/overview');
       }
     });
   }

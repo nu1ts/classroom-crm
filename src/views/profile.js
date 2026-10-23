@@ -1,5 +1,6 @@
 import { getCurrentUser, changePassword, logout, clearSession } from '../services/storage.js';
 import { renderIcon } from '../components/icons.js';
+import { navigate } from '../services/navigation.js';
 
 export function renderProfileView() {
   const user = getCurrentUser();
@@ -193,7 +194,7 @@ export function setupProfileListeners(onNavigate) {
         } catch (err) {
           console.error('Logout error:', err);
         }
-        window.location.replace('#/login');
+        navigate('/login');
       }
     });
   }

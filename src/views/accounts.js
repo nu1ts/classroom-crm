@@ -9,6 +9,7 @@ import {
   ROLE_LABELS
 } from '../services/storage.js';
 import { renderIcon } from '../components/icons.js';
+import { replaceUrl } from '../services/navigation.js';
 
 const PAGE_SIZE = 10;
 const ROLE_OPTIONS = ['admin', 'teacher', 'subject_teacher', 'parent', 'student'];
@@ -357,8 +358,7 @@ export function setupAccountsListeners() {
   }
 
   function readParams() {
-    const hash = window.location.hash || '';
-    const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+    const queryString = window.location.search || '';
     return new URLSearchParams(queryString);
   }
 
@@ -368,7 +368,7 @@ export function setupAccountsListeners() {
     if (state.filterRole && state.filterRole !== 'all') params.set('role', state.filterRole);
     if (state.page > 1) params.set('page', String(state.page));
     const queryStr = params.toString();
-    window.history.replaceState(null, '', queryStr ? `#/accounts?${queryStr}` : '#/accounts');
+    replaceUrl(queryStr ? `/accounts?${queryStr}` : '/accounts');
   }
 
   function getCurrentUserId() {

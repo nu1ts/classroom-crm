@@ -22598,107 +22598,107 @@
   var ROLE_NAVIGATION = {
     teacher: {
       label: "Классный руководитель",
-      defaultRoute: "#/overview",
+      defaultRoute: "/overview",
       items: [
-        { id: "nav-overview", title: "Обзор класса", path: "#/overview", icon: "grid" },
-        { id: "nav-students", title: "Ученики", path: "#/students", icon: "users" },
-        { id: "nav-journal", title: "Журнал", path: "#/journal", icon: "book-open" },
-        { id: "nav-attendance", title: "Посещаемость", path: "#/attendance", icon: "check-square" },
-        { id: "nav-schedule", title: "Расписание", path: "#/schedule", icon: "calendar" },
-        { id: "nav-parents", title: "Родители", path: "#/parents", icon: "heart" },
-        { id: "nav-meetings", title: "Собрания", path: "#/meetings", icon: "users-group" },
-        { id: "nav-announcements", title: "Объявления", path: "#/announcements", icon: "megaphone" },
-        { id: "nav-analytics", title: "Аналитика", path: "#/analytics", icon: "chart-bar" }
+        { id: "nav-overview", title: "Обзор класса", path: "/overview", icon: "grid" },
+        { id: "nav-students", title: "Ученики", path: "/students", icon: "users" },
+        { id: "nav-journal", title: "Журнал", path: "/journal", icon: "book-open" },
+        { id: "nav-attendance", title: "Посещаемость", path: "/attendance", icon: "check-square" },
+        { id: "nav-schedule", title: "Расписание", path: "/schedule", icon: "calendar" },
+        { id: "nav-parents", title: "Родители", path: "/parents", icon: "heart" },
+        { id: "nav-meetings", title: "Собрания", path: "/meetings", icon: "users-group" },
+        { id: "nav-announcements", title: "Объявления", path: "/announcements", icon: "megaphone" },
+        { id: "nav-analytics", title: "Аналитика", path: "/analytics", icon: "chart-bar" }
       ],
       allowedRoutes: [
-        "#/overview",
-        "#/students",
-        "#/student",
-        "#/student-summary",
-        "#/journal",
-        "#/attendance",
-        "#/schedule",
-        "#/parents",
-        "#/parent",
-        "#/parent-summary",
-        "#/meetings",
-        "#/announcements",
-        "#/analytics",
-        "#/profile"
+        "/overview",
+        "/students",
+        "/student",
+        "/student-summary",
+        "/journal",
+        "/attendance",
+        "/schedule",
+        "/parents",
+        "/parent",
+        "/parent-summary",
+        "/meetings",
+        "/announcements",
+        "/analytics",
+        "/profile"
       ]
     },
     subject_teacher: {
       label: "Учитель-предметник",
-      defaultRoute: "#/classes",
+      defaultRoute: "/classes",
       items: [
-        { id: "nav-classes", title: "Мои классы", path: "#/classes", icon: "grid" },
-        { id: "nav-schedule", title: "Расписание", path: "#/schedule", icon: "calendar" },
-        { id: "nav-attendance", title: "Посещаемость", path: "#/attendance", icon: "check-square" },
-        { id: "nav-profile", title: "Профиль", path: "#/profile", icon: "user" }
+        { id: "nav-classes", title: "Мои классы", path: "/classes", icon: "grid" },
+        { id: "nav-schedule", title: "Расписание", path: "/schedule", icon: "calendar" },
+        { id: "nav-attendance", title: "Посещаемость", path: "/attendance", icon: "check-square" },
+        { id: "nav-profile", title: "Профиль", path: "/profile", icon: "user" }
       ],
       allowedRoutes: [
-        "#/classes",
-        "#/schedule",
-        "#/attendance",
-        "#/profile"
+        "/classes",
+        "/schedule",
+        "/attendance",
+        "/profile"
       ]
     },
     parent: {
       label: "Родитель",
-      defaultRoute: "#/child",
+      defaultRoute: "/child",
       items: [
-        { id: "nav-child", title: "Ребёнок", path: "#/child", icon: "user" },
-        { id: "nav-schedule", title: "Расписание", path: "#/schedule", icon: "calendar" },
-        { id: "nav-announcements", title: "Объявления", path: "#/announcements", icon: "megaphone" },
-        { id: "nav-profile", title: "Профиль", path: "#/profile", icon: "user" }
+        { id: "nav-child", title: "Ребёнок", path: "/child", icon: "user" },
+        { id: "nav-schedule", title: "Расписание", path: "/schedule", icon: "calendar" },
+        { id: "nav-announcements", title: "Объявления", path: "/announcements", icon: "megaphone" },
+        { id: "nav-profile", title: "Профиль", path: "/profile", icon: "user" }
       ],
       allowedRoutes: [
-        "#/child",
-        "#/schedule",
-        "#/announcements",
-        "#/profile"
+        "/child",
+        "/schedule",
+        "/announcements",
+        "/profile"
       ]
     },
     student: {
       label: "Ученик",
       isReadOnly: true,
-      defaultRoute: "#/schedule",
+      defaultRoute: "/schedule",
       items: [
-        { id: "nav-schedule", title: "Расписание", path: "#/schedule", icon: "calendar" },
-        { id: "nav-grades", title: "Оценки", path: "#/grades", icon: "award" },
-        { id: "nav-announcements", title: "Объявления", path: "#/announcements", icon: "megaphone" },
-        { id: "nav-profile", title: "Профиль", path: "#/profile", icon: "user" }
+        { id: "nav-schedule", title: "Расписание", path: "/schedule", icon: "calendar" },
+        { id: "nav-grades", title: "Оценки", path: "/grades", icon: "award" },
+        { id: "nav-announcements", title: "Объявления", path: "/announcements", icon: "megaphone" },
+        { id: "nav-profile", title: "Профиль", path: "/profile", icon: "user" }
       ],
       allowedRoutes: [
-        "#/schedule",
-        "#/grades",
-        "#/announcements",
-        "#/profile"
+        "/schedule",
+        "/grades",
+        "/announcements",
+        "/profile"
       ]
     },
     admin: {
       label: "Администратор",
-      defaultRoute: "#/accounts",
+      defaultRoute: "/accounts",
       items: [
-        { id: "nav-accounts", title: "Учётные записи", path: "#/accounts", icon: "shield" },
-        { id: "nav-teachers", title: "Учителя", path: "#/teachers", icon: "users" },
-        { id: "nav-directories", title: "Справочники", path: "#/directories", icon: "book" },
-        { id: "nav-workload", title: "Нагрузка", path: "#/workload", icon: "briefcase" },
-        { id: "nav-school-year", title: "Учебный год", path: "#/school-year", icon: "calendar" }
+        { id: "nav-accounts", title: "Учётные записи", path: "/accounts", icon: "shield" },
+        { id: "nav-teachers", title: "Учителя", path: "/teachers", icon: "users" },
+        { id: "nav-directories", title: "Справочники", path: "/directories", icon: "book" },
+        { id: "nav-workload", title: "Нагрузка", path: "/workload", icon: "briefcase" },
+        { id: "nav-school-year", title: "Учебный год", path: "/school-year", icon: "calendar" }
       ],
       allowedRoutes: [
-        "#/accounts",
-        "#/teachers",
-        "#/directories",
-        "#/workload",
-        "#/school-year",
-        "#/profile"
+        "/accounts",
+        "/teachers",
+        "/directories",
+        "/workload",
+        "/school-year",
+        "/profile"
       ]
     }
   };
   function isRouteAllowedForRole(role, route) {
     const cleanRoute = (route || "").split("?")[0];
-    if (cleanRoute === "#/login" || cleanRoute === "#/forbidden" || cleanRoute === "#/change-password") {
+    if (cleanRoute === "/login" || cleanRoute === "/forbidden" || cleanRoute === "/change-password") {
       return true;
     }
     const config = ROLE_NAVIGATION[role];
@@ -22707,7 +22707,70 @@
   }
   function getDefaultRouteForRole(role) {
     const config = ROLE_NAVIGATION[role];
-    return config ? config.defaultRoute : "#/login";
+    return config ? config.defaultRoute : "/login";
+  }
+
+  // src/services/navigation.js
+  var PUBLIC_ROUTES = ["login", "forbidden", "change-password"];
+  var routeNames = new Set(PUBLIC_ROUTES);
+  Object.values(ROLE_NAVIGATION).forEach((role) => {
+    (role.items || []).forEach((item) => routeNames.add(item.path.replace(/^\//, "")));
+    (role.allowedRoutes || []).forEach((route) => routeNames.add(route.replace(/^\//, "")));
+  });
+  var APP_BASE = "/";
+  function detectBase() {
+    let path = window.location.pathname;
+    if (path.endsWith("/index.html")) {
+      path = path.slice(0, -"index.html".length);
+    } else if (!path.endsWith("/")) {
+      path += "/";
+    }
+    const segments = path.split("/").filter(Boolean);
+    const last = segments[segments.length - 1];
+    if (last && routeNames.has(last)) {
+      path = path.slice(0, path.length - last.length - 1);
+    }
+    APP_BASE = path || "/";
+    return APP_BASE;
+  }
+  function currentPath() {
+    let path = window.location.pathname;
+    if (path.endsWith("/index.html")) {
+      path = path.slice(0, -"index.html".length);
+    } else if (!path.endsWith("/")) {
+      path += "/";
+    }
+    if (path.startsWith(APP_BASE)) {
+      path = path.slice(APP_BASE.length);
+    }
+    if (path === "/" || path === "") return "/";
+    return "/" + path.replace(/\/+$/, "");
+  }
+  function getRouteParams() {
+    return new URLSearchParams(window.location.search);
+  }
+  function buildUrl(pathWithQuery) {
+    let [path, search = ""] = String(pathWithQuery || "/").split("?");
+    if (!path.startsWith("/")) path = "/" + path;
+    if (path !== "/" && !path.endsWith("/")) path += "/";
+    return APP_BASE + (path === "/" ? "" : path.replace(/^\//, "")) + (search ? "?" + search : "");
+  }
+  function navigate(pathWithQuery) {
+    const url = buildUrl(pathWithQuery);
+    if (window.location.pathname + window.location.search !== url) {
+      window.history.pushState({}, "", url);
+    }
+    window.dispatchEvent(new Event("app:navigate"));
+  }
+  function replacePath(pathWithQuery) {
+    window.history.replaceState({}, "", buildUrl(pathWithQuery));
+    window.dispatchEvent(new Event("app:navigate"));
+  }
+  function replaceUrl(pathWithQuery) {
+    window.history.replaceState({}, "", buildUrl(pathWithQuery));
+  }
+  function hrefFor(pathWithQuery) {
+    return buildUrl(pathWithQuery);
   }
 
   // src/components/icons.js
@@ -22952,7 +23015,7 @@
         }
         return true;
       }
-      if (window.location.hash.includes(`key=${DEBUG_SECRET_KEY}`)) {
+      if (window.location.search.includes(`key=${DEBUG_SECRET_KEY}`)) {
         if (typeof sessionStorage !== "undefined") {
           sessionStorage.setItem(DEBUG_STORAGE_KEY, DEBUG_SECRET_KEY);
         }
@@ -22970,7 +23033,7 @@
   }
 
   // src/components/sidebar.js
-  function renderSidebar(currentUser, currentPath) {
+  function renderSidebar(currentUser, currentPath2) {
     if (!currentUser) return "";
     const roleConfig = ROLE_NAVIGATION[currentUser.role] || ROLE_NAVIGATION.teacher;
     const items = roleConfig.items || [];
@@ -22987,8 +23050,8 @@
       roleSubtitle = "Администратор школы";
     }
     const navHtml = items.map((item) => {
-      const isStudentDetail = item.path === "#/students" && (currentPath === "#/student" || currentPath === "#/student-summary");
-      const isActive = currentPath === item.path || isStudentDetail || item.path === roleConfig.defaultRoute && (!currentPath || currentPath === "#/" || currentPath === "");
+      const isStudentDetail = item.path === "/students" && (currentPath2 === "/student" || currentPath2 === "/student-summary");
+      const isActive = currentPath2 === item.path || isStudentDetail || item.path === roleConfig.defaultRoute && (!currentPath2 || currentPath2 === "/" || currentPath2 === "");
       const activeClasses = isActive ? "bg-brand-sidebarActive text-white shadow-sm" : "text-slate-300 hover:text-white hover:bg-brand-sidebarHover";
       return `
       <a href="${item.path}" id="${item.id}"
@@ -23055,7 +23118,7 @@
 
       <div class="p-3 border-t border-slate-800/80 bg-slate-900/40">
         <div class="flex items-center justify-between p-2 rounded-xl hover:bg-brand-sidebarHover/80 transition-colors">
-          <a href="#/profile" id="sidebar-profile-link" class="flex items-center space-x-3 overflow-hidden flex-1 group">
+          <a href="/profile" id="sidebar-profile-link" class="flex items-center space-x-3 overflow-hidden flex-1 group">
             <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-600 to-sky-500 flex items-center justify-center text-white font-semibold text-xs shadow-inner flex-shrink-0">
               ${initials}
             </div>
@@ -23078,13 +23141,23 @@
   `;
   }
   function setupSidebarListeners(onNavigate) {
+    const nav = document.getElementById("app-sidebar");
+    if (nav) {
+      nav.addEventListener("click", (e) => {
+        const link = e.target.closest('a[href^="/"]');
+        if (link) {
+          e.preventDefault();
+          navigate(link.getAttribute("href"));
+        }
+      });
+    }
     const logoutBtn = document.getElementById("btn-sidebar-logout");
     if (logoutBtn) {
       logoutBtn.addEventListener("click", (e) => {
         e.preventDefault();
         if (confirm("Вы действительно хотите выйти из системы?")) {
           logout();
-          window.location.replace("#/login");
+          navigate("/login");
         }
       });
     }
@@ -23094,22 +23167,22 @@
         const targetRole = e.target.value;
         const user = quickLoginAsRole(targetRole);
         if (user) {
-          const defRoute = ROLE_NAVIGATION[user.role]?.defaultRoute || "#/overview";
-          window.location.hash = defRoute;
+          const defRoute = ROLE_NAVIGATION[user.role]?.defaultRoute || "/overview";
+          navigate(defRoute);
           if (onNavigate) onNavigate(defRoute);
         }
       });
     }
   }
-  function updateSidebarActiveItem(currentPath) {
+  function updateSidebarActiveItem(currentPath2) {
     const sidebar = document.getElementById("app-sidebar");
     if (!sidebar) return;
     const links = sidebar.querySelectorAll("nav a[href]");
     links.forEach((link) => {
       const href = link.getAttribute("href");
-      const cleanPath = (currentPath || "").split("?")[0];
-      const isStudentDetail = href === "#/students" && (cleanPath === "#/student" || cleanPath === "#/student-summary");
-      const isActive = href === cleanPath || isStudentDetail || href === "#/overview" && (!cleanPath || cleanPath === "#/" || cleanPath === "");
+      const cleanPath = (currentPath2 || "").split("?")[0];
+      const isStudentDetail = href === "/students" && (cleanPath === "/student" || cleanPath === "/student-summary");
+      const isActive = href === cleanPath || isStudentDetail || href === "/overview" && (!cleanPath || cleanPath === "/" || cleanPath === "");
       if (isActive) {
         link.classList.remove("text-slate-300", "hover:text-white", "hover:bg-brand-sidebarHover");
         link.classList.add("bg-brand-sidebarActive", "text-white", "shadow-sm");
@@ -23121,8 +23194,8 @@
   }
 
   // src/components/layout.js
-  function renderLayout(currentUser, currentPath, contentHtml) {
-    if (currentPath === "#/login" || !currentUser) {
+  function renderLayout(currentUser, currentPath2, contentHtml) {
+    if (currentPath2 === "/login" || !currentUser) {
       return `
       <div id="auth-layout" class="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         ${contentHtml}
@@ -23131,7 +23204,7 @@
     }
     return `
     <div id="main-layout" class="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-800">
-      ${renderSidebar(currentUser, currentPath)}
+      ${renderSidebar(currentUser, currentPath2)}
 
       <main id="app-content" class="flex-1 overflow-y-auto p-6 lg:p-8 scrollbar-thin">
         <div class="max-w-7xl mx-auto">
@@ -23349,7 +23422,7 @@
         toCabinetBtn.addEventListener("click", (e) => {
           e.preventDefault();
           const defRoute = getDefaultRouteForRole(currentUser.role);
-          window.location.replace(defRoute);
+          navigate(defRoute);
         });
       }
       const switchBtn = document.getElementById("btn-login-switch-user");
@@ -23357,7 +23430,7 @@
         switchBtn.addEventListener("click", (e) => {
           e.preventDefault();
           logout();
-          window.location.replace("#/login");
+          navigate("/login");
         });
       }
       return;
@@ -23460,11 +23533,11 @@
           return;
         }
         if (res.mustChangePassword) {
-          window.location.replace("#/change-password");
+          navigate("/change-password");
           return;
         }
         const defRoute = getDefaultRouteForRole(res.user.role);
-        window.location.replace(defRoute);
+        navigate(defRoute);
       });
     }
     const demoButtons = document.querySelectorAll(".demo-role-btn");
@@ -23474,7 +23547,7 @@
         const user = quickLoginAsRole(roleKey);
         if (user) {
           const defRoute = getDefaultRouteForRole(user.role);
-          window.location.replace(defRoute);
+          navigate(defRoute);
         }
       });
     });
@@ -23986,7 +24059,7 @@
               <span class="text-slate-300 block text-[10px] leading-tight">Состав класса</span>
               <strong class="text-white font-semibold leading-tight">${boysCount} мал. / ${girlsCount} дев.</strong>
             </div>
-            <a href="#/students" class="h-10 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-sm shadow-brand-500/30 transition-all flex items-center space-x-1.5">
+            <a href="/students" class="h-10 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-sm shadow-brand-500/30 transition-all flex items-center space-x-1.5">
               <span>Список класса</span>
               ${renderIcon("arrow-right", "w-3.5 h-3.5 text-white/80")}
             </a>
@@ -24050,7 +24123,7 @@
           </div>
           <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
             <span class="text-slate-500">Требуют справки</span>
-            <a href="#/attendance?filter=unconfirmed" class="font-semibold text-brand-600 hover:text-brand-700 hover:underline">
+            <a href="/attendance?filter=unconfirmed" class="font-semibold text-brand-600 hover:text-brand-700 hover:underline">
               К журналу →
             </a>
           </div>
@@ -24093,7 +24166,7 @@
               </div>
 
               ${allProcessed ? `
-                <a href="#/analytics" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors flex items-center space-x-1.5 self-start sm:self-auto">
+                <a href="/analytics" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors flex items-center space-x-1.5 self-start sm:self-auto">
                   ${renderIcon("file-text", "w-3.5 h-3.5")}
                   <span>Сформировать отчёт</span>
                 </a>
@@ -24113,7 +24186,7 @@
                     <div class="text-emerald-700 mt-0.5">Контакты и заметки зафиксированы. Можно переходить к формированию отчёта.</div>
                   </div>
                 </div>
-                <a href="#/analytics" class="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs whitespace-nowrap">
+                <a href="/analytics" class="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs whitespace-nowrap">
                   К отчёту →
                 </a>
               </div>
@@ -24130,7 +24203,7 @@
                 ${renderIcon("calendar", "w-5 h-5 text-brand-600")}
                 <h2 class="text-base font-bold text-slate-900">Расписание на сегодня (Пн, 28 окт)</h2>
               </div>
-              <a href="#/schedule" class="text-xs font-semibold text-brand-600 hover:text-brand-700 hover:underline">
+              <a href="/schedule" class="text-xs font-semibold text-brand-600 hover:text-brand-700 hover:underline">
                 Расписание недели →
               </a>
             </div>
@@ -24211,7 +24284,7 @@
               <p class="text-xs text-slate-600 leading-relaxed mb-4">
                 Повестка: Успеваемость, предстоящие каникулы, экскурсионная поездка в музей.
               </p>
-              <a href="#/meetings" class="block w-full py-2.5 px-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs text-center shadow-sm shadow-brand-500/20 transition-colors">
+              <a href="/meetings" class="block w-full py-2.5 px-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs text-center shadow-sm shadow-brand-500/20 transition-colors">
                 Список участников →
               </a>
             </div>
@@ -24222,19 +24295,19 @@
               Быстрые действия
             </h2>
             <div class="space-y-2.5">
-              <a href="#/announcements" class="flex items-center justify-between p-3 rounded-xl border border-brand-200 bg-brand-50/50 hover:bg-brand-50 text-brand-700 text-xs font-semibold transition-colors">
+              <a href="/announcements" class="flex items-center justify-between p-3 rounded-xl border border-brand-200 bg-brand-50/50 hover:bg-brand-50 text-brand-700 text-xs font-semibold transition-colors">
                 <span>Новое объявление родителям</span>
                 ${renderIcon("arrow-right", "w-3.5 h-3.5 text-brand-500")}
               </a>
-              <a href="#/analytics" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors">
+              <a href="/analytics" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors">
                 <span>Сформировать отчёт 7Б</span>
                 ${renderIcon("arrow-right", "w-3.5 h-3.5 text-slate-400")}
               </a>
-              <a href="#/meetings" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors">
+              <a href="/meetings" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors">
                 <span>Создать собрание</span>
                 ${renderIcon("arrow-right", "w-3.5 h-3.5 text-slate-400")}
               </a>
-              <a href="#/attendance?filter=unconfirmed" class="flex items-center justify-between p-3 rounded-xl border border-amber-200/80 hover:bg-amber-50/40 text-amber-800 text-xs font-semibold transition-colors">
+              <a href="/attendance?filter=unconfirmed" class="flex items-center justify-between p-3 rounded-xl border border-amber-200/80 hover:bg-amber-50/40 text-amber-800 text-xs font-semibold transition-colors">
                 <span>Неподтверждённые пропуски (${unconfirmedCount})</span>
                 ${renderIcon("arrow-right", "w-3.5 h-3.5 text-amber-600")}
               </a>
@@ -24661,7 +24734,7 @@
         saveDB(db);
         closeContactModal();
         if (onNavigate) {
-          onNavigate("#/overview");
+          onNavigate("/overview");
         }
       });
     }
@@ -24727,7 +24800,7 @@
         saveDB(db);
         closeNoteModal();
         if (onNavigate) {
-          onNavigate("#/overview");
+          onNavigate("/overview");
         }
       });
     }
@@ -24923,7 +24996,7 @@
           } catch (err) {
             console.error("Logout error:", err);
           }
-          window.location.replace("#/login");
+          navigate("/login");
         }
       });
     }
@@ -24932,7 +25005,7 @@
   // src/views/forbidden.js
   function renderForbiddenView() {
     const user = getCurrentUser();
-    const returnRoute = user ? getDefaultRouteForRole(user.role) : "#/login";
+    const returnRoute = user ? getDefaultRouteForRole(user.role) : "/login";
     return `
     <div class="max-w-md mx-auto my-12 text-center animate-fadeIn p-8 bg-white rounded-2xl border border-slate-200/80 shadow-sm">
       <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 mb-5">
@@ -25069,8 +25142,7 @@
       { id: "w2", label: "09.09.2024 – 13.09.2024", from: "2024-09-09", to: "2024-09-13" },
       { id: "w1", label: "02.09.2024 – 06.09.2024", from: "2024-09-02", to: "2024-09-06" }
     ];
-    const hash = typeof window !== "undefined" && window.location.hash || "";
-    const queryString = hash.includes("?") ? hash.split("?")[1] : "";
+    const queryString = window.location.search || "";
     const urlParams = new URLSearchParams(queryString);
     const activeWeekId = options.weekId || urlParams.get("week") || "w8";
     const selectedWeek = weeks.find((w) => w.id === activeWeekId) || weeks[0];
@@ -25531,11 +25603,11 @@
     const selectWeek = document.getElementById("select-attendance-week");
     if (selectWeek) {
       selectWeek.addEventListener("change", () => {
-        const targetHash = `#/attendance?week=${selectWeek.value}`;
+        const targetHash = `/attendance?week=${selectWeek.value}`;
         if (onNavigate) {
           onNavigate(targetHash);
         } else {
-          window.location.hash = targetHash;
+          navigate(targetHash);
         }
       });
     }
@@ -25558,7 +25630,7 @@
           confirmedBy: "Смирнова М. В."
         });
         closeConfirmModal();
-        const currentHash = window.location.hash || "#/attendance";
+        const currentHash = "/attendance" + (window.location.search || "");
         if (onNavigate) {
           onNavigate(currentHash);
         } else {
@@ -25755,7 +25827,7 @@
         <td class="px-3.5 py-2.5 text-xs font-semibold text-slate-900 border-b border-slate-200 border-r border-slate-200 sticky left-0 bg-white group-hover:bg-slate-50 z-10 min-w-[210px] whitespace-nowrap shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
           <div class="flex items-center space-x-2.5">
             <span class="w-6 text-center text-slate-400 font-semibold flex-shrink-0">${idx + 1}</span>
-            <a href="#/overview?student=${s.id}" class="hover:text-brand-600 transition-colors truncate font-semibold text-slate-900">
+            <a href="/overview?student=${s.id}" class="hover:text-brand-600 transition-colors truncate font-semibold text-slate-900">
               ${s.fullName}
             </a>
           </div>
@@ -25786,7 +25858,7 @@
         </div>
 
         <div class="flex items-center space-x-2.5">
-          <a href="#/attendance"
+          <a href="/attendance"
              class="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors shadow-xs">
             ${renderIcon("check-square", "w-4 h-4 text-brand-500")}
             <span>Подтверждение пропусков</span>
@@ -26076,7 +26148,7 @@
                 <p class="text-[11px] text-slate-500 mt-0.5">Ученик класса · Полная сводка успеваемости</p>
               </div>
             </div>
-            <a id="entry-modal-student-link" href="#/overview" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-brand-50 text-brand-600 border border-slate-200 text-xs font-semibold transition-colors flex items-center space-x-1 flex-shrink-0 shadow-sm">
+            <a id="entry-modal-student-link" href="/overview" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-brand-50 text-brand-600 border border-slate-200 text-xs font-semibold transition-colors flex items-center space-x-1 flex-shrink-0 shadow-sm">
               <span>Профиль</span>
               ${renderIcon("external-link", "w-3.5 h-3.5")}
             </a>
@@ -26255,7 +26327,7 @@
     const btnToggleHighlight = document.getElementById("btn-toggle-highlight-unconfirmed");
     const tableContainer = document.getElementById("journal-table-container");
     function getUrlParams() {
-      const rawHash = window.location.hash || "#/journal";
+      const rawHash = "/journal" + (window.location.search || "");
       const queryString = rawHash.includes("?") ? rawHash.split("?")[1] : "";
       const params = new URLSearchParams(queryString);
       const unconfirmed = params.get("unconfirmed") === "true";
@@ -26285,11 +26357,11 @@
       if (merged.filterOnlyEntries) params.set("onlyEntries", "true");
       if (merged.searchQuery) params.set("search", merged.searchQuery);
       const queryStr = params.toString();
-      const newHash = queryStr ? `#/journal?${queryStr}` : "#/journal";
+      const newHash = queryStr ? `/journal?${queryStr}` : "/journal";
       if (onNavigate) {
         onNavigate(newHash);
       } else {
-        window.location.hash = newHash;
+        navigate(newHash);
       }
     }
     if (selectSubject) {
@@ -26520,7 +26592,7 @@
         elStudentAvatar.textContent = initials.toUpperCase();
       }
       if (elStudentLink && student) {
-        elStudentLink.href = `#/overview?student=${student.id}`;
+        elStudentLink.href = hrefFor(`/overview?student=${student.id}`);
       }
       if (elGrade) {
         if (grade) {
@@ -26692,7 +26764,7 @@
         });
         closeJournalConfirmModal();
         closeModal2();
-        const currentHash = window.location.hash || "#/journal";
+        const currentHash = "/journal" + (window.location.search || "");
         if (onNavigate) {
           onNavigate(currentHash);
         } else {
@@ -27301,7 +27373,7 @@
   function setupStudentsListeners(onNavigate) {
     let db = getDB();
     function getUrlParams() {
-      const rawHash = window.location.hash || "#/students";
+      const rawHash = "/students" + (window.location.search || "");
       const queryString = rawHash.includes("?") ? rawHash.split("?")[1] : "";
       const params = new URLSearchParams(queryString);
       return {
@@ -27355,8 +27427,8 @@
       if (state.sortOrder && state.sortOrder !== "asc") params.set("sortOrder", state.sortOrder);
       if (state.page && state.page > 1) params.set("page", String(state.page));
       const queryStr = params.toString();
-      const newHash = queryStr ? `#/students?${queryStr}` : "#/students";
-      window.history.replaceState(null, "", newHash);
+      const newHash = queryStr ? `/students?${queryStr}` : "/students";
+      replaceUrl(newHash);
     }
     function updateFilterAbsencesBtnUI() {
       if (!btnFilterAbsences) return;
@@ -27594,7 +27666,7 @@
         </button>
 
         <div class="flex items-center space-x-2">
-          <a href="#/student?id=${student.id}"
+          <a href="/student?id=${student.id}"
              class="py-2 px-3.5 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 font-semibold text-xs transition-colors inline-flex items-center space-x-1.5">
             <span>Полная сводка</span>
             ${renderIcon("chevron-right", "w-3.5 h-3.5 text-brand-600")}
@@ -28012,7 +28084,7 @@
         <h2 class="text-xl font-bold text-slate-900">Ученик не найден</h2>
         <p class="text-sm text-slate-500">Ученик с идентификатором «${studentId}» не зарегистрирован в системе или был удалён.</p>
         <div class="pt-2">
-          <a href="#/students" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition-colors">
+          <a href="/students" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition-colors">
             Вернуться к списку учеников
           </a>
         </div>
@@ -28080,9 +28152,9 @@
     return `
     <div id="student-summary-view" class="p-6 sm:p-8 max-w-7xl mx-auto space-y-6">
       <nav class="flex items-center space-x-2 text-xs font-medium text-slate-500">
-        <a href="#/overview" class="hover:text-brand-600 transition-colors">${isOtherClassStudent ? `Класс ${student.className || "9В"}` : "Класс 7Б"}</a>
+        <a href="/overview" class="hover:text-brand-600 transition-colors">${isOtherClassStudent ? `Класс ${student.className || "9В"}` : "Класс 7Б"}</a>
         <span class="text-slate-300">/</span>
-        <a href="${isOtherClassStudent && student.parentId ? `#/parent?id=${student.parentId}` : "#/students"}" class="hover:text-brand-600 transition-colors">${isOtherClassStudent ? "Родители" : "Ученики"}</a>
+        <a href="${isOtherClassStudent && student.parentId ? `/parent?id=${student.parentId}` : "/students"}" class="hover:text-brand-600 transition-colors">${isOtherClassStudent ? "Родители" : "Ученики"}</a>
         <span class="text-slate-300">/</span>
         <span class="text-slate-900 font-semibold truncate">${student.fullName}</span>
       </nav>
@@ -28093,7 +28165,7 @@
             ${renderIcon("alert", "w-4 h-4 text-amber-600")}
             <span>Данные ученика из другого класса (${student.className || "9В"}) доступны только для чтения</span>
           </div>
-          <a href="#/parent?id=${student.parentId || "pr-10"}" class="px-3.5 py-1.5 bg-amber-200/80 hover:bg-amber-300 rounded-xl transition-colors text-amber-950 font-bold">
+          <a href="/parent?id=${student.parentId || "pr-10"}" class="px-3.5 py-1.5 bg-amber-200/80 hover:bg-amber-300 rounded-xl transition-colors text-amber-950 font-bold">
             Вернуться к родителю
           </a>
         </div>
@@ -28661,8 +28733,7 @@
   `;
   }
   function setupStudentSummaryListeners(onNavigate) {
-    const hash = window.location.hash || "";
-    const queryString = hash.includes("?") ? hash.split("?")[1] : "";
+    const queryString = window.location.search || "";
     const params = new URLSearchParams(queryString);
     const studentId = params.get("id") || params.get("student") || "st-23";
     function showToast2(message, isSuccess = true) {
@@ -28796,7 +28867,7 @@
         closeContactModal();
         showToast2("Контакт с родителем успешно зафиксирован");
         if (onNavigate) {
-          onNavigate(window.location.hash || `#/student?id=${studentId}`);
+          onNavigate(window.location.search ? "/student" + window.location.search : `/student?id=${studentId}`);
         }
       });
     }
@@ -28871,7 +28942,7 @@
         closeNoteModal();
         showToast2("Педагогическая заметка сохранена");
         if (onNavigate) {
-          onNavigate(window.location.hash || `#/student?id=${studentId}`);
+          onNavigate(window.location.search ? "/student" + window.location.search : `/student?id=${studentId}`);
         }
       });
     }
@@ -28951,7 +29022,7 @@
         closeAbsenceModal();
         showToast2("Уважительная причина пропуска успешно подтверждена");
         if (onNavigate) {
-          onNavigate(window.location.hash || `#/student?id=${studentId}`);
+          onNavigate(window.location.search ? "/student" + window.location.search : `/student?id=${studentId}`);
         }
       });
     }
@@ -29101,7 +29172,7 @@
       let childrenHtml = "—";
       if (row.children.length > 0) {
         childrenHtml = row.children.map((c) => `
-                      <a href="#/student?id=${c.student ? c.student.id : ""}"
+                      <a href="/student?id=${c.student ? c.student.id : ""}"
                          class="text-brand-600 hover:text-brand-700 font-semibold hover:underline block truncate max-w-xs">
                         ${c.student ? c.student.fullName : "Ученик"} (7Б)
                       </a>
@@ -29510,7 +29581,7 @@
       }, 2500);
     }
     function updateQueryUrl(newParams = {}) {
-      const hash = window.location.hash || "#/parents";
+      const hash = "/parents" + (window.location.search || "");
       const [path, qs] = hash.split("?");
       const params = new URLSearchParams(qs || "");
       Object.entries(newParams).forEach(([k, v]) => {
@@ -29525,7 +29596,7 @@
       if (onNavigate) {
         onNavigate(newHash);
       } else {
-        window.location.hash = newHash;
+        navigate(newHash);
       }
     }
     if (inputSearch) {
@@ -29565,7 +29636,7 @@
     const btnNext = document.getElementById("btn-parents-next-page");
     if (btnPrev && !btnPrev.disabled) {
       btnPrev.addEventListener("click", () => {
-        const hash = window.location.hash || "";
+        const hash = "/parents" + (window.location.search || "");
         const params = new URLSearchParams(hash.includes("?") ? hash.split("?")[1] : "");
         const curPage = parseInt(params.get("page") || "1", 10);
         if (curPage > 1) updateQueryUrl({ page: curPage - 1 });
@@ -29573,7 +29644,7 @@
     }
     if (btnNext && !btnNext.disabled) {
       btnNext.addEventListener("click", () => {
-        const hash = window.location.hash || "";
+        const hash = "/parents" + (window.location.search || "");
         const params = new URLSearchParams(hash.includes("?") ? hash.split("?")[1] : "");
         const curPage = parseInt(params.get("page") || "1", 10);
         updateQueryUrl({ page: curPage + 1 });
@@ -29597,9 +29668,9 @@
       btn.addEventListener("click", () => {
         const parentId = btn.getAttribute("data-parent-id");
         if (parentId) {
-          const targetHash = `#/parent?id=${parentId}`;
+          const targetHash = `/parent?id=${parentId}`;
           if (onNavigate) onNavigate(targetHash);
-          else window.location.hash = targetHash;
+          else navigate(targetHash);
         }
       });
     });
@@ -29855,9 +29926,9 @@
     return `
     <div class="space-y-6 animate-fadeIn pb-12">
       <nav class="flex items-center space-x-2 text-xs font-semibold text-slate-500">
-        <a href="#/overview" class="hover:text-brand-600 transition-colors">Класс 7Б</a>
+        <a href="/overview" class="hover:text-brand-600 transition-colors">Класс 7Б</a>
         <span class="text-slate-300">/</span>
-        <a href="#/parents" class="hover:text-brand-600 transition-colors">Родители</a>
+        <a href="/parents" class="hover:text-brand-600 transition-colors">Родители</a>
         <span class="text-slate-300">/</span>
         <span class="text-slate-800 font-bold">${parent.fullName}</span>
       </nav>
@@ -29929,7 +30000,7 @@
                     </div>
                   </div>
                   <div>
-                    <a href="#/student?id=${c.student?.id || ""}"
+                    <a href="/student?id=${c.student?.id || ""}"
                        class="px-3.5 py-1.5 rounded-xl border ${c.isOtherClass ? "border-slate-200 hover:bg-slate-100 text-slate-700" : "border-brand-200 hover:bg-brand-50 text-brand-700"} font-semibold text-xs transition-colors inline-block">
                       Открыть сводку по ученику
                     </a>
@@ -29973,7 +30044,7 @@
                   ` : ""}
                 </div>
                 <div class="shrink-0">
-                  <a href="#/student?id=${rc.student.id}"
+                  <a href="/student?id=${rc.student.id}"
                      class="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs transition-colors shadow-2xs">
                     <span>Сводка по ученику</span>
                     ${renderIcon("chevron-right", "w-3.5 h-3.5")}
@@ -30338,7 +30409,7 @@
         closeContactModal();
         showSummaryToast("Контакт успешно зафиксирован");
         setTimeout(() => {
-          const hash = window.location.hash || "#/parents";
+          const hash = currentPath() + (window.location.search || "");
           if (onNavigate) onNavigate(hash);
           else window.location.reload();
         }, 200);
@@ -30390,7 +30461,7 @@
           closeLinkModal();
           showSummaryToast("Связь с учеником успешно создана");
           setTimeout(() => {
-            const hash = window.location.hash || "#/parents";
+            const hash = currentPath() + (window.location.search || "");
             if (onNavigate) onNavigate(hash);
             else window.location.reload();
           }, 200);
@@ -30438,7 +30509,7 @@
           closeUnlinkModal();
           showSummaryToast("Связь с учеником удалена");
           setTimeout(() => {
-            const hash = window.location.hash || "#/parents";
+            const hash = currentPath() + (window.location.search || "");
             if (onNavigate) onNavigate(hash);
             else window.location.reload();
           }, 200);
@@ -30666,7 +30737,7 @@
               ${riskStudents.map((st) => `
                 <div class="p-4 rounded-2xl border ${st.riskLevel === "critical" ? "border-rose-200 bg-rose-50/40" : "border-amber-200 bg-amber-50/40"} space-y-2">
                   <div class="flex items-center justify-between">
-                    <a href="#/student?id=${st.studentId}" class="text-xs font-bold text-slate-900 hover:text-brand-600 hover:underline">
+                    <a href="/student?id=${st.studentId}" class="text-xs font-bold text-slate-900 hover:text-brand-600 hover:underline">
                       ${st.name}
                     </a>
                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${st.riskLevel === "critical" ? "bg-rose-100 text-rose-800" : "bg-amber-100 text-amber-800"}">
@@ -30713,7 +30784,7 @@
                     <tr class="hover:bg-slate-50 transition-colors">
                       <td class="py-2 px-3 text-slate-600">${a.date || "—"}</td>
                       <td class="py-2 px-3 font-medium text-slate-900">
-                        <a href="#/student?id=${a.studentId}" class="hover:text-brand-600 hover:underline">
+                        <a href="/student?id=${a.studentId}" class="hover:text-brand-600 hover:underline">
                           ${st ? st.fullName : a.studentId}
                         </a>
                       </td>
@@ -30820,7 +30891,7 @@
               <div class="text-xs text-rose-900 leading-relaxed font-medium">
                 ${criticalRisk.length > 0 ? criticalRisk.map((s, idx) => {
       const reasonShort = s.reasons.some((r) => r.type === "absence") ? "пропуски" : "оценки";
-      return `<a href="#/student?id=${s.studentId}" class="font-bold underline hover:text-rose-700">${s.shortName || s.name.split(" ")[0] + " " + (s.name.split(" ")[1] ? s.name.split(" ")[1][0] + "." : "")}</a> (${reasonShort})${idx < criticalRisk.length - 1 ? ", " : ""}`;
+      return `<a href="/student?id=${s.studentId}" class="font-bold underline hover:text-rose-700">${s.shortName || s.name.split(" ")[0] + " " + (s.name.split(" ")[1] ? s.name.split(" ")[1][0] + "." : "")}</a> (${reasonShort})${idx < criticalRisk.length - 1 ? ", " : ""}`;
     }).join("") : "Нет учеников в группе критического риска"}
               </div>
             </div>
@@ -30875,7 +30946,7 @@
         const selectedPeriod = periodSelect.value;
         const isReportOpen = reportContainer && !reportContainer.classList.contains("hidden");
         if (onNavigate) {
-          onNavigate(`#/analytics?periodId=${selectedPeriod}${isReportOpen ? "&showReport=true" : ""}`);
+          onNavigate(`/analytics?periodId=${selectedPeriod}${isReportOpen ? "&showReport=true" : ""}`);
         }
       });
     }
@@ -31204,8 +31275,7 @@
       }, 3200);
     }
     function readParams() {
-      const hash = window.location.hash || "";
-      const queryString = hash.includes("?") ? hash.split("?")[1] : "";
+      const queryString = window.location.search || "";
       return new URLSearchParams(queryString);
     }
     function syncRoute() {
@@ -31214,7 +31284,7 @@
       if (state.filterRole && state.filterRole !== "all") params2.set("role", state.filterRole);
       if (state.page > 1) params2.set("page", String(state.page));
       const queryStr = params2.toString();
-      window.history.replaceState(null, "", queryStr ? `#/accounts?${queryStr}` : "#/accounts");
+      replaceUrl(queryStr ? `/accounts?${queryStr}` : "/accounts");
     }
     function getCurrentUserId() {
       try {
@@ -31722,14 +31792,14 @@
           return;
         }
         const defRoute = getDefaultRouteForRole(currentUser.role);
-        window.location.replace(defRoute);
+        navigate(defRoute);
       });
     }
     const logoutBtn = document.getElementById("btn-cp-logout");
     if (logoutBtn) {
       logoutBtn.addEventListener("click", () => {
         logout();
-        window.location.replace("#/login");
+        navigate("/login");
       });
     }
   }
@@ -31925,7 +31995,7 @@
   function teacherCardHtml(card) {
     const { teacher, account, workload, totalHours, classNames } = card;
     const statusBadge = teacher.status === "active" ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700">Работает</span>` : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-200 text-slate-600">В архиве</span>`;
-    const accountBlock = account ? `<a href="#/accounts?search=${encodeURIComponent(account.username)}" data-action="open-account" data-login="${escapeHtml2(account.username)}"
+    const accountBlock = account ? `<a href="/accounts?search=${encodeURIComponent(account.username)}" data-action="open-account" data-login="${escapeHtml2(account.username)}"
           class="group flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-brand-50/70 border border-brand-200/70 hover:bg-brand-50 hover:border-brand-300 transition-colors">
         <span class="min-w-0">
           <span class="block text-[11px] font-semibold text-slate-500">Учётная запись</span>
@@ -31939,7 +32009,7 @@
           <span class="block text-[11px] font-semibold text-slate-500">Учётная запись</span>
           <span class="block text-xs font-medium text-amber-700">не создана</span>
         </span>
-        <a href="#/accounts" data-action="create-account" class="flex-shrink-0 text-[11px] font-semibold text-amber-700 hover:text-amber-800 hover:underline whitespace-nowrap">Создать</a>
+        <a href="/accounts" data-action="create-account" class="flex-shrink-0 text-[11px] font-semibold text-amber-700 hover:text-amber-800 hover:underline whitespace-nowrap">Создать</a>
       </div>`;
     const workloadRows = workload.map((w) => `
     <tr class="border-b border-slate-100 last:border-0">
@@ -32005,7 +32075,7 @@
             <tbody>${workloadRows}</tbody>
           </table>
         </div>
-        <a href="#/workload" data-action="open-workload"
+        <a href="/workload" data-action="open-workload"
            class="mt-2.5 flex items-center justify-center gap-1.5 text-[11px] font-semibold text-brand-600 hover:text-brand-700 hover:underline">
           Перейти в раздел «Нагрузка»
           ${renderIcon("arrow-right", "w-3.5 h-3.5")}
@@ -32039,8 +32109,7 @@
       }, 3200);
     }
     function readParams() {
-      const hash = window.location.hash || "";
-      const queryString = hash.includes("?") ? hash.split("?")[1] : "";
+      const queryString = window.location.search || "";
       return new URLSearchParams(queryString);
     }
     function syncRoute() {
@@ -32049,7 +32118,7 @@
       if (state.filterSubject !== "all") params2.set("subject", state.filterSubject);
       if (state.filterAccount !== "all") params2.set("account", state.filterAccount);
       const queryStr = params2.toString();
-      window.history.replaceState(null, "", queryStr ? `#/teachers?${queryStr}` : "#/teachers");
+      replaceUrl(queryStr ? `/teachers?${queryStr}` : "/teachers");
     }
     function renderCards() {
       if (!cardsArea) return;
@@ -32638,8 +32707,8 @@
       if (state.filterSubject !== "all") params.set("subject", state.filterSubject);
       if (state.filterClass !== "all") params.set("class", state.filterClass);
       const queryStr = params.toString();
-      const newHash = queryStr ? `#/workload?${queryStr}` : "#/workload";
-      window.history.replaceState(null, "", newHash);
+      const newHash = queryStr ? `/workload?${queryStr}` : "/workload";
+      replaceUrl(newHash);
     }
     function showToast2(message, isError = false) {
       if (!toast || !toastMessage) return;
@@ -33319,7 +33388,7 @@
   function closeAllModals() {
     ["modal-add-year", "modal-edit-year", "modal-edit-quarter", "modal-edit-vacation"].forEach((id) => closeModal(id));
   }
-  function setupSchoolYearListeners(navigate) {
+  function setupSchoolYearListeners(navigate2) {
     const view = document.getElementById("school-year-view");
     if (!view) return;
     function getCurrentSelectedYearId() {
@@ -33660,22 +33729,20 @@
 
   // src/router.js
   var ROUTE_HANDLERS = {
-    "#/login": {
+    "/login": {
       title: "Вход в систему",
       render: () => renderLoginView(),
-      setup: (navigate) => setupLoginListeners((user, targetRoute) => navigate(targetRoute))
+      setup: (navigate2) => setupLoginListeners((user, targetRoute) => navigate2(targetRoute))
     },
-    "#/overview": {
+    "/overview": {
       title: "Обзор класса",
       render: () => renderOverviewView(),
-      setup: (navigate) => setupOverviewListeners(navigate)
+      setup: (navigate2) => setupOverviewListeners(navigate2)
     },
-    "#/students": {
+    "/students": {
       title: "Ученики",
       render: () => {
-        const hash = window.location.hash || "";
-        const queryString = hash.includes("?") ? hash.split("?")[1] : "";
-        const params = new URLSearchParams(queryString);
+        const params = getRouteParams();
         return renderStudentsView({
           periodId: params.get("period") || "q1_2024",
           searchQuery: params.get("search") || "",
@@ -33686,40 +33753,34 @@
           studentModalId: params.get("student") || null
         });
       },
-      setup: (navigate) => setupStudentsListeners(navigate)
+      setup: (navigate2) => setupStudentsListeners(navigate2)
     },
-    "#/student": {
+    "/student": {
       title: "Сводка ученика",
       render: () => {
-        const hash = window.location.hash || "";
-        const queryString = hash.includes("?") ? hash.split("?")[1] : "";
-        const params = new URLSearchParams(queryString);
+        const params = getRouteParams();
         return renderStudentSummaryView({
           studentId: params.get("id") || params.get("student") || "st-23",
           periodId: params.get("period") || "q1_2024"
         });
       },
-      setup: (navigate) => setupStudentSummaryListeners(navigate)
+      setup: (navigate2) => setupStudentSummaryListeners(navigate2)
     },
-    "#/student-summary": {
+    "/student-summary": {
       title: "Сводка ученика",
       render: () => {
-        const hash = window.location.hash || "";
-        const queryString = hash.includes("?") ? hash.split("?")[1] : "";
-        const params = new URLSearchParams(queryString);
+        const params = getRouteParams();
         return renderStudentSummaryView({
           studentId: params.get("id") || params.get("student") || "st-23",
           periodId: params.get("period") || "q1_2024"
         });
       },
-      setup: (navigate) => setupStudentSummaryListeners(navigate)
+      setup: (navigate2) => setupStudentSummaryListeners(navigate2)
     },
-    "#/journal": {
+    "/journal": {
       title: "Журнал класса",
       render: () => {
-        const hash = window.location.hash || "";
-        const queryString = hash.includes("?") ? hash.split("?")[1] : "";
-        const params = new URLSearchParams(queryString);
+        const params = getRouteParams();
         const unconfirmed = params.get("unconfirmed") === "true";
         const absences = params.get("absences") === "true";
         const statusParam = params.get("status") || (unconfirmed ? "unconfirmed" : absences ? "absences" : "all");
@@ -33733,117 +33794,107 @@
           searchQuery: params.get("search") || ""
         });
       },
-      setup: (navigate) => setupJournalListeners(navigate)
+      setup: (navigate2) => setupJournalListeners(navigate2)
     },
-    "#/attendance": {
+    "/attendance": {
       title: "Посещаемость",
       render: () => renderAttendanceView(),
-      setup: (navigate) => setupAttendanceListeners(navigate)
+      setup: (navigate2) => setupAttendanceListeners(navigate2)
     },
-    "#/schedule": {
+    "/schedule": {
       title: "Расписание",
-      render: () => renderPlaceholderView("Расписание", "Расписание уроков и звонков на учебную неделю", "#/schedule"),
+      render: () => renderPlaceholderView("Расписание", "Расписание уроков и звонков на учебную неделю", "/schedule"),
       setup: () => {
       }
     },
-    "#/parents": {
+    "/parents": {
       title: "Родители",
       render: () => {
-        const hash = window.location.hash || "";
-        const queryString = hash.includes("?") ? hash.split("?")[1] : "";
-        const params = new URLSearchParams(queryString);
+        const params = getRouteParams();
         return renderParentsView({
           searchQuery: params.get("search") || "",
           filterLink: params.get("filter") || "all",
           page: params.get("page") || "1"
         });
       },
-      setup: (navigate) => setupParentsListeners(navigate)
+      setup: (navigate2) => setupParentsListeners(navigate2)
     },
-    "#/parent": {
+    "/parent": {
       title: "Сводка по родителю",
       render: () => {
-        const hash = window.location.hash || "";
-        const queryString = hash.includes("?") ? hash.split("?")[1] : "";
-        const params = new URLSearchParams(queryString);
+        const params = getRouteParams();
         return renderParentSummaryView({
           parentId: params.get("id") || params.get("parent") || "pr-23"
         });
       },
-      setup: (navigate) => setupParentSummaryListeners(navigate)
+      setup: (navigate2) => setupParentSummaryListeners(navigate2)
     },
-    "#/parent-summary": {
+    "/parent-summary": {
       title: "Сводка по родителю",
       render: () => {
-        const hash = window.location.hash || "";
-        const queryString = hash.includes("?") ? hash.split("?")[1] : "";
-        const params = new URLSearchParams(queryString);
+        const params = getRouteParams();
         return renderParentSummaryView({
           parentId: params.get("id") || params.get("parent") || "pr-23"
         });
       },
-      setup: (navigate) => setupParentSummaryListeners(navigate)
+      setup: (navigate2) => setupParentSummaryListeners(navigate2)
     },
-    "#/meetings": {
+    "/meetings": {
       title: "Собрания",
-      render: () => renderPlaceholderView("Собрания", "Родительские собрания, повестка, протоколы и опросы", "#/meetings"),
+      render: () => renderPlaceholderView("Собрания", "Родительские собрания, повестка, протоколы и опросы", "/meetings"),
       setup: () => {
       }
     },
-    "#/announcements": {
+    "/announcements": {
       title: "Объявления",
-      render: () => renderPlaceholderView("Объявления", "Информационные сообщения и объявления для родителей", "#/announcements"),
+      render: () => renderPlaceholderView("Объявления", "Информационные сообщения и объявления для родителей", "/announcements"),
       setup: () => {
       }
     },
-    "#/analytics": {
+    "/analytics": {
       title: "Аналитика",
       render: () => {
-        const hash = window.location.hash || "";
-        const queryString = hash.includes("?") ? hash.split("?")[1] : "";
-        const params = new URLSearchParams(queryString);
+        const params = getRouteParams();
         return renderAnalyticsView({
           periodId: params.get("periodId") || params.get("period") || "q1_2024",
           showReport: params.get("showReport") === "true"
         });
       },
-      setup: (navigate) => setupAnalyticsListeners(navigate)
+      setup: (navigate2) => setupAnalyticsListeners(navigate2)
     },
-    "#/profile": {
+    "/profile": {
       title: "Мой профиль",
       render: () => renderProfileView(),
-      setup: (navigate) => setupProfileListeners(navigate)
+      setup: (navigate2) => setupProfileListeners(navigate2)
     },
-    "#/forbidden": {
+    "/forbidden": {
       title: "Доступ ограничен",
       render: () => renderForbiddenView(),
       setup: () => {
       }
     },
-    "#/classes": {
+    "/classes": {
       title: "Мои классы",
-      render: () => renderPlaceholderView("Мои классы", "Классы с учебной нагрузкой учителя (7Б, 8А, 9В)", "#/classes"),
+      render: () => renderPlaceholderView("Мои классы", "Классы с учебной нагрузкой учителя (7Б, 8А, 9В)", "/classes"),
       setup: () => {
       }
     },
-    "#/child": {
+    "/child": {
       title: "Ребёнок",
-      render: () => renderPlaceholderView("Ребёнок", "Карточка успеваемости и посещаемости ученика (Петрова Анна)", "#/child"),
+      render: () => renderPlaceholderView("Ребёнок", "Карточка успеваемости и посещаемости ученика (Петрова Анна)", "/child"),
       setup: () => {
       }
     },
-    "#/grades": {
+    "/grades": {
       title: "Оценки",
-      render: () => renderPlaceholderView("Оценки", "Текущие оценки и средний балл по четвертям", "#/grades"),
+      render: () => renderPlaceholderView("Оценки", "Текущие оценки и средний балл по четвертям", "/grades"),
       setup: () => {
       }
     },
-    "#/accounts": {
+    "/accounts": {
       title: "Учётные записи",
       render: () => {
-        const hash = window.location.hash || "";
-        const queryString = hash.includes("?") ? hash.split("?")[1] : "";
-        const params = new URLSearchParams(queryString);
+        const params = getRouteParams();
         const currentUser = getCurrentUser();
         return renderAccountsView({
           searchQuery: params.get("search") || "",
@@ -33852,39 +33903,35 @@
           currentUserId: currentUser ? currentUser.id : null
         });
       },
-      setup: (navigate) => setupAccountsListeners(navigate)
+      setup: (navigate2) => setupAccountsListeners(navigate2)
     },
-    "#/change-password": {
+    "/change-password": {
       title: "Смена временного пароля",
       render: () => renderChangePasswordView(),
-      setup: (navigate) => setupChangePasswordListeners(navigate)
+      setup: (navigate2) => setupChangePasswordListeners(navigate2)
     },
-    "#/teachers": {
+    "/teachers": {
       title: "Учителя",
       render: () => {
-        const hash = window.location.hash || "";
-        const queryString = hash.includes("?") ? hash.split("?")[1] : "";
-        const params = new URLSearchParams(queryString);
+        const params = getRouteParams();
         return renderTeachersView({
           searchQuery: params.get("search") || "",
           filterSubject: params.get("subject") || "all",
           filterAccount: params.get("account") || "all"
         });
       },
-      setup: (navigate) => setupTeachersListeners(navigate)
+      setup: (navigate2) => setupTeachersListeners(navigate2)
     },
-    "#/directories": {
+    "/directories": {
       title: "Справочники",
-      render: () => renderPlaceholderView("Справочники", "Справочники предметов, кабинетов и причин отсутствия", "#/directories"),
+      render: () => renderPlaceholderView("Справочники", "Справочники предметов, кабинетов и причин отсутствия", "/directories"),
       setup: () => {
       }
     },
-    "#/workload": {
+    "/workload": {
       title: "Нагрузка",
       render: () => {
-        const hash = window.location.hash || "";
-        const queryString = hash.includes("?") ? hash.split("?")[1] : "";
-        const params = new URLSearchParams(queryString);
+        const params = getRouteParams();
         return renderWorkloadView({
           searchQuery: params.get("search") || "",
           filterSubject: params.get("subject") || "all",
@@ -33893,17 +33940,15 @@
       },
       setup: () => setupWorkloadListeners()
     },
-    "#/school-year": {
+    "/school-year": {
       title: "Учебный год",
       render: () => {
-        const hash = window.location.hash || "";
-        const queryString = hash.includes("?") ? hash.split("?")[1] : "";
-        const params = new URLSearchParams(queryString);
+        const params = getRouteParams();
         return renderSchoolYearView({
           yearId: params.get("year") || null
         });
       },
-      setup: (navigate) => setupSchoolYearListeners(navigate)
+      setup: (navigate2) => setupSchoolYearListeners(navigate2)
     }
   };
   var Router = class {
@@ -33913,17 +33958,14 @@
       this.lastUserRole = null;
     }
     init() {
-      window.addEventListener("hashchange", () => this.handleRoute());
-      window.addEventListener("pageshow", () => this.handleRoute());
+      detectBase();
+      window.addEventListener("app:navigate", () => this.handleRoute());
+      window.addEventListener("popstate", () => this.handleRoute());
       window.addEventListener("load", () => this.handleRoute());
       this.handleRoute();
     }
-    navigate(hash) {
-      if (window.location.hash !== hash) {
-        window.location.hash = hash;
-      } else {
-        this.handleRoute();
-      }
+    navigate(pathWithQuery) {
+      navigate(pathWithQuery);
     }
     handleRoute() {
       if (this._isRouting) return;
@@ -33935,29 +33977,22 @@
       }
     }
     _processRoute() {
-      const rawHash = window.location.hash || "";
-      const cleanHash = rawHash.split("?")[0];
+      const path = currentPath();
       const user = getCurrentUser();
-      let activeHash = cleanHash;
+      let activePath = path;
       if (!user) {
-        if (cleanHash !== "#/login") {
-          if (window.location.hash !== "#/login") {
-            window.location.replace("#/login");
-          }
-          activeHash = "#/login";
+        if (path !== "/login") {
+          replacePath("/login");
+          activePath = "/login";
         }
-      } else {
-        if (cleanHash === "#/login" || cleanHash === "#/" || cleanHash === "") {
-          const defRoute = getDefaultRouteForRole(user.role);
-          if (window.location.hash !== defRoute) {
-            window.location.replace(defRoute);
-          }
-          activeHash = defRoute;
-        } else if (!isRouteAllowedForRole(user.role, cleanHash)) {
-          activeHash = "#/forbidden";
-        }
+      } else if (path === "/login" || path === "/") {
+        const defRoute = getDefaultRouteForRole(user.role);
+        replacePath(defRoute);
+        activePath = defRoute;
+      } else if (!isRouteAllowedForRole(user.role, path)) {
+        activePath = "/forbidden";
       }
-      const handler = ROUTE_HANDLERS[activeHash] || {
+      const handler = ROUTE_HANDLERS[activePath] || {
         title: "Страница не найдена",
         render: () => renderForbiddenView(),
         setup: () => {
@@ -33968,7 +34003,7 @@
       const rootEl = document.getElementById(this.rootElementId);
       if (!rootEl) return;
       const existingMainLayout = rootEl.querySelector("#main-layout");
-      const isAuthRoute = activeHash === "#/login" || !user;
+      const isAuthRoute = activePath === "/login" || !user;
       const isSameUserAndRole = user && this.lastUserId === user.id && this.lastUserRole === user.role;
       if (existingMainLayout && !isAuthRoute && isSameUserAndRole) {
         const appContentContainer = rootEl.querySelector("#app-content > div");
@@ -33979,14 +34014,14 @@
         if (appContent) {
           appContent.scrollTop = 0;
         }
-        updateSidebarActiveItem(activeHash);
+        updateSidebarActiveItem(activePath);
         if (handler.setup) {
           handler.setup((h) => this.navigate(h));
         }
       } else {
         this.lastUserId = user ? user.id : null;
         this.lastUserRole = user ? user.role : null;
-        const fullHtml = renderLayout(user, activeHash, contentHtml);
+        const fullHtml = renderLayout(user, activePath, contentHtml);
         rootEl.innerHTML = fullHtml;
         setupLayoutListeners((h) => this.navigate(h));
         if (handler.setup) {
@@ -33998,6 +34033,13 @@
   var router = new Router("app");
 
   // src/app.js
+  document.addEventListener("click", (e) => {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const link = e.target.closest('a[href^="/"]');
+    if (!link) return;
+    e.preventDefault();
+    navigate(link.getAttribute("href"));
+  });
   getDB();
   document.addEventListener("focusout", (e) => {
     const el = e.target;

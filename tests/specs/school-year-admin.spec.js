@@ -2,7 +2,7 @@ import { test, expect } from '../fixtures/base-test.js';
 import { LoginPage } from '../page-objects/LoginPage.js';
 
 async function openSchoolYearAsAdmin(page) {
-  await page.goto('index.html#/login');
+  await page.goto('login');
   await page.evaluate(() => {
     try {
       localStorage.removeItem('classroom_crm_session');
@@ -11,8 +11,8 @@ async function openSchoolYearAsAdmin(page) {
   const loginPage = new LoginPage(page);
   await loginPage.goto();
   await loginPage.loginAs('admin');
-  await page.waitForURL(/#\/accounts/, { timeout: 7000 });
-  await page.goto('index.html#/school-year');
+  await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
+  await page.goto('school-year');
   await expect(page.locator('h1')).toContainText('Учебный год');
 }
 
@@ -22,13 +22,13 @@ test.describe('Админ: страница «Учебный год» (TC-SY, н
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('admin');
-    await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+    await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
 
     const menuLink = page.locator('#nav-school-year');
     await expect(menuLink).toBeVisible();
     await menuLink.click();
 
-    await page.waitForURL(/#\/school-year/, { timeout: 7000 });
+    await page.waitForURL(/\/school-year\/?/, { timeout: 7000 });
     await expect(page.locator('h1')).toContainText('Учебный год');
     await expect(page.locator('#school-year-view')).toBeVisible();
   });

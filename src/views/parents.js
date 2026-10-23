@@ -15,6 +15,7 @@
 import { getDB, saveDB, addParent, updateParent, deleteParent, linkParentToStudent, unlinkParentFromStudent } from '../services/storage.js';
 import { renderIcon } from '../components/icons.js';
 import { calculateStudentAttendance, calculateStudentAverage, getRiskZoneStudents } from '../mock/calculations.js';
+import { navigate, currentPath } from '../services/navigation.js';
 
 export function renderParentsView(options = {}) {
   const db = getDB();
@@ -176,7 +177,7 @@ export function renderParentsView(options = {}) {
     let childrenHtml = '—';
     if (row.children.length > 0) {
       childrenHtml = row.children.map(c => `
-                      <a href="#/student?id=${c.student ? c.student.id : ''}"
+                      <a href="/student?id=${c.student ? c.student.id : ''}"
                          class="text-brand-600 hover:text-brand-700 font-semibold hover:underline block truncate max-w-xs">
                         ${c.student ? c.student.fullName : 'Ученик'} (7Б)
                       </a>
@@ -595,7 +596,7 @@ export function setupParentsListeners(onNavigate) {
   }
 
   function updateQueryUrl(newParams = {}) {
-    const hash = window.location.hash || '#/parents';
+    const hash = '/parents' + (window.location.search || '');
     const [path, qs] = hash.split('?');
     const params = new URLSearchParams(qs || '');
 
@@ -612,7 +613,7 @@ export function setupParentsListeners(onNavigate) {
     if (onNavigate) {
       onNavigate(newHash);
     } else {
-      window.location.hash = newHash;
+      navigate(newHash);
     }
   }
 
@@ -658,7 +659,7 @@ export function setupParentsListeners(onNavigate) {
   const btnNext = document.getElementById('btn-parents-next-page');
   if (btnPrev && !btnPrev.disabled) {
     btnPrev.addEventListener('click', () => {
-      const hash = window.location.hash || '';
+      const hash = '/parents' + (window.location.search || '');
       const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
       const curPage = parseInt(params.get('page') || '1', 10);
       if (curPage > 1) updateQueryUrl({ page: curPage - 1 });
@@ -666,7 +667,7 @@ export function setupParentsListeners(onNavigate) {
   }
   if (btnNext && !btnNext.disabled) {
     btnNext.addEventListener('click', () => {
-      const hash = window.location.hash || '';
+      const hash = '/parents' + (window.location.search || '');
       const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
       const curPage = parseInt(params.get('page') || '1', 10);
       updateQueryUrl({ page: curPage + 1 });
@@ -693,9 +694,9 @@ export function setupParentsListeners(onNavigate) {
     btn.addEventListener('click', () => {
       const parentId = btn.getAttribute('data-parent-id');
       if (parentId) {
-        const targetHash = `#/parent?id=${parentId}`;
+        const targetHash = `/parent?id=${parentId}`;
         if (onNavigate) onNavigate(targetHash);
-        else window.location.hash = targetHash;
+        else navigate(targetHash);
       }
     });
   });
@@ -985,9 +986,9 @@ export function renderParentSummaryView(options = {}) {
   return `
     <div class="space-y-6 animate-fadeIn pb-12">
       <nav class="flex items-center space-x-2 text-xs font-semibold text-slate-500">
-        <a href="#/overview" class="hover:text-brand-600 transition-colors">Класс 7Б</a>
+        <a href="/overview" class="hover:text-brand-600 transition-colors">Класс 7Б</a>
         <span class="text-slate-300">/</span>
-        <a href="#/parents" class="hover:text-brand-600 transition-colors">Родители</a>
+        <a href="/parents" class="hover:text-brand-600 transition-colors">Родители</a>
         <span class="text-slate-300">/</span>
         <span class="text-slate-800 font-bold">${parent.fullName}</span>
       </nav>
@@ -1059,7 +1060,7 @@ export function renderParentSummaryView(options = {}) {
                     </div>
                   </div>
                   <div>
-                    <a href="#/student?id=${c.student?.id || ''}"
+                    <a href="/student?id=${c.student?.id || ''}"
                        class="px-3.5 py-1.5 rounded-xl border ${c.isOtherClass ? 'border-slate-200 hover:bg-slate-100 text-slate-700' : 'border-brand-200 hover:bg-brand-50 text-brand-700'} font-semibold text-xs transition-colors inline-block">
                       Открыть сводку по ученику
                     </a>
@@ -1103,7 +1104,7 @@ export function renderParentSummaryView(options = {}) {
                   ` : ''}
                 </div>
                 <div class="shrink-0">
-                  <a href="#/student?id=${rc.student.id}"
+                  <a href="/student?id=${rc.student.id}"
                      class="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs transition-colors shadow-2xs">
                     <span>Сводка по ученику</span>
                     ${renderIcon('chevron-right', 'w-3.5 h-3.5')}
@@ -1489,7 +1490,7 @@ export function setupParentSummaryListeners(onNavigate) {
       showSummaryToast('Контакт успешно зафиксирован');
 
       setTimeout(() => {
-        const hash = window.location.hash || '#/parents';
+        const hash = currentPath() + (window.location.search || '');
         if (onNavigate) onNavigate(hash);
         else window.location.reload();
       }, 200);
@@ -1547,7 +1548,7 @@ export function setupParentSummaryListeners(onNavigate) {
         closeLinkModal();
         showSummaryToast('Связь с учеником успешно создана');
         setTimeout(() => {
-          const hash = window.location.hash || '#/parents';
+          const hash = currentPath() + (window.location.search || '');
           if (onNavigate) onNavigate(hash);
           else window.location.reload();
         }, 200);
@@ -1601,7 +1602,7 @@ export function setupParentSummaryListeners(onNavigate) {
         closeUnlinkModal();
         showSummaryToast('Связь с учеником удалена');
         setTimeout(() => {
-          const hash = window.location.hash || '#/parents';
+          const hash = currentPath() + (window.location.search || '');
           if (onNavigate) onNavigate(hash);
           else window.location.reload();
         }, 200);
