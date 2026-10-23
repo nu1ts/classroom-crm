@@ -10,7 +10,7 @@ export const TEST_USERS = {
     password: 'Test#2024',
     name: 'Смирнова Марина Васильевна',
     shortName: 'Смирнова М. В.',
-    defaultRoute: '#/overview',
+    defaultRoute: '/overview',
   },
   subject_teacher: {
     role: 'subject_teacher',
@@ -20,7 +20,7 @@ export const TEST_USERS = {
     password: 'Test#2024',
     name: 'Козлов Андрей Павлович',
     shortName: 'Козлов А. П.',
-    defaultRoute: '#/classes',
+    defaultRoute: '/classes',
   },
   admin: {
     role: 'admin',
@@ -30,7 +30,7 @@ export const TEST_USERS = {
     password: 'Test#2024',
     name: 'Никитин Пётр Алексеевич',
     shortName: 'Никитин П. А.',
-    defaultRoute: '#/accounts',
+    defaultRoute: '/accounts',
   },
   parent: {
     role: 'parent',
@@ -40,7 +40,7 @@ export const TEST_USERS = {
     password: 'Test#2024',
     name: 'Петров Сергей Викторович',
     shortName: 'Петров С. В.',
-    defaultRoute: '#/child',
+    defaultRoute: '/child',
   },
   student: {
     role: 'student',
@@ -50,7 +50,7 @@ export const TEST_USERS = {
     password: 'Test#2024',
     name: 'Петрова Анна Сергеевна',
     shortName: 'Петрова А.',
-    defaultRoute: '#/schedule',
+    defaultRoute: '/schedule',
   },
   osipov: {
     role: 'student',
@@ -60,6 +60,6 @@ export const TEST_USERS = {
     password: 'Osipov#2024',
     name: 'Осипов Кирилл Тарасович',
     shortName: 'Осипов К. Т.',
-    defaultRoute: '#/schedule',
+    defaultRoute: '/schedule',
   },
 };

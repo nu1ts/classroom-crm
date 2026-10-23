@@ -1,31 +1,41 @@
-import { ROLE_NAVIGATION } from '../config/navigation.js';
-import { quickLoginAsRole } from '../services/storage.js';
-import { isDevMode } from '../services/env.js';
+import { ROLE_NAVIGATION } from "../config/navigation.js";
+import { quickLoginAsRole } from "../services/storage.js";
+import { isDevMode } from "../services/env.js";
+import { navigate } from "../services/navigation.js";
 
 export function renderHeader(currentUser, currentPath) {
-  if (!currentUser) return '';
+  if (!currentUser) return "";
 
-  const roleConfig = ROLE_NAVIGATION[currentUser.role] || ROLE_NAVIGATION.teacher;
-  const currentItem = roleConfig.items.find(i => i.path === currentPath);
-  const pageTitle = currentItem ? currentItem.title : (currentPath === '#/profile' ? 'Мой профиль' : 'Кабинет');
+  const roleConfig =
+    ROLE_NAVIGATION[currentUser.role] || ROLE_NAVIGATION.teacher;
+  const currentItem = roleConfig.items.find((i) => i.path === currentPath);
+  const pageTitle = currentItem
+    ? currentItem.title
+    : currentPath === "/profile"
+      ? "Мой профиль"
+      : "Кабинет";
 
   const showDevSwitcher = isDevMode();
-  let devSwitcherHtml = '';
+  let devSwitcherHtml = "";
 
   if (showDevSwitcher) {
     const demoRoles = [
-      { key: 'teacher', name: 'Классрук: Смирнова М. В.' },
-      { key: 'subject_teacher', name: 'Предметник: Козлов А. П.' },
-      { key: 'parent', name: 'Родитель: Петров С. В.' },
-      { key: 'student', name: 'Ученик: Петрова А.' },
-      { key: 'admin', name: 'Админ: Никитин П. А.' }
+      { key: "teacher", name: "Классрук: Смирнова М. В." },
+      { key: "subject_teacher", name: "Предметник: Козлов А. П." },
+      { key: "parent", name: "Родитель: Петров С. В." },
+      { key: "student", name: "Ученик: Петрова А." },
+      { key: "admin", name: "Админ: Никитин П. А." },
     ];
 
-    const roleOptionsHtml = demoRoles.map(r => `
-      <option value="${r.key}" ${currentUser.role === r.key ? 'selected' : ''}>
+    const roleOptionsHtml = demoRoles
+      .map(
+        (r) => `
+      <option value="${r.key}" ${currentUser.role === r.key ? "selected" : ""}>
         ${r.name}
       </option>
-    `).join('');
+    `,
+      )
+      .join("");
 
     devSwitcherHtml = `
       <div class="hidden sm:flex items-center space-x-2 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200">
@@ -54,14 +64,15 @@ export function renderHeader(currentUser, currentPath) {
 }
 
 export function setupHeaderListeners(onNavigate) {
-  const roleSwitcher = document.getElementById('demo-role-switcher');
+  const roleSwitcher = document.getElementById("demo-role-switcher");
   if (roleSwitcher) {
-    roleSwitcher.addEventListener('change', (e) => {
+    roleSwitcher.addEventListener("change", (e) => {
       const targetRole = e.target.value;
       const user = quickLoginAsRole(targetRole);
       if (user) {
-        const defRoute = ROLE_NAVIGATION[user.role]?.defaultRoute || '#/overview';
-        window.location.hash = defRoute;
+        const defRoute =
+          ROLE_NAVIGATION[user.role]?.defaultRoute || "/overview";
+        navigate(defRoute);
       }
     });
   }

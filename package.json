@@ -11,6 +11,7 @@
     "build": "tailwindcss -i ./src/input.css -o ./reference/css/styles.css --minify",
     "build:css": "tailwindcss -i ./src/input.css -o ./reference/css/styles.css --minify",
     "watch:css": "tailwindcss -i ./src/input.css -o ./reference/css/styles.css --watch",
+    "build:site": "node scripts/build-site.mjs",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
@@ -29,6 +30,8 @@
   "homepage": "https://github.com/nu1ts/classroom-crm#readme",
   "devDependencies": {
     "@playwright/test": "^1.64.1",
+    "esbuild": "^0.28.2",
+    "prettier": "^3.9.10",
     "tailwindcss": "^3.4.19"
   }
 }

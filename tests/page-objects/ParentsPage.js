@@ -50,8 +50,8 @@ export class ParentsPage {
   }
 
   async goto(queryString = '') {
-    const hash = queryString ? `#/parents?${queryString}` : '#/parents';
-    await this.page.goto(`index.html${hash}`);
+    const route = queryString ? `parents/?${queryString}` : 'parents/';
+    await this.page.goto(route);
     await expect(this.title).toBeVisible({ timeout: 10000 });
   }
 

@@ -84,7 +84,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
 
       await navPage.expectHiddenMenuItems(['nav-journal']);
 
-      await page.goto('index.html#/journal');
+      await page.goto('journal');
 
       await expect(page.locator('h1, h2, h3')).toContainText(/Доступ ограничен/i);
     });

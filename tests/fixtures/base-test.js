@@ -1,19 +1,12 @@
 import { test as baseTest, expect } from '@playwright/test';
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
+import { INITIAL_DATASET } from '../../src/mock/dataset.js';
 import { LoginPage } from '../page-objects/LoginPage.js';
 import { NavigationPage } from '../page-objects/NavigationPage.js';
 import { ProfilePage } from '../page-objects/ProfilePage.js';
 import { TableHelper } from '../helpers/table-helper.js';
 import { MetricsHelper } from '../helpers/metrics-helper.js';
 import { TEST_USERS } from '../config/test-users.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const datasetPath = path.resolve(__dirname, '../../src/mock/dataset.json');
-const INITIAL_DATASET = JSON.parse(fs.readFileSync(datasetPath, 'utf-8'));
 
 /**
  * Базовый тест с фикстурами сброса мок-состояния и Page Objects
@@ -25,9 +18,11 @@ export const test = baseTest.extend({
   page: async ({ page }, use) => {
     await page.addInitScript(({ dataset }) => {
       try {
+        if (window.sessionStorage.getItem('__crm_test_seeded__')) return;
         window.localStorage.setItem('classroom_crm_db', JSON.stringify(dataset));
         window.localStorage.removeItem('classroom_crm_session');
         window.localStorage.removeItem('classroom_crm_failed_attempts');
+        window.sessionStorage.setItem('__crm_test_seeded__', '1');
       } catch (err) {
         console.error('Ошибка сидирования localStorage в фикстуре теста:', err);
       }

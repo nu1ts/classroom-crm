@@ -1,4 +1,4 @@
-import { getDB, getCurrentUser } from '../services/storage.js';
+import { getDB, getCurrentUser } from "../services/storage.js";
 
 export function renderPlaceholderView(title, description, path) {
   const db = getDB();
@@ -12,7 +12,7 @@ export function renderPlaceholderView(title, description, path) {
           <div>
             <div class="flex items-center space-x-2.5">
               <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200">
-                ${user ? user.roleLabel : 'Раздел'}
+                ${user ? user.roleLabel : "Раздел"}
               </span>
               <span class="text-xs text-slate-400">Маршрут: ${path}</span>
             </div>
@@ -32,15 +32,15 @@ export function renderPlaceholderView(title, description, path) {
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
           <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
             <div class="text-slate-500">Учебный период</div>
-            <div class="font-bold text-slate-800 mt-1">${meta.period?.name || 'I четверть'}</div>
+            <div class="font-bold text-slate-800 mt-1">${meta.period?.name || "I четверть"}</div>
           </div>
           <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
             <div class="text-slate-500">Классный руководитель</div>
-            <div class="font-bold text-slate-800 mt-1">${meta.teacher || 'Смирнова М. В.'}</div>
+            <div class="font-bold text-slate-800 mt-1">${meta.teacher || "Смирнова М. В."}</div>
           </div>
           <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
             <div class="text-slate-500">Средний балл / Посещаемость</div>
-            <div class="font-bold text-slate-800 mt-1">${meta.classAverageGrade || '4.2'} / ${meta.attendancePercentage || '93.6'}%</div>
+            <div class="font-bold text-slate-800 mt-1">${meta.classAverageGrade || "4.2"} / ${meta.attendancePercentage || "93.6"}%</div>
           </div>
         </div>
       </div>

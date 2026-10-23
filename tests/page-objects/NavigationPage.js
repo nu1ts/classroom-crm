@@ -86,7 +86,7 @@ export class NavigationPage {
       await dialog.accept();
     });
     await this.logoutBtn.click();
-    await this.page.waitForURL(/#\/login/, { timeout: 5000 });
+    await this.page.waitForURL(/\/login\/?/, { timeout: 5000 });
   }
 
   /**
@@ -101,12 +101,8 @@ export class NavigationPage {
   /**
    * Прямой переход по хеш-маршруту с триггером hashchange для SPA
    */
-  async gotoRoute(hashRoute) {
-    const cleanRoute = hashRoute.startsWith('#') ? hashRoute : `#${hashRoute}`;
-    await this.page.waitForTimeout(100);
-    await this.page.evaluate((targetHash) => {
-      window.location.hash = targetHash;
-    }, cleanRoute);
-    await this.page.waitForTimeout(100);
+  async gotoRoute(route) {
+    const cleanRoute = route.replace(/^#/, '').replace(/^\//, '');
+    await this.page.goto(cleanRoute + '/');
   }
 }

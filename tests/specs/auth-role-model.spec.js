@@ -17,7 +17,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
 
     await loginPage.login(TEST_USERS.teacher.username, TEST_USERS.teacher.password);
 
-    await page.waitForURL(/#\/overview/, { timeout: 7000 });
+    await page.waitForURL(/\/overview\/?/, { timeout: 7000 });
     await navigationPage.expectActiveMenuItem('nav-overview');
     await navigationPage.expectRoleSubtitle('Классный руководитель');
     await expect(page.locator('#app-sidebar')).toContainText('Смирнова М. В.');
@@ -39,13 +39,13 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
 
     await loginPage.emailInput.fill(TEST_USERS.teacher.username);
     await loginPage.submitButton.click();
-    await page.waitForURL(/#\/overview/, { timeout: 7000 });
+    await page.waitForURL(/\/overview\/?/, { timeout: 7000 });
   });
 
   test('[TC-AUTH-03] Вход под каждой из пяти ролей (Позитивный)', async ({ page, loginPage, navigationPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-    await page.waitForURL(/#\/overview/, { timeout: 7000 });
+    await page.waitForURL(/\/overview\/?/, { timeout: 7000 });
     await navigationPage.expectVisibleMenuItems([
       'nav-overview', 'nav-students', 'nav-journal', 'nav-attendance',
       'nav-schedule', 'nav-parents', 'nav-meetings', 'nav-announcements', 'nav-analytics'
@@ -54,7 +54,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
 
     await loginPage.goto();
     await loginPage.loginAs('subject_teacher');
-    await page.waitForURL(/#\/classes/, { timeout: 7000 });
+    await page.waitForURL(/\/classes\/?/, { timeout: 7000 });
     await navigationPage.expectVisibleMenuItems([
       'nav-classes', 'nav-schedule', 'nav-attendance', 'nav-profile'
     ]);
@@ -63,7 +63,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
 
     await loginPage.goto();
     await loginPage.loginAs('parent');
-    await page.waitForURL(/#\/child/, { timeout: 7000 });
+    await page.waitForURL(/\/child\/?/, { timeout: 7000 });
     await navigationPage.expectVisibleMenuItems([
       'nav-child', 'nav-schedule', 'nav-announcements', 'nav-profile'
     ]);
@@ -72,7 +72,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
 
     await loginPage.goto();
     await loginPage.loginAs('student');
-    await page.waitForURL(/#\/schedule/, { timeout: 7000 });
+    await page.waitForURL(/\/schedule\/?/, { timeout: 7000 });
     await navigationPage.expectReadOnlyBadge(true);
     await navigationPage.expectVisibleMenuItems([
       'nav-schedule', 'nav-grades', 'nav-announcements', 'nav-profile'
@@ -81,7 +81,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
 
     await loginPage.goto();
     await loginPage.loginAs('admin');
-    await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+    await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
     await navigationPage.expectVisibleMenuItems([
       'nav-accounts', 'nav-teachers', 'nav-directories', 'nav-workload', 'nav-school-year'
     ]);
@@ -95,13 +95,13 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await loginPage.login(TEST_USERS.teacher.username, 'Test#2023');
 
     await loginPage.expectErrorMessage('Неверный логин или пароль');
-    await expect(page).toHaveURL(/#\/login/);
+    await expect(page).toHaveURL(/\/login\/?/);
     await expect(loginPage.emailInput).toHaveValue(TEST_USERS.teacher.username);
     await expect(loginPage.passwordInput).toHaveValue('');
 
     await loginPage.passwordInput.fill(TEST_USERS.teacher.password);
     await loginPage.submitButton.click();
-    await page.waitForURL(/#\/overview/, { timeout: 7000 });
+    await page.waitForURL(/\/overview\/?/, { timeout: 7000 });
   });
 
   test('[TC-AUTH-05] Вход с несуществующим логином (Негативный)', async ({ page, loginPage }) => {
@@ -110,7 +110,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await loginPage.login('smirnov@school.ru', 'Test#2024');
 
     await loginPage.expectErrorMessage('Неверный логин или пароль');
-    await expect(page).toHaveURL(/#\/login/);
+    await expect(page).toHaveURL(/\/login\/?/);
   });
 
   test('[TC-AUTH-06] Пустые поля и лишние пробелы (Негативный)', async ({ page, loginPage }) => {
@@ -128,7 +128,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await loginPage.passwordInput.fill(TEST_USERS.teacher.password);
     await loginPage.submitButton.click();
 
-    await page.waitForURL(/#\/overview/, { timeout: 7000 });
+    await page.waitForURL(/\/overview\/?/, { timeout: 7000 });
   });
 
   test('[TC-AUTH-07] Блокировка после серии неудачных попыток (Граничный)', async ({ page, loginPage }) => {
@@ -156,16 +156,16 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
   test('[TC-AUTH-08] Выход из системы (Позитивный)', async ({ page, loginPage, profilePage }) => {
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-    await page.waitForURL(/#\/overview/, { timeout: 7000 });
+    await page.waitForURL(/\/overview\/?/, { timeout: 7000 });
     await profilePage.goto();
 
     await profilePage.logout();
 
-    await expect(page).toHaveURL(/#\/login/);
+    await expect(page).toHaveURL(/\/login\/?/);
     await expect(loginPage.submitButton).toBeVisible();
 
     await page.goBack();
-    await expect(page).toHaveURL(/#\/login/);
+    await expect(page).toHaveURL(/\/login\/?/);
     await expect(loginPage.submitButton).toBeVisible();
     await expect(page.locator('#app-sidebar')).toHaveCount(0);
   });
@@ -173,7 +173,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
   test('[TC-AUTH-09] Смена пользователя в одном браузере (Правило)', async ({ page, loginPage, navigationPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-    await page.waitForURL(/#\/overview/, { timeout: 7000 });
+    await page.waitForURL(/\/overview\/?/, { timeout: 7000 });
 
     await navigationPage.gotoRoute('#/students');
     await expect(page.locator('#app-content')).toContainText('28');
@@ -181,7 +181,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await navigationPage.logout();
 
     await loginPage.loginAs('parent');
-    await page.waitForURL(/#\/child/, { timeout: 7000 });
+    await page.waitForURL(/\/child\/?/, { timeout: 7000 });
 
     await navigationPage.gotoRoute('#/overview');
     await expect(page.locator('h2')).toContainText('Доступ ограничен');
@@ -196,7 +196,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
   test('[TC-AUTH-10] Смена пароля: успешная (Позитивный)', async ({ page, loginPage, profilePage }) => {
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-    await page.waitForURL(/#\/overview/, { timeout: 7000 });
+    await page.waitForURL(/\/overview\/?/, { timeout: 7000 });
 
     await profilePage.goto();
 
@@ -208,7 +208,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
   test('[TC-AUTH-11] Смена пароля: неверный текущий пароль (Негативный)', async ({ page, loginPage, profilePage }) => {
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-    await page.waitForURL(/#\/overview/, { timeout: 7000 });
+    await page.waitForURL(/\/overview\/?/, { timeout: 7000 });
 
     await profilePage.goto();
 
@@ -220,13 +220,13 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await loginPage.expectErrorMessage('Неверный логин или пароль');
 
     await loginPage.login(TEST_USERS.teacher.username, TEST_USERS.teacher.password);
-    await page.waitForURL(/#\/overview/, { timeout: 7000 });
+    await page.waitForURL(/\/overview\/?/, { timeout: 7000 });
   });
 
   test('[TC-AUTH-12] Смена пароля: требования к новому паролю (Граничный)', async ({ page, loginPage, profilePage }) => {
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-    await page.waitForURL(/#\/overview/, { timeout: 7000 });
+    await page.waitForURL(/\/overview\/?/, { timeout: 7000 });
 
     await profilePage.goto();
 
@@ -243,7 +243,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
   test('[TC-AUTH-13] После смены пароля старый не работает (Правило)', async ({ page, loginPage, profilePage, navigationPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-    await page.waitForURL(/#\/overview/, { timeout: 7000 });
+    await page.waitForURL(/\/overview\/?/, { timeout: 7000 });
 
     await profilePage.goto();
     await profilePage.changePassword(TEST_USERS.teacher.password, 'Novy#2025', 'Novy#2025');
@@ -256,7 +256,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
 
     await loginPage.passwordInput.fill('Novy#2025');
     await loginPage.submitButton.click();
-    await page.waitForURL(/#\/overview/, { timeout: 7000 });
+    await page.waitForURL(/\/overview\/?/, { timeout: 7000 });
   });
 
   test('[TC-AUTH-14] Заблокированная учётная запись (Негативный)', async ({ page, loginPage, navigationPage }) => {
@@ -264,7 +264,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
 
     await loginPage.goto();
     await loginPage.loginAs('admin');
-    await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+    await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
 
     await page.fill('#input-accounts-search', osipov.username);
     const osipovRow = page.locator('#accounts-table-body tr', { hasText: osipov.name });
@@ -278,7 +278,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await loginPage.expectErrorMessage('заблокирована');
 
     await loginPage.loginAs('admin');
-    await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+    await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
     await page.fill('#input-accounts-search', osipov.username);
     await osipovRow.locator('[data-action="toggle-status"][data-next-status="active"]').click();
     await expect(osipovRow).toContainText('Активен');
@@ -286,7 +286,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await navigationPage.logout();
 
     await loginPage.login(osipov.username, 'Osipov#2024');
-    await page.waitForURL(/#\/schedule/, { timeout: 7000 });
+    await page.waitForURL(/\/schedule\/?/, { timeout: 7000 });
   });
 
   test('[TC-AUTH-15] Самостоятельный сброс пароля недоступен (Негативный)', async ({ page, loginPage, navigationPage }) => {
@@ -300,7 +300,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await loginPage.closeForgotPasswordModal();
 
     await loginPage.loginAs('admin');
-    await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+    await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
     await page.fill('#input-accounts-search', TEST_USERS.teacher.username);
     const teacherRow = page.locator('#accounts-table-body tr', { hasText: 'Смирнова' });
     await teacherRow.locator('[data-action="edit-account"]').click();
@@ -315,19 +315,19 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await navigationPage.logout();
 
     await loginPage.login(TEST_USERS.teacher.username, tempPassword);
-    await page.waitForURL(/#\/change-password/, { timeout: 7000 });
+    await page.waitForURL(/\/change-password\/?/, { timeout: 7000 });
 
     await page.fill('#cp-current', tempPassword);
     await page.fill('#cp-new', TEST_USERS.teacher.password);
     await page.fill('#cp-confirm', TEST_USERS.teacher.password);
     await page.click('#btn-cp-submit');
-    await page.waitForURL(/#\/overview/, { timeout: 7000 });
+    await page.waitForURL(/\/overview\/?/, { timeout: 7000 });
   });
 
   test('[TC-RM-01] Навигация администратора (Позитивный)', async ({ page, loginPage, navigationPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('admin');
-    await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+    await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
 
     await navigationPage.expectVisibleMenuItems([
       'nav-accounts', 'nav-teachers', 'nav-directories', 'nav-workload', 'nav-school-year'
@@ -341,7 +341,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
   test('[TC-RM-02] Навигация классного руководителя (Позитивный)', async ({ page, loginPage, navigationPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-    await page.waitForURL(/#\/overview/, { timeout: 7000 });
+    await page.waitForURL(/\/overview\/?/, { timeout: 7000 });
 
     await navigationPage.expectVisibleMenuItems([
       'nav-overview', 'nav-students', 'nav-journal', 'nav-attendance',
@@ -356,7 +356,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
   test('[TC-RM-03] Навигация учителя-предметника (Позитивный)', async ({ page, loginPage, navigationPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('subject_teacher');
-    await page.waitForURL(/#\/classes/, { timeout: 7000 });
+    await page.waitForURL(/\/classes\/?/, { timeout: 7000 });
 
     await navigationPage.expectVisibleMenuItems([
       'nav-classes', 'nav-schedule', 'nav-attendance', 'nav-profile'
@@ -370,7 +370,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
   test('[TC-RM-04] Навигация родителя (Позитивный)', async ({ page, loginPage, navigationPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('parent');
-    await page.waitForURL(/#\/child/, { timeout: 7000 });
+    await page.waitForURL(/\/child\/?/, { timeout: 7000 });
 
     await navigationPage.expectVisibleMenuItems([
       'nav-child', 'nav-schedule', 'nav-announcements', 'nav-profile'
@@ -384,7 +384,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
   test('[TC-RM-05] Навигация ученика (Позитивный)', async ({ page, loginPage, navigationPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('student');
-    await page.waitForURL(/#\/schedule/, { timeout: 7000 });
+    await page.waitForURL(/\/schedule\/?/, { timeout: 7000 });
 
     await navigationPage.expectVisibleMenuItems([
       'nav-schedule', 'nav-grades', 'nav-announcements', 'nav-profile'
@@ -401,7 +401,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
   test('[TC-RM-07] Прямой доступ к разделам администратора (Негативный)', async ({ page, loginPage, navigationPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-    await page.waitForURL(/#\/overview/, { timeout: 7000 });
+    await page.waitForURL(/\/overview\/?/, { timeout: 7000 });
 
     await navigationPage.gotoRoute('#/accounts');
     await expect(page.locator('h2')).toContainText('Доступ ограничен');
@@ -411,7 +411,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
 
     await navigationPage.logout();
     await loginPage.loginAs('subject_teacher');
-    await page.waitForURL(/#\/classes/, { timeout: 7000 });
+    await page.waitForURL(/\/classes\/?/, { timeout: 7000 });
 
     await navigationPage.gotoRoute('#/accounts');
     await expect(page.locator('h2')).toContainText('Доступ ограничен');
@@ -420,7 +420,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
   test('[TC-RM-08] Прямой доступ к разделам класса (Негативный)', async ({ page, loginPage, navigationPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('parent');
-    await page.waitForURL(/#\/child/, { timeout: 7000 });
+    await page.waitForURL(/\/child\/?/, { timeout: 7000 });
 
     for (const route of ['#/journal', '#/students', '#/parents', '#/analytics']) {
       await navigationPage.gotoRoute(route);
@@ -429,7 +429,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
 
     await navigationPage.logout();
     await loginPage.loginAs('student');
-    await page.waitForURL(/#\/schedule/, { timeout: 7000 });
+    await page.waitForURL(/\/schedule\/?/, { timeout: 7000 });
 
     for (const route of ['#/journal', '#/students', '#/parents', '#/analytics']) {
       await navigationPage.gotoRoute(route);
@@ -444,7 +444,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
   test('[TC-RM-10] Администратор не работает с журналом и собраниями (Негативный)', async ({ page, loginPage, navigationPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('admin');
-    await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+    await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
 
     for (const route of ['#/journal', '#/attendance', '#/meetings', '#/analytics']) {
       await navigationPage.gotoRoute(route);
@@ -467,7 +467,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
   test('[TC-RM-13] Профиль показывает роль и привязку без права правки (Правило)', async ({ page, loginPage, profilePage, navigationPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-    await page.waitForURL(/#\/overview/, { timeout: 7000 });
+    await page.waitForURL(/\/overview\/?/, { timeout: 7000 });
 
     await profilePage.goto();
 
@@ -484,7 +484,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
 
     await navigationPage.logout();
     await loginPage.loginAs('admin');
-    await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+    await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
     await page.fill('#input-accounts-search', TEST_USERS.teacher.username);
     const teacherRow = page.locator('#accounts-table-body tr', { hasText: 'Смирнова' });
     await teacherRow.locator('[data-action="edit-account"]').click();
@@ -494,13 +494,13 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await navigationPage.logout();
 
     await loginPage.loginAs('teacher');
-    await page.waitForURL(/#\/classes/, { timeout: 7000 });
+    await page.waitForURL(/\/classes\/?/, { timeout: 7000 });
     await navigationPage.expectVisibleMenuItems(['nav-classes', 'nav-profile']);
     await navigationPage.expectHiddenMenuItems(['nav-journal', 'nav-analytics']);
 
     await navigationPage.logout();
     await loginPage.loginAs('admin');
-    await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+    await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
     await page.fill('#input-accounts-search', TEST_USERS.teacher.username);
     await teacherRow.locator('[data-action="edit-account"]').click();
     await page.selectOption('#select-edit-role', 'teacher');
@@ -517,7 +517,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     test('[TC-ACC-01] Привязка учётной записи к карточке ученика (Позитивный)', async ({ page, loginPage, navigationPage }) => {
       await loginPage.goto();
       await loginPage.loginAs('admin');
-      await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+      await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
 
       await page.fill('#input-accounts-search', 'osipov.k@school.ru');
       const osipovRow = page.locator('#accounts-table-body tr', { hasText: 'Осипов' });
@@ -534,7 +534,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     test('[TC-ACC-02] Отвязка учётной записи от учётной карточки (Позитивный)', async ({ page, loginPage, navigationPage }) => {
       await loginPage.goto();
       await loginPage.loginAs('admin');
-      await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+      await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
 
       await page.fill('#input-accounts-search', 'osipov.k@school.ru');
       const osipovRow = page.locator('#accounts-table-body tr', { hasText: 'Осипов' });
@@ -550,7 +550,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     test('[TC-ACC-03] Карточка не может быть привязана к двум учётным записям (Негативный)', async ({ page, loginPage, navigationPage }) => {
       await loginPage.goto();
       await loginPage.loginAs('admin');
-      await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+      await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
 
       await page.fill('#input-accounts-search', 'osipov.k@school.ru');
       await page.locator('#accounts-table-body tr', { hasText: 'Осипов' }).locator('[data-action="edit-account"]').click();
@@ -566,7 +566,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     test('[TC-ACC-04] Карточка учителя: привязка по умолчанию и смена (Правило)', async ({ page, loginPage, navigationPage }) => {
       await loginPage.goto();
       await loginPage.loginAs('admin');
-      await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+      await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
 
       await expect(page.locator('[data-account-row="user-smirnova"]')).toContainText('Учитель: Смирнова М. В.');
       await expect(page.locator('[data-account-row="user-kozlov"]')).toContainText('Учитель: Козлов А. П.');
@@ -591,7 +591,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     test('[TC-TCH-01] Создание карточки учителя (Позитивный)', async ({ page, loginPage, navigationPage }) => {
       await loginPage.goto();
       await loginPage.loginAs('admin');
-      await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+      await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
       await navigationPage.gotoRoute('#/teachers');
       await expect(page.locator('h1')).toContainText('Учителя');
 
@@ -610,7 +610,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     test('[TC-TCH-02] Изменение карточки учителя (Позитивный)', async ({ page, loginPage, navigationPage }) => {
       await loginPage.goto();
       await loginPage.loginAs('admin');
-      await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+      await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
       await navigationPage.gotoRoute('#/teachers');
       await expect(page.locator('h1')).toContainText('Учителя');
 
@@ -631,7 +631,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     test('[TC-TCH-03] Удаление карточки учителя без нагрузки и привязки (Позитивный)', async ({ page, loginPage, navigationPage }) => {
       await loginPage.goto();
       await loginPage.loginAs('admin');
-      await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+      await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
       await navigationPage.gotoRoute('#/teachers');
       await expect(page.locator('h1')).toContainText('Учителя');
 
@@ -651,7 +651,7 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     test('[TC-TCH-04] Карточку с нагрузкой удалить нельзя (Негативный)', async ({ page, loginPage, navigationPage }) => {
       await loginPage.goto();
       await loginPage.loginAs('admin');
-      await page.waitForURL(/#\/accounts/, { timeout: 7000 });
+      await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
       await navigationPage.gotoRoute('#/teachers');
       await expect(page.locator('h1')).toContainText('Учителя');
 

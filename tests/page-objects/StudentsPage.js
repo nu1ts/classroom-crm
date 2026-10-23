@@ -35,8 +35,8 @@ export class StudentsPage {
    * @param {string} [queryString='']
    */
   async goto(queryString = '') {
-    const hash = queryString ? `#/students?${queryString}` : '#/students';
-    await this.page.goto(`index.html${hash}`);
+    const route = queryString ? `students/?${queryString}` : 'students/';
+    await this.page.goto(route);
     await expect(this.searchInput).toBeVisible({ timeout: 10000 });
   }
 

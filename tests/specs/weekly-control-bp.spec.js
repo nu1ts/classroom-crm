@@ -13,7 +13,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await loginPage.goto();
     await loginPage.login('smirnova@school.ru', 'Test#2024');
 
-    await expect(page).toHaveURL(/.*#\/overview/);
+    await expect(page).toHaveURL(/.*\/overview\/?/);
     await expect(overviewPage.classHeader).toContainText('7Б класс (28 учеников)');
     await expect(page.locator('text=Смирнова Марина Васильевна').first()).toBeVisible();
   });
@@ -55,7 +55,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(overviewPage.unconfirmedAbsencesValue).toContainText('4');
 
     await overviewPage.unconfirmedLink.click();
-    await expect(page).toHaveURL(/.*#\/attendance\?filter=unconfirmed/);
+    await expect(page).toHaveURL(/.*\/attendance\/?\?filter=unconfirmed/);
   });
 
   test('TC-BP-05: Показатели дашборда не хранятся, а пересчитываются', async ({ page }) => {

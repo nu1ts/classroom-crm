@@ -50,7 +50,7 @@ export class OverviewPage {
    * Открыть экран Обзора класса
    */
   async goto() {
-    await this.page.goto('index.html#/overview');
+    await this.page.goto('overview');
     await expect(this.classHeader).toBeVisible({ timeout: 10000 });
   }
 

@@ -10,8 +10,8 @@ async function openWorkloadAsAdmin(page) {
   const loginPage = new LoginPage(page);
   await loginPage.goto();
   await loginPage.loginAs('admin');
-  await page.waitForURL(/#\/accounts/, { timeout: 7000 });
-  await page.goto('index.html#/workload');
+  await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
+  await page.goto('workload');
   await expect(page.locator('h1')).toContainText('Нагрузка');
 }
 

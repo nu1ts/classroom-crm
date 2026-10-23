@@ -28,7 +28,7 @@ export class LoginPage {
    * Переход на экран авторизации
    */
   async goto(options = {}) {
-    await this.page.goto('index.html#/login', options);
+    await this.page.goto('login', options);
     await this.page.waitForLoadState('domcontentloaded');
     await expect(this.submitButton).toBeVisible({ timeout: 10000 });
   }
@@ -37,7 +37,7 @@ export class LoginPage {
    * Переход с секретным ключом для активации DEV-режима
    */
   async gotoWithDevKey() {
-    await this.page.goto('index.html#/login?key=tsu_debug');
+    await this.page.goto('login?key=tsu_debug');
     await this.page.waitForLoadState('domcontentloaded');
     await expect(this.submitButton).toBeVisible({ timeout: 10000 });
   }
