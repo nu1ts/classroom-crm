@@ -1,7 +1,7 @@
 /**
  * Сборка самодостаточного статического сайта из src/.
  *
- * Выход: build/
+ * Выход: reference/
  *   app.js            — бандл всего приложения (esbuild, без внешних ссылок на ../src)
  *   css/styles.css    — Tailwind CSS
  *   index.html        — корневая страница (старт: вход)
@@ -15,13 +15,13 @@
  */
 import { build } from 'esbuild';
 import { execFileSync } from 'node:child_process';
-import { mkdir, readFile, writeFile, rm } from 'node:fs/promises';
+import { mkdir, readdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const OUT = path.join(ROOT, 'build');
+const OUT = path.join(ROOT, 'reference');
 const SRC = path.join(ROOT, 'src');
 
 // --- 1. Список маршрутов из конфига навигации + служебные ---
@@ -85,7 +85,14 @@ function renderPage(initialRoute, assetPrefix) {
 `;
 }
 
-if (existsSync(OUT)) await rm(path.join(OUT, 'pages'), { recursive: true, force: true });
+if (existsSync(OUT)) {
+  const entries = await readdir(OUT);
+  for (const e of entries) {
+    if (e !== 'css' && e !== 'app.js') {
+      await rm(path.join(OUT, e), { recursive: true, force: true });
+    }
+  }
+}
 await mkdir(OUT, { recursive: true });
 await writeFile(path.join(OUT, 'index.html'), renderPage('#/login', './'));
 
@@ -97,4 +104,4 @@ for (const route of routePaths) {
   written += 1;
 }
 
-console.log(`Сборка завершена: build/ — app.js, css/styles.css, index.html + ${written} страниц-роутов (${routePaths.join(', ')})`);
+console.log(`Сборка завершена: reference/ — app.js, css/styles.css, index.html + ${written} страниц-роутов (${routePaths.join(', ')})`);

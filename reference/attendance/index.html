@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Кабинет классного руководителя — Classroom CRM</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .fade-in { animation: fadeIn 0.25s ease-in; }
+    #modal-journal-confirm-absence, #modal-forgot-password, #modal-add-student, #modal-class-archive { margin: 0 !important; }
+    .w-10 { width: 2.5rem !important; }
+  </style>
+  <script>
+    (function () {
+      var initial = "#/attendance";
+      if (!window.location.hash) { window.location.replace(initial); }
+    })();
+  </script>
+</head>
+<body class="h-full text-slate-800 antialiased">
+  <div id="app" class="h-full"></div>
+  <script src="../app.js"></script>
+</body>
+</html>
