@@ -16,6 +16,7 @@ import { renderAccountsView, setupAccountsListeners } from './views/accounts.js'
 import { renderChangePasswordView, setupChangePasswordListeners } from './views/change-password.js';
 import { renderTeachersView, setupTeachersListeners } from './views/teachers.js';
 import { renderWorkloadView, setupWorkloadListeners } from './views/workload.js';
+import { renderSchoolYearView, setupSchoolYearListeners } from './views/school-year.js';
 
 const ROUTE_HANDLERS = {
   '#/login': {
@@ -250,8 +251,15 @@ const ROUTE_HANDLERS = {
   },
   '#/school-year': {
     title: 'Учебный год',
-    render: () => renderPlaceholderView('Учебный год', 'Настройка учебных четвертей, каникул и праздников', '#/school-year'),
-    setup: () => { }
+    render: () => {
+      const hash = window.location.hash || '';
+      const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+      const params = new URLSearchParams(queryString);
+      return renderSchoolYearView({
+        yearId: params.get('year') || null
+      });
+    },
+    setup: (navigate) => setupSchoolYearListeners(navigate)
   }
 };
 

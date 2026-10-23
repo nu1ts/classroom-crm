@@ -1,5 +1,6 @@
 import {
   getDB,
+  getActiveAcademicYear,
   getWorkloadRows,
   getClassDirectory,
   addWorkloadRow,
@@ -62,6 +63,7 @@ export function filterWorkloadRows(rows, state = {}) {
 
 export function renderWorkloadView(options = {}) {
   const db = getDB();
+  const activeYear = getActiveAcademicYear(db);
   const allRows = getWorkloadRows(db);
   const classes = getClassDirectory(db);
   const subjects = db.subjects || [];
@@ -87,7 +89,11 @@ export function renderWorkloadView(options = {}) {
           </p>
         </div>
 
-        <div>
+        <div class="flex items-center space-x-2.5">
+          <span class="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-slate-100/90 text-slate-700 text-xs font-semibold border border-slate-200/80" id="badge-workload-academic-year">
+            ${renderIcon('calendar', 'w-3.5 h-3.5 text-slate-500')}
+            <span>${escapeHtml(activeYear ? activeYear.name : '2024/2025')}</span>
+          </span>
           <button type="button" id="btn-open-add-workload"
                   class="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-semibold text-xs transition-colors shadow-2xs cursor-pointer">
             ${renderIcon('plus', 'w-4 h-4')}
