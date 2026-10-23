@@ -51,26 +51,52 @@ execFileSync('npx', ['tailwindcss', '-i', './src/input.css', '-o', './build/css/
 // --- 4. Страницы-роуты ---
 const headExtras = `
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .fade-in { animation: fadeIn 0.25s ease-in; }
-    #modal-journal-confirm-absence, #modal-forgot-password, #modal-add-student, #modal-class-archive { margin: 0 !important; }
-    .w-10 { width: 2.5rem !important; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.25s ease-in;
+    }
+
+    #modal-journal-confirm-absence,
+    #modal-forgot-password,
+    #modal-add-student,
+    #modal-class-archive {
+      margin: 0 !important;
+    }
+
+    .w-10 {
+      width: 2.5rem !important;
+    }
   </style>`;
 
 function renderPage(assetPrefix) {
   return `<!DOCTYPE html>
 <html lang="ru" class="h-full bg-slate-50">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Кабинет классного руководителя — Classroom CRM</title>
   <link rel="stylesheet" href="${assetPrefix}css/styles.css" />${headExtras}
 </head>
+
 <body class="h-full text-slate-800 antialiased">
   <div id="app" class="h-full"></div>
   <script src="${assetPrefix}app.js"></script>
 </body>
+
 </html>
 `;
 }
@@ -93,5 +119,3 @@ for (const route of routePaths) {
   await writeFile(path.join(dir, 'index.html'), renderPage('../'));
   written += 1;
 }
-
-console.log(`Сборка завершена: reference/ — app.js, css/styles.css, index.html + ${written} страниц-роутов (${routePaths.join(', ')})`);
