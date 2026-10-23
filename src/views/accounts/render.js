@@ -1,27 +1,35 @@
-import { ACCOUNT_ROLE_LABELS, ROLE_OPTIONS, escapeHtml } from './helpers.js';
+import { ACCOUNT_ROLE_LABELS, ROLE_OPTIONS, escapeHtml } from "./helpers.js";
+import { renderIcon } from "../../components/icons.js";
+import { getDB } from "../../services/storage.js";
 
 export function renderAccountsView(options = {}) {
   const db = getDB();
-  const currentUser = db.users.find(u => u.id === (options.currentUserId || ''));
+  const currentUser = db.users.find(
+    (u) => u.id === (options.currentUserId || ""),
+  );
 
-  const searchQuery = (options.searchQuery || '').trim();
-  const filterRole = options.filterRole || 'all';
+  const searchQuery = (options.searchQuery || "").trim();
+  const filterRole = options.filterRole || "all";
 
-  const rows = (db.users || []).map(user => ({
+  const rows = (db.users || []).map((user) => ({
     user,
-    isSelf: Boolean(currentUser && currentUser.id === user.id)
+    isSelf: Boolean(currentUser && currentUser.id === user.id),
   }));
 
-  const activeCount = rows.filter(r => r.user.status === 'active').length;
+  const activeCount = rows.filter((r) => r.user.status === "active").length;
   const blockedCount = rows.length - activeCount;
 
-  const roleFilterOptions = ROLE_OPTIONS.map(role => `
-    <option value="${role}" ${filterRole === role ? 'selected' : ''}>${ACCOUNT_ROLE_LABELS[role]}</option>
-  `).join('');
+  const roleFilterOptions = ROLE_OPTIONS.map(
+    (role) => `
+    <option value="${role}" ${filterRole === role ? "selected" : ""}>${ACCOUNT_ROLE_LABELS[role]}</option>
+  `,
+  ).join("");
 
-  const roleSelectOptions = ROLE_OPTIONS.map(role => `
+  const roleSelectOptions = ROLE_OPTIONS.map(
+    (role) => `
     <option value="${role}">${ACCOUNT_ROLE_LABELS[role]}</option>
-  `).join('');
+  `,
+  ).join("");
 
   return `
     <div id="accounts-view" class="space-y-6 animate-fadeIn pb-12">
@@ -36,7 +44,7 @@ export function renderAccountsView(options = {}) {
         <div>
           <button type="button" id="btn-open-create-account"
                   class="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-semibold text-xs transition-colors shadow-2xs cursor-pointer">
-            ${renderIcon('user-plus', 'w-4 h-4')}
+            ${renderIcon("user-plus", "w-4 h-4")}
             <span>Создать учётную запись</span>
           </button>
         </div>
@@ -45,7 +53,7 @@ export function renderAccountsView(options = {}) {
       <div class="bg-white rounded-2xl p-4 shadow-2xs border border-slate-200/80 flex flex-col md:flex-row md:items-center gap-3">
         <div class="relative min-w-[260px] flex-1 max-w-md">
           <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-            ${renderIcon('search', 'w-4 h-4')}
+            ${renderIcon("search", "w-4 h-4")}
           </div>
           <input type="text" id="input-accounts-search" value="${escapeHtml(searchQuery)}"
                  placeholder="Поиск по ФИО или логину..."
@@ -53,8 +61,8 @@ export function renderAccountsView(options = {}) {
                  style="padding-left: 2.75rem; padding-right: 2.25rem;"
                  class="w-full py-2.5 rounded-xl border border-slate-200/90 bg-slate-50/50 hover:bg-white focus:bg-white text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-2xs" />
           <button type="button" id="btn-clear-accounts-search" title="Очистить поиск"
-                  class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 ${searchQuery ? '' : 'hidden'} cursor-pointer">
-            ${renderIcon('x', 'w-3.5 h-3.5')}
+                  class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 ${searchQuery ? "" : "hidden"} cursor-pointer">
+            ${renderIcon("x", "w-3.5 h-3.5")}
           </button>
         </div>
 
@@ -62,11 +70,11 @@ export function renderAccountsView(options = {}) {
           <select id="select-accounts-role"
                   style="padding-left: 0.875rem; padding-right: 2.25rem;"
                   class="appearance-none py-2.5 rounded-xl border border-slate-200/90 bg-white hover:border-slate-300 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all cursor-pointer md:w-48">
-            <option value="all" ${filterRole === 'all' ? 'selected' : ''}>Все роли</option>
+            <option value="all" ${filterRole === "all" ? "selected" : ""}>Все роли</option>
             ${roleFilterOptions}
           </select>
           <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
-            ${renderIcon('chevron-down', 'w-4 h-4')}
+            ${renderIcon("chevron-down", "w-4 h-4")}
           </div>
         </div>
       </div>
@@ -103,7 +111,7 @@ export function renderAccountsView(options = {}) {
                   ${roleSelectOptions}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
-                  ${renderIcon('chevron-down', 'w-4 h-4')}
+                  ${renderIcon("chevron-down", "w-4 h-4")}
                 </div>
               </div>
             </div>
@@ -151,7 +159,7 @@ export function renderAccountsView(options = {}) {
                 ${roleSelectOptions}
               </select>
               <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
-                ${renderIcon('chevron-down', 'w-4 h-4')}
+                ${renderIcon("chevron-down", "w-4 h-4")}
               </div>
             </div>
           </div>
@@ -164,7 +172,7 @@ export function renderAccountsView(options = {}) {
                         class="appearance-none w-full px-3.5 py-2.5 pr-9 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors cursor-pointer">
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
-                  ${renderIcon('chevron-down', 'w-4 h-4')}
+                  ${renderIcon("chevron-down", "w-4 h-4")}
                 </div>
               </div>
               <button type="button" id="btn-unlink-account" title="Отвязать учётную карточку"
@@ -197,10 +205,9 @@ export function renderAccountsView(options = {}) {
       </div>
 
       <div id="accounts-toast" class="fixed bottom-6 right-6 z-50 flex items-center space-x-3 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl transition-all duration-300 opacity-0 translate-y-4 pointer-events-none">
-        <span id="accounts-toast-icon">${renderIcon('check', 'w-4 h-4 text-emerald-400')}</span>
+        <span id="accounts-toast-icon">${renderIcon("check", "w-4 h-4 text-emerald-400")}</span>
         <span id="accounts-toast-message" class="text-xs font-medium"></span>
       </div>
     </div>
   `;
 }
-

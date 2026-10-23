@@ -21278,6 +21278,1001 @@
     ]
   };
 
+  // src/services/accounts.js
+  function updateAccountRole(userId, newRole) {
+    const db = getDB();
+    const user = db.users.find((u) => u.id === userId);
+    if (!user) {
+      return { success: false, error: "Учётная запись не найдена" };
+    }
+    if (!ROLE_LABELS[newRole]) {
+      return { success: false, error: "Неизвестная роль" };
+    }
+    if (user.role === "admin" && newRole !== "admin") {
+      const activeAdmins = db.users.filter((u) => u.role === "admin").length;
+      if (activeAdmins <= 1) {
+        return { success: false, error: "Нельзя снять роль администратора с последнего администратора" };
+      }
+    }
+    user.role = newRole;
+    user.roleLabel = ROLE_LABELS[newRole];
+    saveDB(db);
+    return { success: true, message: `Роль изменена. Изменение применится при следующем входе` };
+  }
+  function getAccountCardRef(user) {
+    if (!user) return null;
+    switch (user.role) {
+      case "student":
+        return user.studentId ? { type: "student", id: user.studentId } : null;
+      case "parent":
+        return user.childStudentId ? { type: "parent", id: user.childStudentId } : null;
+      case "teacher":
+      case "subject_teacher":
+        return user.cardName ? { type: "teacher", id: user.cardName } : null;
+      default:
+        return null;
+    }
+  }
+  function setAccountBinding(userId, binding) {
+    const db = getDB();
+    const user = db.users.find((u) => u.id === userId);
+    if (!user) {
+      return { success: false, error: "Учётная запись не найдена" };
+    }
+    if (user.role === "admin") {
+      return { success: false, error: "У учётной записи администратора нет учётной карточки" };
+    }
+    const className = db.meta && db.meta.className || "7Б";
+    if (!binding || !binding.cardId) {
+      if (user.role === "student") {
+        user.studentId = null;
+        user.classId = null;
+      } else if (user.role === "parent") {
+        user.childStudentId = null;
+        user.childName = null;
+      } else {
+        user.cardName = null;
+      }
+      saveDB(db);
+      return { success: true, message: "Привязка к учётной карточке снята. Изменение применится при следующем входе." };
+    }
+    let cardRef;
+    if (user.role === "student" || user.role === "parent") {
+      const card = (db.students || []).find((s) => s.id === binding.cardId);
+      if (!card) {
+        return { success: false, error: "Карточка не найдена" };
+      }
+      cardRef = { type: user.role === "parent" ? "parent" : "student", id: card.id };
+      const taken = (db.users || []).some(
+        (u) => u.id !== userId && JSON.stringify(getAccountCardRef(u)) === JSON.stringify(cardRef)
+      );
+      if (taken) {
+        return { success: false, error: "Эта учётная карточка уже привязана к другой учётной записи" };
+      }
+      if (user.role === "student") {
+        user.studentId = card.id;
+        user.classId = card.classId;
+      } else {
+        user.childStudentId = card.id;
+        user.childName = `${card.fullName} (${className})`;
+      }
+    } else {
+      const teacherNames = [...new Set((db.subjects || []).map((s) => s.teacher))];
+      const card = teacherNames.find((name) => name === binding.cardId) || (user.shortName === binding.cardId ? binding.cardId : null);
+      if (!card) {
+        return { success: false, error: "Карточка учителя не найдена в справочнике" };
+      }
+      cardRef = { type: "teacher", id: card };
+      const taken = (db.users || []).some(
+        (u) => u.id !== userId && JSON.stringify(getAccountCardRef(u)) === JSON.stringify(cardRef)
+      );
+      if (taken) {
+        return { success: false, error: "Эта учётная карточка уже привязана к другой учётной записи" };
+      }
+      user.cardName = card;
+    }
+    saveDB(db);
+    return { success: true, message: "Привязка обновлена. Изменение применится при следующем входе." };
+  }
+  function setAccountStatus(userId, status) {
+    const db = getDB();
+    const user = db.users.find((u) => u.id === userId);
+    if (!user) {
+      return { success: false, error: "Учётная запись не найдена" };
+    }
+    if (status !== "active" && status !== "blocked") {
+      return { success: false, error: "Недопустимый статус" };
+    }
+    if (status === "blocked" && user.role === "admin") {
+      const activeAdmins = db.users.filter((u) => u.role === "admin" && u.status === "active").length;
+      if (activeAdmins <= 1) {
+        return { success: false, error: "Нельзя заблокировать последнего активного администратора" };
+      }
+    }
+    user.status = status;
+    if (status === "active") {
+      resetFailedAttempts(user.username);
+    }
+    saveDB(db);
+    return {
+      success: true,
+      message: status === "blocked" ? "Учётная запись заблокирована. Вход будет запрещён при следующей попытке." : "Учётная запись разблокирована. Вход снова доступен."
+    };
+  }
+  function createAccount({ personName, username, role, tempPassword }) {
+    const db = getDB();
+    const name = (personName || "").trim();
+    const login2 = (username || "").trim().toLowerCase();
+    const pwd = (tempPassword || "").trim();
+    if (!name) {
+      return { success: false, error: "Укажите ФИО пользователя" };
+    }
+    if (!login2) {
+      return { success: false, error: "Укажите логин (электронную почту)" };
+    }
+    if (!ROLE_LABELS[role]) {
+      return { success: false, error: "Выберите роль" };
+    }
+    if (db.users.some((u) => u.username.toLowerCase() === login2)) {
+      return { success: false, error: "Пользователь с таким логином уже существует" };
+    }
+    const pwdCheck = validateNewPassword(pwd);
+    if (!pwdCheck.valid) {
+      return { success: false, error: pwdCheck.error };
+    }
+    const newUser = {
+      id: `user-${Date.now()}`,
+      username: login2,
+      password: pwd,
+      role,
+      roleLabel: ROLE_LABELS[role],
+      personName: name,
+      shortName: shortenName(name),
+      status: "active",
+      mustChangePassword: true
+    };
+    db.users.push(newUser);
+    saveDB(db);
+    return { success: true, user: newUser, message: "Учётная запись создана" };
+  }
+  function resetAccountPassword(userId) {
+    const db = getDB();
+    const user = db.users.find((u) => u.id === userId);
+    if (!user) {
+      return { success: false, error: "Учётная запись не найдена" };
+    }
+    const tempPassword = `Temp#${Math.floor(1e3 + Math.random() * 9e3)}${(/* @__PURE__ */ new Date()).getFullYear() % 100}`;
+    user.password = tempPassword;
+    user.mustChangePassword = true;
+    resetFailedAttempts(user.username);
+    saveDB(db);
+    return { success: true, tempPassword, message: "Пароль сброшен. Сообщите временный пароль пользователю." };
+  }
+
+  // src/services/directories.js
+  function getClassDirectory(db = getDB()) {
+    const list = Array.isArray(db.classes) ? db.classes.map((c) => ({ id: c.id, name: c.name })) : [];
+    if (list.length) return list;
+    const names = /* @__PURE__ */ new Map();
+    (db.teachers || []).forEach((t) => {
+      (t.workload || []).forEach((w) => {
+        if (w.classId) names.set(w.classId, w.className);
+      });
+    });
+    if (db.meta && db.meta.classId) names.set(db.meta.classId, db.meta.className);
+    return [...names].map(([id, name]) => ({ id, name }));
+  }
+  function getClassNameById(classId, db) {
+    const dir = getClassDirectory(db);
+    const found = dir.find((c) => c.id === classId);
+    return found ? found.name : db.meta && db.meta.classId === classId ? db.meta.className : classId;
+  }
+  function getSubjectShortName(subjectId, db) {
+    const subject = (db.subjects || []).find((s) => s.id === subjectId);
+    return subject ? subject.shortName || subject.name : subjectId;
+  }
+
+  // src/services/teachers.js
+  function createTeacherCard(data = {}) {
+    const db = getDB();
+    if (!Array.isArray(db.teachers)) db.teachers = [];
+    const fullName = (data.fullName || "").trim();
+    const subjectIds = Array.isArray(data.subjectIds) ? data.subjectIds.filter(Boolean) : [];
+    if (!fullName) {
+      return { success: false, error: "Укажите ФИО учителя" };
+    }
+    if (!subjectIds.length) {
+      return { success: false, error: "Выберите хотя бы один предмет" };
+    }
+    if (db.teachers.some((t) => (t.fullName || "").toLowerCase() === fullName.toLowerCase())) {
+      return { success: false, error: "Карточка с таким ФИО уже существует" };
+    }
+    const account = data.accountUserId ? (db.users || []).find((u) => u.id === data.accountUserId) : null;
+    if (data.accountUserId && !account) {
+      return { success: false, error: "Учётная запись не найдена" };
+    }
+    if (account) {
+      if (account.role !== "teacher" && account.role !== "subject_teacher") {
+        return { success: false, error: "Привязать можно только учётную запись с ролью учителя" };
+      }
+      if (db.teachers.some((t) => t.accountUserId === account.id)) {
+        return { success: false, error: "Эта учётная запись уже привязана к другому учителю" };
+      }
+    }
+    const teacher = {
+      id: `t-${Date.now()}`,
+      fullName,
+      shortName: shortenName(fullName),
+      subjectIds,
+      status: data.status === "archived" ? "archived" : "active",
+      homeroomClassId: data.homeroomClassId || null,
+      accountUserId: account ? account.id : null,
+      workload: []
+    };
+    db.teachers.push(teacher);
+    if (account) {
+      account.cardName = teacher.shortName;
+    }
+    saveDB(db);
+    return { success: true, teacher, message: "Карточка учителя создана" };
+  }
+  function updateTeacherCard(teacherId, data = {}) {
+    const db = getDB();
+    const teacher = (db.teachers || []).find((t) => t.id === teacherId);
+    if (!teacher) {
+      return { success: false, error: "Карточка учителя не найдена" };
+    }
+    if (data.fullName !== void 0) {
+      const fullName = String(data.fullName).trim();
+      if (!fullName) {
+        return { success: false, error: "Укажите ФИО учителя" };
+      }
+      if (db.teachers.some((t) => t.id !== teacherId && (t.fullName || "").toLowerCase() === fullName.toLowerCase())) {
+        return { success: false, error: "Карточка с таким ФИО уже существует" };
+      }
+      teacher.fullName = fullName;
+      teacher.shortName = shortenName(fullName);
+    }
+    if (data.subjectIds !== void 0) {
+      const subjectIds = Array.isArray(data.subjectIds) ? data.subjectIds.filter(Boolean) : [];
+      if (!subjectIds.length) {
+        return { success: false, error: "Выберите хотя бы один предмет" };
+      }
+      teacher.subjectIds = subjectIds;
+    }
+    if (data.status !== void 0) {
+      teacher.status = data.status === "archived" ? "archived" : "active";
+    }
+    if (data.homeroomClassId !== void 0) {
+      teacher.homeroomClassId = data.homeroomClassId || null;
+    }
+    if (data.accountUserId !== void 0) {
+      const account = data.accountUserId ? (db.users || []).find((u) => u.id === data.accountUserId) : null;
+      if (data.accountUserId && !account) {
+        return { success: false, error: "Учётная запись не найдена" };
+      }
+      if (account) {
+        if (account.role !== "teacher" && account.role !== "subject_teacher") {
+          return { success: false, error: "Привязать можно только учётную запись с ролью учителя" };
+        }
+        if (db.teachers.some((t) => t.id !== teacherId && t.accountUserId === account.id)) {
+          return { success: false, error: "Эта учётная запись уже привязана к другому учителю" };
+        }
+      }
+      (db.users || []).forEach((u) => {
+        if (u.cardName === teacher.shortName && (!account || u.id !== account.id)) {
+          delete u.cardName;
+        }
+      });
+      teacher.accountUserId = account ? account.id : null;
+      if (account) {
+        account.cardName = teacher.shortName;
+      }
+    }
+    saveDB(db);
+    return { success: true, teacher, message: "Карточка учителя обновлена" };
+  }
+  function deleteTeacherCard(teacherId) {
+    const db = getDB();
+    const teacher = (db.teachers || []).find((t) => t.id === teacherId);
+    if (!teacher) {
+      return { success: false, error: "Карточка учителя не найдена" };
+    }
+    if ((teacher.workload || []).length) {
+      return { success: false, error: "Сначала снимите учебную нагрузку учителя" };
+    }
+    if (teacher.accountUserId) {
+      return { success: false, error: "Сначала отвяжите учётную запись учителя" };
+    }
+    db.teachers = (db.teachers || []).filter((t) => t.id !== teacherId);
+    saveDB(db);
+    return { success: true, message: "Карточка учителя удалена" };
+  }
+
+  // src/services/workload.js
+  function getWorkloadRows(db = getDB()) {
+    const rows = [];
+    (db.teachers || []).forEach((teacher) => {
+      (teacher.workload || []).forEach((w) => {
+        rows.push({
+          id: w.id || `wl-${teacher.id}-${w.classId}-${w.subjectId}`,
+          teacherId: teacher.id,
+          teacherName: teacher.fullName,
+          teacherShortName: teacher.shortName,
+          subjectId: w.subjectId,
+          subjectLabel: w.subjectLabel || getSubjectShortName(w.subjectId, db),
+          classId: w.classId,
+          className: w.className || getClassNameById(w.classId, db),
+          hours: w.hours || 0
+        });
+      });
+    });
+    return rows;
+  }
+  function findWorkloadOwner(db, rowId) {
+    for (const teacher of db.teachers || []) {
+      const row = (teacher.workload || []).find((w) => (w.id || `wl-${teacher.id}-${w.classId}-${w.subjectId}`) === rowId);
+      if (row) return { teacher, row };
+    }
+    return null;
+  }
+  function validateWorkloadValues(db, values, excludeRowId = null) {
+    const teacher = (db.teachers || []).find((t) => t.id === values.teacherId);
+    if (!teacher) {
+      return { error: "Учитель не найден" };
+    }
+    const subject = (db.subjects || []).find((s) => s.id === values.subjectId);
+    if (!subject) {
+      return { error: "Предмет не найден в справочнике" };
+    }
+    const classId = values.classId;
+    const classExists = getClassDirectory(db).some((c) => c.id === classId);
+    if (!classExists) {
+      return { error: "Класс не найден в справочнике" };
+    }
+    const hours = Number(values.hours);
+    if (!Number.isInteger(hours) || hours < 1 || hours > 40) {
+      return { error: "Количество часов должно быть целым числом от 1 до 40" };
+    }
+    const duplicate = (db.teachers || []).some((t) => (t.workload || []).some((w) => {
+      const wId = w.id || `wl-${t.id}-${w.classId}-${w.subjectId}`;
+      if (wId === excludeRowId) return false;
+      return t.id === values.teacherId && w.subjectId === values.subjectId && w.classId === classId;
+    }));
+    if (duplicate) {
+      return { error: "Такая нагрузка уже назначена" };
+    }
+    return { teacher, subject, classId, hours };
+  }
+  function addWorkloadRow(values = {}) {
+    const db = getDB();
+    const checked = validateWorkloadValues(db, values);
+    if (checked.error) {
+      return { success: false, error: checked.error };
+    }
+    const { teacher, subject, classId, hours } = checked;
+    const id = `wl-${teacher.id}-${classId}-${subject.id}`;
+    const row = {
+      id,
+      classId,
+      className: getClassNameById(classId, db),
+      subjectId: subject.id,
+      subjectLabel: subject.shortName || subject.name,
+      hours
+    };
+    teacher.workload = teacher.workload || [];
+    teacher.workload.push(row);
+    if (!(teacher.subjectIds || []).includes(subject.id)) {
+      teacher.subjectIds = [...teacher.subjectIds || [], subject.id];
+    }
+    saveDB(db);
+    return { success: true, row, message: "Нагрузка назначена" };
+  }
+  function updateWorkloadRow(rowId, values = {}) {
+    const db = getDB();
+    const owner = findWorkloadOwner(db, rowId);
+    if (!owner) {
+      return { success: false, error: "Строка нагрузки не найдена" };
+    }
+    const merged = {
+      teacherId: values.teacherId || owner.teacher.id,
+      subjectId: values.subjectId || owner.row.subjectId,
+      classId: values.classId || owner.row.classId,
+      hours: values.hours !== void 0 ? values.hours : owner.row.hours
+    };
+    const checked = validateWorkloadValues(db, merged, rowId);
+    if (checked.error) {
+      return { success: false, error: checked.error };
+    }
+    const { teacher, subject, classId, hours } = checked;
+    if (teacher.id !== owner.teacher.id) {
+      owner.teacher.workload = owner.teacher.workload.filter((w) => w !== owner.row);
+      teacher.workload = teacher.workload || [];
+      if (!(teacher.subjectIds || []).includes(subject.id)) {
+        teacher.subjectIds = [...teacher.subjectIds || [], subject.id];
+      }
+    } else if (!(teacher.subjectIds || []).includes(subject.id)) {
+      teacher.subjectIds = [...teacher.subjectIds || [], subject.id];
+    }
+    const updated = {
+      id: `wl-${teacher.id}-${classId}-${subject.id}`,
+      classId,
+      className: getClassNameById(classId, db),
+      subjectId: subject.id,
+      subjectLabel: subject.shortName || subject.name,
+      hours
+    };
+    const list = teacher.workload || [];
+    const index = list.indexOf(owner.row);
+    if (index >= 0) {
+      list[index] = updated;
+    } else {
+      list.push(updated);
+    }
+    teacher.workload = list;
+    saveDB(db);
+    return { success: true, row: updated, message: "Нагрузка обновлена" };
+  }
+  function removeWorkloadRow(rowId) {
+    const db = getDB();
+    const owner = findWorkloadOwner(db, rowId);
+    if (!owner) {
+      return { success: false, error: "Строка нагрузки не найдена" };
+    }
+    owner.teacher.workload = owner.teacher.workload.filter((w) => w !== owner.row);
+    saveDB(db);
+    return { success: true, message: "Нагрузка снята" };
+  }
+
+  // src/services/attendance-ops.js
+  function confirmAbsenceRecord(recordId, data = {}) {
+    const db = getDB();
+    const record = (db.attendance || []).find((a) => a.id === recordId);
+    if (!record) {
+      return { success: false, error: "Запись посещаемости не найдена" };
+    }
+    const isExcused = data.status === "excused" || data.isExcused === true;
+    record.status = isExcused ? "excused" : "unexcused";
+    record.code = isExcused ? "УП" : "Н";
+    record.value = "absent";
+    record.reason = data.reason || (isExcused ? "Уважительная причина (справка / заявление)" : "Неуважительная причина");
+    record.document = data.document || (isExcused ? "Медицинская справка" : null);
+    record.confirmedBy = data.confirmedBy || "Смирнова М. В.";
+    record.confirmedAt = (/* @__PURE__ */ new Date()).toISOString();
+    if (db.meta) {
+      const q1LessonIds = new Set((db.lessons || []).filter((l) => l.periodId === "q1_2024").map((l) => l.id));
+      db.meta.unconfirmedAbsencesCount = (db.attendance || []).filter(
+        (a) => a.status === "unconfirmed" && a.value === "absent" && q1LessonIds.has(a.lessonId)
+      ).length;
+    }
+    saveDB(db);
+    return { success: true, record };
+  }
+  function getJournalComments(lessonId, studentId) {
+    const db = getDB();
+    if (!db.journalComments) return [];
+    return db.journalComments.filter((c) => c.lessonId === lessonId && c.studentId === studentId);
+  }
+  function addJournalComment(data = {}) {
+    const text = (data.text || "").trim();
+    if (!text || !data.lessonId || !data.studentId) {
+      return { success: false, error: "Заполните текст комментария" };
+    }
+    const db = getDB();
+    if (!db.journalComments) {
+      db.journalComments = [];
+    }
+    const newComment = {
+      id: `jc-${Date.now()}-${Math.floor(Math.random() * 1e3)}`,
+      lessonId: data.lessonId,
+      studentId: data.studentId,
+      text,
+      author: data.author || "Смирнова М. В.",
+      role: data.role || "teacher",
+      createdAt: data.createdAt || (/* @__PURE__ */ new Date()).toLocaleString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    };
+    db.journalComments.push(newComment);
+    saveDB(db);
+    return { success: true, comment: newComment };
+  }
+
+  // src/services/parents-ops.js
+  function addParentContact(data = {}) {
+    const summary = (data.summary || "").trim();
+    const channel = (data.channel || "").trim();
+    const studentId = (data.studentId || "").trim();
+    const parentId = (data.parentId || "").trim();
+    if (!summary) {
+      return { success: false, error: "Поле «Итог» обязательно для заполнения" };
+    }
+    if (!channel) {
+      return { success: false, error: "Выберите канал связи" };
+    }
+    if (!studentId) {
+      return { success: false, error: "Ученик не указан" };
+    }
+    const db = getDB();
+    if (!db.parentContacts) db.parentContacts = [];
+    const channelLabels = {
+      phone: "Звонок",
+      chat: "Мессенджер",
+      personal: "Личная беседа",
+      meeting: "Личная беседа",
+      letter: "Письмо"
+    };
+    const agreementReached = data.agreementReached !== false;
+    const nextContactDate = !agreementReached && data.nextContactDate ? data.nextContactDate : null;
+    const newContact = {
+      id: `pc-${Date.now()}-${Math.floor(Math.random() * 1e3)}`,
+      studentId,
+      parentId: parentId || (db.parentStudentRelations?.find((r) => r.studentId === studentId)?.parentId || "pr-unknown"),
+      author: data.author || "Смирнова М. В.",
+      date: data.date || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
+      time: data.time || (/* @__PURE__ */ new Date()).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
+      channel,
+      channelLabel: channelLabels[channel] || data.channelLabel || "Звонок",
+      summary,
+      agreementReached,
+      nextContactDate
+    };
+    db.parentContacts.unshift(newContact);
+    saveDB(db);
+    return { success: true, contact: newContact };
+  }
+  function addStudentNote(data = {}) {
+    const text = (data.text || "").trim();
+    const studentId = (data.studentId || "").trim();
+    if (!text) {
+      return { success: false, error: "Поле «Текст заметки» обязательно для заполнения" };
+    }
+    if (!studentId) {
+      return { success: false, error: "Ученик не указан" };
+    }
+    const db = getDB();
+    if (!db.notes) db.notes = [];
+    const newNote = {
+      id: `note-${Date.now()}-${Math.floor(Math.random() * 1e3)}`,
+      studentId,
+      author: data.author || "Смирнова М. В.",
+      date: data.date || `${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)} ${(/* @__PURE__ */ new Date()).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}`,
+      text,
+      isPrivate: data.isPrivate !== false
+    };
+    db.notes.unshift(newNote);
+    saveDB(db);
+    return { success: true, note: newNote };
+  }
+  function addParent(data = {}) {
+    const fullName = (data.fullName || "").trim();
+    const phone = (data.phone || "").trim();
+    const studentId = data.studentId || null;
+    const relationRole = data.relationRole || "Родитель";
+    const isPrimary = Boolean(data.isPrimary);
+    if (!fullName) {
+      return { success: false, error: "Укажите ФИО родителя" };
+    }
+    if (!phone) {
+      return { success: false, error: "Укажите телефон" };
+    }
+    const db = getDB();
+    if (!db.parents) db.parents = [];
+    if (!db.parentStudentRelations) db.parentStudentRelations = [];
+    const parts = fullName.split(/\s+/);
+    const lastName = parts[0] || "Родитель";
+    const firstName = parts[1] || "";
+    const middleName = parts.slice(2).join(" ") || "";
+    const shortName = firstName ? `${lastName} ${firstName[0]}.` : lastName;
+    const parentId = `pr-${Date.now()}-${Math.floor(Math.random() * 1e3)}`;
+    const newParent = {
+      id: parentId,
+      lastName,
+      firstName,
+      middleName,
+      fullName,
+      shortName,
+      phone,
+      otherChildren: []
+    };
+    db.parents.push(newParent);
+    if (studentId) {
+      if (isPrimary) {
+        db.parentStudentRelations.forEach((r) => {
+          if (r.studentId === studentId) {
+            r.isPrimary = false;
+          }
+        });
+      }
+      db.parentStudentRelations.push({
+        id: `rel-${parentId}-${studentId}`,
+        parentId,
+        studentId,
+        relationRole,
+        isPrimary
+      });
+    }
+    saveDB(db);
+    return { success: true, parent: newParent };
+  }
+  function updateParent(parentId, data = {}) {
+    if (!parentId) return { success: false, error: "ID родителя не указан" };
+    const db = getDB();
+    const parent = (db.parents || []).find((p) => p.id === parentId);
+    if (!parent) return { success: false, error: "Родитель не найден" };
+    if (data.fullName) {
+      const fullName = data.fullName.trim();
+      const parts = fullName.split(/\s+/);
+      parent.lastName = parts[0] || parent.lastName;
+      parent.firstName = parts[1] || parent.firstName;
+      parent.middleName = parts.slice(2).join(" ") || parent.middleName;
+      parent.fullName = fullName;
+      parent.shortName = parent.firstName ? `${parent.lastName} ${parent.firstName[0]}.` : parent.lastName;
+    }
+    if (data.phone !== void 0) {
+      parent.phone = data.phone.trim();
+    }
+    if (data.relationRole || data.isPrimary !== void 0) {
+      const rels = (db.parentStudentRelations || []).filter((r) => r.parentId === parentId);
+      rels.forEach((rel) => {
+        if (data.relationRole) rel.relationRole = data.relationRole;
+        if (data.isPrimary !== void 0) {
+          if (data.isPrimary) {
+            (db.parentStudentRelations || []).forEach((otherRel) => {
+              if (otherRel.studentId === rel.studentId && otherRel.parentId !== parentId) {
+                otherRel.isPrimary = false;
+              }
+            });
+          }
+          rel.isPrimary = Boolean(data.isPrimary);
+        }
+      });
+    }
+    saveDB(db);
+    return { success: true, parent };
+  }
+  function deleteParent(parentId) {
+    if (!parentId) return { success: false, error: "ID родителя не указан" };
+    const db = getDB();
+    const rels = (db.parentStudentRelations || []).filter((r) => r.parentId === parentId);
+    if (rels.length > 0) {
+      return { success: false, error: "Сначала снимите связь с учеником в карточке или сводке" };
+    }
+    db.parents = (db.parents || []).filter((p) => p.id !== parentId);
+    saveDB(db);
+    return { success: true };
+  }
+  function linkParentToStudent(parentId, studentId, options = {}) {
+    if (!parentId || !studentId) {
+      return { success: false, error: "Не указан родитель или ученик" };
+    }
+    const db = getDB();
+    if (!db.parentStudentRelations) db.parentStudentRelations = [];
+    const isPrimary = Boolean(options.isPrimary);
+    const relationRole = options.relationRole || "Родитель";
+    if (isPrimary) {
+      db.parentStudentRelations.forEach((r) => {
+        if (r.studentId === studentId) {
+          r.isPrimary = false;
+        }
+      });
+    }
+    const existing = db.parentStudentRelations.find((r) => r.parentId === parentId && r.studentId === studentId);
+    if (existing) {
+      existing.relationRole = relationRole;
+      existing.isPrimary = isPrimary;
+    } else {
+      db.parentStudentRelations.push({
+        id: `rel-${parentId}-${studentId}`,
+        parentId,
+        studentId,
+        relationRole,
+        isPrimary
+      });
+    }
+    saveDB(db);
+    return { success: true };
+  }
+  function unlinkParentFromStudent(parentId, studentId) {
+    if (!parentId) return { success: false, error: "ID родителя не указан" };
+    const db = getDB();
+    if (!db.parentStudentRelations) db.parentStudentRelations = [];
+    if (studentId) {
+      db.parentStudentRelations = db.parentStudentRelations.filter(
+        (r) => !(r.parentId === parentId && r.studentId === studentId)
+      );
+    } else {
+      db.parentStudentRelations = db.parentStudentRelations.filter(
+        (r) => r.parentId !== parentId
+      );
+    }
+    saveDB(db);
+    return { success: true };
+  }
+
+  // src/services/school-year.js
+  function getAcademicYears(db = getDB()) {
+    return db.academicYears || [];
+  }
+  function getActiveAcademicYear(db = getDB()) {
+    const years = getAcademicYears(db);
+    return years.find((y) => y.isActive) || years[0] || null;
+  }
+  function setActiveAcademicYear(yearId) {
+    if (!yearId) return { success: false, error: "Укажите ID учебного года" };
+    const db = getDB();
+    const years = getAcademicYears(db);
+    const targetYear = years.find((y) => y.id === yearId);
+    if (!targetYear) return { success: false, error: "Учебный год не найден" };
+    years.forEach((y) => {
+      y.isActive = y.id === yearId;
+    });
+    db.meta = db.meta || {};
+    db.meta.academicYear = targetYear.name;
+    let activeQuarter = (targetYear.quarters || []).find((q) => q.isActive);
+    if (!activeQuarter && (targetYear.quarters || []).length > 0) {
+      activeQuarter = targetYear.quarters[0];
+      activeQuarter.isActive = true;
+    }
+    if (activeQuarter) {
+      db.meta.period = {
+        id: activeQuarter.id,
+        name: activeQuarter.name,
+        startDate: activeQuarter.startDate,
+        endDate: activeQuarter.endDate
+      };
+    }
+    saveDB(db);
+    return { success: true, year: targetYear, period: db.meta.period };
+  }
+  function addAcademicYear(data = {}) {
+    const name = (data.name || "").trim();
+    const startDate = (data.startDate || "").trim();
+    const endDate = (data.endDate || "").trim();
+    if (!name) return { success: false, error: "Укажите название учебного года" };
+    if (!/^\d{4}[\/\-]\d{4}$/.test(name)) {
+      return { success: false, error: "Формат года должен быть ГГГГ/ГГГГ (например, 2025/2026)" };
+    }
+    if (!startDate || !endDate) return { success: false, error: "Укажите даты начала и окончания учебного года" };
+    if (startDate >= endDate) return { success: false, error: "Дата начала года должна быть раньше даты окончания" };
+    const db = getDB();
+    if (!db.academicYears) db.academicYears = [];
+    const formattedName = name.replace("-", "/");
+    const exists = db.academicYears.some((y) => y.name === formattedName || y.id === `ay-${formattedName.replace("/", "-")}`);
+    if (exists) return { success: false, error: `Учебный год «${formattedName}» уже существует` };
+    const [startYearStr, endYearStr] = formattedName.split("/");
+    const startYearNum = parseInt(startYearStr, 10);
+    const endYearNum = parseInt(endYearStr, 10);
+    const defaultQuarters = [
+      {
+        id: `q1_${startYearNum}`,
+        name: "I четверть",
+        startDate: `${startYearNum}-09-01`,
+        endDate: `${startYearNum}-10-25`,
+        isActive: false
+      },
+      {
+        id: `q2_${startYearNum}`,
+        name: "II четверть",
+        startDate: `${startYearNum}-11-05`,
+        endDate: `${startYearNum}-12-28`,
+        isActive: false
+      },
+      {
+        id: `q3_${endYearNum}`,
+        name: "III четверть",
+        startDate: `${endYearNum}-01-10`,
+        endDate: `${endYearNum}-03-21`,
+        isActive: false
+      },
+      {
+        id: `q4_${endYearNum}`,
+        name: "IV четверть",
+        startDate: `${endYearNum}-03-31`,
+        endDate: `${endYearNum}-05-23`,
+        isActive: false
+      }
+    ];
+    const newYear = {
+      id: `ay-${formattedName.replace("/", "-")}`,
+      name: formattedName,
+      startDate,
+      endDate,
+      isActive: false,
+      quarters: Array.isArray(data.quarters) && data.quarters.length > 0 ? data.quarters : defaultQuarters,
+      vacations: Array.isArray(data.vacations) ? data.vacations : [
+        { id: `vac-${Date.now()}-1`, name: "Осенние каникулы", startDate: `${startYearNum}-10-26`, endDate: `${startYearNum}-11-04` },
+        { id: `vac-${Date.now()}-2`, name: "Зимние каникулы", startDate: `${startYearNum}-12-29`, endDate: `${endYearNum}-01-09` },
+        { id: `vac-${Date.now()}-3`, name: "Весенние каникулы", startDate: `${endYearNum}-03-22`, endDate: `${endYearNum}-03-30` }
+      ]
+    };
+    db.academicYears.push(newYear);
+    saveDB(db);
+    return { success: true, year: newYear };
+  }
+  function updateAcademicYear(yearId, data = {}) {
+    if (!yearId) return { success: false, error: "Укажите ID учебного года" };
+    const name = (data.name || "").trim();
+    const startDate = (data.startDate || "").trim();
+    const endDate = (data.endDate || "").trim();
+    if (!name) return { success: false, error: "Укажите название учебного года" };
+    if (!/^\d{4}[\/\-]\d{4}$/.test(name)) {
+      return { success: false, error: "Формат года должен быть ГГГГ/ГГГГ (например, 2025/2026)" };
+    }
+    if (!startDate || !endDate) return { success: false, error: "Укажите даты начала и окончания учебного года" };
+    if (startDate >= endDate) return { success: false, error: "Дата начала года должна быть раньше даты окончания" };
+    const db = getDB();
+    const years = getAcademicYears(db);
+    const targetYear = years.find((y) => y.id === yearId);
+    if (!targetYear) return { success: false, error: "Учебный год не найден" };
+    const formattedName = name.replace("-", "/");
+    const duplicate = years.find((y) => y.id !== yearId && y.name.toLowerCase() === formattedName.toLowerCase());
+    if (duplicate) return { success: false, error: `Учебный год «${formattedName}» уже существует` };
+    targetYear.name = formattedName;
+    targetYear.startDate = startDate;
+    targetYear.endDate = endDate;
+    if (targetYear.isActive) {
+      db.meta = db.meta || {};
+      db.meta.academicYear = targetYear.name;
+    }
+    saveDB(db);
+    return { success: true, year: targetYear };
+  }
+  function deleteAcademicYear(yearId) {
+    if (!yearId) return { success: false, error: "Укажите ID учебного года" };
+    const db = getDB();
+    const year = (db.academicYears || []).find((y) => y.id === yearId);
+    if (!year) return { success: false, error: "Учебный год не найден" };
+    if (year.isActive) return { success: false, error: "Нельзя удалить активный учебный год" };
+    db.academicYears = db.academicYears.filter((y) => y.id !== yearId);
+    saveDB(db);
+    return { success: true };
+  }
+  function setActiveQuarter(yearId, quarterId) {
+    if (!quarterId) return { success: false, error: "Укажите ID четверти" };
+    const db = getDB();
+    const years = getAcademicYears(db);
+    let targetYear = yearId ? years.find((y) => y.id === yearId) : years.find((y) => y.isActive);
+    if (!targetYear) targetYear = years.find((y) => (y.quarters || []).some((q) => q.id === quarterId));
+    if (!targetYear) return { success: false, error: "Учебный год не найден" };
+    const targetQuarter = (targetYear.quarters || []).find((q) => q.id === quarterId);
+    if (!targetQuarter) return { success: false, error: "Четверть не найдена" };
+    years.forEach((y) => {
+      y.isActive = y.id === targetYear.id;
+      (y.quarters || []).forEach((q) => {
+        q.isActive = y.id === targetYear.id && q.id === quarterId;
+      });
+    });
+    db.meta = db.meta || {};
+    db.meta.academicYear = targetYear.name;
+    db.meta.period = {
+      id: targetQuarter.id,
+      name: targetQuarter.name,
+      startDate: targetQuarter.startDate,
+      endDate: targetQuarter.endDate
+    };
+    saveDB(db);
+    return { success: true, quarter: targetQuarter, period: db.meta.period };
+  }
+  function updateQuarter(yearId, quarterId, data = {}) {
+    if (!quarterId) return { success: false, error: "Укажите ID четверти" };
+    const startDate = (data.startDate || "").trim();
+    const endDate = (data.endDate || "").trim();
+    const name = (data.name || "").trim();
+    if (!startDate || !endDate) return { success: false, error: "Укажите даты начала и окончания четверти" };
+    if (startDate > endDate) return { success: false, error: "Дата начала четверти не может быть позже даты окончания" };
+    const db = getDB();
+    const years = getAcademicYears(db);
+    let targetYear = yearId ? years.find((y) => y.id === yearId) : years.find((y) => y.isActive);
+    if (!targetYear) targetYear = years.find((y) => (y.quarters || []).some((q) => q.id === quarterId));
+    if (!targetYear) return { success: false, error: "Учебный год не найден" };
+    if (targetYear.startDate && startDate < targetYear.startDate) {
+      return { success: false, error: "Дата начала четверти не может быть раньше начала учебного года" };
+    }
+    if (targetYear.endDate && endDate > targetYear.endDate) {
+      return { success: false, error: "Дата окончания четверти не может быть позже окончания учебного года" };
+    }
+    const quartersList = targetYear.quarters || [];
+    const currentIndex = quartersList.findIndex((q) => q.id === quarterId);
+    if (currentIndex > 0) {
+      const prevQuarter = quartersList[currentIndex - 1];
+      if (prevQuarter.endDate && startDate <= prevQuarter.endDate) {
+        return { success: false, error: `Дата начала четверти должна быть позже окончания ${prevQuarter.name}` };
+      }
+    }
+    if (currentIndex >= 0 && currentIndex < quartersList.length - 1) {
+      const nextQuarter = quartersList[currentIndex + 1];
+      if (nextQuarter.startDate && endDate >= nextQuarter.startDate) {
+        return { success: false, error: `Дата окончания четверти должна быть раньше начала ${nextQuarter.name}` };
+      }
+    }
+    const targetQuarter = quartersList.find((q) => q.id === quarterId);
+    if (!targetQuarter) return { success: false, error: "Четверть не найдена" };
+    if (name) targetQuarter.name = name;
+    targetQuarter.startDate = startDate;
+    targetQuarter.endDate = endDate;
+    if (targetQuarter.isActive) {
+      db.meta = db.meta || {};
+      db.meta.period = {
+        id: targetQuarter.id,
+        name: targetQuarter.name,
+        startDate: targetQuarter.startDate,
+        endDate: targetQuarter.endDate
+      };
+    }
+    saveDB(db);
+    return { success: true, quarter: targetQuarter };
+  }
+  function updateVacation(yearId, vacationId, data = {}) {
+    if (!vacationId) return { success: false, error: "Укажите ID каникул" };
+    const name = (data.name || "").trim();
+    const startDate = (data.startDate || "").trim();
+    const endDate = (data.endDate || "").trim();
+    if (!startDate || !endDate) return { success: false, error: "Укажите даты начала и окончания каникул" };
+    if (startDate > endDate) return { success: false, error: "Дата начала каникул не может быть позже окончания" };
+    const db = getDB();
+    const years = getAcademicYears(db);
+    let targetYear = yearId ? years.find((y) => y.id === yearId) : years.find((y) => y.isActive);
+    if (!targetYear) return { success: false, error: "Учебный год не найден" };
+    if (targetYear.startDate && startDate < targetYear.startDate) {
+      return { success: false, error: "Дата начала каникул не может быть раньше начала учебного года" };
+    }
+    if (targetYear.endDate && endDate > targetYear.endDate) {
+      return { success: false, error: "Дата окончания каникул не может быть позже окончания учебного года" };
+    }
+    if (!Array.isArray(targetYear.vacations)) targetYear.vacations = [];
+    const vac = targetYear.vacations.find((v) => v.id === vacationId);
+    if (!vac) return { success: false, error: "Период каникул не найден" };
+    if (name) vac.name = name;
+    vac.startDate = startDate;
+    vac.endDate = endDate;
+    saveDB(db);
+    return { success: true, vacation: vac };
+  }
+  function addVacation(yearId, data = {}) {
+    const name = (data.name || "").trim();
+    const startDate = (data.startDate || "").trim();
+    const endDate = (data.endDate || "").trim();
+    if (!name) return { success: false, error: "Укажите название каникул" };
+    if (!startDate || !endDate) return { success: false, error: "Укажите даты начала и окончания каникул" };
+    if (startDate > endDate) return { success: false, error: "Дата начала каникул не может быть позже окончания" };
+    const db = getDB();
+    const years = getAcademicYears(db);
+    let targetYear = yearId ? years.find((y) => y.id === yearId) : years.find((y) => y.isActive);
+    if (!targetYear) return { success: false, error: "Учебный год не найден" };
+    if (targetYear.startDate && startDate < targetYear.startDate) {
+      return { success: false, error: "Дата начала каникул не может быть раньше начала учебного года" };
+    }
+    if (targetYear.endDate && endDate > targetYear.endDate) {
+      return { success: false, error: "Дата окончания каникул не может быть позже окончания учебного года" };
+    }
+    if (!Array.isArray(targetYear.vacations)) targetYear.vacations = [];
+    const newVac = {
+      id: `vac-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      name,
+      startDate,
+      endDate
+    };
+    targetYear.vacations.push(newVac);
+    saveDB(db);
+    return { success: true, vacation: newVac };
+  }
+  function deleteVacation(yearId, vacationId) {
+    if (!vacationId) return { success: false, error: "Укажите ID каникул" };
+    const db = getDB();
+    const years = getAcademicYears(db);
+    let targetYear = yearId ? years.find((y) => y.id === yearId) : years.find((y) => y.isActive);
+    if (!targetYear) return { success: false, error: "Учебный год не найден" };
+    if (!Array.isArray(targetYear.vacations)) return { success: true };
+    targetYear.vacations = targetYear.vacations.filter((v) => v.id !== vacationId);
+    saveDB(db);
+    return { success: true };
+  }
+
   // src/services/storage.js
   var STORAGE_KEYS = {
     DB: "classroom_crm_db",
@@ -21594,175 +22589,6 @@
     saveDB(db);
     return { success: true, message: "Пароль успешно изменён" };
   }
-  function updateAccountRole(userId, newRole) {
-    const db = getDB();
-    const user = db.users.find((u) => u.id === userId);
-    if (!user) {
-      return { success: false, error: "Учётная запись не найдена" };
-    }
-    if (!ROLE_LABELS[newRole]) {
-      return { success: false, error: "Неизвестная роль" };
-    }
-    if (user.role === "admin" && newRole !== "admin") {
-      const activeAdmins = db.users.filter((u) => u.role === "admin").length;
-      if (activeAdmins <= 1) {
-        return { success: false, error: "Нельзя снять роль администратора с последнего администратора" };
-      }
-    }
-    user.role = newRole;
-    user.roleLabel = ROLE_LABELS[newRole];
-    saveDB(db);
-    return { success: true, message: `Роль изменена. Изменение применится при следующем входе` };
-  }
-  function getAccountCardRef(user) {
-    if (!user) return null;
-    switch (user.role) {
-      case "student":
-        return user.studentId ? { type: "student", id: user.studentId } : null;
-      case "parent":
-        return user.childStudentId ? { type: "parent", id: user.childStudentId } : null;
-      case "teacher":
-      case "subject_teacher":
-        return user.cardName ? { type: "teacher", id: user.cardName } : null;
-      default:
-        return null;
-    }
-  }
-  function setAccountBinding(userId, binding) {
-    const db = getDB();
-    const user = db.users.find((u) => u.id === userId);
-    if (!user) {
-      return { success: false, error: "Учётная запись не найдена" };
-    }
-    if (user.role === "admin") {
-      return { success: false, error: "У учётной записи администратора нет учётной карточки" };
-    }
-    const className = db.meta && db.meta.className || "7Б";
-    if (!binding || !binding.cardId) {
-      if (user.role === "student") {
-        user.studentId = null;
-        user.classId = null;
-      } else if (user.role === "parent") {
-        user.childStudentId = null;
-        user.childName = null;
-      } else {
-        user.cardName = null;
-      }
-      saveDB(db);
-      return { success: true, message: "Привязка к учётной карточке снята. Изменение применится при следующем входе." };
-    }
-    let cardRef;
-    if (user.role === "student" || user.role === "parent") {
-      const card = (db.students || []).find((s) => s.id === binding.cardId);
-      if (!card) {
-        return { success: false, error: "Карточка не найдена" };
-      }
-      cardRef = { type: user.role === "parent" ? "parent" : "student", id: card.id };
-      const taken = (db.users || []).some(
-        (u) => u.id !== userId && JSON.stringify(getAccountCardRef(u)) === JSON.stringify(cardRef)
-      );
-      if (taken) {
-        return { success: false, error: "Эта учётная карточка уже привязана к другой учётной записи" };
-      }
-      if (user.role === "student") {
-        user.studentId = card.id;
-        user.classId = card.classId;
-      } else {
-        user.childStudentId = card.id;
-        user.childName = `${card.fullName} (${className})`;
-      }
-    } else {
-      const teacherNames = [...new Set((db.subjects || []).map((s) => s.teacher))];
-      const card = teacherNames.find((name) => name === binding.cardId) || (user.shortName === binding.cardId ? binding.cardId : null);
-      if (!card) {
-        return { success: false, error: "Карточка учителя не найдена в справочнике" };
-      }
-      cardRef = { type: "teacher", id: card };
-      const taken = (db.users || []).some(
-        (u) => u.id !== userId && JSON.stringify(getAccountCardRef(u)) === JSON.stringify(cardRef)
-      );
-      if (taken) {
-        return { success: false, error: "Эта учётная карточка уже привязана к другой учётной записи" };
-      }
-      user.cardName = card;
-    }
-    saveDB(db);
-    return { success: true, message: "Привязка обновлена. Изменение применится при следующем входе." };
-  }
-  function setAccountStatus(userId, status) {
-    const db = getDB();
-    const user = db.users.find((u) => u.id === userId);
-    if (!user) {
-      return { success: false, error: "Учётная запись не найдена" };
-    }
-    if (status !== "active" && status !== "blocked") {
-      return { success: false, error: "Недопустимый статус" };
-    }
-    if (status === "blocked" && user.role === "admin") {
-      const activeAdmins = db.users.filter((u) => u.role === "admin" && u.status === "active").length;
-      if (activeAdmins <= 1) {
-        return { success: false, error: "Нельзя заблокировать последнего активного администратора" };
-      }
-    }
-    user.status = status;
-    if (status === "active") {
-      resetFailedAttempts(user.username);
-    }
-    saveDB(db);
-    return {
-      success: true,
-      message: status === "blocked" ? "Учётная запись заблокирована. Вход будет запрещён при следующей попытке." : "Учётная запись разблокирована. Вход снова доступен."
-    };
-  }
-  function createAccount({ personName, username, role, tempPassword }) {
-    const db = getDB();
-    const name = (personName || "").trim();
-    const login2 = (username || "").trim().toLowerCase();
-    const pwd = (tempPassword || "").trim();
-    if (!name) {
-      return { success: false, error: "Укажите ФИО пользователя" };
-    }
-    if (!login2) {
-      return { success: false, error: "Укажите логин (электронную почту)" };
-    }
-    if (!ROLE_LABELS[role]) {
-      return { success: false, error: "Выберите роль" };
-    }
-    if (db.users.some((u) => u.username.toLowerCase() === login2)) {
-      return { success: false, error: "Пользователь с таким логином уже существует" };
-    }
-    const pwdCheck = validateNewPassword(pwd);
-    if (!pwdCheck.valid) {
-      return { success: false, error: pwdCheck.error };
-    }
-    const newUser = {
-      id: `user-${Date.now()}`,
-      username: login2,
-      password: pwd,
-      role,
-      roleLabel: ROLE_LABELS[role],
-      personName: name,
-      shortName: shortenName(name),
-      status: "active",
-      mustChangePassword: true
-    };
-    db.users.push(newUser);
-    saveDB(db);
-    return { success: true, user: newUser, message: "Учётная запись создана" };
-  }
-  function resetAccountPassword(userId) {
-    const db = getDB();
-    const user = db.users.find((u) => u.id === userId);
-    if (!user) {
-      return { success: false, error: "Учётная запись не найдена" };
-    }
-    const tempPassword = `Temp#${Math.floor(1e3 + Math.random() * 9e3)}${(/* @__PURE__ */ new Date()).getFullYear() % 100}`;
-    user.password = tempPassword;
-    user.mustChangePassword = true;
-    resetFailedAttempts(user.username);
-    saveDB(db);
-    return { success: true, tempPassword, message: "Пароль сброшен. Сообщите временный пароль пользователю." };
-  }
   function validateNewPassword(pwd) {
     if (!pwd || pwd.length < 8) {
       return { valid: false, error: "Пароль должен содержать не менее 8 символов" };
@@ -21780,818 +22606,6 @@
     if (parts.length < 2) return fullName;
     const initials = parts.slice(1).map((p) => `${p[0]}.`).join(" ");
     return `${parts[0]} ${initials}`;
-  }
-  function createTeacherCard(data = {}) {
-    const db = getDB();
-    if (!Array.isArray(db.teachers)) db.teachers = [];
-    const fullName = (data.fullName || "").trim();
-    const subjectIds = Array.isArray(data.subjectIds) ? data.subjectIds.filter(Boolean) : [];
-    if (!fullName) {
-      return { success: false, error: "Укажите ФИО учителя" };
-    }
-    if (!subjectIds.length) {
-      return { success: false, error: "Выберите хотя бы один предмет" };
-    }
-    if (db.teachers.some((t) => (t.fullName || "").toLowerCase() === fullName.toLowerCase())) {
-      return { success: false, error: "Карточка с таким ФИО уже существует" };
-    }
-    const account = data.accountUserId ? (db.users || []).find((u) => u.id === data.accountUserId) : null;
-    if (data.accountUserId && !account) {
-      return { success: false, error: "Учётная запись не найдена" };
-    }
-    if (account) {
-      if (account.role !== "teacher" && account.role !== "subject_teacher") {
-        return { success: false, error: "Привязать можно только учётную запись с ролью учителя" };
-      }
-      if (db.teachers.some((t) => t.accountUserId === account.id)) {
-        return { success: false, error: "Эта учётная запись уже привязана к другому учителю" };
-      }
-    }
-    const teacher = {
-      id: `t-${Date.now()}`,
-      fullName,
-      shortName: shortenName(fullName),
-      subjectIds,
-      status: data.status === "archived" ? "archived" : "active",
-      homeroomClassId: data.homeroomClassId || null,
-      accountUserId: account ? account.id : null,
-      workload: []
-    };
-    db.teachers.push(teacher);
-    if (account) {
-      account.cardName = teacher.shortName;
-    }
-    saveDB(db);
-    return { success: true, teacher, message: "Карточка учителя создана" };
-  }
-  function updateTeacherCard(teacherId, data = {}) {
-    const db = getDB();
-    const teacher = (db.teachers || []).find((t) => t.id === teacherId);
-    if (!teacher) {
-      return { success: false, error: "Карточка учителя не найдена" };
-    }
-    if (data.fullName !== void 0) {
-      const fullName = String(data.fullName).trim();
-      if (!fullName) {
-        return { success: false, error: "Укажите ФИО учителя" };
-      }
-      if (db.teachers.some((t) => t.id !== teacherId && (t.fullName || "").toLowerCase() === fullName.toLowerCase())) {
-        return { success: false, error: "Карточка с таким ФИО уже существует" };
-      }
-      teacher.fullName = fullName;
-      teacher.shortName = shortenName(fullName);
-    }
-    if (data.subjectIds !== void 0) {
-      const subjectIds = Array.isArray(data.subjectIds) ? data.subjectIds.filter(Boolean) : [];
-      if (!subjectIds.length) {
-        return { success: false, error: "Выберите хотя бы один предмет" };
-      }
-      teacher.subjectIds = subjectIds;
-    }
-    if (data.status !== void 0) {
-      teacher.status = data.status === "archived" ? "archived" : "active";
-    }
-    if (data.homeroomClassId !== void 0) {
-      teacher.homeroomClassId = data.homeroomClassId || null;
-    }
-    if (data.accountUserId !== void 0) {
-      const account = data.accountUserId ? (db.users || []).find((u) => u.id === data.accountUserId) : null;
-      if (data.accountUserId && !account) {
-        return { success: false, error: "Учётная запись не найдена" };
-      }
-      if (account) {
-        if (account.role !== "teacher" && account.role !== "subject_teacher") {
-          return { success: false, error: "Привязать можно только учётную запись с ролью учителя" };
-        }
-        if (db.teachers.some((t) => t.id !== teacherId && t.accountUserId === account.id)) {
-          return { success: false, error: "Эта учётная запись уже привязана к другому учителю" };
-        }
-      }
-      (db.users || []).forEach((u) => {
-        if (u.cardName === teacher.shortName && (!account || u.id !== account.id)) {
-          delete u.cardName;
-        }
-      });
-      teacher.accountUserId = account ? account.id : null;
-      if (account) {
-        account.cardName = teacher.shortName;
-      }
-    }
-    saveDB(db);
-    return { success: true, teacher, message: "Карточка учителя обновлена" };
-  }
-  function deleteTeacherCard(teacherId) {
-    const db = getDB();
-    const teacher = (db.teachers || []).find((t) => t.id === teacherId);
-    if (!teacher) {
-      return { success: false, error: "Карточка учителя не найдена" };
-    }
-    if ((teacher.workload || []).length) {
-      return { success: false, error: "Сначала снимите учебную нагрузку учителя" };
-    }
-    if (teacher.accountUserId) {
-      return { success: false, error: "Сначала отвяжите учётную запись учителя" };
-    }
-    db.teachers = (db.teachers || []).filter((t) => t.id !== teacherId);
-    saveDB(db);
-    return { success: true, message: "Карточка учителя удалена" };
-  }
-  function getClassDirectory(db = getDB()) {
-    const list = Array.isArray(db.classes) ? db.classes.map((c) => ({ id: c.id, name: c.name })) : [];
-    if (list.length) return list;
-    const names = /* @__PURE__ */ new Map();
-    (db.teachers || []).forEach((t) => {
-      (t.workload || []).forEach((w) => {
-        if (w.classId) names.set(w.classId, w.className);
-      });
-    });
-    if (db.meta && db.meta.classId) names.set(db.meta.classId, db.meta.className);
-    return [...names].map(([id, name]) => ({ id, name }));
-  }
-  function getClassNameById(classId, db) {
-    const dir = getClassDirectory(db);
-    const found = dir.find((c) => c.id === classId);
-    return found ? found.name : db.meta && db.meta.classId === classId ? db.meta.className : classId;
-  }
-  function getSubjectShortName(subjectId, db) {
-    const subject = (db.subjects || []).find((s) => s.id === subjectId);
-    return subject ? subject.shortName || subject.name : subjectId;
-  }
-  function getWorkloadRows(db = getDB()) {
-    const rows = [];
-    (db.teachers || []).forEach((teacher) => {
-      (teacher.workload || []).forEach((w) => {
-        rows.push({
-          id: w.id || `wl-${teacher.id}-${w.classId}-${w.subjectId}`,
-          teacherId: teacher.id,
-          teacherName: teacher.fullName,
-          teacherShortName: teacher.shortName,
-          subjectId: w.subjectId,
-          subjectLabel: w.subjectLabel || getSubjectShortName(w.subjectId, db),
-          classId: w.classId,
-          className: w.className || getClassNameById(w.classId, db),
-          hours: w.hours || 0
-        });
-      });
-    });
-    return rows;
-  }
-  function findWorkloadOwner(db, rowId) {
-    for (const teacher of db.teachers || []) {
-      const row = (teacher.workload || []).find((w) => (w.id || `wl-${teacher.id}-${w.classId}-${w.subjectId}`) === rowId);
-      if (row) return { teacher, row };
-    }
-    return null;
-  }
-  function validateWorkloadValues(db, values, excludeRowId = null) {
-    const teacher = (db.teachers || []).find((t) => t.id === values.teacherId);
-    if (!teacher) {
-      return { error: "Учитель не найден" };
-    }
-    const subject = (db.subjects || []).find((s) => s.id === values.subjectId);
-    if (!subject) {
-      return { error: "Предмет не найден в справочнике" };
-    }
-    const classId = values.classId;
-    const classExists = getClassDirectory(db).some((c) => c.id === classId);
-    if (!classExists) {
-      return { error: "Класс не найден в справочнике" };
-    }
-    const hours = Number(values.hours);
-    if (!Number.isInteger(hours) || hours < 1 || hours > 40) {
-      return { error: "Количество часов должно быть целым числом от 1 до 40" };
-    }
-    const duplicate = (db.teachers || []).some((t) => (t.workload || []).some((w) => {
-      const wId = w.id || `wl-${t.id}-${w.classId}-${w.subjectId}`;
-      if (wId === excludeRowId) return false;
-      return t.id === values.teacherId && w.subjectId === values.subjectId && w.classId === classId;
-    }));
-    if (duplicate) {
-      return { error: "Такая нагрузка уже назначена" };
-    }
-    return { teacher, subject, classId, hours };
-  }
-  function addWorkloadRow(values = {}) {
-    const db = getDB();
-    const checked = validateWorkloadValues(db, values);
-    if (checked.error) {
-      return { success: false, error: checked.error };
-    }
-    const { teacher, subject, classId, hours } = checked;
-    const id = `wl-${teacher.id}-${classId}-${subject.id}`;
-    const row = {
-      id,
-      classId,
-      className: getClassNameById(classId, db),
-      subjectId: subject.id,
-      subjectLabel: subject.shortName || subject.name,
-      hours
-    };
-    teacher.workload = teacher.workload || [];
-    teacher.workload.push(row);
-    if (!(teacher.subjectIds || []).includes(subject.id)) {
-      teacher.subjectIds = [...teacher.subjectIds || [], subject.id];
-    }
-    saveDB(db);
-    return { success: true, row, message: "Нагрузка назначена" };
-  }
-  function updateWorkloadRow(rowId, values = {}) {
-    const db = getDB();
-    const owner = findWorkloadOwner(db, rowId);
-    if (!owner) {
-      return { success: false, error: "Строка нагрузки не найдена" };
-    }
-    const merged = {
-      teacherId: values.teacherId || owner.teacher.id,
-      subjectId: values.subjectId || owner.row.subjectId,
-      classId: values.classId || owner.row.classId,
-      hours: values.hours !== void 0 ? values.hours : owner.row.hours
-    };
-    const checked = validateWorkloadValues(db, merged, rowId);
-    if (checked.error) {
-      return { success: false, error: checked.error };
-    }
-    const { teacher, subject, classId, hours } = checked;
-    if (teacher.id !== owner.teacher.id) {
-      owner.teacher.workload = owner.teacher.workload.filter((w) => w !== owner.row);
-      teacher.workload = teacher.workload || [];
-      if (!(teacher.subjectIds || []).includes(subject.id)) {
-        teacher.subjectIds = [...teacher.subjectIds || [], subject.id];
-      }
-    } else if (!(teacher.subjectIds || []).includes(subject.id)) {
-      teacher.subjectIds = [...teacher.subjectIds || [], subject.id];
-    }
-    const updated = {
-      id: `wl-${teacher.id}-${classId}-${subject.id}`,
-      classId,
-      className: getClassNameById(classId, db),
-      subjectId: subject.id,
-      subjectLabel: subject.shortName || subject.name,
-      hours
-    };
-    const list = teacher.workload || [];
-    const index = list.indexOf(owner.row);
-    if (index >= 0) {
-      list[index] = updated;
-    } else {
-      list.push(updated);
-    }
-    teacher.workload = list;
-    saveDB(db);
-    return { success: true, row: updated, message: "Нагрузка обновлена" };
-  }
-  function removeWorkloadRow(rowId) {
-    const db = getDB();
-    const owner = findWorkloadOwner(db, rowId);
-    if (!owner) {
-      return { success: false, error: "Строка нагрузки не найдена" };
-    }
-    owner.teacher.workload = owner.teacher.workload.filter((w) => w !== owner.row);
-    saveDB(db);
-    return { success: true, message: "Нагрузка снята" };
-  }
-  function confirmAbsenceRecord(recordId, data = {}) {
-    const db = getDB();
-    const record = (db.attendance || []).find((a) => a.id === recordId);
-    if (!record) {
-      return { success: false, error: "Запись посещаемости не найдена" };
-    }
-    const isExcused = data.status === "excused" || data.isExcused === true;
-    record.status = isExcused ? "excused" : "unexcused";
-    record.code = isExcused ? "УП" : "Н";
-    record.value = "absent";
-    record.reason = data.reason || (isExcused ? "Уважительная причина (справка / заявление)" : "Неуважительная причина");
-    record.document = data.document || (isExcused ? "Медицинская справка" : null);
-    record.confirmedBy = data.confirmedBy || "Смирнова М. В.";
-    record.confirmedAt = (/* @__PURE__ */ new Date()).toISOString();
-    if (db.meta) {
-      const q1LessonIds = new Set((db.lessons || []).filter((l) => l.periodId === "q1_2024").map((l) => l.id));
-      db.meta.unconfirmedAbsencesCount = (db.attendance || []).filter(
-        (a) => a.status === "unconfirmed" && a.value === "absent" && q1LessonIds.has(a.lessonId)
-      ).length;
-    }
-    saveDB(db);
-    return { success: true, record };
-  }
-  function getJournalComments(lessonId, studentId) {
-    const db = getDB();
-    if (!db.journalComments) return [];
-    return db.journalComments.filter((c) => c.lessonId === lessonId && c.studentId === studentId);
-  }
-  function addJournalComment(data = {}) {
-    const text = (data.text || "").trim();
-    if (!text || !data.lessonId || !data.studentId) {
-      return { success: false, error: "Заполните текст комментария" };
-    }
-    const db = getDB();
-    if (!db.journalComments) {
-      db.journalComments = [];
-    }
-    const newComment = {
-      id: `jc-${Date.now()}-${Math.floor(Math.random() * 1e3)}`,
-      lessonId: data.lessonId,
-      studentId: data.studentId,
-      text,
-      author: data.author || "Смирнова М. В.",
-      role: data.role || "teacher",
-      createdAt: data.createdAt || (/* @__PURE__ */ new Date()).toLocaleString("ru-RU", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      })
-    };
-    db.journalComments.push(newComment);
-    saveDB(db);
-    return { success: true, comment: newComment };
-  }
-  function addParentContact(data = {}) {
-    const summary = (data.summary || "").trim();
-    const channel = (data.channel || "").trim();
-    const studentId = (data.studentId || "").trim();
-    const parentId = (data.parentId || "").trim();
-    if (!summary) {
-      return { success: false, error: "Поле «Итог» обязательно для заполнения" };
-    }
-    if (!channel) {
-      return { success: false, error: "Выберите канал связи" };
-    }
-    if (!studentId) {
-      return { success: false, error: "Ученик не указан" };
-    }
-    const db = getDB();
-    if (!db.parentContacts) db.parentContacts = [];
-    const channelLabels = {
-      phone: "Звонок",
-      chat: "Мессенджер",
-      personal: "Личная беседа",
-      meeting: "Личная беседа",
-      letter: "Письмо"
-    };
-    const agreementReached = data.agreementReached !== false;
-    const nextContactDate = !agreementReached && data.nextContactDate ? data.nextContactDate : null;
-    const newContact = {
-      id: `pc-${Date.now()}-${Math.floor(Math.random() * 1e3)}`,
-      studentId,
-      parentId: parentId || (db.parentStudentRelations?.find((r) => r.studentId === studentId)?.parentId || "pr-unknown"),
-      author: data.author || "Смирнова М. В.",
-      date: data.date || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
-      time: data.time || (/* @__PURE__ */ new Date()).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
-      channel,
-      channelLabel: channelLabels[channel] || data.channelLabel || "Звонок",
-      summary,
-      agreementReached,
-      nextContactDate
-    };
-    db.parentContacts.unshift(newContact);
-    saveDB(db);
-    return { success: true, contact: newContact };
-  }
-  function addStudentNote(data = {}) {
-    const text = (data.text || "").trim();
-    const studentId = (data.studentId || "").trim();
-    if (!text) {
-      return { success: false, error: "Поле «Текст заметки» обязательно для заполнения" };
-    }
-    if (!studentId) {
-      return { success: false, error: "Ученик не указан" };
-    }
-    const db = getDB();
-    if (!db.notes) db.notes = [];
-    const newNote = {
-      id: `note-${Date.now()}-${Math.floor(Math.random() * 1e3)}`,
-      studentId,
-      author: data.author || "Смирнова М. В.",
-      date: data.date || `${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)} ${(/* @__PURE__ */ new Date()).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}`,
-      text,
-      isPrivate: data.isPrivate !== false
-    };
-    db.notes.unshift(newNote);
-    saveDB(db);
-    return { success: true, note: newNote };
-  }
-  function addParent(data = {}) {
-    const fullName = (data.fullName || "").trim();
-    const phone = (data.phone || "").trim();
-    const studentId = data.studentId || null;
-    const relationRole = data.relationRole || "Родитель";
-    const isPrimary = Boolean(data.isPrimary);
-    if (!fullName) {
-      return { success: false, error: "Укажите ФИО родителя" };
-    }
-    if (!phone) {
-      return { success: false, error: "Укажите телефон" };
-    }
-    const db = getDB();
-    if (!db.parents) db.parents = [];
-    if (!db.parentStudentRelations) db.parentStudentRelations = [];
-    const parts = fullName.split(/\s+/);
-    const lastName = parts[0] || "Родитель";
-    const firstName = parts[1] || "";
-    const middleName = parts.slice(2).join(" ") || "";
-    const shortName = firstName ? `${lastName} ${firstName[0]}.` : lastName;
-    const parentId = `pr-${Date.now()}-${Math.floor(Math.random() * 1e3)}`;
-    const newParent = {
-      id: parentId,
-      lastName,
-      firstName,
-      middleName,
-      fullName,
-      shortName,
-      phone,
-      otherChildren: []
-    };
-    db.parents.push(newParent);
-    if (studentId) {
-      if (isPrimary) {
-        db.parentStudentRelations.forEach((r) => {
-          if (r.studentId === studentId) {
-            r.isPrimary = false;
-          }
-        });
-      }
-      db.parentStudentRelations.push({
-        id: `rel-${parentId}-${studentId}`,
-        parentId,
-        studentId,
-        relationRole,
-        isPrimary
-      });
-    }
-    saveDB(db);
-    return { success: true, parent: newParent };
-  }
-  function updateParent(parentId, data = {}) {
-    if (!parentId) return { success: false, error: "ID родителя не указан" };
-    const db = getDB();
-    const parent = (db.parents || []).find((p) => p.id === parentId);
-    if (!parent) return { success: false, error: "Родитель не найден" };
-    if (data.fullName) {
-      const fullName = data.fullName.trim();
-      const parts = fullName.split(/\s+/);
-      parent.lastName = parts[0] || parent.lastName;
-      parent.firstName = parts[1] || parent.firstName;
-      parent.middleName = parts.slice(2).join(" ") || parent.middleName;
-      parent.fullName = fullName;
-      parent.shortName = parent.firstName ? `${parent.lastName} ${parent.firstName[0]}.` : parent.lastName;
-    }
-    if (data.phone !== void 0) {
-      parent.phone = data.phone.trim();
-    }
-    if (data.relationRole || data.isPrimary !== void 0) {
-      const rels = (db.parentStudentRelations || []).filter((r) => r.parentId === parentId);
-      rels.forEach((rel) => {
-        if (data.relationRole) rel.relationRole = data.relationRole;
-        if (data.isPrimary !== void 0) {
-          if (data.isPrimary) {
-            (db.parentStudentRelations || []).forEach((otherRel) => {
-              if (otherRel.studentId === rel.studentId && otherRel.parentId !== parentId) {
-                otherRel.isPrimary = false;
-              }
-            });
-          }
-          rel.isPrimary = Boolean(data.isPrimary);
-        }
-      });
-    }
-    saveDB(db);
-    return { success: true, parent };
-  }
-  function deleteParent(parentId) {
-    if (!parentId) return { success: false, error: "ID родителя не указан" };
-    const db = getDB();
-    const rels = (db.parentStudentRelations || []).filter((r) => r.parentId === parentId);
-    if (rels.length > 0) {
-      return { success: false, error: "Сначала снимите связь с учеником в карточке или сводке" };
-    }
-    db.parents = (db.parents || []).filter((p) => p.id !== parentId);
-    saveDB(db);
-    return { success: true };
-  }
-  function linkParentToStudent(parentId, studentId, options = {}) {
-    if (!parentId || !studentId) {
-      return { success: false, error: "Не указан родитель или ученик" };
-    }
-    const db = getDB();
-    if (!db.parentStudentRelations) db.parentStudentRelations = [];
-    const isPrimary = Boolean(options.isPrimary);
-    const relationRole = options.relationRole || "Родитель";
-    if (isPrimary) {
-      db.parentStudentRelations.forEach((r) => {
-        if (r.studentId === studentId) {
-          r.isPrimary = false;
-        }
-      });
-    }
-    const existing = db.parentStudentRelations.find((r) => r.parentId === parentId && r.studentId === studentId);
-    if (existing) {
-      existing.relationRole = relationRole;
-      existing.isPrimary = isPrimary;
-    } else {
-      db.parentStudentRelations.push({
-        id: `rel-${parentId}-${studentId}`,
-        parentId,
-        studentId,
-        relationRole,
-        isPrimary
-      });
-    }
-    saveDB(db);
-    return { success: true };
-  }
-  function unlinkParentFromStudent(parentId, studentId) {
-    if (!parentId) return { success: false, error: "ID родителя не указан" };
-    const db = getDB();
-    if (!db.parentStudentRelations) db.parentStudentRelations = [];
-    if (studentId) {
-      db.parentStudentRelations = db.parentStudentRelations.filter(
-        (r) => !(r.parentId === parentId && r.studentId === studentId)
-      );
-    } else {
-      db.parentStudentRelations = db.parentStudentRelations.filter(
-        (r) => r.parentId !== parentId
-      );
-    }
-    saveDB(db);
-    return { success: true };
-  }
-  function getAcademicYears(db = getDB()) {
-    return db.academicYears || [];
-  }
-  function getActiveAcademicYear(db = getDB()) {
-    const years = getAcademicYears(db);
-    return years.find((y) => y.isActive) || years[0] || null;
-  }
-  function setActiveAcademicYear(yearId) {
-    if (!yearId) return { success: false, error: "Укажите ID учебного года" };
-    const db = getDB();
-    const years = getAcademicYears(db);
-    const targetYear = years.find((y) => y.id === yearId);
-    if (!targetYear) return { success: false, error: "Учебный год не найден" };
-    years.forEach((y) => {
-      y.isActive = y.id === yearId;
-    });
-    db.meta = db.meta || {};
-    db.meta.academicYear = targetYear.name;
-    let activeQuarter = (targetYear.quarters || []).find((q) => q.isActive);
-    if (!activeQuarter && (targetYear.quarters || []).length > 0) {
-      activeQuarter = targetYear.quarters[0];
-      activeQuarter.isActive = true;
-    }
-    if (activeQuarter) {
-      db.meta.period = {
-        id: activeQuarter.id,
-        name: activeQuarter.name,
-        startDate: activeQuarter.startDate,
-        endDate: activeQuarter.endDate
-      };
-    }
-    saveDB(db);
-    return { success: true, year: targetYear, period: db.meta.period };
-  }
-  function addAcademicYear(data = {}) {
-    const name = (data.name || "").trim();
-    const startDate = (data.startDate || "").trim();
-    const endDate = (data.endDate || "").trim();
-    if (!name) return { success: false, error: "Укажите название учебного года" };
-    if (!/^\d{4}[\/\-]\d{4}$/.test(name)) {
-      return { success: false, error: "Формат года должен быть ГГГГ/ГГГГ (например, 2025/2026)" };
-    }
-    if (!startDate || !endDate) return { success: false, error: "Укажите даты начала и окончания учебного года" };
-    if (startDate >= endDate) return { success: false, error: "Дата начала года должна быть раньше даты окончания" };
-    const db = getDB();
-    if (!db.academicYears) db.academicYears = [];
-    const formattedName = name.replace("-", "/");
-    const exists = db.academicYears.some((y) => y.name === formattedName || y.id === `ay-${formattedName.replace("/", "-")}`);
-    if (exists) return { success: false, error: `Учебный год «${formattedName}» уже существует` };
-    const [startYearStr, endYearStr] = formattedName.split("/");
-    const startYearNum = parseInt(startYearStr, 10);
-    const endYearNum = parseInt(endYearStr, 10);
-    const defaultQuarters = [
-      {
-        id: `q1_${startYearNum}`,
-        name: "I четверть",
-        startDate: `${startYearNum}-09-01`,
-        endDate: `${startYearNum}-10-25`,
-        isActive: false
-      },
-      {
-        id: `q2_${startYearNum}`,
-        name: "II четверть",
-        startDate: `${startYearNum}-11-05`,
-        endDate: `${startYearNum}-12-28`,
-        isActive: false
-      },
-      {
-        id: `q3_${endYearNum}`,
-        name: "III четверть",
-        startDate: `${endYearNum}-01-10`,
-        endDate: `${endYearNum}-03-21`,
-        isActive: false
-      },
-      {
-        id: `q4_${endYearNum}`,
-        name: "IV четверть",
-        startDate: `${endYearNum}-03-31`,
-        endDate: `${endYearNum}-05-23`,
-        isActive: false
-      }
-    ];
-    const newYear = {
-      id: `ay-${formattedName.replace("/", "-")}`,
-      name: formattedName,
-      startDate,
-      endDate,
-      isActive: false,
-      quarters: Array.isArray(data.quarters) && data.quarters.length > 0 ? data.quarters : defaultQuarters,
-      vacations: Array.isArray(data.vacations) ? data.vacations : [
-        { id: `vac-${Date.now()}-1`, name: "Осенние каникулы", startDate: `${startYearNum}-10-26`, endDate: `${startYearNum}-11-04` },
-        { id: `vac-${Date.now()}-2`, name: "Зимние каникулы", startDate: `${startYearNum}-12-29`, endDate: `${endYearNum}-01-09` },
-        { id: `vac-${Date.now()}-3`, name: "Весенние каникулы", startDate: `${endYearNum}-03-22`, endDate: `${endYearNum}-03-30` }
-      ]
-    };
-    db.academicYears.push(newYear);
-    saveDB(db);
-    return { success: true, year: newYear };
-  }
-  function updateAcademicYear(yearId, data = {}) {
-    if (!yearId) return { success: false, error: "Укажите ID учебного года" };
-    const name = (data.name || "").trim();
-    const startDate = (data.startDate || "").trim();
-    const endDate = (data.endDate || "").trim();
-    if (!name) return { success: false, error: "Укажите название учебного года" };
-    if (!/^\d{4}[\/\-]\d{4}$/.test(name)) {
-      return { success: false, error: "Формат года должен быть ГГГГ/ГГГГ (например, 2025/2026)" };
-    }
-    if (!startDate || !endDate) return { success: false, error: "Укажите даты начала и окончания учебного года" };
-    if (startDate >= endDate) return { success: false, error: "Дата начала года должна быть раньше даты окончания" };
-    const db = getDB();
-    const years = getAcademicYears(db);
-    const targetYear = years.find((y) => y.id === yearId);
-    if (!targetYear) return { success: false, error: "Учебный год не найден" };
-    const formattedName = name.replace("-", "/");
-    const duplicate = years.find((y) => y.id !== yearId && y.name.toLowerCase() === formattedName.toLowerCase());
-    if (duplicate) return { success: false, error: `Учебный год «${formattedName}» уже существует` };
-    targetYear.name = formattedName;
-    targetYear.startDate = startDate;
-    targetYear.endDate = endDate;
-    if (targetYear.isActive) {
-      db.meta = db.meta || {};
-      db.meta.academicYear = targetYear.name;
-    }
-    saveDB(db);
-    return { success: true, year: targetYear };
-  }
-  function deleteAcademicYear(yearId) {
-    if (!yearId) return { success: false, error: "Укажите ID учебного года" };
-    const db = getDB();
-    const year = (db.academicYears || []).find((y) => y.id === yearId);
-    if (!year) return { success: false, error: "Учебный год не найден" };
-    if (year.isActive) return { success: false, error: "Нельзя удалить активный учебный год" };
-    db.academicYears = db.academicYears.filter((y) => y.id !== yearId);
-    saveDB(db);
-    return { success: true };
-  }
-  function setActiveQuarter(yearId, quarterId) {
-    if (!quarterId) return { success: false, error: "Укажите ID четверти" };
-    const db = getDB();
-    const years = getAcademicYears(db);
-    let targetYear = yearId ? years.find((y) => y.id === yearId) : years.find((y) => y.isActive);
-    if (!targetYear) targetYear = years.find((y) => (y.quarters || []).some((q) => q.id === quarterId));
-    if (!targetYear) return { success: false, error: "Учебный год не найден" };
-    const targetQuarter = (targetYear.quarters || []).find((q) => q.id === quarterId);
-    if (!targetQuarter) return { success: false, error: "Четверть не найдена" };
-    years.forEach((y) => {
-      y.isActive = y.id === targetYear.id;
-      (y.quarters || []).forEach((q) => {
-        q.isActive = y.id === targetYear.id && q.id === quarterId;
-      });
-    });
-    db.meta = db.meta || {};
-    db.meta.academicYear = targetYear.name;
-    db.meta.period = {
-      id: targetQuarter.id,
-      name: targetQuarter.name,
-      startDate: targetQuarter.startDate,
-      endDate: targetQuarter.endDate
-    };
-    saveDB(db);
-    return { success: true, quarter: targetQuarter, period: db.meta.period };
-  }
-  function updateQuarter(yearId, quarterId, data = {}) {
-    if (!quarterId) return { success: false, error: "Укажите ID четверти" };
-    const startDate = (data.startDate || "").trim();
-    const endDate = (data.endDate || "").trim();
-    const name = (data.name || "").trim();
-    if (!startDate || !endDate) return { success: false, error: "Укажите даты начала и окончания четверти" };
-    if (startDate > endDate) return { success: false, error: "Дата начала четверти не может быть позже даты окончания" };
-    const db = getDB();
-    const years = getAcademicYears(db);
-    let targetYear = yearId ? years.find((y) => y.id === yearId) : years.find((y) => y.isActive);
-    if (!targetYear) targetYear = years.find((y) => (y.quarters || []).some((q) => q.id === quarterId));
-    if (!targetYear) return { success: false, error: "Учебный год не найден" };
-    if (targetYear.startDate && startDate < targetYear.startDate) {
-      return { success: false, error: "Дата начала четверти не может быть раньше начала учебного года" };
-    }
-    if (targetYear.endDate && endDate > targetYear.endDate) {
-      return { success: false, error: "Дата окончания четверти не может быть позже окончания учебного года" };
-    }
-    const quartersList = targetYear.quarters || [];
-    const currentIndex = quartersList.findIndex((q) => q.id === quarterId);
-    if (currentIndex > 0) {
-      const prevQuarter = quartersList[currentIndex - 1];
-      if (prevQuarter.endDate && startDate <= prevQuarter.endDate) {
-        return { success: false, error: `Дата начала четверти должна быть позже окончания ${prevQuarter.name}` };
-      }
-    }
-    if (currentIndex >= 0 && currentIndex < quartersList.length - 1) {
-      const nextQuarter = quartersList[currentIndex + 1];
-      if (nextQuarter.startDate && endDate >= nextQuarter.startDate) {
-        return { success: false, error: `Дата окончания четверти должна быть раньше начала ${nextQuarter.name}` };
-      }
-    }
-    const targetQuarter = quartersList.find((q) => q.id === quarterId);
-    if (!targetQuarter) return { success: false, error: "Четверть не найдена" };
-    if (name) targetQuarter.name = name;
-    targetQuarter.startDate = startDate;
-    targetQuarter.endDate = endDate;
-    if (targetQuarter.isActive) {
-      db.meta = db.meta || {};
-      db.meta.period = {
-        id: targetQuarter.id,
-        name: targetQuarter.name,
-        startDate: targetQuarter.startDate,
-        endDate: targetQuarter.endDate
-      };
-    }
-    saveDB(db);
-    return { success: true, quarter: targetQuarter };
-  }
-  function updateVacation(yearId, vacationId, data = {}) {
-    if (!vacationId) return { success: false, error: "Укажите ID каникул" };
-    const name = (data.name || "").trim();
-    const startDate = (data.startDate || "").trim();
-    const endDate = (data.endDate || "").trim();
-    if (!startDate || !endDate) return { success: false, error: "Укажите даты начала и окончания каникул" };
-    if (startDate > endDate) return { success: false, error: "Дата начала каникул не может быть позже окончания" };
-    const db = getDB();
-    const years = getAcademicYears(db);
-    let targetYear = yearId ? years.find((y) => y.id === yearId) : years.find((y) => y.isActive);
-    if (!targetYear) return { success: false, error: "Учебный год не найден" };
-    if (targetYear.startDate && startDate < targetYear.startDate) {
-      return { success: false, error: "Дата начала каникул не может быть раньше начала учебного года" };
-    }
-    if (targetYear.endDate && endDate > targetYear.endDate) {
-      return { success: false, error: "Дата окончания каникул не может быть позже окончания учебного года" };
-    }
-    if (!Array.isArray(targetYear.vacations)) targetYear.vacations = [];
-    const vac = targetYear.vacations.find((v) => v.id === vacationId);
-    if (!vac) return { success: false, error: "Период каникул не найден" };
-    if (name) vac.name = name;
-    vac.startDate = startDate;
-    vac.endDate = endDate;
-    saveDB(db);
-    return { success: true, vacation: vac };
-  }
-  function addVacation(yearId, data = {}) {
-    const name = (data.name || "").trim();
-    const startDate = (data.startDate || "").trim();
-    const endDate = (data.endDate || "").trim();
-    if (!name) return { success: false, error: "Укажите название каникул" };
-    if (!startDate || !endDate) return { success: false, error: "Укажите даты начала и окончания каникул" };
-    if (startDate > endDate) return { success: false, error: "Дата начала каникул не может быть позже окончания" };
-    const db = getDB();
-    const years = getAcademicYears(db);
-    let targetYear = yearId ? years.find((y) => y.id === yearId) : years.find((y) => y.isActive);
-    if (!targetYear) return { success: false, error: "Учебный год не найден" };
-    if (targetYear.startDate && startDate < targetYear.startDate) {
-      return { success: false, error: "Дата начала каникул не может быть раньше начала учебного года" };
-    }
-    if (targetYear.endDate && endDate > targetYear.endDate) {
-      return { success: false, error: "Дата окончания каникул не может быть позже окончания учебного года" };
-    }
-    if (!Array.isArray(targetYear.vacations)) targetYear.vacations = [];
-    const newVac = {
-      id: `vac-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      name,
-      startDate,
-      endDate
-    };
-    targetYear.vacations.push(newVac);
-    saveDB(db);
-    return { success: true, vacation: newVac };
-  }
-  function deleteVacation(yearId, vacationId) {
-    if (!vacationId) return { success: false, error: "Укажите ID каникул" };
-    const db = getDB();
-    const years = getAcademicYears(db);
-    let targetYear = yearId ? years.find((y) => y.id === yearId) : years.find((y) => y.isActive);
-    if (!targetYear) return { success: false, error: "Учебный год не найден" };
-    if (!Array.isArray(targetYear.vacations)) return { success: true };
-    targetYear.vacations = targetYear.vacations.filter((v) => v.id !== vacationId);
-    saveDB(db);
-    return { success: true };
   }
 
   // src/config/navigation.js
@@ -23218,7 +23232,7 @@
     setupSidebarListeners(onNavigate);
   }
 
-  // src/views/login.js
+  // src/views/login/render.js
   function renderLoginView() {
     const currentUser = getCurrentUser();
     if (currentUser) {
@@ -23414,6 +23428,8 @@
     </div>
   `;
   }
+
+  // src/views/login/listeners.js
   function setupLoginListeners(onLoginSuccess) {
     const currentUser = getCurrentUser();
     if (currentUser) {
@@ -23445,27 +23461,69 @@
     const toggleIcon = document.getElementById("password-toggle-icon");
     function clearError() {
       if (errorBox) {
-        errorBox.classList.remove("max-h-16", "opacity-100", "pointer-events-auto", "mb-3");
-        errorBox.classList.add("max-h-0", "opacity-0", "pointer-events-none", "mb-0");
+        errorBox.classList.remove(
+          "max-h-16",
+          "opacity-100",
+          "pointer-events-auto",
+          "mb-3"
+        );
+        errorBox.classList.add(
+          "max-h-0",
+          "opacity-0",
+          "pointer-events-none",
+          "mb-0"
+        );
       }
       if (passwordInput) {
-        passwordInput.classList.remove("border-rose-400", "ring-2", "ring-rose-400/20");
+        passwordInput.classList.remove(
+          "border-rose-400",
+          "ring-2",
+          "ring-rose-400/20"
+        );
       }
       if (emailInput) {
-        emailInput.classList.remove("border-rose-400", "ring-2", "ring-rose-400/20");
+        emailInput.classList.remove(
+          "border-rose-400",
+          "ring-2",
+          "ring-rose-400/20"
+        );
       }
     }
     function showError(msg, field = "password") {
       if (errorBox && errorText) {
         errorText.textContent = msg;
-        errorBox.classList.remove("max-h-0", "opacity-0", "pointer-events-none", "mb-0");
-        errorBox.classList.add("max-h-16", "opacity-100", "pointer-events-auto", "mb-3");
+        errorBox.classList.remove(
+          "max-h-0",
+          "opacity-0",
+          "pointer-events-none",
+          "mb-0"
+        );
+        errorBox.classList.add(
+          "max-h-16",
+          "opacity-100",
+          "pointer-events-auto",
+          "mb-3"
+        );
       }
       if (field === "password" && passwordInput) {
-        passwordInput.classList.add("border-rose-400", "ring-2", "ring-rose-400/20");
+        passwordInput.classList.add(
+          "border-rose-400",
+          "ring-2",
+          "ring-rose-400/20"
+        );
       } else if (field === "both") {
-        if (emailInput) emailInput.classList.add("border-rose-400", "ring-2", "ring-rose-400/20");
-        if (passwordInput) passwordInput.classList.add("border-rose-400", "ring-2", "ring-rose-400/20");
+        if (emailInput)
+          emailInput.classList.add(
+            "border-rose-400",
+            "ring-2",
+            "ring-rose-400/20"
+          );
+        if (passwordInput)
+          passwordInput.classList.add(
+            "border-rose-400",
+            "ring-2",
+            "ring-rose-400/20"
+          );
       }
       if (card) {
         card.classList.remove("animate-shake");
@@ -23512,7 +23570,10 @@
       form.addEventListener("submit", (e) => {
         e.preventDefault();
         if (getCurrentUser()) {
-          showError("Сеанс уже активен. Сначала завершите текущий сеанс для смены пользователя.", "both");
+          showError(
+            "Сеанс уже активен. Сначала завершите текущий сеанс для смены пользователя.",
+            "both"
+          );
           return;
         }
         if (emailInput) emailInput.value = emailInput.value.trim();
@@ -23520,7 +23581,10 @@
         const username = emailInput ? emailInput.value : "";
         const password = passwordInput ? passwordInput.value : "";
         if (!username || !password) {
-          showError("Заполните логин и пароль", !username && !password ? "both" : !username ? "email" : "password");
+          showError(
+            "Заполните логин и пароль",
+            !username && !password ? "both" : !username ? "email" : "password"
+          );
           return;
         }
         const res = login(username, password);
@@ -23943,7 +24007,7 @@
     };
   }
 
-  // src/views/overview.js
+  // src/views/overview/render.js
   function renderOverviewView() {
     const db = getDB();
     const demoDate = db.meta?.demoToday || "2024-10-28";
@@ -23951,31 +24015,58 @@
     const totalStudents = db.students?.length || 28;
     const boysCount = db.students?.filter((s) => s.gender === "male").length || 15;
     const girlsCount = db.students?.filter((s) => s.gender === "female").length || 13;
-    const todayAtt = calculateAttendanceForDay(db.lessons, db.attendance, demoDate, { onlyFirstLesson: false });
+    const todayAtt = calculateAttendanceForDay(
+      db.lessons,
+      db.attendance,
+      demoDate,
+      { onlyFirstLesson: false }
+    );
     const todayAttendanceRate = todayAtt.attendanceRate !== null ? todayAtt.attendanceRate : 96.4;
     const todayPresent = 27;
     const todayAbsent = 1;
     const classAvg = calculateClassAverage(db.grades, { periodId }) || 4.2;
-    const unconfirmedAbsences = getUnconfirmedAbsences(db.attendance, db.lessons, db.students, { periodId });
+    const unconfirmedAbsences = getUnconfirmedAbsences(
+      db.attendance,
+      db.lessons,
+      db.students,
+      { periodId }
+    );
     const unconfirmedCount = unconfirmedAbsences.length;
-    const riskZoneList = getRiskZoneStudents(db.students, db.lessons, db.attendance, db.grades, db.subjects, { periodId });
-    const todayContacts = new Set((db.parentContacts || []).filter((c) => c.date === demoDate || c.date >= "2024-10-24").map((c) => c.studentId));
+    const riskZoneList = getRiskZoneStudents(
+      db.students,
+      db.lessons,
+      db.attendance,
+      db.grades,
+      db.subjects,
+      { periodId }
+    );
+    const todayContacts = new Set(
+      (db.parentContacts || []).filter((c) => c.date === demoDate || c.date >= "2024-10-24").map((c) => c.studentId)
+    );
     const studentNotes = new Set((db.notes || []).map((n) => n.studentId));
-    const processedCount = riskZoneList.filter((s) => todayContacts.has(s.studentId) || studentNotes.has(s.studentId)).length;
+    const processedCount = riskZoneList.filter(
+      (s) => todayContacts.has(s.studentId) || studentNotes.has(s.studentId)
+    ).length;
     const allProcessed = riskZoneList.length > 0 && processedCount === riskZoneList.length;
     function formatReasons(st) {
       const parts = [];
       const absReason = st.reasons.find((r) => r.type === "absence");
       if (absReason) {
-        parts.push(`Пропуски: <strong class="text-slate-800">${st.absenceRate}%</strong> (${Math.round(st.absenceRate / 100 * 40)} из 40 уроков)`);
+        parts.push(
+          `Пропуски: <strong class="text-slate-800">${st.absenceRate}%</strong> (${Math.round(st.absenceRate / 100 * 40)} из 40 уроков)`
+        );
       }
       const overallReason = st.reasons.find((r) => r.type === "overall_grade");
       if (overallReason) {
-        parts.push(`Средний балл: <strong class="text-slate-800">${st.overallAverage}</strong> (порог 3.5)`);
+        parts.push(
+          `Средний балл: <strong class="text-slate-800">${st.overallAverage}</strong> (порог 3.5)`
+        );
       } else {
         const subjReasons = st.reasons.filter((r) => r.type === "subject_grade");
         if (subjReasons.length > 0) {
-          const subjText = subjReasons.map((sr) => `${sr.subjectName} <strong class="text-slate-800">${sr.value}</strong>`).join(", ");
+          const subjText = subjReasons.map(
+            (sr) => `${sr.subjectName} <strong class="text-slate-800">${sr.value}</strong>`
+          ).join(", ");
           parts.push(`Ниже порога 3.5: ${subjText}`);
         }
       }
@@ -24480,28 +24571,50 @@
     </div>
   `;
   }
+
+  // src/views/overview/listeners.js
   function setupOverviewListeners(onNavigate) {
     const db = getDB();
     const modalSummary = document.getElementById("modal-student-summary");
-    const modalSummaryDialog = document.getElementById("modal-student-summary-dialog");
+    const modalSummaryDialog = document.getElementById(
+      "modal-student-summary-dialog"
+    );
     const summaryContent = document.getElementById("student-summary-content");
     function openSummary(studentId) {
       const student = db.students?.find((s) => s.id === studentId);
       if (!student || !summaryContent) return;
       const periodId = "q1_2024";
-      const overallAvg = calculateStudentAverage(db.grades, studentId, { periodId });
-      const att = calculateStudentAttendance(db.lessons, db.attendance, studentId, { periodId });
+      const overallAvg = calculateStudentAverage(db.grades, studentId, {
+        periodId
+      });
+      const att = calculateStudentAttendance(
+        db.lessons,
+        db.attendance,
+        studentId,
+        { periodId }
+      );
       const subjectStats = (db.subjects || []).map((subj) => {
-        const avg = calculateStudentAverage(db.grades, studentId, { periodId, subjectId: subj.id });
+        const avg = calculateStudentAverage(db.grades, studentId, {
+          periodId,
+          subjectId: subj.id
+        });
         return { ...subj, average: avg };
       });
-      const rels = (db.parentStudentRelations || []).filter((r) => r.studentId === studentId);
+      const rels = (db.parentStudentRelations || []).filter(
+        (r) => r.studentId === studentId
+      );
       const parentList = rels.map((r) => {
         const p = db.parents?.find((par) => par.id === r.parentId);
-        return { ...p, relation: r.relationRole || r.relation, isPrimary: r.isPrimary ?? r.isPrimaryContact };
+        return {
+          ...p,
+          relation: r.relationRole || r.relation,
+          isPrimary: r.isPrimary ?? r.isPrimaryContact
+        };
       }).filter(Boolean);
       const notes = (db.notes || []).filter((n) => n.studentId === studentId);
-      const contacts = (db.parentContacts || []).filter((c) => c.studentId === studentId);
+      const contacts = (db.parentContacts || []).filter(
+        (c) => c.studentId === studentId
+      );
       summaryContent.innerHTML = `
       <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
         <div>
@@ -24546,19 +24659,22 @@
         <div>
           <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Баллы по предметам</h4>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            ${subjectStats.map((s) => `
+            ${subjectStats.map(
+        (s) => `
               <div class="p-2 rounded-lg border ${s.average !== null && s.average < 3.5 ? "bg-rose-50 border-rose-200 text-rose-900" : "bg-white border-slate-200 text-slate-800"} flex items-center justify-between text-xs">
                 <span class="font-medium truncate mr-2">${s.name}</span>
                 <span class="font-bold ${s.average !== null && s.average < 3.5 ? "text-rose-600" : "text-slate-900"}">${s.average !== null ? s.average : "—"}</span>
               </div>
-            `).join("")}
+            `
+      ).join("")}
           </div>
         </div>
 
         <div>
           <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Контакты родителей</h4>
           <div class="space-y-2">
-            ${parentList.map((p) => `
+            ${parentList.map(
+        (p) => `
               <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
                 <div>
                   <div class="font-bold text-slate-900 flex items-center space-x-1.5">
@@ -24573,7 +24689,8 @@
                   <span>Связаться</span>
                 </button>
               </div>
-            `).join("")}
+            `
+      ).join("")}
           </div>
         </div>
 
@@ -24581,12 +24698,14 @@
           <div>
             <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Заметки классного руководителя</h4>
             <div class="space-y-1.5">
-              ${notes.map((n) => `
+              ${notes.map(
+        (n) => `
                 <div class="p-2.5 rounded-lg bg-amber-50/50 border border-amber-200 text-xs">
                   <div class="text-slate-800 leading-relaxed">${n.text}</div>
                   <div class="text-[10px] text-slate-400 mt-1">${n.date} · ${n.author}</div>
                 </div>
-              `).join("")}
+              `
+      ).join("")}
             </div>
           </div>
         ` : ""}
@@ -24654,7 +24773,9 @@
       if (contactStudentName) contactStudentName.value = studentName;
       if (contactParentSelect) {
         contactParentSelect.innerHTML = "";
-        const rels = (db.parentStudentRelations || []).filter((r) => r.studentId === studentId);
+        const rels = (db.parentStudentRelations || []).filter(
+          (r) => r.studentId === studentId
+        );
         const parents = rels.map((r) => {
           const p = db.parents?.find((par) => par.id === r.parentId);
           return { ...p, relation: r.relation, isPrimary: r.isPrimaryContact };
@@ -24722,7 +24843,10 @@
           parentId: pId || "pr-unknown",
           author: "Смирнова М. В.",
           date: "2024-10-28",
-          time: (/* @__PURE__ */ new Date()).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
+          time: (/* @__PURE__ */ new Date()).toLocaleTimeString("ru-RU", {
+            hour: "2-digit",
+            minute: "2-digit"
+          }),
           channel,
           channelLabel: channelLabels[channel] || "Звонок",
           summary,
@@ -24813,7 +24937,7 @@
     });
   }
 
-  // src/views/profile.js
+  // src/views/profile/render.js
   function renderProfileView() {
     const user = getCurrentUser();
     if (!user) return "";
@@ -24944,6 +25068,8 @@
     </div>
   `;
   }
+
+  // src/views/profile/listeners.js
   function setupProfileListeners(onNavigate) {
     const user = getCurrentUser();
     if (!user) return;
@@ -24974,13 +25100,32 @@
           newPwdInput ? newPwdInput.value : "",
           confirmPwdInput ? confirmPwdInput.value : ""
         );
-        feedback.classList.remove("hidden", "bg-rose-50", "text-rose-700", "border-rose-200", "bg-emerald-50", "text-emerald-700", "border-emerald-200", "border");
+        feedback.classList.remove(
+          "hidden",
+          "bg-rose-50",
+          "text-rose-700",
+          "border-rose-200",
+          "bg-emerald-50",
+          "text-emerald-700",
+          "border-emerald-200",
+          "border"
+        );
         if (res.success) {
-          feedback.classList.add("bg-emerald-50", "text-emerald-700", "border", "border-emerald-200");
+          feedback.classList.add(
+            "bg-emerald-50",
+            "text-emerald-700",
+            "border",
+            "border-emerald-200"
+          );
           feedback.textContent = res.message;
           form.reset();
         } else {
-          feedback.classList.add("bg-rose-50", "text-rose-700", "border", "border-rose-200");
+          feedback.classList.add(
+            "bg-rose-50",
+            "text-rose-700",
+            "border",
+            "border-rose-200"
+          );
           feedback.textContent = res.error;
         }
       });
@@ -25073,10 +25218,23 @@
   `;
   }
 
-  // src/views/attendance.js
+  // src/views/attendance/helpers.js
   function generateDaysOfWeek(fromStr) {
     const dayNames = ["ПН", "ВТ", "СР", "ЧТ", "ПТ"];
-    const monthNames = ["ЯНВ", "ФЕВ", "МАР", "АПР", "МАЙ", "ИЮН", "ИЮЛ", "АВГ", "СЕН", "ОКТ", "НОЯ", "ДЕК"];
+    const monthNames = [
+      "ЯНВ",
+      "ФЕВ",
+      "МАР",
+      "АПР",
+      "МАЙ",
+      "ИЮН",
+      "ИЮЛ",
+      "АВГ",
+      "СЕН",
+      "ОКТ",
+      "НОЯ",
+      "ДЕК"
+    ];
     const [startY, startM, startD] = fromStr.split("-").map(Number);
     const days = [];
     for (let i = 0; i < 5; i++) {
@@ -25125,22 +25283,69 @@
     const lastItem = items.pop();
     return `${items.join(", ")} и ${lastItem} имеют пропуски уроков без подтверждающих документов. Родители пока не предоставили справку или заявление.`;
   }
+
+  // src/views/attendance/render.js
   function renderAttendanceView(options = {}) {
     const db = getDB();
     const periodId = "q1_2024";
     const students = db.students || [];
-    const unconfirmedList = getUnconfirmedAbsences(db.attendance, db.lessons, students, { periodId });
+    const unconfirmedList = getUnconfirmedAbsences(
+      db.attendance,
+      db.lessons,
+      students,
+      { periodId }
+    );
     const unconfirmedCount = unconfirmedList.length;
     const bannerDynamicText = generateUnconfirmedBannerText(unconfirmedList);
     const weeks = [
-      { id: "w8", label: "21.10.2024 – 25.10.2024 (Текущая неделя)", from: "2024-10-21", to: "2024-10-25" },
-      { id: "w7", label: "14.10.2024 – 18.10.2024", from: "2024-10-14", to: "2024-10-18" },
-      { id: "w6", label: "07.10.2024 – 11.10.2024", from: "2024-10-07", to: "2024-10-11" },
-      { id: "w5", label: "30.09.2024 – 04.10.2024", from: "2024-09-30", to: "2024-10-04" },
-      { id: "w4", label: "23.09.2024 – 27.09.2024", from: "2024-09-23", to: "2024-09-27" },
-      { id: "w3", label: "16.09.2024 – 20.09.2024", from: "2024-09-16", to: "2024-09-20" },
-      { id: "w2", label: "09.09.2024 – 13.09.2024", from: "2024-09-09", to: "2024-09-13" },
-      { id: "w1", label: "02.09.2024 – 06.09.2024", from: "2024-09-02", to: "2024-09-06" }
+      {
+        id: "w8",
+        label: "21.10.2024 – 25.10.2024 (Текущая неделя)",
+        from: "2024-10-21",
+        to: "2024-10-25"
+      },
+      {
+        id: "w7",
+        label: "14.10.2024 – 18.10.2024",
+        from: "2024-10-14",
+        to: "2024-10-18"
+      },
+      {
+        id: "w6",
+        label: "07.10.2024 – 11.10.2024",
+        from: "2024-10-07",
+        to: "2024-10-11"
+      },
+      {
+        id: "w5",
+        label: "30.09.2024 – 04.10.2024",
+        from: "2024-09-30",
+        to: "2024-10-04"
+      },
+      {
+        id: "w4",
+        label: "23.09.2024 – 27.09.2024",
+        from: "2024-09-23",
+        to: "2024-09-27"
+      },
+      {
+        id: "w3",
+        label: "16.09.2024 – 20.09.2024",
+        from: "2024-09-16",
+        to: "2024-09-20"
+      },
+      {
+        id: "w2",
+        label: "09.09.2024 – 13.09.2024",
+        from: "2024-09-09",
+        to: "2024-09-13"
+      },
+      {
+        id: "w1",
+        label: "02.09.2024 – 06.09.2024",
+        from: "2024-09-02",
+        to: "2024-09-06"
+      }
     ];
     const queryString = window.location.search || "";
     const urlParams = new URLSearchParams(queryString);
@@ -25171,9 +25376,15 @@
           </td>
         `;
         }
-        const unconfirmedRec = records.find((r) => (r.status === "unconfirmed" || r.code === "Н (без)") && r.value === "absent");
-        const excusedRec = records.find((r) => (r.status === "excused" || r.status === "confirmed" || r.code === "УП") && r.value === "absent");
-        const unexcusedRec = records.find((r) => (r.status === "unexcused" || r.code === "Н" && r.status !== "unconfirmed" && r.code !== "Н (без)") && r.value === "absent");
+        const unconfirmedRec = records.find(
+          (r) => (r.status === "unconfirmed" || r.code === "Н (без)") && r.value === "absent"
+        );
+        const excusedRec = records.find(
+          (r) => (r.status === "excused" || r.status === "confirmed" || r.code === "УП") && r.value === "absent"
+        );
+        const unexcusedRec = records.find(
+          (r) => (r.status === "unexcused" || r.code === "Н" && r.status !== "unconfirmed" && r.code !== "Н (без)") && r.value === "absent"
+        );
         const allPresent = records.length > 0 && records.every((r) => r.value === "present");
         const dayAbsenceRecords = records.filter((r) => r.value === "absent");
         weekAbsenceLessons += dayAbsenceRecords.length;
@@ -25272,11 +25483,13 @@
             <div class="relative">
               <select id="select-attendance-week"
                       class="appearance-none pl-3.5 pr-10 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-bold text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
-                ${weeks.map((w) => `
+                ${weeks.map(
+      (w) => `
                   <option value="${w.id}" ${w.id === activeWeekId ? "selected" : ""}>
                     ${w.label}
                   </option>
-                `).join("")}
+                `
+    ).join("")}
               </select>
               <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                 ${renderIcon("chevron-down", "w-4 h-4")}
@@ -25486,6 +25699,8 @@
     </div>
   `;
   }
+
+  // src/views/attendance/listeners.js
   function setupAttendanceListeners(onNavigate) {
     const db = getDB();
     const periodId = "q1_2024";
@@ -25508,12 +25723,18 @@
       const currentDB = getDB();
       const attRecord = (currentDB.attendance || []).find((a) => a.id === attId);
       if (!attRecord) return;
-      const student = (currentDB.students || []).find((s) => s.id === attRecord.studentId);
-      const lesson = (currentDB.lessons || []).find((l) => l.id === attRecord.lessonId);
+      const student = (currentDB.students || []).find(
+        (s) => s.id === attRecord.studentId
+      );
+      const lesson = (currentDB.lessons || []).find(
+        (l) => l.id === attRecord.lessonId
+      );
       if (inputAttId) inputAttId.value = attRecord.id;
-      if (inputStudentName) inputStudentName.value = student ? student.fullName : "Ученик";
+      if (inputStudentName)
+        inputStudentName.value = student ? student.fullName : "Ученик";
       if (inputDate) inputDate.value = attRecord.date;
-      if (inputLesson) inputLesson.value = lesson ? `${lesson.subjectName || "Урок"} (${lesson.time || ""})` : "Урок";
+      if (inputLesson)
+        inputLesson.value = lesson ? `${lesson.subjectName || "Урок"} (${lesson.time || ""})` : "Урок";
       if (selectReasonType) selectReasonType.value = "excused";
       if (checkHasDoc) checkHasDoc.checked = true;
       if (blockDocFields) blockDocFields.style.display = "block";
@@ -25568,7 +25789,12 @@
     if (btnBanner) {
       btnBanner.addEventListener("click", () => {
         const currentDB = getDB();
-        const unconfirmedList = getUnconfirmedAbsences(currentDB.attendance, currentDB.lessons, currentDB.students, { periodId });
+        const unconfirmedList = getUnconfirmedAbsences(
+          currentDB.attendance,
+          currentDB.lessons,
+          currentDB.students,
+          { periodId }
+        );
         if (unconfirmedList.length > 0) {
           openConfirmModal(unconfirmedList[0].id);
         }
@@ -25578,7 +25804,12 @@
     if (btnBatch) {
       btnBatch.addEventListener("click", () => {
         const currentDB = getDB();
-        const unconfirmedList = getUnconfirmedAbsences(currentDB.attendance, currentDB.lessons, currentDB.students, { periodId });
+        const unconfirmedList = getUnconfirmedAbsences(
+          currentDB.attendance,
+          currentDB.lessons,
+          currentDB.students,
+          { periodId }
+        );
         if (unconfirmedList.length > 0) {
           openConfirmModal(unconfirmedList[0].id);
         } else {
@@ -25640,10 +25871,13 @@
     }
   }
 
-  // src/views/journal.js
+  // src/views/journal/render.js
   function renderJournalView(options = {}) {
     const db = getDB();
-    const currentUser = getCurrentUser() || { role: "teacher", shortName: "Смирнова М. В." };
+    const currentUser = getCurrentUser() || {
+      role: "teacher",
+      shortName: "Смирнова М. В."
+    };
     const students = (db.students || []).slice().sort((a, b) => a.fullName.localeCompare(b.fullName, "ru"));
     const subjects = db.subjects || [];
     const allLessons = (db.lessons || []).slice().sort((a, b) => {
@@ -25677,7 +25911,9 @@
     }
     if (filterOnlyEntries) {
       const lessonIdsWithEntries = /* @__PURE__ */ new Set([
-        ...allGrades.filter((g) => g.periodId === selectedPeriodId && (selectedSubjectId === "all" || g.subjectId === selectedSubjectId)).map((g) => g.lessonId),
+        ...allGrades.filter(
+          (g) => g.periodId === selectedPeriodId && (selectedSubjectId === "all" || g.subjectId === selectedSubjectId)
+        ).map((g) => g.lessonId),
         ...allAttendance.filter((a) => a.value === "absent").map((a) => a.lessonId)
       ]);
       lessons = lessons.filter((l) => lessonIdsWithEntries.has(l.id));
@@ -25685,7 +25921,9 @@
     const gradesMap = /* @__PURE__ */ new Map();
     allGrades.forEach((g) => gradesMap.set(`${g.lessonId}_${g.studentId}`, g));
     const attendanceMap = /* @__PURE__ */ new Map();
-    allAttendance.forEach((a) => attendanceMap.set(`${a.lessonId}_${a.studentId}`, a));
+    allAttendance.forEach(
+      (a) => attendanceMap.set(`${a.lessonId}_${a.studentId}`, a)
+    );
     const commentsMap = /* @__PURE__ */ new Map();
     allComments.forEach((c) => {
       const key = `${c.lessonId}_${c.studentId}`;
@@ -25694,23 +25932,33 @@
     });
     const periodGrades = allGrades.filter((g) => {
       if (g.periodId !== selectedPeriodId) return false;
-      if (selectedSubjectId !== "all" && g.subjectId !== selectedSubjectId) return false;
+      if (selectedSubjectId !== "all" && g.subjectId !== selectedSubjectId)
+        return false;
       return true;
     });
     const periodLessons = allLessons.filter((l) => {
       if (l.periodId !== selectedPeriodId) return false;
-      if (selectedSubjectId !== "all" && l.subjectId !== selectedSubjectId) return false;
+      if (selectedSubjectId !== "all" && l.subjectId !== selectedSubjectId)
+        return false;
       return true;
     });
     const periodLessonIds = new Set(periodLessons.map((l) => l.id));
-    const periodAttendance = allAttendance.filter((a) => periodLessonIds.has(a.lessonId));
+    const periodAttendance = allAttendance.filter(
+      (a) => periodLessonIds.has(a.lessonId)
+    );
     const periodAbsences = periodAttendance.filter((a) => a.value === "absent");
-    const periodUnconfirmed = periodAbsences.filter((a) => a.status === "unconfirmed" || a.status === "unexcused" || a.code === "Н");
-    const periodExcused = periodAbsences.filter((a) => a.status === "excused" || a.code === "УП" || a.code === "Б");
+    const periodUnconfirmed = periodAbsences.filter(
+      (a) => a.status === "unconfirmed" || a.status === "unexcused" || a.code === "Н"
+    );
+    const periodExcused = periodAbsences.filter(
+      (a) => a.status === "excused" || a.code === "УП" || a.code === "Б"
+    );
     const avgGrade = periodGrades.length > 0 ? (periodGrades.reduce((sum, g) => sum + g.value, 0) / periodGrades.length).toFixed(1) : "—";
     let filteredStudents = students;
     if (searchQuery) {
-      filteredStudents = filteredStudents.filter((s) => s.fullName.toLowerCase().includes(searchQuery));
+      filteredStudents = filteredStudents.filter(
+        (s) => s.fullName.toLowerCase().includes(searchQuery)
+      );
     }
     if (isUnconfirmedOnly) {
       filteredStudents = filteredStudents.filter((s) => {
@@ -25761,8 +26009,12 @@
     const tableRows = filteredStudents.map((s, idx) => {
       const studentGrades = periodGrades.filter((g) => g.studentId === s.id);
       const studentAvg = studentGrades.length > 0 ? (studentGrades.reduce((sum, g) => sum + g.value, 0) / studentGrades.length).toFixed(1) : "—";
-      const studentAbsences = periodAbsences.filter((a) => a.studentId === s.id);
-      const studentUnconfirmed = studentAbsences.filter((a) => a.status === "unconfirmed" || a.status === "unexcused" || a.code === "Н");
+      const studentAbsences = periodAbsences.filter(
+        (a) => a.studentId === s.id
+      );
+      const studentUnconfirmed = studentAbsences.filter(
+        (a) => a.status === "unconfirmed" || a.status === "unexcused" || a.code === "Н"
+      );
       const lessonCells = lessons.map((l) => {
         const grade = gradesMap.get(`${l.id}_${s.id}`);
         const att = attendanceMap.get(`${l.id}_${s.id}`);
@@ -25794,10 +26046,14 @@
           }
         } else if (grade) {
           let badgeClass = "bg-slate-100 text-slate-700 border-slate-200";
-          if (grade.value === 5) badgeClass = "bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs";
-          else if (grade.value === 4) badgeClass = "bg-blue-50 text-blue-800 border-blue-300 shadow-2xs";
-          else if (grade.value === 3) badgeClass = "bg-amber-50 text-amber-800 border-amber-300 shadow-2xs";
-          else if (grade.value === 2) badgeClass = "bg-rose-50 text-rose-800 border-rose-300 shadow-2xs";
+          if (grade.value === 5)
+            badgeClass = "bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs";
+          else if (grade.value === 4)
+            badgeClass = "bg-blue-50 text-blue-800 border-blue-300 shadow-2xs";
+          else if (grade.value === 3)
+            badgeClass = "bg-amber-50 text-amber-800 border-amber-300 shadow-2xs";
+          else if (grade.value === 2)
+            badgeClass = "bg-rose-50 text-rose-800 border-rose-300 shadow-2xs";
           cellContent = `
           <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold rounded-lg border ${badgeClass}">
             ${grade.value}
@@ -25908,11 +26164,13 @@
               <select id="select-journal-subject"
                       class="w-full appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
                 <option value="all" ${selectedSubjectId === "all" ? "selected" : ""}>Все предметы (сводный журнал)</option>
-                ${subjects.map((sub) => `
+                ${subjects.map(
+      (sub) => `
                   <option value="${sub.id}" ${selectedSubjectId === sub.id ? "selected" : ""}>
                     ${sub.name} (${sub.teacher || "Учитель"})
                   </option>
-                `).join("")}
+                `
+    ).join("")}
               </select>
               <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                 ${renderIcon("chevron-down", "w-4 h-4")}
@@ -26316,6 +26574,8 @@
     </div>
   `;
   }
+
+  // src/views/journal/listeners.js
   function setupJournalListeners(onNavigate) {
     const selectSubject = document.getElementById("select-journal-subject");
     const selectWeek = document.getElementById("select-journal-week");
@@ -26324,7 +26584,9 @@
     const inputSearch = document.getElementById("input-search-student");
     const btnClearSearch = document.getElementById("btn-clear-search");
     const iconSearch = document.getElementById("icon-search-glass");
-    const btnToggleHighlight = document.getElementById("btn-toggle-highlight-unconfirmed");
+    const btnToggleHighlight = document.getElementById(
+      "btn-toggle-highlight-unconfirmed"
+    );
     const tableContainer = document.getElementById("journal-table-container");
     function getUrlParams() {
       const rawHash = "/journal" + (window.location.search || "");
@@ -26347,12 +26609,16 @@
       const current = getUrlParams();
       const merged = { ...current, ...newParams };
       const params = new URLSearchParams();
-      if (merged.subjectId && merged.subjectId !== "all") params.set("subject", merged.subjectId);
-      if (merged.weekId && merged.weekId !== "all") params.set("week", merged.weekId);
+      if (merged.subjectId && merged.subjectId !== "all")
+        params.set("subject", merged.subjectId);
+      if (merged.weekId && merged.weekId !== "all")
+        params.set("week", merged.weekId);
       if (merged.filterStatus && merged.filterStatus !== "all") {
         params.set("status", merged.filterStatus);
-        if (merged.filterStatus === "unconfirmed") params.set("unconfirmed", "true");
-        if (merged.filterStatus === "absences" || merged.filterStatus === "unconfirmed") params.set("absences", "true");
+        if (merged.filterStatus === "unconfirmed")
+          params.set("unconfirmed", "true");
+        if (merged.filterStatus === "absences" || merged.filterStatus === "unconfirmed")
+          params.set("absences", "true");
       }
       if (merged.filterOnlyEntries) params.set("onlyEntries", "true");
       if (merged.searchQuery) params.set("search", merged.searchQuery);
@@ -26451,37 +26717,87 @@
     }
     if (btnToggleHighlight && tableContainer) {
       btnToggleHighlight.addEventListener("click", () => {
-        const isNowActive = !tableContainer.classList.contains("journal-highlight-mode");
+        const isNowActive = !tableContainer.classList.contains(
+          "journal-highlight-mode"
+        );
         tableContainer.classList.toggle("journal-highlight-mode", isNowActive);
         if (isNowActive) {
-          btnToggleHighlight.classList.remove("bg-white", "text-slate-700", "border-slate-200");
-          btnToggleHighlight.classList.add("bg-rose-50", "text-rose-700", "border-rose-300", "ring-2", "ring-rose-500/20");
+          btnToggleHighlight.classList.remove(
+            "bg-white",
+            "text-slate-700",
+            "border-slate-200"
+          );
+          btnToggleHighlight.classList.add(
+            "bg-rose-50",
+            "text-rose-700",
+            "border-rose-300",
+            "ring-2",
+            "ring-rose-500/20"
+          );
         } else {
-          btnToggleHighlight.classList.remove("bg-rose-50", "text-rose-700", "border-rose-300", "ring-2", "ring-rose-500/20");
-          btnToggleHighlight.classList.add("bg-white", "text-slate-700", "border-slate-200");
+          btnToggleHighlight.classList.remove(
+            "bg-rose-50",
+            "text-rose-700",
+            "border-rose-300",
+            "ring-2",
+            "ring-rose-500/20"
+          );
+          btnToggleHighlight.classList.add(
+            "bg-white",
+            "text-slate-700",
+            "border-slate-200"
+          );
         }
       });
     }
     const modal = document.getElementById("modal-journal-entry");
     const modalDialog = document.getElementById("modal-journal-dialog");
     const btnCloseX = document.getElementById("btn-close-journal-modal");
-    const btnCloseFooter = document.getElementById("btn-close-journal-modal-footer");
+    const btnCloseFooter = document.getElementById(
+      "btn-close-journal-modal-footer"
+    );
     const formComment = document.getElementById("form-add-journal-comment");
-    const inputCommentText = document.getElementById("input-journal-comment-text");
+    const inputCommentText = document.getElementById(
+      "input-journal-comment-text"
+    );
     const modalConfirm = document.getElementById("modal-journal-confirm-absence");
-    const modalConfirmDialog = document.getElementById("modal-journal-confirm-dialog");
-    const btnCloseConfirmX = document.getElementById("btn-close-journal-confirm-x");
-    const btnCancelConfirm = document.getElementById("btn-cancel-journal-confirm");
-    const formConfirmAbsence = document.getElementById("form-journal-confirm-absence");
-    const inputConfirmAttId = document.getElementById("journal-confirm-attendance-id");
-    const inputConfirmStudentName = document.getElementById("journal-confirm-student-name");
-    const inputConfirmDate = document.getElementById("journal-confirm-absence-date");
-    const inputConfirmLesson = document.getElementById("journal-confirm-absence-lesson");
-    const selectConfirmReasonType = document.getElementById("journal-confirm-reason-type");
-    const checkConfirmHasDoc = document.getElementById("journal-confirm-has-certificate");
-    const inputConfirmDocText = document.getElementById("journal-confirm-document-text");
+    const modalConfirmDialog = document.getElementById(
+      "modal-journal-confirm-dialog"
+    );
+    const btnCloseConfirmX = document.getElementById(
+      "btn-close-journal-confirm-x"
+    );
+    const btnCancelConfirm = document.getElementById(
+      "btn-cancel-journal-confirm"
+    );
+    const formConfirmAbsence = document.getElementById(
+      "form-journal-confirm-absence"
+    );
+    const inputConfirmAttId = document.getElementById(
+      "journal-confirm-attendance-id"
+    );
+    const inputConfirmStudentName = document.getElementById(
+      "journal-confirm-student-name"
+    );
+    const inputConfirmDate = document.getElementById(
+      "journal-confirm-absence-date"
+    );
+    const inputConfirmLesson = document.getElementById(
+      "journal-confirm-absence-lesson"
+    );
+    const selectConfirmReasonType = document.getElementById(
+      "journal-confirm-reason-type"
+    );
+    const checkConfirmHasDoc = document.getElementById(
+      "journal-confirm-has-certificate"
+    );
+    const inputConfirmDocText = document.getElementById(
+      "journal-confirm-document-text"
+    );
     const inputConfirmNotes = document.getElementById("journal-confirm-notes");
-    const blockConfirmDocFields = document.getElementById("block-journal-document-fields");
+    const blockConfirmDocFields = document.getElementById(
+      "block-journal-document-fields"
+    );
     let activeLessonId = null;
     let activeStudentId = null;
     let activeAttendanceRecord = null;
@@ -26498,12 +26814,19 @@
     function openJournalConfirmModal() {
       if (!modalConfirm || !activeAttendanceRecord) return;
       const currentDB = getDB();
-      const student = (currentDB.students || []).find((s) => s.id === activeAttendanceRecord.studentId);
-      const lesson = (currentDB.lessons || []).find((l) => l.id === activeAttendanceRecord.lessonId);
+      const student = (currentDB.students || []).find(
+        (s) => s.id === activeAttendanceRecord.studentId
+      );
+      const lesson = (currentDB.lessons || []).find(
+        (l) => l.id === activeAttendanceRecord.lessonId
+      );
       if (inputConfirmAttId) inputConfirmAttId.value = activeAttendanceRecord.id;
-      if (inputConfirmStudentName) inputConfirmStudentName.value = student ? student.fullName : "Ученик";
-      if (inputConfirmDate) inputConfirmDate.value = activeAttendanceRecord.date || (lesson ? lesson.date : "");
-      if (inputConfirmLesson) inputConfirmLesson.value = lesson ? `${lesson.subjectName || "Урок"} (${lesson.time || ""})` : "Урок";
+      if (inputConfirmStudentName)
+        inputConfirmStudentName.value = student ? student.fullName : "Ученик";
+      if (inputConfirmDate)
+        inputConfirmDate.value = activeAttendanceRecord.date || (lesson ? lesson.date : "");
+      if (inputConfirmLesson)
+        inputConfirmLesson.value = lesson ? `${lesson.subjectName || "Урок"} (${lesson.time || ""})` : "Урок";
       if (selectConfirmReasonType) selectConfirmReasonType.value = "excused";
       if (checkConfirmHasDoc) checkConfirmHasDoc.checked = true;
       if (blockConfirmDocFields) blockConfirmDocFields.style.display = "block";
@@ -26565,19 +26888,31 @@
       const currentDB = getDB();
       const lesson = (currentDB.lessons || []).find((l) => l.id === lessonId);
       const student = (currentDB.students || []).find((s) => s.id === studentId);
-      const grade = (currentDB.grades || []).find((g) => g.lessonId === lessonId && g.studentId === studentId);
-      const att = (currentDB.attendance || []).find((a) => a.lessonId === lessonId && a.studentId === studentId);
+      const grade = (currentDB.grades || []).find(
+        (g) => g.lessonId === lessonId && g.studentId === studentId
+      );
+      const att = (currentDB.attendance || []).find(
+        (a) => a.lessonId === lessonId && a.studentId === studentId
+      );
       activeAttendanceRecord = att;
       const elSub = document.getElementById("entry-modal-subject");
-      const elDateBadge = document.getElementById("entry-modal-lesson-date-badge");
+      const elDateBadge = document.getElementById(
+        "entry-modal-lesson-date-badge"
+      );
       const elInfo = document.getElementById("entry-modal-lesson-info");
       const elStudent = document.getElementById("entry-modal-student-name");
-      const elStudentAvatar = document.getElementById("entry-modal-student-avatar");
+      const elStudentAvatar = document.getElementById(
+        "entry-modal-student-avatar"
+      );
       const elStudentLink = document.getElementById("entry-modal-student-link");
       const elGrade = document.getElementById("entry-modal-grade-badge");
       const elAtt = document.getElementById("entry-modal-attendance-badge");
-      const elAbsenceDetails = document.getElementById("entry-modal-absence-details");
-      const elConfirmBlock = document.getElementById("block-confirm-from-journal");
+      const elAbsenceDetails = document.getElementById(
+        "entry-modal-absence-details"
+      );
+      const elConfirmBlock = document.getElementById(
+        "block-confirm-from-journal"
+      );
       if (elSub && lesson) elSub.textContent = lesson.subjectName || "Урок";
       if (elDateBadge && lesson) {
         elDateBadge.textContent = `${lesson.date || ""} (${lesson.time || ""})`;
@@ -26597,10 +26932,14 @@
       if (elGrade) {
         if (grade) {
           let badgeStyle = "bg-slate-100 text-slate-800 border-slate-200";
-          if (grade.value === 5) badgeStyle = "bg-emerald-50 text-emerald-800 border-emerald-300";
-          else if (grade.value === 4) badgeStyle = "bg-blue-50 text-blue-800 border-blue-300";
-          else if (grade.value === 3) badgeStyle = "bg-amber-50 text-amber-800 border-amber-300";
-          else if (grade.value === 2) badgeStyle = "bg-rose-50 text-rose-800 border-rose-300";
+          if (grade.value === 5)
+            badgeStyle = "bg-emerald-50 text-emerald-800 border-emerald-300";
+          else if (grade.value === 4)
+            badgeStyle = "bg-blue-50 text-blue-800 border-blue-300";
+          else if (grade.value === 3)
+            badgeStyle = "bg-amber-50 text-amber-800 border-amber-300";
+          else if (grade.value === 2)
+            badgeStyle = "bg-rose-50 text-rose-800 border-rose-300";
           elGrade.innerHTML = `
           <div class="flex items-center space-x-3">
             <span class="inline-flex items-center justify-center w-10 h-10 text-base font-extrabold rounded-xl border ${badgeStyle} shadow-sm flex-shrink-0" style="width: 40px; height: 40px; min-width: 40px;">
@@ -26788,15 +27127,23 @@
         if (res.success) {
           inputCommentText.value = "";
           renderModalComments(activeLessonId, activeStudentId);
-          const targetCell = document.querySelector(`.cell-journal-entry[data-lesson-id="${activeLessonId}"][data-student-id="${activeStudentId}"]`);
+          const targetCell = document.querySelector(
+            `.cell-journal-entry[data-lesson-id="${activeLessonId}"][data-student-id="${activeStudentId}"]`
+          );
           if (targetCell) {
             let indicator = targetCell.querySelector(".indicator-comment");
-            const allCommentsForCell = getJournalComments(activeLessonId, activeStudentId);
+            const allCommentsForCell = getJournalComments(
+              activeLessonId,
+              activeStudentId
+            );
             if (!indicator) {
               indicator = document.createElement("span");
               indicator.className = "indicator-comment absolute top-1 right-1 w-2 h-2 rounded-full bg-brand-500 ring-2 ring-white animate-pulse";
               targetCell.appendChild(indicator);
-              setTimeout(() => indicator && indicator.classList.remove("animate-pulse"), 1500);
+              setTimeout(
+                () => indicator && indicator.classList.remove("animate-pulse"),
+                1500
+              );
             }
             indicator.title = `Комментарии: ${allCommentsForCell.length}`;
           }
@@ -26805,7 +27152,7 @@
     }
   }
 
-  // src/views/students.js
+  // src/views/students/helpers.js
   var PERIODS = [
     { id: "q1_2024", name: "I четверть (02.09 - 25.10.2024)" },
     { id: "q2_2024", name: "II четверть (05.11 - 27.12.2024)" },
@@ -26814,7 +27161,9 @@
     { id: "year_2024_2025", name: "2024/2025 учебный год" }
   ];
   function prepareStudentRows(db, periodId) {
-    const rawStudents = (db.students || []).filter((s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived");
+    const rawStudents = (db.students || []).filter(
+      (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived"
+    );
     const riskStudents = getRiskZoneStudents(
       db.students,
       db.lessons,
@@ -26826,9 +27175,16 @@
     const riskStudentIds = new Set(riskStudents.map((r) => r.studentId));
     return rawStudents.map((student) => {
       const avg = calculateStudentAverage(db.grades, student.id, { periodId });
-      const att = calculateStudentAttendance(db.lessons, db.attendance, student.id, { periodId });
+      const att = calculateStudentAttendance(
+        db.lessons,
+        db.attendance,
+        student.id,
+        { periodId }
+      );
       const isRisk = riskStudentIds.has(student.id);
-      const rels = (db.parentStudentRelations || []).filter((r) => r.studentId === student.id);
+      const rels = (db.parentStudentRelations || []).filter(
+        (r) => r.studentId === student.id
+      );
       const primaryRel = rels.find((r) => r.isPrimary || r.isPrimaryContact) || rels[0];
       const parent = primaryRel ? (db.parents || []).find((p) => p.id === primaryRel.parentId) : null;
       const parts = (student.fullName || "").trim().split(/\s+/);
@@ -26867,23 +27223,43 @@
         const gB = b.averageGrade !== null ? b.averageGrade : -1;
         cmp = gA - gB;
         if (cmp === 0) {
-          cmp = (a.student.lastName || "").localeCompare(b.student.lastName || "", "ru");
+          cmp = (a.student.lastName || "").localeCompare(
+            b.student.lastName || "",
+            "ru"
+          );
         }
       } else if (sortBy === "absences") {
         const absA = a.attendance?.absentCount ?? 0;
         const absB = b.attendance?.absentCount ?? 0;
         cmp = absA - absB;
         if (cmp === 0) {
-          cmp = (a.student.lastName || "").localeCompare(b.student.lastName || "", "ru");
+          cmp = (a.student.lastName || "").localeCompare(
+            b.student.lastName || "",
+            "ru"
+          );
         }
       } else {
-        cmp = (a.student.lastName || "").localeCompare(b.student.lastName || "", "ru");
+        cmp = (a.student.lastName || "").localeCompare(
+          b.student.lastName || "",
+          "ru"
+        );
       }
       return sortOrder === "desc" ? -cmp : cmp;
     });
     return filtered;
   }
-  function renderTableHtml({ pageRows, totalFiltered, totalInClass, startShown, endShown, validPage, totalPages, sortBy, sortOrder, searchQuery }) {
+  function renderTableHtml({
+    pageRows,
+    totalFiltered,
+    totalInClass,
+    startShown,
+    endShown,
+    validPage,
+    totalPages,
+    sortBy,
+    sortOrder,
+    searchQuery
+  }) {
     return `
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse">
@@ -26918,8 +27294,10 @@
       const isAbsentAlert = row.attendance && row.attendance.absentCount > 0;
       let gradeColor = "text-slate-900";
       if (row.averageGrade !== null) {
-        if (row.averageGrade >= 4.5) gradeColor = "text-emerald-600";
-        else if (row.averageGrade < 3.5) gradeColor = "text-rose-600";
+        if (row.averageGrade >= 4.5)
+          gradeColor = "text-emerald-600";
+        else if (row.averageGrade < 3.5)
+          gradeColor = "text-rose-600";
         else gradeColor = "text-amber-600";
       }
       return `
@@ -27026,13 +27404,15 @@
             ${renderIcon("chevron-left", "w-4 h-4")}
           </button>
 
-          ${Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => `
+          ${Array.from({ length: totalPages }, (_, i) => i + 1).map(
+      (pageNum) => `
             <button type="button"
                     data-page="${pageNum}"
                     class="btn-pagination-page w-8 h-8 rounded-lg font-bold text-xs flex items-center justify-center transition-all cursor-pointer ${pageNum === validPage ? "bg-brand-500 text-white shadow-xs" : "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs"}">
               ${pageNum}
             </button>
-          `).join("")}
+          `
+    ).join("")}
 
           <button type="button"
                   data-page="${validPage + 1}"
@@ -27045,6 +27425,8 @@
     </div>
   `;
   }
+
+  // src/views/students/render.js
   function renderStudentsView(options = {}) {
     const db = getDB();
     const periodId = options.periodId || "q1_2024";
@@ -27054,10 +27436,17 @@
     const sortOrder = options.sortOrder || "asc";
     const currentPage = parseInt(options.page || "1", 10);
     const pageSize = 10;
-    const rawStudents = (db.students || []).filter((s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived");
+    const rawStudents = (db.students || []).filter(
+      (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived"
+    );
     const totalInClass = rawStudents.length;
     const studentRows = prepareStudentRows(db, periodId);
-    const filteredRows = filterAndSortRows(studentRows, { searchQuery, filterAbsencesOnly, sortBy, sortOrder });
+    const filteredRows = filterAndSortRows(studentRows, {
+      searchQuery,
+      filterAbsencesOnly,
+      sortBy,
+      sortOrder
+    });
     const totalFiltered = filteredRows.length;
     const totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
     const validPage = Math.min(Math.max(1, currentPage), totalPages);
@@ -27116,9 +27505,11 @@
               <select id="select-students-period"
                       style="padding-left: 0.875rem; padding-right: 2.25rem;"
                       class="appearance-none py-2.5 rounded-xl border border-slate-200/90 bg-white hover:border-slate-300 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all cursor-pointer">
-                ${PERIODS.map((p) => `
+                ${PERIODS.map(
+      (p) => `
                   <option value="${p.id}" ${p.id === periodId ? "selected" : ""}>${p.name}</option>
-                `).join("")}
+                `
+    ).join("")}
               </select>
               <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
                 ${renderIcon("chevron-down", "w-3.5 h-3.5")}
@@ -27370,6 +27761,8 @@
     </div>
   `;
   }
+
+  // src/views/students/listeners.js
   function setupStudentsListeners(onNavigate) {
     let db = getDB();
     function getUrlParams() {
@@ -27390,18 +27783,24 @@
     const pageSize = 10;
     const inputSearch = document.getElementById("input-search-student-list");
     const btnClearSearch = document.getElementById("btn-clear-student-search");
-    const btnFilterAbsences = document.getElementById("btn-filter-absences-toggle");
+    const btnFilterAbsences = document.getElementById(
+      "btn-filter-absences-toggle"
+    );
     const selectPeriod = document.getElementById("select-students-period");
     const tableWrapper = document.getElementById("students-table-wrapper");
     const modalSummary = document.getElementById("modal-student-summary");
-    const modalSummaryDialog = document.getElementById("modal-student-summary-dialog");
+    const modalSummaryDialog = document.getElementById(
+      "modal-student-summary-dialog"
+    );
     const summaryContent = document.getElementById("student-summary-content");
     const modalAdd = document.getElementById("modal-add-student");
     const modalAddDialog = document.getElementById("modal-add-student-dialog");
     const formAdd = document.getElementById("form-add-student");
     const btnAddOpen = document.getElementById("btn-add-student-mock");
     const modalArchive = document.getElementById("modal-class-archive");
-    const modalArchiveDialog = document.getElementById("modal-class-archive-dialog");
+    const modalArchiveDialog = document.getElementById(
+      "modal-class-archive-dialog"
+    );
     const btnArchiveOpen = document.getElementById("btn-class-archive");
     const formArchive = document.getElementById("form-archive-student");
     function showToast2(message, isSuccess = true) {
@@ -27414,17 +27813,24 @@
       toast.classList.remove("opacity-0", "translate-y-4", "pointer-events-none");
       toast.classList.add("opacity-100", "translate-y-0", "pointer-events-auto");
       setTimeout(() => {
-        toast.classList.remove("opacity-100", "translate-y-0", "pointer-events-auto");
+        toast.classList.remove(
+          "opacity-100",
+          "translate-y-0",
+          "pointer-events-auto"
+        );
         toast.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
       }, 3200);
     }
     function syncRoute() {
       const params = new URLSearchParams();
-      if (state.periodId && state.periodId !== "q1_2024") params.set("period", state.periodId);
+      if (state.periodId && state.periodId !== "q1_2024")
+        params.set("period", state.periodId);
       if (state.searchQuery) params.set("search", state.searchQuery);
       if (state.filterAbsencesOnly) params.set("absences", "true");
-      if (state.sortBy && state.sortBy !== "name") params.set("sortBy", state.sortBy);
-      if (state.sortOrder && state.sortOrder !== "asc") params.set("sortOrder", state.sortOrder);
+      if (state.sortBy && state.sortBy !== "name")
+        params.set("sortBy", state.sortBy);
+      if (state.sortOrder && state.sortOrder !== "asc")
+        params.set("sortOrder", state.sortOrder);
       if (state.page && state.page > 1) params.set("page", String(state.page));
       const queryStr = params.toString();
       const newHash = queryStr ? `/students?${queryStr}` : "/students";
@@ -27449,7 +27855,9 @@
     function renderAndAttachTable() {
       if (!tableWrapper) return;
       db = getDB();
-      const rawStudents = (db.students || []).filter((s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived");
+      const rawStudents = (db.students || []).filter(
+        (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived"
+      );
       const totalInClass = rawStudents.length;
       const studentRows = prepareStudentRows(db, state.periodId);
       const filteredRows = filterAndSortRows(studentRows, {
@@ -27573,16 +27981,32 @@
       db = getDB();
       const student = (db.students || []).find((s) => s.id === studentId);
       if (!student || !summaryContent || !modalSummary) return;
-      const overallAvg = calculateStudentAverage(db.grades, studentId, { periodId: state.periodId });
-      const att = calculateStudentAttendance(db.lessons, db.attendance, studentId, { periodId: state.periodId });
+      const overallAvg = calculateStudentAverage(db.grades, studentId, {
+        periodId: state.periodId
+      });
+      const att = calculateStudentAttendance(
+        db.lessons,
+        db.attendance,
+        studentId,
+        { periodId: state.periodId }
+      );
       const subjectStats = (db.subjects || []).map((subj) => {
-        const avg = calculateStudentAverage(db.grades, studentId, { periodId: state.periodId, subjectId: subj.id });
+        const avg = calculateStudentAverage(db.grades, studentId, {
+          periodId: state.periodId,
+          subjectId: subj.id
+        });
         return { ...subj, average: avg };
       });
-      const rels = (db.parentStudentRelations || []).filter((r) => r.studentId === studentId);
+      const rels = (db.parentStudentRelations || []).filter(
+        (r) => r.studentId === studentId
+      );
       const parentList = rels.map((r) => {
         const p = (db.parents || []).find((par) => par.id === r.parentId);
-        return { ...p, relation: r.relationRole || r.relation || "Родитель", isPrimary: r.isPrimary || r.isPrimaryContact };
+        return {
+          ...p,
+          relation: r.relationRole || r.relation || "Родитель",
+          isPrimary: r.isPrimary || r.isPrimaryContact
+        };
       }).filter(Boolean);
       summaryContent.innerHTML = `
       <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
@@ -27626,21 +28050,24 @@
         <div>
           <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Баллы по предметам</h4>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            ${subjectStats.map((s) => `
+            ${subjectStats.map(
+        (s) => `
               <div class="p-2.5 rounded-xl bg-slate-50/60 border border-slate-100 flex items-center justify-between">
                 <span class="text-xs text-slate-700 font-medium truncate mr-2" title="${s.name}">${s.name}</span>
                 <span class="text-xs font-extrabold ${s.average !== null && s.average < 3.5 ? "text-rose-600" : "text-slate-900"}">
                   ${s.average !== null ? s.average.toFixed(1).replace(".", ",") : "—"}
                 </span>
               </div>
-            `).join("")}
+            `
+      ).join("")}
           </div>
         </div>
 
         <div>
           <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Контакты родителей</h4>
           <div class="space-y-1.5">
-            ${parentList.length > 0 ? parentList.map((p) => `
+            ${parentList.length > 0 ? parentList.map(
+        (p) => `
               <div class="p-2.5 rounded-xl bg-slate-50/70 border border-slate-100 flex items-center justify-between">
                 <div>
                   <div class="font-bold text-slate-900 text-xs">
@@ -27651,7 +28078,8 @@
                   <div class="text-[11px] text-slate-500 mt-0.5">${p.phone || "Телефон не указан"} · ${p.email || "—"}</div>
                 </div>
               </div>
-            `).join("") : `
+            `
+      ).join("") : `
               <div class="text-xs text-slate-400 italic">Контакты родителей не внесены</div>
             `}
           </div>
@@ -27684,11 +28112,15 @@
         modalSummaryDialog.classList.remove("scale-95");
         modalSummaryDialog.classList.add("scale-100");
       }
-      const closeBtn = document.getElementById("btn-close-students-summary-footer");
+      const closeBtn = document.getElementById(
+        "btn-close-students-summary-footer"
+      );
       const closeX = document.getElementById("btn-close-students-summary-x");
       if (closeBtn) closeBtn.onclick = closeSummary;
       if (closeX) closeX.onclick = closeSummary;
-      const btnArchiveFromSummary = document.getElementById("btn-archive-from-summary");
+      const btnArchiveFromSummary = document.getElementById(
+        "btn-archive-from-summary"
+      );
       if (btnArchiveFromSummary) {
         btnArchiveFromSummary.onclick = () => {
           closeSummary();
@@ -27817,7 +28249,9 @@
           });
         }
         if (db.meta) {
-          db.meta.studentsCount = db.students.filter((s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived").length;
+          db.meta.studentsCount = db.students.filter(
+            (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived"
+          ).length;
         }
         saveDB(db);
         closeAddModal();
@@ -27827,8 +28261,12 @@
     }
     function populateArchiveContent(preselectStudentId = null) {
       db = getDB();
-      const archivedList = (db.students || []).filter((s) => (!s.classId || s.classId === "class-7b") && s.status === "archived");
-      const activeList = (db.students || []).filter((s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived");
+      const archivedList = (db.students || []).filter(
+        (s) => (!s.classId || s.classId === "class-7b") && s.status === "archived"
+      );
+      const activeList = (db.students || []).filter(
+        (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived"
+      );
       const badge = document.getElementById("class-archive-count-badge");
       if (badge) {
         badge.textContent = `${archivedList.length} ${archivedList.length === 1 ? "ученик" : archivedList.length >= 2 && archivedList.length <= 4 ? "ученика" : "учеников"}`;
@@ -27848,7 +28286,8 @@
           </div>
         `;
         } else {
-          container.innerHTML = archivedList.map((s) => `
+          container.innerHTML = archivedList.map(
+            (s) => `
           <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3">
             <div>
               <div class="flex items-center space-x-2">
@@ -27864,7 +28303,8 @@
               Восстановить в класс
             </button>
           </div>
-        `).join("");
+        `
+          ).join("");
           container.querySelectorAll(".btn-restore-student").forEach((btn) => {
             btn.addEventListener("click", () => {
               const rId = btn.getAttribute("data-restore-id");
@@ -27878,9 +28318,11 @@
         if (activeList.length === 0) {
           selectStudent.innerHTML = `<option value="">Нет активных учеников</option>`;
         } else {
-          selectStudent.innerHTML = activeList.map((s) => `
+          selectStudent.innerHTML = activeList.map(
+            (s) => `
           <option value="${s.id}" ${s.id === preselectStudentId ? "selected" : ""}>${s.fullName} (${s.id})</option>
-        `).join("");
+        `
+          ).join("");
         }
       }
     }
@@ -27911,16 +28353,22 @@
       delete st.archiveReason;
       delete st.archiveDate;
       if (db.meta) {
-        db.meta.studentsCount = db.students.filter((s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived").length;
+        db.meta.studentsCount = db.students.filter(
+          (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived"
+        ).length;
       }
       saveDB(db);
       populateArchiveContent();
       renderAndAttachTable();
-      showToast2(`Ученик ${st.fullName} восстановлен в активный состав 7Б класса!`);
+      showToast2(
+        `Ученик ${st.fullName} восстановлен в активный состав 7Б класса!`
+      );
     }
-    if (btnArchiveOpen) btnArchiveOpen.addEventListener("click", () => openArchiveModal());
+    if (btnArchiveOpen)
+      btnArchiveOpen.addEventListener("click", () => openArchiveModal());
     const btnCloseArchiveX = document.getElementById("btn-close-class-archive-x");
-    if (btnCloseArchiveX) btnCloseArchiveX.addEventListener("click", closeArchiveModal);
+    if (btnCloseArchiveX)
+      btnCloseArchiveX.addEventListener("click", closeArchiveModal);
     if (modalArchive) {
       modalArchive.addEventListener("click", (e) => {
         if (e.target === modalArchive) closeArchiveModal();
@@ -27941,7 +28389,9 @@
         st.archiveReason = order ? `${reason} (${order})` : reason;
         st.archiveDate = date;
         if (db.meta) {
-          db.meta.studentsCount = db.students.filter((s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived").length;
+          db.meta.studentsCount = db.students.filter(
+            (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived"
+          ).length;
         }
         saveDB(db);
         populateArchiveContent();
@@ -27951,9 +28401,12 @@
     }
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
-        if (modalSummary && !modalSummary.classList.contains("pointer-events-none")) closeSummary();
-        if (modalAdd && !modalAdd.classList.contains("pointer-events-none")) closeAddModal();
-        if (modalArchive && !modalArchive.classList.contains("pointer-events-none")) closeArchiveModal();
+        if (modalSummary && !modalSummary.classList.contains("pointer-events-none"))
+          closeSummary();
+        if (modalAdd && !modalAdd.classList.contains("pointer-events-none"))
+          closeAddModal();
+        if (modalArchive && !modalArchive.classList.contains("pointer-events-none"))
+          closeArchiveModal();
       }
     });
     if (state.studentModalId) {
@@ -27962,7 +28415,7 @@
     renderAndAttachTable();
   }
 
-  // src/views/student-summary.js
+  // src/views/student-summary/helpers.js
   function formatDateRu(isoDate) {
     if (!isoDate) return "";
     const parts = isoDate.split("-");
@@ -28020,7 +28473,9 @@
       const hasSpecificDoc = d && !d.toLowerCase().includes("справка орви") && d.toLowerCase() !== "справка" && d.toLowerCase() !== "медицинская справка";
       let diag = "";
       const cleanR = r.replace(/^по болезни\s*/i, "").replace(/^\(|\)$/g, "").trim();
-      if (cleanR && !["справка", "болезнь", "болезнь / справка", "по болезни"].includes(cleanR.toLowerCase())) {
+      if (cleanR && !["справка", "болезнь", "болезнь / справка", "по болезни"].includes(
+        cleanR.toLowerCase()
+      )) {
         diag = cleanR;
       }
       if (diag) {
@@ -28045,6 +28500,8 @@
     }
     return r || d || "Уважительная причина (подтверждено)";
   }
+
+  // src/views/student-summary/render.js
   function renderStudentSummaryView(options = {}) {
     const db = getDB();
     const periodId = options.periodId || "q1_2024";
@@ -28054,7 +28511,9 @@
     if (!student) {
       for (const p of db.parents || []) {
         if (p.otherChildren && p.otherChildren.length > 0) {
-          const foundOc = p.otherChildren.find((oc) => oc.id === studentId || `ext-${encodeURIComponent(oc.name)}` === studentId || `ext-${oc.name}` === studentId || studentId.toLowerCase().includes("darya") || studentId.toLowerCase().includes("дарья"));
+          const foundOc = p.otherChildren.find(
+            (oc) => oc.id === studentId || `ext-${encodeURIComponent(oc.name)}` === studentId || `ext-${oc.name}` === studentId || studentId.toLowerCase().includes("darya") || studentId.toLowerCase().includes("дарья")
+          );
           if (foundOc) {
             student = {
               id: studentId,
@@ -28091,13 +28550,29 @@
       </div>
     `;
     }
-    const overallAverage = calculateStudentAverage(db.grades, student.id, { periodId });
+    const overallAverage = calculateStudentAverage(db.grades, student.id, {
+      periodId
+    });
     const avgColorClass = overallAverage === null ? "text-slate-400" : overallAverage < 3.5 ? "text-rose-600" : overallAverage >= 4.5 ? "text-emerald-500" : "text-slate-900";
-    const attendanceStats = calculateStudentAttendance(db.lessons, db.attendance, student.id, { periodId });
-    const riskList = getRiskZoneStudents(db.students, db.lessons, db.attendance, db.grades, db.subjects, { periodId });
+    const attendanceStats = calculateStudentAttendance(
+      db.lessons,
+      db.attendance,
+      student.id,
+      { periodId }
+    );
+    const riskList = getRiskZoneStudents(
+      db.students,
+      db.lessons,
+      db.attendance,
+      db.grades,
+      db.subjects,
+      { periodId }
+    );
     const isRisk = riskList.some((r) => r.studentId === student.id);
     const riskItem = riskList.find((r) => r.studentId === student.id);
-    const q1LessonIds = new Set((db.lessons || []).filter((l) => !l.periodId || l.periodId === periodId).map((l) => l.id));
+    const q1LessonIds = new Set(
+      (db.lessons || []).filter((l) => !l.periodId || l.periodId === periodId).map((l) => l.id)
+    );
     const studentAbsences = (db.attendance || []).filter(
       (a) => a.studentId === student.id && a.value === "absent" && q1LessonIds.has(a.lessonId)
     );
@@ -28118,7 +28593,9 @@
       );
       if (isExcused) excusedAbsenceDays++;
     });
-    const rels = (db.parentStudentRelations || []).filter((r) => r.studentId === student.id);
+    const rels = (db.parentStudentRelations || []).filter(
+      (r) => r.studentId === student.id
+    );
     const parentContactsList = rels.map((rel) => {
       const parent = (db.parents || []).find((p) => p.id === rel.parentId);
       return {
@@ -28128,27 +28605,44 @@
         isPrimary: rel.isPrimary === true || rel.isPrimaryContact === true
       };
     }).filter((item) => item.parent);
-    parentContactsList.sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0));
-    const rawContacts = (db.parentContacts || []).filter((c) => c.studentId === student.id);
+    parentContactsList.sort(
+      (a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0)
+    );
+    const rawContacts = (db.parentContacts || []).filter(
+      (c) => c.studentId === student.id
+    );
     const contactsHistory = [...rawContacts].sort((a, b) => {
       const dtA = `${a.date || ""} ${a.time || ""}`;
       const dtB = `${b.date || ""} ${b.time || ""}`;
       return dtB.localeCompare(dtA);
     });
     const rawNotes = (db.notes || []).filter((n) => n.studentId === student.id);
-    const notesHistory = [...rawNotes].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
-    const pendingContact = contactsHistory.find((c) => !c.agreementReached && c.nextContactDate);
+    const notesHistory = [...rawNotes].sort(
+      (a, b) => (b.date || "").localeCompare(a.date || "")
+    );
+    const pendingContact = contactsHistory.find(
+      (c) => !c.agreementReached && c.nextContactDate
+    );
     const subjectsData = (db.subjects || []).map((subj) => {
-      const avg = calculateStudentAverage(db.grades, student.id, { periodId, subjectId: subj.id });
-      const gradesCount = (db.grades || []).filter((g) => g.studentId === student.id && g.subjectId === subj.id && g.periodId === periodId).length;
+      const avg = calculateStudentAverage(db.grades, student.id, {
+        periodId,
+        subjectId: subj.id
+      });
+      const gradesCount = (db.grades || []).filter(
+        (g) => g.studentId === student.id && g.subjectId === subj.id && g.periodId === periodId
+      ).length;
       return {
         ...subj,
         average: avg,
         gradesCount
       };
     });
-    const studentGrades = (db.grades || []).filter((g) => g.studentId === student.id && (!g.periodId || g.periodId === periodId)).sort((a, b) => (b.date || "").localeCompare(a.date || ""));
-    const sortedDates = Array.from(absencesByDateMap.keys()).sort((a, b) => b.localeCompare(a));
+    const studentGrades = (db.grades || []).filter(
+      (g) => g.studentId === student.id && (!g.periodId || g.periodId === periodId)
+    ).sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    const sortedDates = Array.from(absencesByDateMap.keys()).sort(
+      (a, b) => b.localeCompare(a)
+    );
     return `
     <div id="student-summary-view" class="p-6 sm:p-8 max-w-7xl mx-auto space-y-6">
       <nav class="flex items-center space-x-2 text-xs font-medium text-slate-500">
@@ -28207,7 +28701,8 @@
                 <p class="text-xs text-slate-400 italic">Контакты родителей не внесены в базу</p>
               ` : `
                 <div class="space-y-3">
-                  ${parentContactsList.map((item) => `
+                  ${parentContactsList.map(
+      (item) => `
                     <div class="p-3 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:border-slate-300 transition-colors">
                       <div class="flex items-center justify-between gap-1 mb-1">
                         <span class="text-xs font-bold text-slate-900">${item.relationRole}: ${item.parent.fullName}</span>
@@ -28224,7 +28719,8 @@
                         </a>
                       </div>
                     </div>
-                  `).join("")}
+                  `
+    ).join("")}
                 </div>
               `}
             </div>
@@ -28319,7 +28815,9 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                       ${studentGrades.map((g) => {
-      const subj = (db.subjects || []).find((s) => s.id === g.subjectId);
+      const subj = (db.subjects || []).find(
+        (s) => s.id === g.subjectId
+      );
       const valClass = g.value >= 4 ? "text-emerald-600 font-bold" : g.value <= 2 ? "text-rose-600 font-bold" : "text-slate-800 font-bold";
       return `
                           <tr class="hover:bg-slate-50">
@@ -28353,7 +28851,9 @@
               <div class="divide-y divide-slate-100">
                 ${sortedDates.map((date) => {
       const records = absencesByDateMap.get(date);
-      const isAllConfirmed = records.every((r) => r.record.status === "confirmed" || r.record.status === "excused");
+      const isAllConfirmed = records.every(
+        (r) => r.record.status === "confirmed" || r.record.status === "excused"
+      );
       const firstRecord = records[0].record;
       const displayText = formatAbsenceDisplayText(firstRecord);
       const totalLessonsCount = records.length;
@@ -28423,7 +28923,9 @@
               <div class="space-y-3.5" id="parent-contacts-history-container">
                 ${contactsHistory.map((c) => {
       const badge = getChannelBadge(c.channel);
-      const parent = (db.parents || []).find((p) => p.id === c.parentId);
+      const parent = (db.parents || []).find(
+        (p) => p.id === c.parentId
+      );
       return `
                     <div class="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/80 space-y-2">
                       <div class="flex items-center justify-between flex-wrap gap-2">
@@ -28496,7 +28998,8 @@
               </div>
             ` : `
               <div class="space-y-3" id="student-notes-history-container">
-                ${notesHistory.map((n) => `
+                ${notesHistory.map(
+      (n) => `
                   <div class="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/80 space-y-1.5">
                     <div class="flex items-center justify-between text-xs text-slate-400">
                       <span>${n.date || "—"}</span>
@@ -28504,7 +29007,8 @@
                     </div>
                     <p class="text-xs text-slate-800 leading-relaxed font-medium">${n.text}</p>
                   </div>
-                `).join("")}
+                `
+    ).join("")}
               </div>
             `}
           </div>
@@ -28564,11 +29068,13 @@
                 <div class="relative">
                   <select id="contact-parent-select" required
                           class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
-                    ${parentContactsList.map((item) => `
+                    ${parentContactsList.map(
+      (item) => `
                       <option value="${item.parent.id}" ${item.isPrimary ? "selected" : ""}>
                         ${item.parent.fullName} (${item.relationRole}) ${item.isPrimary ? "★ Основной контакт" : ""}
                       </option>
-                    `).join("")}
+                    `
+    ).join("")}
                   </select>
                   <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                     ${renderIcon("chevron-down", "w-4 h-4")}
@@ -28732,6 +29238,8 @@
     </div>
   `;
   }
+
+  // src/views/student-summary/listeners.js
   function setupStudentSummaryListeners(onNavigate) {
     const queryString = window.location.search || "";
     const params = new URLSearchParams(queryString);
@@ -28746,12 +29254,18 @@
       toast.classList.remove("opacity-0", "translate-y-4", "pointer-events-none");
       toast.classList.add("opacity-100", "translate-y-0", "pointer-events-auto");
       setTimeout(() => {
-        toast.classList.remove("opacity-100", "translate-y-0", "pointer-events-auto");
+        toast.classList.remove(
+          "opacity-100",
+          "translate-y-0",
+          "pointer-events-auto"
+        );
         toast.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
       }, 3200);
     }
     const toggleGradesBtn = document.getElementById("btn-toggle-grades-journal");
-    const gradesJournalWrapper = document.getElementById("grades-journal-wrapper");
+    const gradesJournalWrapper = document.getElementById(
+      "grades-journal-wrapper"
+    );
     if (toggleGradesBtn && gradesJournalWrapper) {
       toggleGradesBtn.addEventListener("click", () => {
         const isHidden = gradesJournalWrapper.classList.toggle("hidden");
@@ -28768,11 +29282,19 @@
     const btnCancelContact = document.getElementById("btn-cancel-contact-modal");
     const formContact = document.getElementById("form-contact-parent");
     const contactDateInput = document.getElementById("contact-date");
-    const contactChannelSelect = document.getElementById("contact-channel-select");
+    const contactChannelSelect = document.getElementById(
+      "contact-channel-select"
+    );
     const contactSummaryInput = document.getElementById("contact-summary-input");
-    const contactAgreementCheckbox = document.getElementById("contact-agreement-checkbox");
-    const contactReminderWrapper = document.getElementById("contact-reminder-date-wrapper");
-    const contactNextDateInput = document.getElementById("contact-next-date-input");
+    const contactAgreementCheckbox = document.getElementById(
+      "contact-agreement-checkbox"
+    );
+    const contactReminderWrapper = document.getElementById(
+      "contact-reminder-date-wrapper"
+    );
+    const contactNextDateInput = document.getElementById(
+      "contact-next-date-input"
+    );
     const contactErrorBox = document.getElementById("contact-error-box");
     function openContactModal() {
       if (!modalContact) return;
@@ -28814,7 +29336,10 @@
     }
     if (contactAgreementCheckbox && contactReminderWrapper) {
       contactAgreementCheckbox.addEventListener("change", () => {
-        contactReminderWrapper.classList.toggle("hidden", contactAgreementCheckbox.checked);
+        contactReminderWrapper.classList.toggle(
+          "hidden",
+          contactAgreementCheckbox.checked
+        );
       });
     }
     if (formContact) {
@@ -28867,7 +29392,9 @@
         closeContactModal();
         showToast2("Контакт с родителем успешно зафиксирован");
         if (onNavigate) {
-          onNavigate(window.location.search ? "/student" + window.location.search : `/student?id=${studentId}`);
+          onNavigate(
+            window.location.search ? "/student" + window.location.search : `/student?id=${studentId}`
+          );
         }
       });
     }
@@ -28942,7 +29469,9 @@
         closeNoteModal();
         showToast2("Педагогическая заметка сохранена");
         if (onNavigate) {
-          onNavigate(window.location.search ? "/student" + window.location.search : `/student?id=${studentId}`);
+          onNavigate(
+            window.location.search ? "/student" + window.location.search : `/student?id=${studentId}`
+          );
         }
       });
     }
@@ -28956,10 +29485,15 @@
     const checkHasDoc = document.getElementById("confirm-has-doc-check");
     const blockDocFields = document.getElementById("block-absence-doc-fields");
     const inputDocText = document.getElementById("confirm-doc-text-input");
-    const inputAbsenceNotes = document.getElementById("confirm-absence-notes-input");
+    const inputAbsenceNotes = document.getElementById(
+      "confirm-absence-notes-input"
+    );
     if (selectReasonType && blockDocFields) {
       selectReasonType.addEventListener("change", () => {
-        blockDocFields.classList.toggle("hidden", selectReasonType.value !== "excused");
+        blockDocFields.classList.toggle(
+          "hidden",
+          selectReasonType.value !== "excused"
+        );
       });
     }
     function openAbsenceModal(recordIds) {
@@ -29022,13 +29556,15 @@
         closeAbsenceModal();
         showToast2("Уважительная причина пропуска успешно подтверждена");
         if (onNavigate) {
-          onNavigate(window.location.search ? "/student" + window.location.search : `/student?id=${studentId}`);
+          onNavigate(
+            window.location.search ? "/student" + window.location.search : `/student?id=${studentId}`
+          );
         }
       });
     }
   }
 
-  // src/views/parents.js
+  // src/views/parents/list.js
   function renderParentsView(options = {}) {
     const db = getDB();
     const rawParents = db.parents || [];
@@ -29050,7 +29586,9 @@
       });
       const parts = (parent.fullName || "").trim().split(/\s+/);
       const initials = parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}` : parent.fullName ? parent.fullName.slice(0, 2) : "РД";
-      const parentContacts = (db.parentContacts || []).filter((c) => c.parentId === parent.id);
+      const parentContacts = (db.parentContacts || []).filter(
+        (c) => c.parentId === parent.id
+      );
       parentContacts.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
       const lastContact = parentContacts[0] ? {
         ...parentContacts[0],
@@ -29096,7 +29634,9 @@
     const validPage = Math.min(Math.max(currentPage, 1), totalPages);
     const startIndex = (validPage - 1) * pageSize;
     const paginatedRows = filteredRows.slice(startIndex, startIndex + pageSize);
-    const students7B = rawStudents.filter((s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived");
+    const students7B = rawStudents.filter(
+      (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived"
+    );
     return `
     <div class="space-y-6 animate-fadeIn pb-12">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -29171,24 +29711,32 @@
       const hasMoreChildren = row.children.length > 1;
       let childrenHtml = "—";
       if (row.children.length > 0) {
-        childrenHtml = row.children.map((c) => `
+        childrenHtml = row.children.map(
+          (c) => `
                       <a href="/student?id=${c.student ? c.student.id : ""}"
                          class="text-brand-600 hover:text-brand-700 font-semibold hover:underline block truncate max-w-xs">
                         ${c.student ? c.student.fullName : "Ученик"} (7Б)
                       </a>
-                    `).join("");
+                    `
+        ).join("");
       } else if (p.otherChildren && p.otherChildren.length > 0) {
-        childrenHtml = p.otherChildren.map((oc) => `
+        childrenHtml = p.otherChildren.map(
+          (oc) => `
                       <span class="text-slate-600 font-medium block truncate max-w-xs">${oc.name} (${oc.class})</span>
-                    `).join("");
+                    `
+        ).join("");
       }
       let roleHtml = "—";
       if (row.children.length > 0) {
-        roleHtml = row.children.map((c) => `<span class="block">${c.relationRole}</span>`).join("");
+        roleHtml = row.children.map(
+          (c) => `<span class="block">${c.relationRole}</span>`
+        ).join("");
       }
       let primaryBadgeHtml = "—";
       if (row.children.length > 0) {
-        const isAnyPrimary = row.children.some((c) => c.isPrimary);
+        const isAnyPrimary = row.children.some(
+          (c) => c.isPrimary
+        );
         if (isAnyPrimary) {
           primaryBadgeHtml = `
                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-600 text-white shadow-2xs">
@@ -29284,12 +29832,14 @@
                 <button type="button" id="btn-parents-prev-page" ${validPage <= 1 ? 'disabled class="opacity-40 cursor-not-allowed p-2 rounded-xl border border-slate-200"' : 'class="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer"'}>
                   ${renderIcon("chevron-down", "w-4 h-4 rotate-90")}
                 </button>
-                ${Array.from({ length: totalPages }, (_, i) => i + 1).map((pNum) => `
+                ${Array.from({ length: totalPages }, (_, i) => i + 1).map(
+      (pNum) => `
                   <button type="button" class="btn-parents-page-num w-8 h-8 rounded-xl font-bold transition-colors cursor-pointer ${pNum === validPage ? "bg-brand-500 text-white" : "hover:bg-slate-50 text-slate-700"}"
                           data-page="${pNum}">
                     ${pNum}
                   </button>
-                `).join("")}
+                `
+    ).join("")}
                 <button type="button" id="btn-parents-next-page" ${validPage >= totalPages ? 'disabled class="opacity-40 cursor-not-allowed p-2 rounded-xl border border-slate-200"' : 'class="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer"'}>
                   ${renderIcon("chevron-down", "w-4 h-4 -rotate-90")}
                 </button>
@@ -29564,7 +30114,9 @@
     const btnCancelLink = document.getElementById("btn-cancel-link-parent");
     const formLink = document.getElementById("form-link-parent");
     const inputLinkId = document.getElementById("link-parent-id");
-    const selectLinkStudent = document.getElementById("link-parent-student-select");
+    const selectLinkStudent = document.getElementById(
+      "link-parent-student-select"
+    );
     const selectLinkRole = document.getElementById("link-parent-role-select");
     const checkLinkPrimary = document.getElementById("link-parent-is-primary");
     const linkDesc = document.getElementById("link-parent-title-desc");
@@ -29637,7 +30189,9 @@
     if (btnPrev && !btnPrev.disabled) {
       btnPrev.addEventListener("click", () => {
         const hash = "/parents" + (window.location.search || "");
-        const params = new URLSearchParams(hash.includes("?") ? hash.split("?")[1] : "");
+        const params = new URLSearchParams(
+          hash.includes("?") ? hash.split("?")[1] : ""
+        );
         const curPage = parseInt(params.get("page") || "1", 10);
         if (curPage > 1) updateQueryUrl({ page: curPage - 1 });
       });
@@ -29645,7 +30199,9 @@
     if (btnNext && !btnNext.disabled) {
       btnNext.addEventListener("click", () => {
         const hash = "/parents" + (window.location.search || "");
-        const params = new URLSearchParams(hash.includes("?") ? hash.split("?")[1] : "");
+        const params = new URLSearchParams(
+          hash.includes("?") ? hash.split("?")[1] : ""
+        );
         const curPage = parseInt(params.get("page") || "1", 10);
         updateQueryUrl({ page: curPage + 1 });
       });
@@ -29678,7 +30234,11 @@
       if (!modalAdd) return;
       if (formAdd) formAdd.reset();
       if (pPhoneError) pPhoneError.classList.add("hidden");
-      if (inputAddPhone) inputAddPhone.classList.remove("border-rose-500", "focus:ring-rose-500/20");
+      if (inputAddPhone)
+        inputAddPhone.classList.remove(
+          "border-rose-500",
+          "focus:ring-rose-500/20"
+        );
       modalAdd.classList.remove("opacity-0", "pointer-events-none");
       modalAdd.classList.add("opacity-100", "pointer-events-auto");
       if (modalAddDialog) {
@@ -29715,12 +30275,21 @@
         if (!phone) {
           if (pPhoneError) pPhoneError.classList.remove("hidden");
           if (inputAddPhone) {
-            inputAddPhone.classList.add("border-rose-500", "focus:ring-rose-500/20");
+            inputAddPhone.classList.add(
+              "border-rose-500",
+              "focus:ring-rose-500/20"
+            );
             inputAddPhone.focus();
           }
           return;
         }
-        const res = addParent({ fullName: fullName || "Новый родитель", phone, studentId, relationRole, isPrimary });
+        const res = addParent({
+          fullName: fullName || "Новый родитель",
+          phone,
+          studentId,
+          relationRole,
+          isPrimary
+        });
         if (res.success) {
           closeAddModal();
           showToast2("Родитель успешно добавлен");
@@ -29735,7 +30304,9 @@
       const db = getDB();
       const parent = (db.parents || []).find((p) => p.id === parentId);
       if (!parent) return;
-      const rel = (db.parentStudentRelations || []).find((r) => r.parentId === parentId);
+      const rel = (db.parentStudentRelations || []).find(
+        (r) => r.parentId === parentId
+      );
       if (inputEditId) inputEditId.value = parent.id;
       if (inputEditFullname) inputEditFullname.value = parent.fullName || "";
       if (inputEditPhone) inputEditPhone.value = parent.phone || "";
@@ -29778,7 +30349,12 @@
         const phone = (inputEditPhone?.value || "").trim();
         const relationRole = selectEditRole?.value;
         const isPrimary = checkEditPrimary?.checked;
-        const res = updateParent(parentId, { fullName, phone, relationRole, isPrimary });
+        const res = updateParent(parentId, {
+          fullName,
+          phone,
+          relationRole,
+          isPrimary
+        });
         if (res.success) {
           closeEditModal();
           showToast2("Данные родителя обновлены");
@@ -29832,7 +30408,10 @@
         const studentId = selectLinkStudent?.value;
         const relationRole = selectLinkRole?.value || "Опекун";
         const isPrimary = checkLinkPrimary?.checked || false;
-        const res = linkParentToStudent(parentId, studentId, { relationRole, isPrimary });
+        const res = linkParentToStudent(parentId, studentId, {
+          relationRole,
+          isPrimary
+        });
         if (res.success) {
           closeLinkModal();
           showToast2("Связь с учеником успешно создана");
@@ -29848,7 +30427,9 @@
         if (!parentId) return;
         const res = deleteParent(parentId);
         if (!res.success) {
-          showToast2(res.error || "Сначала снимите связь с учеником в карточке или сводке");
+          showToast2(
+            res.error || "Сначала снимите связь с учеником в карточке или сводке"
+          );
           return;
         }
         showToast2("Родитель удалён из базы");
@@ -29858,6 +30439,8 @@
       });
     });
   }
+
+  // src/views/parents/summary.js
   function renderParentSummaryView(options = {}) {
     const db = getDB();
     const parentId = options.parentId || options.id || "pr-27";
@@ -29865,7 +30448,9 @@
     if (!parent) {
       return `<div class="p-8 text-center text-slate-500">Родитель не найден</div>`;
     }
-    const relations = (db.parentStudentRelations || []).filter((r) => r.parentId === parent.id);
+    const relations = (db.parentStudentRelations || []).filter(
+      (r) => r.parentId === parent.id
+    );
     const rawStudents = db.students || [];
     const children = relations.map((rel) => {
       const student = rawStudents.find((s) => s.id === rel.studentId);
@@ -29895,14 +30480,28 @@
     }
     const isPrimaryOverall = children.some((c) => c.isPrimary);
     const primaryRole = children[0]?.relationRole || "Родитель";
-    const riskList = getRiskZoneStudents(db.students, db.lessons, db.attendance, db.grades, db.subjects, { periodId: "q1_2024" });
+    const riskList = getRiskZoneStudents(
+      db.students,
+      db.lessons,
+      db.attendance,
+      db.grades,
+      db.subjects,
+      { periodId: "q1_2024" }
+    );
     const riskChildren = [];
     for (const c of children) {
       if (!c.isOtherClass && c.student) {
         const riskItem = riskList.find((r) => r.studentId === c.student.id);
         if (riskItem) {
-          const attStats = calculateStudentAttendance(db.lessons, db.attendance, c.student.id, { periodId: "q1_2024" });
-          const overallAvg = calculateStudentAverage(db.grades, c.student.id, { periodId: "q1_2024" });
+          const attStats = calculateStudentAttendance(
+            db.lessons,
+            db.attendance,
+            c.student.id,
+            { periodId: "q1_2024" }
+          );
+          const overallAvg = calculateStudentAverage(db.grades, c.student.id, {
+            periodId: "q1_2024"
+          });
           riskChildren.push({
             student: c.student,
             relationRole: c.relationRole,
@@ -29914,7 +30513,9 @@
         }
       }
     }
-    const contacts = (db.parentContacts || []).filter((c) => c.parentId === parent.id);
+    const contacts = (db.parentContacts || []).filter(
+      (c) => c.parentId === parent.id
+    );
     contacts.sort((a, b) => {
       const dtA = `${a.date || ""} ${a.time || ""} ${a.id || ""}`;
       const dtB = `${b.date || ""} ${b.time || ""} ${b.id || ""}`;
@@ -29922,7 +30523,9 @@
     });
     const parts = (parent.fullName || "").trim().split(/\s+/);
     const initials = parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}` : parent.fullName ? parent.fullName.slice(0, 2) : "РД";
-    const students7B = rawStudents.filter((s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived");
+    const students7B = rawStudents.filter(
+      (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived"
+    );
     return `
     <div class="space-y-6 animate-fadeIn pb-12">
       <nav class="flex items-center space-x-2 text-xs font-semibold text-slate-500">
@@ -29985,7 +30588,8 @@
               <span class="text-xs font-medium text-slate-400">Дети: ${children.length}</span>
             </div>
             <div class="space-y-3">
-              ${children.length > 0 ? children.map((c) => `
+              ${children.length > 0 ? children.map(
+      (c) => `
                 <div class="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
                   <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 flex items-center justify-center font-bold text-xs shrink-0">
@@ -30006,7 +30610,8 @@
                     </a>
                   </div>
                 </div>
-              `).join("") : `
+              `
+    ).join("") : `
                 <div class="p-6 text-center text-xs text-slate-500">
                   Нет связанных учеников
                 </div>
@@ -30014,7 +30619,8 @@
             </div>
           </div>
 
-          ${riskChildren.length > 0 ? riskChildren.map((rc) => `
+          ${riskChildren.length > 0 ? riskChildren.map(
+      (rc) => `
             <div class="bg-amber-50/75 rounded-3xl p-6 border border-amber-200 shadow-2xs space-y-3">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-2">
@@ -30035,11 +30641,13 @@
                   </div>
                   ${rc.reasons && rc.reasons.length > 0 ? `
                     <div class="mt-2 flex flex-wrap gap-1.5">
-                      ${rc.reasons.map((r) => `
+                      ${rc.reasons.map(
+        (r) => `
                         <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-white/90 border border-amber-200 text-amber-900">
                           ${r.description || r}
                         </span>
-                      `).join("")}
+                      `
+      ).join("")}
                     </div>
                   ` : ""}
                 </div>
@@ -30052,7 +30660,8 @@
                 </div>
               </div>
             </div>
-          `).join("") : ""}
+          `
+    ).join("") : ""}
 
           <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-2xs">
             <div class="flex items-center justify-between mb-4">
@@ -30266,7 +30875,9 @@
                   <select id="card-unlink-student-select"
                           class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 transition-all cursor-pointer">
                     ${relations.map((rel) => {
-      const st = rawStudents.find((s) => s.id === rel.studentId);
+      const st = rawStudents.find(
+        (s) => s.id === rel.studentId
+      );
       return `<option value="${rel.studentId}">${st ? st.fullName : "Ученик"} (${rel.relationRole || "Родитель"})</option>`;
     }).join("")}
                   </select>
@@ -30315,11 +30926,17 @@
       }, 2500);
     }
     const modalContact = document.getElementById("modal-record-parent-contact");
-    const modalContactDialog = document.getElementById("modal-record-contact-dialog");
-    const btnCloseContactX = document.getElementById("btn-close-record-contact-x");
+    const modalContactDialog = document.getElementById(
+      "modal-record-contact-dialog"
+    );
+    const btnCloseContactX = document.getElementById(
+      "btn-close-record-contact-x"
+    );
     const btnCancelContact = document.getElementById("btn-cancel-contact-modal");
     const btnOpenContact1 = document.getElementById("btn-card-record-contact");
-    const btnOpenContact2 = document.getElementById("btn-open-parent-contact-modal");
+    const btnOpenContact2 = document.getElementById(
+      "btn-open-parent-contact-modal"
+    );
     const btnOpenContact3 = document.getElementById("btn-empty-record-contact");
     const formContact = document.getElementById("form-record-parent-contact");
     const selectChannel = document.getElementById("contact-channel-select");
@@ -30416,7 +31033,9 @@
       });
     }
     const modalLink = document.getElementById("modal-card-link-student");
-    const modalLinkDialog = document.getElementById("modal-card-link-student-dialog");
+    const modalLinkDialog = document.getElementById(
+      "modal-card-link-student-dialog"
+    );
     const btnOpenLink = document.getElementById("btn-card-link-student");
     const btnCloseLinkX = document.getElementById("btn-close-card-link-x");
     const btnCancelLink = document.getElementById("btn-cancel-card-link");
@@ -30456,7 +31075,10 @@
         const studentId = selectLinkStudent?.value;
         const relationRole = selectLinkRole?.value || "Опекун";
         const isPrimary = checkLinkPrimary?.checked || false;
-        const res = linkParentToStudent(parentId, studentId, { relationRole, isPrimary });
+        const res = linkParentToStudent(parentId, studentId, {
+          relationRole,
+          isPrimary
+        });
         if (res.success) {
           closeLinkModal();
           showSummaryToast("Связь с учеником успешно создана");
@@ -30469,12 +31091,16 @@
       });
     }
     const modalUnlink = document.getElementById("modal-card-unlink-student");
-    const modalUnlinkDialog = document.getElementById("modal-card-unlink-student-dialog");
+    const modalUnlinkDialog = document.getElementById(
+      "modal-card-unlink-student-dialog"
+    );
     const btnOpenUnlink = document.getElementById("btn-card-unlink-student");
     const btnCloseUnlinkX = document.getElementById("btn-close-card-unlink-x");
     const btnCancelUnlink = document.getElementById("btn-cancel-card-unlink");
     const formUnlink = document.getElementById("form-card-unlink-student");
-    const selectUnlinkStudent = document.getElementById("card-unlink-student-select");
+    const selectUnlinkStudent = document.getElementById(
+      "card-unlink-student-select"
+    );
     function openUnlinkModal() {
       if (!modalUnlink) return;
       modalUnlink.classList.remove("opacity-0", "pointer-events-none");
@@ -30518,7 +31144,7 @@
     }
   }
 
-  // src/views/analytics.js
+  // src/views/analytics/render.js
   function renderAnalyticsView(options = {}) {
     const db = getDB();
     const periodId = options.periodId || "q1_2024";
@@ -30553,8 +31179,16 @@
       dateTo: currentPeriod.dateTo
     };
     const classAvg = calculateClassAverage(db.grades, periodOptions) || 4.2;
-    const classAtt = calculateClassAttendance(db.lessons, db.attendance, periodOptions);
-    const subjectAverages = calculateSubjectAverages(db.grades, db.subjects, periodOptions);
+    const classAtt = calculateClassAttendance(
+      db.lessons,
+      db.attendance,
+      periodOptions
+    );
+    const subjectAverages = calculateSubjectAverages(
+      db.grades,
+      db.subjects,
+      periodOptions
+    );
     const riskStudents = getRiskZoneStudents(
       db.students,
       db.lessons,
@@ -30575,12 +31209,22 @@
       { label: "Окт (Нед 2)", value: 4.2, heightPercent: 80 }
     ];
     const report = generateClassReport(db, periodOptions);
-    const weeklyAbsences = calculateWeeklyAbsences(db.lessons, db.attendance, { periodId: "q1_2024" });
+    const weeklyAbsences = calculateWeeklyAbsences(db.lessons, db.attendance, {
+      periodId: "q1_2024"
+    });
     const lessonMap = new Map((db.lessons || []).map((l) => [l.id, l]));
     const studentMap = new Map((db.students || []).map((s) => [s.id, s]));
-    let periodAbsences = (db.attendance || []).filter((a) => a.value === "absent");
-    if (currentPeriod.dateFrom) periodAbsences = periodAbsences.filter((a) => a.date >= currentPeriod.dateFrom);
-    if (currentPeriod.dateTo) periodAbsences = periodAbsences.filter((a) => a.date <= currentPeriod.dateTo);
+    let periodAbsences = (db.attendance || []).filter(
+      (a) => a.value === "absent"
+    );
+    if (currentPeriod.dateFrom)
+      periodAbsences = periodAbsences.filter(
+        (a) => a.date >= currentPeriod.dateFrom
+      );
+    if (currentPeriod.dateTo)
+      periodAbsences = periodAbsences.filter(
+        (a) => a.date <= currentPeriod.dateTo
+      );
     periodAbsences.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
     return `
     <div id="analytics-view" class="p-6 sm:p-8 max-w-7xl mx-auto space-y-6">
@@ -30680,7 +31324,8 @@
           </div>
 
           <div class="grid grid-cols-4 sm:grid-cols-8 gap-2.5">
-            ${weeklyAbsences.map((w) => `
+            ${weeklyAbsences.map(
+      (w) => `
               <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/70 text-center space-y-1">
                 <div class="text-[11px] font-medium text-slate-400">${w.label}</div>
                 <div class="text-base font-extrabold ${w.absencePercentage > 10 ? "text-rose-600" : "text-slate-900"}">
@@ -30688,7 +31333,8 @@
                 </div>
                 <div class="text-[10px] text-slate-400">${w.absentCount} проп.</div>
               </div>
-            `).join("")}
+            `
+    ).join("")}
           </div>
           <p class="text-[11px] text-slate-400 italic">Доля пропущенных уроков от всех уроков недели. Заметен всплеск перед осенними каникулами (Нед 8 — 11.4%).</p>
         </div>
@@ -30734,7 +31380,8 @@
             </div>
           ` : `
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              ${riskStudents.map((st) => `
+              ${riskStudents.map(
+      (st) => `
                 <div class="p-4 rounded-2xl border ${st.riskLevel === "critical" ? "border-rose-200 bg-rose-50/40" : "border-amber-200 bg-amber-50/40"} space-y-2">
                   <div class="flex items-center justify-between">
                     <a href="/student?id=${st.studentId}" class="text-xs font-bold text-slate-900 hover:text-brand-600 hover:underline">
@@ -30745,15 +31392,18 @@
                     </span>
                   </div>
                   <div class="space-y-1">
-                    ${st.reasons.map((r) => `
+                    ${st.reasons.map(
+        (r) => `
                       <div class="text-[11px] text-slate-600 flex items-center space-x-1.5">
                         <span class="w-1.5 h-1.5 rounded-full ${st.riskLevel === "critical" ? "bg-rose-500" : "bg-amber-500"}"></span>
                         <span>${r.description}</span>
                       </div>
-                    `).join("")}
+                    `
+      ).join("")}
                   </div>
                 </div>
-              `).join("")}
+              `
+    ).join("")}
             </div>
           `}
         </div>
@@ -30845,7 +31495,8 @@
               </div>
 
               <div class="relative h-full flex items-end justify-between gap-2 sm:gap-6 pl-2 sm:pl-4 pr-16 sm:pr-20 z-0">
-                ${weeklyGradePoints.map((pt, idx) => `
+                ${weeklyGradePoints.map(
+      (pt, idx) => `
                   <div class="relative flex-1 flex flex-col items-center group">
                     <div class="text-xs font-extrabold text-brand-600 mb-1.5 transition-transform group-hover:-translate-y-1">
                       ${pt.value.toFixed(1)}
@@ -30857,7 +31508,8 @@
                       ${pt.label}
                     </div>
                   </div>
-                `).join("")}
+                `
+    ).join("")}
               </div>
             </div>
           </div>
@@ -30890,7 +31542,9 @@
               </div>
               <div class="text-xs text-rose-900 leading-relaxed font-medium">
                 ${criticalRisk.length > 0 ? criticalRisk.map((s, idx) => {
-      const reasonShort = s.reasons.some((r) => r.type === "absence") ? "пропуски" : "оценки";
+      const reasonShort = s.reasons.some(
+        (r) => r.type === "absence"
+      ) ? "пропуски" : "оценки";
       return `<a href="/student?id=${s.studentId}" class="font-bold underline hover:text-rose-700">${s.shortName || s.name.split(" ")[0] + " " + (s.name.split(" ")[1] ? s.name.split(" ")[1][0] + "." : "")}</a> (${reasonShort})${idx < criticalRisk.length - 1 ? ", " : ""}`;
     }).join("") : "Нет учеников в группе критического риска"}
               </div>
@@ -30935,6 +31589,8 @@
     </div>
   `;
   }
+
+  // src/views/analytics/listeners.js
   function setupAnalyticsListeners(onNavigate) {
     const periodSelect = document.getElementById("select-analytics-period");
     const btnGenerateReport = document.getElementById("btn-generate-report");
@@ -30946,7 +31602,9 @@
         const selectedPeriod = periodSelect.value;
         const isReportOpen = reportContainer && !reportContainer.classList.contains("hidden");
         if (onNavigate) {
-          onNavigate(`/analytics?periodId=${selectedPeriod}${isReportOpen ? "&showReport=true" : ""}`);
+          onNavigate(
+            `/analytics?periodId=${selectedPeriod}${isReportOpen ? "&showReport=true" : ""}`
+          );
         }
       });
     }
@@ -30968,9 +31626,15 @@
     }
   }
 
-  // src/views/accounts.js
+  // src/views/accounts/helpers.js
   var PAGE_SIZE = 10;
-  var ROLE_OPTIONS = ["admin", "teacher", "subject_teacher", "parent", "student"];
+  var ROLE_OPTIONS = [
+    "admin",
+    "teacher",
+    "subject_teacher",
+    "parent",
+    "student"
+  ];
   var ACCOUNT_ROLE_LABELS = {
     ...ROLE_LABELS,
     subject_teacher: "Учитель"
@@ -31052,9 +31716,13 @@
     return `<button type="button" data-action="toggle-status" data-user-id="${user.id}" data-next-status="active" title="Разблокировать учётную запись"
             class="px-3 py-1.5 rounded-lg text-[11px] font-semibold border border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 cursor-pointer">Разблок</button>`;
   }
+
+  // src/views/accounts/render.js
   function renderAccountsView(options = {}) {
     const db = getDB();
-    const currentUser = db.users.find((u) => u.id === (options.currentUserId || ""));
+    const currentUser = db.users.find(
+      (u) => u.id === (options.currentUserId || "")
+    );
     const searchQuery = (options.searchQuery || "").trim();
     const filterRole = options.filterRole || "all";
     const rows = (db.users || []).map((user) => ({
@@ -31063,12 +31731,16 @@
     }));
     const activeCount = rows.filter((r) => r.user.status === "active").length;
     const blockedCount = rows.length - activeCount;
-    const roleFilterOptions = ROLE_OPTIONS.map((role) => `
+    const roleFilterOptions = ROLE_OPTIONS.map(
+      (role) => `
     <option value="${role}" ${filterRole === role ? "selected" : ""}>${ACCOUNT_ROLE_LABELS[role]}</option>
-  `).join("");
-    const roleSelectOptions = ROLE_OPTIONS.map((role) => `
+  `
+    ).join("");
+    const roleSelectOptions = ROLE_OPTIONS.map(
+      (role) => `
     <option value="${role}">${ACCOUNT_ROLE_LABELS[role]}</option>
-  `).join("");
+  `
+    ).join("");
     return `
     <div id="accounts-view" class="space-y-6 animate-fadeIn pb-12">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -31249,6 +31921,8 @@
     </div>
   `;
   }
+
+  // src/views/accounts/listeners.js
   function setupAccountsListeners() {
     const demoToday = getDB().meta && getDB().meta.demoToday || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
     const state = {
@@ -31270,7 +31944,11 @@
       toast.classList.remove("opacity-0", "translate-y-4", "pointer-events-none");
       toast.classList.add("opacity-100", "translate-y-0", "pointer-events-auto");
       setTimeout(() => {
-        toast.classList.remove("opacity-100", "translate-y-0", "pointer-events-auto");
+        toast.classList.remove(
+          "opacity-100",
+          "translate-y-0",
+          "pointer-events-auto"
+        );
         toast.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
       }, 3200);
     }
@@ -31281,14 +31959,17 @@
     function syncRoute() {
       const params2 = new URLSearchParams();
       if (state.searchQuery) params2.set("search", state.searchQuery);
-      if (state.filterRole && state.filterRole !== "all") params2.set("role", state.filterRole);
+      if (state.filterRole && state.filterRole !== "all")
+        params2.set("role", state.filterRole);
       if (state.page > 1) params2.set("page", String(state.page));
       const queryStr = params2.toString();
       replaceUrl(queryStr ? `/accounts?${queryStr}` : "/accounts");
     }
     function getCurrentUserId() {
       try {
-        const session = JSON.parse(localStorage.getItem("classroom_crm_session") || "null");
+        const session = JSON.parse(
+          localStorage.getItem("classroom_crm_session") || "null"
+        );
         return session ? session.userId : null;
       } catch {
         return null;
@@ -31303,14 +31984,17 @@
         binding: getBindingLabel(user, db),
         isSelf: user.id === currentUserId
       })).filter((row) => {
-        if (state.filterRole !== "all" && row.user.role !== state.filterRole) return false;
+        if (state.filterRole !== "all" && row.user.role !== state.filterRole)
+          return false;
         if (q) {
           const name = (row.user.personName || "").toLowerCase();
           const login2 = (row.user.username || "").toLowerCase();
           if (!name.includes(q) && !login2.includes(q)) return false;
         }
         return true;
-      }).sort((a, b) => (a.user.personName || "").localeCompare(b.user.personName || "", "ru"));
+      }).sort(
+        (a, b) => (a.user.personName || "").localeCompare(b.user.personName || "", "ru")
+      );
     }
     function actionsCellHtml(user, isSelf) {
       return `
@@ -31328,7 +32012,10 @@
       const totalPages = Math.ceil(totalFiltered / PAGE_SIZE) || 1;
       state.page = Math.min(Math.max(state.page, 1), totalPages);
       const startIndex = (state.page - 1) * PAGE_SIZE;
-      const paginatedRows = filteredRows.slice(startIndex, startIndex + PAGE_SIZE);
+      const paginatedRows = filteredRows.slice(
+        startIndex,
+        startIndex + PAGE_SIZE
+      );
       const tableRows = paginatedRows.map((row) => {
         const { user, binding, isSelf } = row;
         const isActive = user.status === "active";
@@ -31348,10 +32035,12 @@
       if (totalPages > 1) {
         const pages = [];
         for (let i = 1; i <= totalPages; i++) pages.push(i);
-        const pageButtons = pages.map((p) => `
+        const pageButtons = pages.map(
+          (p) => `
         <button type="button" data-action="goto-page" data-page="${p}"
                 class="w-8 h-8 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${p === state.page ? "bg-brand-500 text-white shadow-sm" : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"}">${p}</button>
-      `).join("");
+      `
+        ).join("");
         paginationHtml = `
         <div class="flex items-center space-x-1.5">
           <button type="button" data-action="goto-page" data-page="${state.page - 1}" ${state.page <= 1 ? "disabled" : ""}
@@ -31406,7 +32095,9 @@
     function updateSubtitle() {
       if (!subtitle) return;
       const db = getDB();
-      const activeCount = (db.users || []).filter((u) => u.status === "active").length;
+      const activeCount = (db.users || []).filter(
+        (u) => u.status === "active"
+      ).length;
       const blockedCount = (db.users || []).length - activeCount;
       subtitle.textContent = `${(db.users || []).length} учётных записей · ${activeCount} активных · ${blockedCount} заблокированных`;
     }
@@ -31423,7 +32114,10 @@
         cells[2].innerHTML = roleBadgeHtml(user);
         cells[3].innerHTML = statusBadgeHtml(user.status === "active");
         cells[4].textContent = getBindingLabel(user, db);
-        cells[6].innerHTML = actionsCellHtml(user, user.id === getCurrentUserId());
+        cells[6].innerHTML = actionsCellHtml(
+          user,
+          user.id === getCurrentUserId()
+        );
       }
       updateSubtitle();
     }
@@ -31509,11 +32203,17 @@
       if (action === "close-edit-modal") closeEditModal();
     });
     const modalCreate = document.getElementById("modal-create-account");
-    const modalCreateDialog = document.getElementById("modal-create-account-dialog");
+    const modalCreateDialog = document.getElementById(
+      "modal-create-account-dialog"
+    );
     function openCreateModal() {
       if (!modalCreate) return;
       showCreateError("");
-      ["input-create-name", "input-create-login", "input-create-password"].forEach((id) => {
+      [
+        "input-create-name",
+        "input-create-login",
+        "input-create-password"
+      ].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.value = "";
       });
@@ -31554,7 +32254,9 @@
         syncRoute();
         renderTableArea();
         updateSubtitle();
-        showToast2("Учётная запись создана. Временный пароль действителен до первого входа.");
+        showToast2(
+          "Учётная запись создана. Временный пароль действителен до первого входа."
+        );
       });
     }
     if (modalCreate) {
@@ -31579,7 +32281,9 @@
       const options = getCardOptions(db, role, editingUser);
       bindingSelect.innerHTML = [
         '<option value="">— без карточки —</option>',
-        ...options.map((o) => `<option value="${escapeHtml(o.id)}">${escapeHtml(o.label)}</option>`)
+        ...options.map(
+          (o) => `<option value="${escapeHtml(o.id)}">${escapeHtml(o.label)}</option>`
+        )
       ].join("");
       const currentValue = currentRef ? String(currentRef.id) : "";
       const hasCurrent = options.some((o) => String(o.id) === currentValue);
@@ -31654,7 +32358,10 @@
         }
         if (newRole !== "admin") {
           const bindingValue = (document.getElementById("select-edit-binding") || {}).value || "";
-          const bindingRes = setAccountBinding(editingUserId, bindingValue ? { cardId: bindingValue } : null);
+          const bindingRes = setAccountBinding(
+            editingUserId,
+            bindingValue ? { cardId: bindingValue } : null
+          );
           if (!bindingRes.success) {
             showEditError(bindingRes.error);
             return;
@@ -31693,8 +32400,10 @@
     }
     window.addEventListener("keydown", (e) => {
       if (e.key !== "Escape") return;
-      if (modalCreate && !modalCreate.classList.contains("pointer-events-none")) closeCreateModal();
-      if (modalEdit && !modalEdit.classList.contains("pointer-events-none")) closeEditModal();
+      if (modalCreate && !modalCreate.classList.contains("pointer-events-none"))
+        closeCreateModal();
+      if (modalEdit && !modalEdit.classList.contains("pointer-events-none"))
+        closeEditModal();
     });
     const params = readParams();
     state.searchQuery = (params.get("search") || "").trim();
@@ -31704,7 +32413,7 @@
     updateSubtitle();
   }
 
-  // src/views/change-password.js
+  // src/views/change-password/render.js
   function renderChangePasswordView() {
     const currentUser = getCurrentUser();
     if (!currentUser) {
@@ -31769,6 +32478,8 @@
     </div>
   `;
   }
+
+  // src/views/change-password/listeners.js
   function setupChangePasswordListeners(onNavigate) {
     const currentUser = getCurrentUser();
     if (!currentUser) return;
@@ -31804,7 +32515,7 @@
     }
   }
 
-  // src/views/teachers.js
+  // src/views/teachers/helpers.js
   function escapeHtml2(text) {
     return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
@@ -31833,20 +32544,28 @@
         workload,
         totalHours,
         classNames,
-        subjectLabels: [...new Set((teacher.subjectIds || []).map((id) => {
-          const subject = (db.subjects || []).find((s) => s.id === id);
-          return subject ? subject.shortName : id;
-        }))]
+        subjectLabels: [
+          ...new Set(
+            (teacher.subjectIds || []).map((id) => {
+              const subject = (db.subjects || []).find((s) => s.id === id);
+              return subject ? subject.shortName : id;
+            })
+          )
+        ]
       };
     });
   }
+
+  // src/views/teachers/render.js
   function renderTeachersView(options = {}) {
     const db = getDB();
     const cards = getTeacherCards(db);
     const searchQuery = (options.searchQuery || "").trim();
     const filterSubject = options.filterSubject || "all";
     const filterAccount = options.filterAccount || "all";
-    const subjectOptions = [...new Set(cards.flatMap((c) => c.subjectLabels))].sort();
+    const subjectOptions = [
+      ...new Set(cards.flatMap((c) => c.subjectLabels))
+    ].sort();
     const withAccount = cards.filter((c) => c.account).length;
     return `
     <div id="teachers-view" class="space-y-6 animate-fadeIn pb-12">
@@ -32011,13 +32730,15 @@
         </span>
         <a href="/accounts" data-action="create-account" class="flex-shrink-0 text-[11px] font-semibold text-amber-700 hover:text-amber-800 hover:underline whitespace-nowrap">Создать</a>
       </div>`;
-    const workloadRows = workload.map((w) => `
+    const workloadRows = workload.map(
+      (w) => `
     <tr class="border-b border-slate-100 last:border-0">
       <td class="py-2 pl-3 pr-2 text-xs font-semibold text-slate-700">${escapeHtml2(w.className)}</td>
       <td class="px-2 py-2 text-xs text-slate-600">${escapeHtml2(w.subjectLabel)}</td>
       <td class="py-2 pl-2 pr-3 text-right text-xs font-semibold text-slate-800">${w.hours}</td>
     </tr>
-  `).join("");
+  `
+    ).join("");
     return `
     <article class="bg-white rounded-2xl shadow-2xs border border-slate-200/80 overflow-hidden flex flex-col" data-teacher-card="${teacher.id}">
       <div class="p-5 flex items-start gap-3.5">
@@ -32084,6 +32805,8 @@
     </article>
   `;
   }
+
+  // src/views/teachers/listeners.js
   function setupTeachersListeners(onNavigate) {
     const state = {
       searchQuery: "",
@@ -32104,7 +32827,11 @@
       toast.classList.remove("opacity-0", "translate-y-4", "pointer-events-none");
       toast.classList.add("opacity-100", "translate-y-0", "pointer-events-auto");
       setTimeout(() => {
-        toast.classList.remove("opacity-100", "translate-y-0", "pointer-events-auto");
+        toast.classList.remove(
+          "opacity-100",
+          "translate-y-0",
+          "pointer-events-auto"
+        );
         toast.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
       }, 3200);
     }
@@ -32115,8 +32842,10 @@
     function syncRoute() {
       const params2 = new URLSearchParams();
       if (state.searchQuery) params2.set("search", state.searchQuery);
-      if (state.filterSubject !== "all") params2.set("subject", state.filterSubject);
-      if (state.filterAccount !== "all") params2.set("account", state.filterAccount);
+      if (state.filterSubject !== "all")
+        params2.set("subject", state.filterSubject);
+      if (state.filterAccount !== "all")
+        params2.set("account", state.filterAccount);
       const queryStr = params2.toString();
       replaceUrl(queryStr ? `/teachers?${queryStr}` : "/teachers");
     }
@@ -32125,14 +32854,16 @@
       const cards = getTeacherCards();
       const q = state.searchQuery.toLowerCase();
       const filtered = cards.filter((card) => {
-        if (state.filterSubject !== "all" && !card.subjectLabels.includes(state.filterSubject)) return false;
+        if (state.filterSubject !== "all" && !card.subjectLabels.includes(state.filterSubject))
+          return false;
         if (state.filterAccount === "linked" && !card.account) return false;
         if (state.filterAccount === "unlinked" && card.account) return false;
         if (q) {
           const name = card.teacher.fullName.toLowerCase();
           const short = card.teacher.shortName.toLowerCase();
           const subjects = card.subjectLabels.join(" ").toLowerCase();
-          if (!name.includes(q) && !short.includes(q) && !subjects.includes(q)) return false;
+          if (!name.includes(q) && !short.includes(q) && !subjects.includes(q))
+            return false;
         }
         return true;
       });
@@ -32166,7 +32897,8 @@
       searchInput.addEventListener("input", () => {
         state.searchQuery = searchInput.value.trim();
         state.page = 1;
-        if (clearSearchBtn) clearSearchBtn.classList.toggle("hidden", !state.searchQuery);
+        if (clearSearchBtn)
+          clearSearchBtn.classList.toggle("hidden", !state.searchQuery);
         syncRoute();
         renderCards();
       });
@@ -32202,7 +32934,9 @@
       const action = btn.getAttribute("data-action");
       if (action === "toggle-workload") {
         const teacherId = btn.getAttribute("data-teacher-id");
-        const panel = document.querySelector(`[data-workload-panel="${teacherId}"]`);
+        const panel = document.querySelector(
+          `[data-workload-panel="${teacherId}"]`
+        );
         if (panel) {
           panel.classList.toggle("hidden");
           const icon = btn.querySelector("span:last-child");
@@ -32226,7 +32960,9 @@
       }
     });
     const modalTeacher = document.getElementById("modal-teacher-card");
-    const modalTeacherDialog = document.getElementById("modal-teacher-card-dialog");
+    const modalTeacherDialog = document.getElementById(
+      "modal-teacher-card-dialog"
+    );
     const teacherCardError = document.getElementById("teacher-card-error");
     let editingTeacherId = null;
     function showTeacherError(msg) {
@@ -32242,13 +32978,15 @@
       const box = document.getElementById("teacher-subjects");
       if (!box) return;
       const subjects = getDB().subjects || [];
-      box.innerHTML = subjects.map((s) => `
+      box.innerHTML = subjects.map(
+        (s) => `
       <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 cursor-pointer transition-colors">
         <input type="checkbox" value="${escapeHtml2(s.id)}" ${selectedIds.includes(s.id) ? "checked" : ""}
                class="w-3.5 h-3.5 rounded border-slate-300 text-brand-500 focus:ring-brand-500/30 cursor-pointer" />
         <span class="text-[11px] font-medium text-slate-700">${escapeHtml2(s.shortName || s.name)}</span>
       </label>
-    `).join("");
+    `
+      ).join("");
     }
     function fillHomeroomOptions(selectedId) {
       const select = document.getElementById("select-teacher-homeroom");
@@ -32260,7 +32998,8 @@
           if (w.classId) classNameById[w.classId] = w.className;
         });
       });
-      if (db.meta && db.meta.classId) classNameById[db.meta.classId] = db.meta.className || "7Б";
+      if (db.meta && db.meta.classId)
+        classNameById[db.meta.classId] = db.meta.className || "7Б";
       select.innerHTML = [
         '<option value="">Не назначен</option>',
         ...Object.entries(classNameById).map(
@@ -32273,7 +33012,9 @@
       const select = document.getElementById("select-teacher-account");
       if (!select) return;
       const db = getDB();
-      const teacherAccounts = (db.users || []).filter((u) => u.role === "teacher" || u.role === "subject_teacher");
+      const teacherAccounts = (db.users || []).filter(
+        (u) => u.role === "teacher" || u.role === "subject_teacher"
+      );
       select.innerHTML = [
         '<option value="">Без учётной записи</option>',
         ...teacherAccounts.map(
@@ -32288,14 +33029,16 @@
       showTeacherError("");
       const titleEl = document.getElementById("teacher-card-modal-title");
       const teacher = teacherId ? (getDB().teachers || []).find((t) => t.id === teacherId) : null;
-      if (titleEl) titleEl.textContent = teacher ? "Изменить карточку учителя" : "Создать карточку учителя";
+      if (titleEl)
+        titleEl.textContent = teacher ? "Изменить карточку учителя" : "Создать карточку учителя";
       const nameInput = document.getElementById("input-teacher-name");
       if (nameInput) nameInput.value = teacher ? teacher.fullName : "";
       fillSubjectOptions(teacher ? teacher.subjectIds || [] : []);
       fillHomeroomOptions(teacher ? teacher.homeroomClassId : null);
       fillAccountOptions(teacher ? teacher.accountUserId : null);
       const statusSelect = document.getElementById("select-teacher-status");
-      if (statusSelect) statusSelect.value = teacher && teacher.status === "archived" ? "archived" : "active";
+      if (statusSelect)
+        statusSelect.value = teacher && teacher.status === "archived" ? "archived" : "active";
       modalTeacher.classList.remove("opacity-0", "pointer-events-none");
       modalTeacher.classList.add("opacity-100", "pointer-events-auto");
       if (modalTeacherDialog) {
@@ -32326,13 +33069,23 @@
       updateSubtitle();
       showToast2(res.message);
     }
-    const openCreateTeacherBtn = document.getElementById("btn-open-create-teacher");
-    if (openCreateTeacherBtn) openCreateTeacherBtn.addEventListener("click", () => openTeacherModal(null));
+    const openCreateTeacherBtn = document.getElementById(
+      "btn-open-create-teacher"
+    );
+    if (openCreateTeacherBtn)
+      openCreateTeacherBtn.addEventListener(
+        "click",
+        () => openTeacherModal(null)
+      );
     const submitTeacherBtn = document.getElementById("btn-submit-teacher-card");
     if (submitTeacherBtn) {
       submitTeacherBtn.addEventListener("click", () => {
         const fullName = (document.getElementById("input-teacher-name") || {}).value || "";
-        const subjectIds = Array.from(document.querySelectorAll('#teacher-subjects input[type="checkbox"]:checked')).map((i) => i.value);
+        const subjectIds = Array.from(
+          document.querySelectorAll(
+            '#teacher-subjects input[type="checkbox"]:checked'
+          )
+        ).map((i) => i.value);
         const homeroomClassId = (document.getElementById("select-teacher-homeroom") || {}).value || "";
         const accountUserId = (document.getElementById("select-teacher-account") || {}).value || "";
         const status = (document.getElementById("select-teacher-status") || {}).value || "active";
@@ -32370,7 +33123,8 @@
     state.filterAccount = params.get("account") || "all";
     if (searchInput) {
       searchInput.value = state.searchQuery;
-      if (clearSearchBtn) clearSearchBtn.classList.toggle("hidden", !state.searchQuery);
+      if (clearSearchBtn)
+        clearSearchBtn.classList.toggle("hidden", !state.searchQuery);
     }
     if (subjectSelect) subjectSelect.value = state.filterSubject;
     if (accountSelect) accountSelect.value = state.filterAccount;
@@ -32378,7 +33132,7 @@
     updateSubtitle();
   }
 
-  // src/views/workload.js
+  // src/views/workload/helpers.js
   function escapeHtml3(text) {
     return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
@@ -32386,21 +33140,24 @@
     const mod10 = count % 10;
     const mod100 = count % 100;
     if (mod10 === 1 && mod100 !== 11) return "строка";
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return "строки";
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20))
+      return "строки";
     return "строк";
   }
   function pluralizeClasses(count) {
     const mod10 = count % 10;
     const mod100 = count % 100;
     if (mod10 === 1 && mod100 !== 11) return "классе";
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return "классах";
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20))
+      return "классах";
     return "классах";
   }
   function pluralizeTeachers(count) {
     const mod10 = count % 10;
     const mod100 = count % 100;
     if (mod10 === 1 && mod100 !== 11) return "учитель";
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return "учителя";
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20))
+      return "учителя";
     return "учителей";
   }
   function pluralizeHours(count) {
@@ -32413,12 +33170,23 @@
   function filterWorkloadRows(rows, state = {}) {
     const query = (state.searchQuery || "").trim().toLowerCase();
     return rows.filter((row) => {
-      if (state.filterSubject && state.filterSubject !== "all" && row.subjectId !== state.filterSubject) return false;
-      if (state.filterClass && state.filterClass !== "all" && row.classId !== state.filterClass) return false;
+      if (state.filterSubject && state.filterSubject !== "all" && row.subjectId !== state.filterSubject)
+        return false;
+      if (state.filterClass && state.filterClass !== "all" && row.classId !== state.filterClass)
+        return false;
       if (!query) return true;
-      return [row.teacherName, row.teacherShortName, row.subjectLabel, row.className].some((value) => String(value || "").toLowerCase().includes(query));
+      return [
+        row.teacherName,
+        row.teacherShortName,
+        row.subjectLabel,
+        row.className
+      ].some(
+        (value) => String(value || "").toLowerCase().includes(query)
+      );
     });
   }
+
+  // src/views/workload/render.js
   function renderWorkloadView(options = {}) {
     const db = getDB();
     const activeYear = getActiveAcademicYear(db);
@@ -32429,7 +33197,11 @@
     const searchQuery = (options.searchQuery || "").trim();
     const filterSubject = options.filterSubject || "all";
     const filterClass = options.filterClass || "all";
-    const rows = filterWorkloadRows(allRows, { searchQuery, filterSubject, filterClass });
+    const rows = filterWorkloadRows(allRows, {
+      searchQuery,
+      filterSubject,
+      filterClass
+    });
     const totalHours = rows.reduce((sum, r) => sum + r.hours, 0);
     const teacherCount = new Set(rows.map((r) => r.teacherId)).size;
     const classCount = new Set(rows.map((r) => r.classId)).size;
@@ -32605,7 +33377,8 @@
       </div>
     `;
     }
-    const bodyRows = rows.map((row) => `
+    const bodyRows = rows.map(
+      (row) => `
     <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50/60 transition-colors" data-workload-row="${escapeHtml3(row.id)}">
       <td class="py-3 pl-4 pr-3">
         <div class="text-xs font-bold text-slate-900">${escapeHtml3(row.teacherName)}</div>
@@ -32632,7 +33405,8 @@
                 class="ml-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors cursor-pointer">Снять</button>
       </td>
     </tr>
-  `).join("");
+  `
+    ).join("");
     return `
     <div class="bg-white rounded-2xl shadow-2xs border border-slate-200/80 overflow-hidden">
       <table class="w-full">
@@ -32650,6 +33424,8 @@
     </div>
   `;
   }
+
+  // src/views/workload/listeners.js
   function setupWorkloadListeners() {
     const tableArea = document.getElementById("workload-table-area");
     const searchInput = document.getElementById("input-workload-search");
@@ -32662,7 +33438,9 @@
     const modalTitle = document.getElementById("workload-modal-title");
     const errorBox = document.getElementById("workload-error");
     const teacherSelect = document.getElementById("select-workload-teacher");
-    const subjectSelect = document.getElementById("select-workload-subject-modal");
+    const subjectSelect = document.getElementById(
+      "select-workload-subject-modal"
+    );
     const classSelect = document.getElementById("select-workload-class-modal");
     const hoursInput = document.getElementById("input-workload-hours");
     const submitBtn = document.getElementById("btn-submit-workload");
@@ -32704,7 +33482,8 @@
     function updateUrl(state) {
       const params = new URLSearchParams();
       if (state.searchQuery) params.set("search", state.searchQuery);
-      if (state.filterSubject !== "all") params.set("subject", state.filterSubject);
+      if (state.filterSubject !== "all")
+        params.set("subject", state.filterSubject);
       if (state.filterClass !== "all") params.set("class", state.filterClass);
       const queryStr = params.toString();
       const newHash = queryStr ? `/workload?${queryStr}` : "/workload";
@@ -32719,7 +33498,11 @@
       toast.classList.remove("opacity-0", "translate-y-4", "pointer-events-none");
       toast.classList.add("opacity-100", "translate-y-0", "pointer-events-auto");
       setTimeout(() => {
-        toast.classList.remove("opacity-100", "translate-y-0", "pointer-events-auto");
+        toast.classList.remove(
+          "opacity-100",
+          "translate-y-0",
+          "pointer-events-auto"
+        );
         toast.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
       }, 3200);
     }
@@ -32855,7 +33638,7 @@
     });
   }
 
-  // src/views/school-year.js
+  // src/views/school-year/helpers.js
   function escapeHtml4(text) {
     return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
@@ -32877,7 +33660,9 @@
   }
   function findUpcomingVacation(vacations, todayStr = "2024-10-28") {
     if (!vacations || vacations.length === 0) return null;
-    const sorted = [...vacations].sort((a, b) => (a.startDate || "").localeCompare(b.startDate || ""));
+    const sorted = [...vacations].sort(
+      (a, b) => (a.startDate || "").localeCompare(b.startDate || "")
+    );
     const currentOrNext = sorted.find((v) => (v.endDate || "") >= todayStr);
     return currentOrNext || sorted[0];
   }
@@ -32952,7 +33737,8 @@
     if (!vacations || vacations.length === 0) {
       return `<div class="col-span-3 py-4 text-center text-xs text-slate-400">Периоды каникул не добавлены</div>`;
     }
-    return vacations.map((v) => `
+    return vacations.map(
+      (v) => `
     <div class="p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 hover:bg-slate-50 transition-colors flex flex-col justify-between" data-vacation-card="${escapeHtml4(v.id)}">
       <div>
         <div class="flex items-center justify-between">
@@ -32977,8 +33763,11 @@
         </button>
       </div>
     </div>
-  `).join("");
+  `
+    ).join("");
   }
+
+  // src/views/school-year/render.js
   function renderSchoolYearView(options = {}) {
     const db = getDB();
     const years = getAcademicYears(db);
@@ -32989,7 +33778,10 @@
     const activePeriod = meta.period || {};
     const quarters = currentYear && currentYear.quarters || [];
     const vacations = currentYear && currentYear.vacations || [];
-    const upcomingVacation = findUpcomingVacation(vacations, meta.demoToday || "2024-10-28");
+    const upcomingVacation = findUpcomingVacation(
+      vacations,
+      meta.demoToday || "2024-10-28"
+    );
     return `
     <div id="school-year-view" class="space-y-6 animate-fadeIn pb-12 max-w-7xl mx-auto" data-selected-year-id="${escapeHtml4(currentYear ? currentYear.id : "")}">
       
@@ -33345,6 +34137,8 @@
     </div>
   `;
   }
+
+  // src/views/school-year/ui.js
   var toastTimer = null;
   function showToast(message, isError = false) {
     const toast = document.getElementById("school-year-toast");
@@ -33359,7 +34153,11 @@
     toast.classList.add("opacity-100", "translate-y-0", "pointer-events-auto");
     if (toastTimer) clearTimeout(toastTimer);
     toastTimer = setTimeout(() => {
-      toast.classList.remove("opacity-100", "translate-y-0", "pointer-events-auto");
+      toast.classList.remove(
+        "opacity-100",
+        "translate-y-0",
+        "pointer-events-auto"
+      );
       toast.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
     }, 3200);
   }
@@ -33386,8 +34184,15 @@
     }
   }
   function closeAllModals() {
-    ["modal-add-year", "modal-edit-year", "modal-edit-quarter", "modal-edit-vacation"].forEach((id) => closeModal(id));
+    [
+      "modal-add-year",
+      "modal-edit-year",
+      "modal-edit-quarter",
+      "modal-edit-vacation"
+    ].forEach((id) => closeModal(id));
   }
+
+  // src/views/school-year/listeners.js
   function setupSchoolYearListeners(navigate2) {
     const view = document.getElementById("school-year-view");
     if (!view) return;
@@ -33410,21 +34215,34 @@
       const activePeriod = meta.period || {};
       const quarters = currentYear && currentYear.quarters || [];
       const vacations = currentYear && currentYear.vacations || [];
-      const upcomingVacation = findUpcomingVacation(vacations, meta.demoToday || "2024-10-28");
+      const upcomingVacation = findUpcomingVacation(
+        vacations,
+        meta.demoToday || "2024-10-28"
+      );
       const kpiActiveYear = document.getElementById("kpi-active-year-name");
-      if (kpiActiveYear) kpiActiveYear.textContent = activeYear ? activeYear.name : "Не выбран";
+      if (kpiActiveYear)
+        kpiActiveYear.textContent = activeYear ? activeYear.name : "Не выбран";
       const kpiActiveYearDates = document.getElementById("kpi-active-year-dates");
-      if (kpiActiveYearDates) kpiActiveYearDates.textContent = activeYear ? `${formatDateRu2(activeYear.startDate)} – ${formatDateRu2(activeYear.endDate)}` : "—";
+      if (kpiActiveYearDates)
+        kpiActiveYearDates.textContent = activeYear ? `${formatDateRu2(activeYear.startDate)} – ${formatDateRu2(activeYear.endDate)}` : "—";
       const kpiQuarterName = document.getElementById("kpi-active-quarter-name");
-      if (kpiQuarterName) kpiQuarterName.textContent = activePeriod.name || "I четверть";
+      if (kpiQuarterName)
+        kpiQuarterName.textContent = activePeriod.name || "I четверть";
       const kpiQuarterDates = document.getElementById("kpi-active-quarter-dates");
-      if (kpiQuarterDates) kpiQuarterDates.textContent = `${formatDateRu2(activePeriod.startDate)} – ${formatDateRu2(activePeriod.endDate)}`;
+      if (kpiQuarterDates)
+        kpiQuarterDates.textContent = `${formatDateRu2(activePeriod.startDate)} – ${formatDateRu2(activePeriod.endDate)}`;
       const kpiVacName = document.getElementById("kpi-upcoming-vacation-name");
-      if (kpiVacName) kpiVacName.textContent = upcomingVacation ? upcomingVacation.name : "Каникулы не запланированы";
+      if (kpiVacName)
+        kpiVacName.textContent = upcomingVacation ? upcomingVacation.name : "Каникулы не запланированы";
       const kpiVacDates = document.getElementById("kpi-upcoming-vacation-dates");
-      if (kpiVacDates) kpiVacDates.textContent = upcomingVacation ? `${formatDateRu2(upcomingVacation.startDate)} – ${formatDateRu2(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—";
+      if (kpiVacDates)
+        kpiVacDates.textContent = upcomingVacation ? `${formatDateRu2(upcomingVacation.startDate)} – ${formatDateRu2(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—";
       const tabsContainer = document.getElementById("academic-years-tabs");
-      if (tabsContainer) tabsContainer.innerHTML = renderYearTabsHtml(years, currentYear ? currentYear.id : "");
+      if (tabsContainer)
+        tabsContainer.innerHTML = renderYearTabsHtml(
+          years,
+          currentYear ? currentYear.id : ""
+        );
       const actionsContainer = document.getElementById("year-actions-container");
       if (actionsContainer && currentYear) {
         const editBtnHtml = `
@@ -33461,9 +34279,11 @@
         }
       }
       const quartersTbody = document.getElementById("quarters-table-body");
-      if (quartersTbody) quartersTbody.innerHTML = renderQuartersTableHtml(quarters);
+      if (quartersTbody)
+        quartersTbody.innerHTML = renderQuartersTableHtml(quarters);
       const vacationsGrid = document.getElementById("vacations-grid");
-      if (vacationsGrid) vacationsGrid.innerHTML = renderVacationsGridHtml(vacations);
+      if (vacationsGrid)
+        vacationsGrid.innerHTML = renderVacationsGridHtml(vacations);
     }
     function handleKeyDown(e) {
       if (e.key === "Escape") {
@@ -33472,16 +34292,18 @@
     }
     document.removeEventListener("keydown", handleKeyDown);
     document.addEventListener("keydown", handleKeyDown);
-    ["modal-add-year", "modal-edit-quarter", "modal-edit-vacation"].forEach((modalId) => {
-      const modalEl = document.getElementById(modalId);
-      if (modalEl) {
-        modalEl.addEventListener("click", (e) => {
-          if (e.target === modalEl) {
-            closeModal(modalId);
-          }
-        });
+    ["modal-add-year", "modal-edit-quarter", "modal-edit-vacation"].forEach(
+      (modalId) => {
+        const modalEl = document.getElementById(modalId);
+        if (modalEl) {
+          modalEl.addEventListener("click", (e) => {
+            if (e.target === modalEl) {
+              closeModal(modalId);
+            }
+          });
+        }
       }
-    });
+    );
     view.addEventListener("click", (e) => {
       const closeBtn = e.target.closest('[data-action="close-modal"]');
       if (closeBtn) {
@@ -33513,7 +34335,8 @@
       if (deleteYearBtn) {
         const yearId = deleteYearBtn.getAttribute("data-year-id");
         const yearName = deleteYearBtn.getAttribute("data-year-name");
-        if (!confirm(`Вы действительно хотите удалить учебный год «${yearName}»?`)) return;
+        if (!confirm(`Вы действительно хотите удалить учебный год «${yearName}»?`))
+          return;
         const res = deleteAcademicYear(yearId);
         if (res.success) {
           updateViewData();
@@ -33551,7 +34374,9 @@
         openModal("modal-edit-year");
         return;
       }
-      const setQuarterBtn = e.target.closest('[data-action="set-active-quarter"]');
+      const setQuarterBtn = e.target.closest(
+        '[data-action="set-active-quarter"]'
+      );
       if (setQuarterBtn) {
         const quarterId = setQuarterBtn.getAttribute("data-quarter-id");
         const curYearId = getCurrentSelectedYearId();
@@ -33684,7 +34509,11 @@
         const endDate = document.getElementById("input-edit-quarter-end")?.value || "";
         const errEl = document.getElementById("edit-quarter-error");
         const curYearId = getCurrentSelectedYearId();
-        const res = updateQuarter(curYearId, quarterId, { name, startDate, endDate });
+        const res = updateQuarter(curYearId, quarterId, {
+          name,
+          startDate,
+          endDate
+        });
         if (!res.success) {
           if (errEl) {
             errEl.textContent = res.error;

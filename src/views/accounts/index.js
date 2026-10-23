@@ -1,2 +1,2 @@
-export { renderAccountsView } from './render.js';
-export { setupAccountsListeners } from './listeners.js';
+export { renderAccountsView } from "./render.js";
+export { setupAccountsListeners } from "./listeners.js";

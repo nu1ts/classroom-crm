@@ -1,21 +1,36 @@
-import { PERIODS, filterAndSortRows, prepareStudentRows, renderTableHtml } from './helpers.js';
-
+import {
+  PERIODS,
+  filterAndSortRows,
+  prepareStudentRows,
+  renderTableHtml,
+} from "./helpers.js";
+import { renderIcon } from "../../components/icons.js";
+import { getDB } from "../../services/storage.js";
 
 export function renderStudentsView(options = {}) {
   const db = getDB();
-  const periodId = options.periodId || 'q1_2024';
-  const searchQuery = (options.searchQuery || '').trim();
-  const filterAbsencesOnly = options.filterAbsencesOnly === true || options.filterAbsencesOnly === 'true';
-  const sortBy = options.sortBy || 'name';
-  const sortOrder = options.sortOrder || 'asc';
-  const currentPage = parseInt(options.page || '1', 10);
+  const periodId = options.periodId || "q1_2024";
+  const searchQuery = (options.searchQuery || "").trim();
+  const filterAbsencesOnly =
+    options.filterAbsencesOnly === true ||
+    options.filterAbsencesOnly === "true";
+  const sortBy = options.sortBy || "name";
+  const sortOrder = options.sortOrder || "asc";
+  const currentPage = parseInt(options.page || "1", 10);
   const pageSize = 10;
 
-  const rawStudents = (db.students || []).filter(s => (!s.classId || s.classId === 'class-7b') && s.status !== 'archived');
+  const rawStudents = (db.students || []).filter(
+    (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived",
+  );
   const totalInClass = rawStudents.length;
 
   const studentRows = prepareStudentRows(db, periodId);
-  const filteredRows = filterAndSortRows(studentRows, { searchQuery, filterAbsencesOnly, sortBy, sortOrder });
+  const filteredRows = filterAndSortRows(studentRows, {
+    searchQuery,
+    filterAbsencesOnly,
+    sortBy,
+    sortOrder,
+  });
 
   const totalFiltered = filteredRows.length;
   const totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
@@ -37,7 +52,7 @@ export function renderStudentsView(options = {}) {
     totalPages,
     sortBy,
     sortOrder,
-    searchQuery
+    searchQuery,
   });
 
   return `
@@ -51,7 +66,7 @@ export function renderStudentsView(options = {}) {
 
             <div class="relative min-w-[260px] flex-1 max-w-md">
               <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                ${renderIcon('search', 'w-4 h-4')}
+                ${renderIcon("search", "w-4 h-4")}
               </div>
               <input type="text"
                      id="input-search-student-list"
@@ -63,15 +78,15 @@ export function renderStudentsView(options = {}) {
               <button type="button"
                        id="btn-clear-student-search"
                        title="Очистить поиск"
-                       class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 ${searchQuery ? '' : 'hidden'} cursor-pointer">
-                ${renderIcon('x', 'w-3.5 h-3.5')}
+                       class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 ${searchQuery ? "" : "hidden"} cursor-pointer">
+                ${renderIcon("x", "w-3.5 h-3.5")}
               </button>
             </div>
 
             <button type="button"
                     id="btn-filter-absences-toggle"
-                    class="px-4 py-2.5 rounded-xl border ${filterAbsencesOnly ? 'bg-brand-500 text-white border-brand-500 shadow-xs' : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200/90 shadow-2xs'} text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer">
-              ${renderIcon('filter', 'w-4 h-4 ' + (filterAbsencesOnly ? 'text-white' : 'text-slate-500'))}
+                    class="px-4 py-2.5 rounded-xl border ${filterAbsencesOnly ? "bg-brand-500 text-white border-brand-500 shadow-xs" : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200/90 shadow-2xs"} text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer">
+              ${renderIcon("filter", "w-4 h-4 " + (filterAbsencesOnly ? "text-white" : "text-slate-500"))}
               <span>Фильтр: С пропусками</span>
             </button>
 
@@ -79,12 +94,14 @@ export function renderStudentsView(options = {}) {
               <select id="select-students-period"
                       style="padding-left: 0.875rem; padding-right: 2.25rem;"
                       class="appearance-none py-2.5 rounded-xl border border-slate-200/90 bg-white hover:border-slate-300 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all cursor-pointer">
-                ${PERIODS.map(p => `
-                  <option value="${p.id}" ${p.id === periodId ? 'selected' : ''}>${p.name}</option>
-                `).join('')}
+                ${PERIODS.map(
+                  (p) => `
+                  <option value="${p.id}" ${p.id === periodId ? "selected" : ""}>${p.name}</option>
+                `,
+                ).join("")}
               </select>
               <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
-                ${renderIcon('chevron-down', 'w-3.5 h-3.5')}
+                ${renderIcon("chevron-down", "w-3.5 h-3.5")}
               </div>
             </div>
           </div>
@@ -93,7 +110,7 @@ export function renderStudentsView(options = {}) {
             <button type="button"
                     id="btn-class-archive"
                     class="px-5 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors shadow-2xs cursor-pointer flex items-center space-x-1.5">
-              ${renderIcon('archive', 'w-3.5 h-3.5 text-slate-500')}
+              ${renderIcon("archive", "w-3.5 h-3.5 text-slate-500")}
               <span>Архив класса</span>
             </button>
 
@@ -124,7 +141,7 @@ export function renderStudentsView(options = {}) {
         <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
           <div class="flex items-center space-x-2.5">
             <div class="w-9 h-9 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0">
-              ${renderIcon('user-plus', 'w-5 h-5')}
+              ${renderIcon("user-plus", "w-5 h-5")}
             </div>
             <div>
               <h3 class="text-base font-bold text-slate-900">Добавить ученика в 7Б класс</h3>
@@ -132,7 +149,7 @@ export function renderStudentsView(options = {}) {
             </div>
           </div>
           <button type="button" id="btn-close-add-student-x" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-xl transition-colors cursor-pointer">
-            ${renderIcon('x', 'w-4 h-4')}
+            ${renderIcon("x", "w-4 h-4")}
           </button>
         </div>
 
@@ -166,7 +183,7 @@ export function renderStudentsView(options = {}) {
                   <option value="F">Женский</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-                  ${renderIcon('chevron-down', 'w-4 h-4')}
+                  ${renderIcon("chevron-down", "w-4 h-4")}
                 </div>
               </div>
             </div>
@@ -187,7 +204,7 @@ export function renderStudentsView(options = {}) {
           <div class="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-3.5">
             <div class="text-xs font-bold text-slate-800 flex items-center space-x-2">
               <span class="w-6 h-6 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center">
-                ${renderIcon('user', 'w-3.5 h-3.5 text-brand-600')}
+                ${renderIcon("user", "w-3.5 h-3.5 text-brand-600")}
               </span>
               <span>Основной родитель для связи</span>
             </div>
@@ -208,7 +225,7 @@ export function renderStudentsView(options = {}) {
                     <option value="Законный представитель">Законный представитель</option>
                   </select>
                   <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-                    ${renderIcon('chevron-down', 'w-4 h-4')}
+                    ${renderIcon("chevron-down", "w-4 h-4")}
                   </div>
                 </div>
               </div>
@@ -217,7 +234,7 @@ export function renderStudentsView(options = {}) {
                 <label for="add-parent-phone" class="block text-xs font-semibold text-slate-700 mb-1.5">Телефон для связи</label>
                 <div class="relative flex items-center">
                   <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    ${renderIcon('phone', 'w-4 h-4 text-slate-400')}
+                    ${renderIcon("phone", "w-4 h-4 text-slate-400")}
                   </div>
                   <input type="tel" id="add-parent-phone" placeholder="+7 999 123-45-67"
                          class="w-full h-10 pl-10 pr-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all shadow-2xs" />
@@ -243,7 +260,7 @@ export function renderStudentsView(options = {}) {
         <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
           <div class="flex items-center space-x-2.5">
             <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0">
-              ${renderIcon('archive', 'w-5 h-5')}
+              ${renderIcon("archive", "w-5 h-5")}
             </div>
             <div>
               <div class="flex items-center space-x-2">
@@ -256,7 +273,7 @@ export function renderStudentsView(options = {}) {
             </div>
           </div>
           <button type="button" id="btn-close-class-archive-x" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-xl transition-colors cursor-pointer">
-            ${renderIcon('x', 'w-4 h-4')}
+            ${renderIcon("x", "w-4 h-4")}
           </button>
         </div>
 
@@ -282,7 +299,7 @@ export function renderStudentsView(options = {}) {
                     <select id="select-archive-student" required class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-                      ${renderIcon('chevron-down', 'w-4 h-4')}
+                      ${renderIcon("chevron-down", "w-4 h-4")}
                     </div>
                   </div>
                 </div>
@@ -297,7 +314,7 @@ export function renderStudentsView(options = {}) {
                       <option value="Перевод в параллельный класс">Перевод в параллельный класс (7А)</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-                      ${renderIcon('chevron-down', 'w-4 h-4')}
+                      ${renderIcon("chevron-down", "w-4 h-4")}
                     </div>
                   </div>
                 </div>
@@ -333,4 +350,3 @@ export function renderStudentsView(options = {}) {
     </div>
   `;
 }
-

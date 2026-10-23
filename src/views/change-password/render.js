@@ -1,12 +1,16 @@
-import { getCurrentUser, changePassword, logout } from '../../services/storage.js';
-import { getDefaultRouteForRole } from '../../config/navigation.js';
-import { renderIcon } from '../../components/icons.js';
-import { navigate } from '../../services/navigation.js';
+import {
+  getCurrentUser,
+  changePassword,
+  logout,
+} from "../../services/storage.js";
+import { getDefaultRouteForRole } from "../../config/navigation.js";
+import { renderIcon } from "../../components/icons.js";
+import { navigate } from "../../services/navigation.js";
 
 export function renderChangePasswordView() {
   const currentUser = getCurrentUser();
   if (!currentUser) {
-    return '';
+    return "";
   }
 
   return `
@@ -25,7 +29,7 @@ export function renderChangePasswordView() {
 
       <div id="change-password-card" class="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200/80 p-8 sm:p-9">
         <div class="flex items-start space-x-3 py-3 px-3.5 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-800 text-xs mb-6">
-          <span class="flex-shrink-0 mt-0.5">${renderIcon('alert', 'w-4 h-4 text-amber-600')}</span>
+          <span class="flex-shrink-0 mt-0.5">${renderIcon("alert", "w-4 h-4 text-amber-600")}</span>
           <span class="leading-tight">
             Вы вошли с временным паролем, выданным администратором.
             Установите постоянный пароль, чтобы продолжить работу.

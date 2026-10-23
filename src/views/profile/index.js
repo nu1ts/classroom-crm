@@ -1,2 +1,2 @@
-export { renderProfileView } from './render.js';
-export { setupProfileListeners } from './listeners.js';
+export { renderProfileView } from "./render.js";
+export { setupProfileListeners } from "./listeners.js";

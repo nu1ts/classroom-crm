@@ -1,20 +1,43 @@
-import { escapeHtml, findUpcomingVacation, formatDateRu, getDurationText, renderQuartersTableHtml, renderVacationsGridHtml, renderYearTabsHtml } from './helpers.js';
+import {
+  escapeHtml,
+  findUpcomingVacation,
+  formatDateRu,
+  getDurationText,
+  renderQuartersTableHtml,
+  renderVacationsGridHtml,
+  renderYearTabsHtml,
+} from "./helpers.js";
+import { renderIcon } from "../../components/icons.js";
+import {
+  getAcademicYears,
+  getActiveAcademicYear,
+  getDB,
+} from "../../services/storage.js";
 
 export function renderSchoolYearView(options = {}) {
   const db = getDB();
   const years = getAcademicYears(db);
   const activeYear = getActiveAcademicYear(db);
-  const selectedYearId = options.yearId || (activeYear ? activeYear.id : (years[0] ? years[0].id : null));
-  const currentYear = years.find(y => y.id === selectedYearId) || activeYear || years[0] || null;
+  const selectedYearId =
+    options.yearId ||
+    (activeYear ? activeYear.id : years[0] ? years[0].id : null);
+  const currentYear =
+    years.find((y) => y.id === selectedYearId) ||
+    activeYear ||
+    years[0] ||
+    null;
 
   const meta = db.meta || {};
   const activePeriod = meta.period || {};
   const quarters = (currentYear && currentYear.quarters) || [];
   const vacations = (currentYear && currentYear.vacations) || [];
-  const upcomingVacation = findUpcomingVacation(vacations, meta.demoToday || '2024-10-28');
+  const upcomingVacation = findUpcomingVacation(
+    vacations,
+    meta.demoToday || "2024-10-28",
+  );
 
   return `
-    <div id="school-year-view" class="space-y-6 animate-fadeIn pb-12 max-w-7xl mx-auto" data-selected-year-id="${escapeHtml(currentYear ? currentYear.id : '')}">
+    <div id="school-year-view" class="space-y-6 animate-fadeIn pb-12 max-w-7xl mx-auto" data-selected-year-id="${escapeHtml(currentYear ? currentYear.id : "")}">
       
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -27,7 +50,7 @@ export function renderSchoolYearView(options = {}) {
         <div>
           <button type="button" id="btn-open-add-year"
                   class="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-semibold text-xs transition-colors shadow-2xs cursor-pointer">
-            ${renderIcon('plus', 'w-4 h-4')}
+            ${renderIcon("plus", "w-4 h-4")}
             <span>Добавить учебный год</span>
           </button>
         </div>
@@ -43,10 +66,10 @@ export function renderSchoolYearView(options = {}) {
           </div>
           <div class="mt-2.5">
             <div class="text-xl font-bold text-slate-900 tracking-tight" id="kpi-active-year-name">
-              ${escapeHtml(activeYear ? activeYear.name : 'Не выбран')}
+              ${escapeHtml(activeYear ? activeYear.name : "Не выбран")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-active-year-dates">
-              ${activeYear ? `${formatDateRu(activeYear.startDate)} – ${formatDateRu(activeYear.endDate)}` : '—'}
+              ${activeYear ? `${formatDateRu(activeYear.startDate)} – ${formatDateRu(activeYear.endDate)}` : "—"}
             </div>
           </div>
         </div>
@@ -60,7 +83,7 @@ export function renderSchoolYearView(options = {}) {
           </div>
           <div class="mt-2.5">
             <div class="text-xl font-bold text-slate-900 tracking-tight" id="kpi-active-quarter-name">
-              ${escapeHtml(activePeriod.name || 'I четверть')}
+              ${escapeHtml(activePeriod.name || "I четверть")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-active-quarter-dates">
               ${formatDateRu(activePeriod.startDate)} – ${formatDateRu(activePeriod.endDate)}
@@ -71,14 +94,14 @@ export function renderSchoolYearView(options = {}) {
         <div class="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between">
           <div class="flex items-center justify-between text-xs font-semibold text-slate-500">
             <span>Ближайшие каникулы</span>
-            ${renderIcon('calendar', 'w-3.5 h-3.5 text-slate-400')}
+            ${renderIcon("calendar", "w-3.5 h-3.5 text-slate-400")}
           </div>
           <div class="mt-2.5">
             <div class="text-xl font-bold text-slate-900 tracking-tight" id="kpi-upcoming-vacation-name">
-              ${escapeHtml(upcomingVacation ? upcomingVacation.name : 'Каникулы не запланированы')}
+              ${escapeHtml(upcomingVacation ? upcomingVacation.name : "Каникулы не запланированы")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-upcoming-vacation-dates">
-              ${upcomingVacation ? `${formatDateRu(upcomingVacation.startDate)} – ${formatDateRu(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : '—'}
+              ${upcomingVacation ? `${formatDateRu(upcomingVacation.startDate)} – ${formatDateRu(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—"}
             </div>
           </div>
         </div>
@@ -89,37 +112,45 @@ export function renderSchoolYearView(options = {}) {
           <div class="flex items-center space-x-2">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Учебный год:</span>
             <div class="inline-flex p-1 bg-slate-100/80 rounded-xl space-x-1" id="academic-years-tabs" role="tablist">
-              ${renderYearTabsHtml(years, currentYear ? currentYear.id : '')}
+              ${renderYearTabsHtml(years, currentYear ? currentYear.id : "")}
             </div>
           </div>
 
           <div class="flex items-center space-x-2" id="year-actions-container">
-            ${currentYear ? `
+            ${
+              currentYear
+                ? `
               <button type="button" id="btn-open-edit-year" data-year-id="${escapeHtml(currentYear.id)}" data-year-name="${escapeHtml(currentYear.name)}" data-year-start="${escapeHtml(currentYear.startDate)}" data-year-end="${escapeHtml(currentYear.endDate)}"
                       class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center space-x-1"
                       title="Редактировать параметры года">
-                ${renderIcon('edit', 'w-3.5 h-3.5')}
+                ${renderIcon("edit", "w-3.5 h-3.5")}
                 <span>Редактировать год</span>
               </button>
-            ` : ''}
-            ${currentYear && !currentYear.isActive ? `
+            `
+                : ""
+            }
+            ${
+              currentYear && !currentYear.isActive
+                ? `
               <button type="button" id="btn-set-active-year" data-year-id="${escapeHtml(currentYear.id)}"
                       class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer inline-flex items-center space-x-1">
-                ${renderIcon('check', 'w-3.5 h-3.5')}
+                ${renderIcon("check", "w-3.5 h-3.5")}
                 <span>Сделать текущим годом</span>
               </button>
               <button type="button" id="btn-delete-year" data-year-id="${escapeHtml(currentYear.id)}" data-year-name="${escapeHtml(currentYear.name)}"
                       class="px-2.5 py-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center space-x-1"
                       title="Удалить учебный год">
-                ${renderIcon('trash', 'w-3.5 h-3.5')}
+                ${renderIcon("trash", "w-3.5 h-3.5")}
                 <span>Удалить год</span>
               </button>
-            ` : `
+            `
+                : `
               <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200" id="badge-current-year-active">
-                ${renderIcon('check', 'w-3.5 h-3.5 mr-1 text-emerald-600')}
+                ${renderIcon("check", "w-3.5 h-3.5 mr-1 text-emerald-600")}
                 Текущий учебный год
               </span>
-            `}
+            `
+            }
           </div>
         </div>
 
@@ -157,7 +188,7 @@ export function renderSchoolYearView(options = {}) {
             </div>
             <button type="button" id="btn-add-vacation"
                     class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center space-x-1">
-              ${renderIcon('plus', 'w-3.5 h-3.5')}
+              ${renderIcon("plus", "w-3.5 h-3.5")}
               <span>Добавить каникулы</span>
             </button>
           </div>
@@ -169,7 +200,7 @@ export function renderSchoolYearView(options = {}) {
       </div>
 
 <div id="school-year-toast" class="fixed bottom-6 right-6 z-50 flex items-center space-x-3 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl transition-all duration-300 opacity-0 translate-y-4 pointer-events-none">
-        <span id="school-year-toast-icon">${renderIcon('check', 'w-4 h-4 text-emerald-400')}</span>
+        <span id="school-year-toast-icon">${renderIcon("check", "w-4 h-4 text-emerald-400")}</span>
         <span id="school-year-toast-message" class="text-xs font-medium"></span>
       </div>
 
@@ -179,7 +210,7 @@ export function renderSchoolYearView(options = {}) {
             <h3 class="text-base font-bold text-slate-900">Новый учебный год</h3>
             <button type="button" data-action="close-modal" title="Закрыть"
                     class="text-slate-400 hover:text-slate-600 p-1 rounded-lg transition-colors cursor-pointer">
-              ${renderIcon('x', 'w-4 h-4')}
+              ${renderIcon("x", "w-4 h-4")}
             </button>
           </div>
           <p class="text-xs text-slate-500 mb-4">Создание нового учебного цикла с автоматической разметкой четвертей и каникул.</p>
@@ -227,7 +258,7 @@ export function renderSchoolYearView(options = {}) {
             <h3 class="text-base font-bold text-slate-900">Редактировать учебный год</h3>
             <button type="button" data-action="close-modal" title="Закрыть"
                     class="text-slate-400 hover:text-slate-600 p-1 rounded-lg transition-colors cursor-pointer">
-              ${renderIcon('x', 'w-4 h-4')}
+              ${renderIcon("x", "w-4 h-4")}
             </button>
           </div>
           <p class="text-xs text-slate-500 mb-4">Изменение названия и общих дат учебного года.</p>
@@ -276,7 +307,7 @@ export function renderSchoolYearView(options = {}) {
             <h3 class="text-base font-bold text-slate-900" id="modal-edit-quarter-title">Изменить четверть</h3>
             <button type="button" data-action="close-modal" title="Закрыть"
                     class="text-slate-400 hover:text-slate-600 p-1 rounded-lg transition-colors cursor-pointer">
-              ${renderIcon('x', 'w-4 h-4')}
+              ${renderIcon("x", "w-4 h-4")}
             </button>
           </div>
           <p class="text-xs text-slate-500 mb-4">Корректировка диапазона дат учебного периода.</p>
@@ -324,7 +355,7 @@ export function renderSchoolYearView(options = {}) {
             <h3 class="text-base font-bold text-slate-900" id="modal-edit-vacation-title">Каникулы</h3>
             <button type="button" data-action="close-modal" title="Закрыть"
                     class="text-slate-400 hover:text-slate-600 p-1 rounded-lg transition-colors cursor-pointer">
-              ${renderIcon('x', 'w-4 h-4')}
+              ${renderIcon("x", "w-4 h-4")}
             </button>
           </div>
           <p class="text-xs text-slate-500 mb-4">Настройка дат каникулярного периода.</p>
@@ -368,4 +399,3 @@ export function renderSchoolYearView(options = {}) {
     </div>
   `;
 }
-

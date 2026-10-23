@@ -1,22 +1,27 @@
-import { getCurrentUser, changePassword, logout, clearSession } from '../../services/storage.js';
-import { renderIcon } from '../../components/icons.js';
-import { navigate } from '../../services/navigation.js';
+import {
+  getCurrentUser,
+  changePassword,
+  logout,
+  clearSession,
+} from "../../services/storage.js";
+import { renderIcon } from "../../components/icons.js";
+import { navigate } from "../../services/navigation.js";
 
 export function renderProfileView() {
   const user = getCurrentUser();
-  if (!user) return '';
+  if (!user) return "";
 
-  let bindingText = user.className || user.classId || 'Школа';
-  if (user.role === 'teacher') {
-    bindingText = '7Б';
-  } else if (user.role === 'subject_teacher') {
+  let bindingText = user.className || user.classId || "Школа";
+  if (user.role === "teacher") {
+    bindingText = "7Б";
+  } else if (user.role === "subject_teacher") {
     bindingText = `Учитель: ${user.shortName} (${user.subject})`;
-  } else if (user.role === 'parent') {
-    bindingText = user.childName || 'Петрова Анна (7Б)';
-  } else if (user.role === 'student') {
-    bindingText = 'Ученик 7Б класса';
-  } else if (user.role === 'admin') {
-    bindingText = 'Администрация школы';
+  } else if (user.role === "parent") {
+    bindingText = user.childName || "Петрова Анна (7Б)";
+  } else if (user.role === "student") {
+    bindingText = "Ученик 7Б класса";
+  } else if (user.role === "admin") {
+    bindingText = "Администрация школы";
   }
 
   return `
@@ -49,7 +54,7 @@ export function renderProfileView() {
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-500 mb-1">
-                ${user.role === 'teacher' ? 'Курируемый класс' : 'Привязка'}
+                ${user.role === "teacher" ? "Курируемый класс" : "Привязка"}
               </label>
               <input type="text" value="${bindingText}" readonly
                      class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-800 cursor-not-allowed select-none" />
@@ -70,7 +75,7 @@ export function renderProfileView() {
                   <option value="en">English (US)</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
-                  ${renderIcon('chevron-down', 'w-4 h-4')}
+                  ${renderIcon("chevron-down", "w-4 h-4")}
                 </div>
               </div>
             </div>
@@ -126,7 +131,7 @@ export function renderProfileView() {
           </div>
           <button type="button" id="btn-profile-logout"
                   class="px-5 py-2.5 rounded-xl border border-slate-200 hover:border-rose-300 hover:bg-rose-50 text-slate-700 hover:text-rose-600 font-semibold text-xs transition-all flex items-center justify-center space-x-2 cursor-pointer shadow-2xs">
-            ${renderIcon('logout', 'w-4 h-4')}
+            ${renderIcon("logout", "w-4 h-4")}
             <span>Выйти из системы</span>
           </button>
         </div>

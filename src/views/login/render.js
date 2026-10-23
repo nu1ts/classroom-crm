@@ -1,8 +1,13 @@
-import { login, quickLoginAsRole, getCurrentUser, logout } from '../../services/storage.js';
-import { getDefaultRouteForRole } from '../../config/navigation.js';
-import { isDevMode } from '../../services/env.js';
-import { renderIcon } from '../../components/icons.js';
-import { navigate } from '../../services/navigation.js';
+import {
+  login,
+  quickLoginAsRole,
+  getCurrentUser,
+  logout,
+} from "../../services/storage.js";
+import { getDefaultRouteForRole } from "../../config/navigation.js";
+import { isDevMode } from "../../services/env.js";
+import { renderIcon } from "../../components/icons.js";
+import { navigate } from "../../services/navigation.js";
 
 export function renderLoginView() {
   const currentUser = getCurrentUser();
@@ -26,7 +31,7 @@ export function renderLoginView() {
 
         <div id="login-active-card" class="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200/80 p-8 sm:p-9 text-center animate-fadeIn">
           <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-brand-50 border border-brand-200 text-brand-600 flex items-center justify-center shadow-inner">
-            ${renderIcon('user', 'w-7 h-7 text-brand-600')}
+            ${renderIcon("user", "w-7 h-7 text-brand-600")}
           </div>
           <h2 class="text-lg font-bold text-slate-800 mb-1.5">
             Сеанс уже активен
@@ -59,7 +64,7 @@ export function renderLoginView() {
 
   const devModeActive = isDevMode();
 
-  let devQuickLoginHtml = '';
+  let devQuickLoginHtml = "";
   if (devModeActive) {
     devQuickLoginHtml = `
       <div class="mt-7 pt-5 border-t border-slate-100">
@@ -139,7 +144,7 @@ export function renderLoginView() {
                       data-action="toggle-password"
                       class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-brand-600 transition-colors rounded-lg">
                 <span id="password-toggle-icon">
-                  ${renderIcon('eye', 'w-4 h-4')}
+                  ${renderIcon("eye", "w-4 h-4")}
                 </span>
               </button>
             </div>
@@ -147,7 +152,7 @@ export function renderLoginView() {
 
           <div id="login-error-box" class="overflow-hidden transition-all duration-200 max-h-0 opacity-0 pointer-events-none mb-0">
             <div class="py-2.5 px-3.5 rounded-xl bg-rose-50 border border-rose-200/80 text-rose-700 text-xs flex items-center space-x-2.5">
-              <span class="flex-shrink-0">${renderIcon('alert', 'w-4 h-4 text-rose-600')}</span>
+              <span class="flex-shrink-0">${renderIcon("alert", "w-4 h-4 text-rose-600")}</span>
               <span id="login-error-text" class="font-medium leading-tight">Неверный логин или пароль</span>
             </div>
           </div>
