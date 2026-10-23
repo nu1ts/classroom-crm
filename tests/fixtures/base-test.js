@@ -1,19 +1,12 @@
 import { test as baseTest, expect } from '@playwright/test';
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
+import { INITIAL_DATASET } from '../../src/mock/dataset.js';
 import { LoginPage } from '../page-objects/LoginPage.js';
 import { NavigationPage } from '../page-objects/NavigationPage.js';
 import { ProfilePage } from '../page-objects/ProfilePage.js';
 import { TableHelper } from '../helpers/table-helper.js';
 import { MetricsHelper } from '../helpers/metrics-helper.js';
 import { TEST_USERS } from '../config/test-users.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const datasetPath = path.resolve(__dirname, '../../src/mock/dataset.json');
-const INITIAL_DATASET = JSON.parse(fs.readFileSync(datasetPath, 'utf-8'));
 
 /**
  * Базовый тест с фикстурами сброса мок-состояния и Page Objects
