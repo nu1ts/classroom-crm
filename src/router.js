@@ -3,21 +3,21 @@ import { isRouteAllowedForRole, getDefaultRouteForRole } from './config/navigati
 import { detectBase, currentPath, getRouteParams, replacePath, navigate } from './services/navigation.js';
 import { renderLayout, setupLayoutListeners, updateSidebarActiveItem } from './components/layout.js';
 import { renderLoginView, setupLoginListeners } from './views/login.js';
-import { renderOverviewView, setupOverviewListeners } from './views/overview.js';
+import { renderOverviewView, setupOverviewListeners } from './views/overview/index.js';
 import { renderProfileView, setupProfileListeners } from './views/profile.js';
 import { renderForbiddenView } from './views/forbidden.js';
 import { renderPlaceholderView } from './views/placeholder.js';
 import { renderAttendanceView, setupAttendanceListeners } from './views/attendance.js';
-import { renderJournalView, setupJournalListeners } from './views/journal.js';
-import { renderStudentsView, setupStudentsListeners } from './views/students.js';
-import { renderStudentSummaryView, setupStudentSummaryListeners } from './views/student-summary.js';
-import { renderParentsView, setupParentsListeners, renderParentSummaryView, setupParentSummaryListeners } from './views/parents.js';
+import { renderJournalView, setupJournalListeners } from './views/journal/index.js';
+import { renderStudentsView, setupStudentsListeners } from './views/students/index.js';
+import { renderStudentSummaryView, setupStudentSummaryListeners } from './views/student-summary/index.js';
+import { renderParentsView, setupParentsListeners, renderParentSummaryView, setupParentSummaryListeners } from './views/parents/index.js';
 import { renderAnalyticsView, setupAnalyticsListeners } from './views/analytics.js';
-import { renderAccountsView, setupAccountsListeners } from './views/accounts.js';
+import { renderAccountsView, setupAccountsListeners } from './views/accounts/index.js';
 import { renderChangePasswordView, setupChangePasswordListeners } from './views/change-password.js';
 import { renderTeachersView, setupTeachersListeners } from './views/teachers.js';
 import { renderWorkloadView, setupWorkloadListeners } from './views/workload.js';
-import { renderSchoolYearView, setupSchoolYearListeners } from './views/school-year.js';
+import { renderSchoolYearView, setupSchoolYearListeners } from './views/school-year/index.js';
 
 const ROUTE_HANDLERS = {
   '/login': {

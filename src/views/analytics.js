@@ -1,15 +1,6 @@
 import { getDB } from '../services/storage.js';
-import {
-  calculateClassAverage,
-  calculateClassAttendance,
-  calculateSubjectAverages,
-  calculateWeeklyAbsences,
-  getUnconfirmedAbsences,
-  getRiskZoneStudents,
-  generateClassReport,
-  roundToOneDecimal
-} from '../mock/calculations.js';
 import { renderIcon } from '../components/icons.js';
+import { calculateClassAttendance, calculateClassAverage, calculateSubjectAverages, calculateWeeklyAbsences, generateClassReport, getRiskZoneStudents } from '../mock/calculations.js';
 
 export function renderAnalyticsView(options = {}) {
   const db = getDB();

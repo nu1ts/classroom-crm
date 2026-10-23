@@ -1,14 +1,8 @@
-import {
-  getDB,
-  getActiveAcademicYear,
-  getWorkloadRows,
-  getClassDirectory,
-  addWorkloadRow,
-  updateWorkloadRow,
-  removeWorkloadRow
-} from '../services/storage.js';
 import { renderIcon } from '../components/icons.js';
 import { replaceUrl } from '../services/navigation.js';
+import { addWorkloadRow, getDB, getWorkloadRows, removeWorkloadRow, updateWorkloadRow } from '../services/storage.js';
+import { getActiveAcademicYear } from '../services/school-year.js';
+import { getClassDirectory } from '../services/directories.js';
 
 function escapeHtml(text) {
   return String(text ?? '')
