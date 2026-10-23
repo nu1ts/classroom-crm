@@ -1,6 +1,6 @@
 /**
  * Модуль расчётных функций показателей бизнес-процесса «Недельный контроль класса»
- * Реализует сквозные правила расчёта согласно тест-кейсам TC-ANL, TC-OV, TC-BP, TC-MG:
+ * Реализует сквозные правила расчёта показателей:
  * - Округление ровно на половине вверх (до 0.1)
  * - Средний балл ученика и класса (не среднее средних)
  * - Посещаемость по 1-му уроку и за день по всем урокам
@@ -13,7 +13,7 @@
 
 /**
  * Строгое математическое округление до одного десятичного знака (0.1)
- * Половина (.05) округляется вверх (TC-ANL-03, TC-ANL-04).
+ * Половина (.05) округляется вверх.
  * @param {number|null|undefined} value
  * @returns {number|null}
  */
@@ -48,7 +48,7 @@ export function filterLessons(lessons, options = {}) {
 }
 
 /**
- * Расчёт посещаемости за конкретный день (TC-BP-01, TC-ANL-07)
+ * Расчёт посещаемости за конкретный день
  * Поддерживает расчёт как только по 1-му уроку дня, так и за весь день по всем проведённым урокам.
  * @param {Array} lessons Массив занятий
  * @param {Array} attendance Массив отметок посещаемости
@@ -99,7 +99,7 @@ export function calculateAttendanceForDay(lessons, attendance, targetDate, optio
 }
 
 /**
- * Расчёт среднего балла ученика за период (TC-ANL-01, TC-ANL-02, TC-ANL-03, TC-ANL-08)
+ * Расчёт среднего балла ученика за период
  * - Отметки о присутствии не влияют на балл
  * - Если 0 оценок: возвращает null («нет данных», прочерк)
  * - Если 1 оценка: возвращает точное число с округлением (например 5.0)
@@ -134,7 +134,7 @@ export function calculateStudentAverage(grades, studentId, options = {}) {
 }
 
 /**
- * Расчёт среднего балла класса за период (TC-ANL-04, TC-ANL-10)
+ * Расчёт среднего балла класса за период
  * Считается по ВСЕМ оценкам класса (сумма / количество оценок), НЕ как среднее из средних учеников!
  * @param {Array} grades
  * @param {Object} options { periodId, dateFrom, dateTo, subjectId }
@@ -165,7 +165,7 @@ export function calculateClassAverage(grades, options = {}) {
 }
 
 /**
- * Расчёт средних баллов класса по каждому предмету за период (TC-ANL-11)
+ * Расчёт средних баллов класса по каждому предмету за период
  * @param {Array} grades
  * @param {Array} subjects
  * @param {Object} options { periodId, dateFrom, dateTo, threshold = 3.5 }
@@ -200,7 +200,7 @@ export function calculateSubjectAverages(grades, subjects, options = {}) {
 }
 
 /**
- * Расчёт показателей посещаемости конкретного ученика за период (TC-ANL-05, TC-ANL-06)
+ * Расчёт показателей посещаемости конкретного ученика за период
  * Знаменатель — только проведённые/отмеченные уроки (неотмеченные не считаются прогулами!).
  * @param {Array} lessons
  * @param {Array} attendance
@@ -243,7 +243,7 @@ export function calculateStudentAttendance(lessons, attendance, studentId, optio
 }
 
 /**
- * Расчёт показателей посещаемости класса за период (TC-ANL-07)
+ * Расчёт показателей посещаемости класса за период
  * Считается по всем ученикам и всем отмеченным урокам.
  * @param {Array} lessons
  * @param {Array} attendance
@@ -285,7 +285,7 @@ export function calculateClassAttendance(lessons, attendance, options = {}) {
 }
 
 /**
- * Расчёт динамики пропусков по неделям (TC-ANL-12)
+ * Расчёт динамики пропусков по неделям
  * @param {Array} lessons
  * @param {Array} attendance
  * @param {Object} options { periodId }
@@ -293,7 +293,7 @@ export function calculateClassAttendance(lessons, attendance, options = {}) {
  */
 export function calculateWeeklyAbsences(lessons, attendance, options = {}) {
   const markedLessons = filterLessons(lessons, options);
-  
+
   const weeksMap = new Map();
   for (const lsn of markedLessons) {
     const wIdx = lsn.weekIndex;
@@ -328,7 +328,7 @@ export function calculateWeeklyAbsences(lessons, attendance, options = {}) {
 }
 
 /**
- * Получение списка неподтверждённых пропусков (TC-ANL-14, TC-BP-03)
+ * Получение списка неподтверждённых пропусков
  * В счётчик и список входят только отметки со статусом 'unconfirmed' ('Н (без)').
  * Подтверждённые ('УП', статус 'confirmed') не входят!
  * @param {Array} attendance
@@ -381,7 +381,7 @@ export function getUnconfirmedAbsences(attendance, lessons, students, options = 
 }
 
 /**
- * Определение учеников зоны риска (TC-ANL-13, лист «Тестовые данные», TC-BP предусловие П5)
+ * Определение учеников зоны риска
  * Пороги строгие:
  * - пропуски БОЛЕЕ 20% уроков за период (20.0% ровно не входит)
  * - средний балл по любому предмету НИЖЕ 3.5 (3.5 ровно не входит)
@@ -471,7 +471,7 @@ export function getRiskZoneStudents(students, lessons, attendance, grades, subje
 }
 
 /**
- * Комплексный динамический отчёт по классу за период (TC-BP-31, TC-ANL-15)
+ * Комплексный динамический отчёт по классу за период
  * Отчёт не сохраняется в состояние и пересчитывается при каждом вызове.
  * @param {Object} dataset Полный объект состояния
  * @param {Object} options { periodId = 'q1_2024', dateFrom, dateTo }
@@ -574,7 +574,7 @@ export function getSurveyReport(surveyId, dataset) {
 }
 
 /**
- * Расчёт явки родителей на собрание (TC-MG-07, макет Собрания.png: 23 ответа из 28)
+ * Расчёт явки родителей на собрание
  * @param {string} meetingId Идентификатор собрания
  * @param {Object} dataset Полный датасет
  * @returns {Object}
