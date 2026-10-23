@@ -3,7 +3,7 @@
  *
  * Выход: reference/
  *   app.js            — бандл всего приложения (esbuild, без внешних ссылок на ../src)
- *   css/styles.css    — Tailwind CSS
+ *   styles.css        — Tailwind CSS
  *   index.html        — корневая страница (старт: вход)
  *   <route>/index.html — страница каждого маршрута (роутинг подкаталогами)
  *
@@ -44,7 +44,7 @@ await build({
 });
 
 // --- 3. Tailwind CSS ---
-execFileSync('npx', ['tailwindcss', '-i', './src/input.css', '-o', './reference/css/styles.css', '--minify'], {
+execFileSync('npx', ['tailwindcss', '-i', './src/input.css', '-o', './reference/styles.css', '--minify'], {
   cwd: ROOT, stdio: 'inherit', shell: true,
 });
 
@@ -89,7 +89,7 @@ function renderPage(assetPrefix) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Кабинет классного руководителя — Classroom CRM</title>
-  <link rel="stylesheet" href="${assetPrefix}css/styles.css" />${headExtras}
+  <link rel="stylesheet" href="${assetPrefix}styles.css" />${headExtras}
 </head>
 
 <body class="h-full text-slate-800 antialiased">
@@ -104,7 +104,7 @@ function renderPage(assetPrefix) {
 if (existsSync(OUT)) {
   const entries = await readdir(OUT);
   for (const e of entries) {
-    if (e !== 'css' && e !== 'app.js') {
+    if (e !== 'app.js' && e !== 'styles.css') {
       await rm(path.join(OUT, e), { recursive: true, force: true });
     }
   }
