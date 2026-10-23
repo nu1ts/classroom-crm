@@ -4,6 +4,7 @@ import {
   getActiveAcademicYear,
   setActiveAcademicYear,
   addAcademicYear,
+  updateAcademicYear,
   deleteAcademicYear,
   setActiveQuarter,
   updateQuarter,
@@ -242,6 +243,14 @@ export function renderSchoolYearView(options = {}) {
           </div>
 
           <div class="flex items-center space-x-2" id="year-actions-container">
+            ${currentYear ? `
+              <button type="button" id="btn-open-edit-year" data-year-id="${escapeHtml(currentYear.id)}" data-year-name="${escapeHtml(currentYear.name)}" data-year-start="${escapeHtml(currentYear.startDate)}" data-year-end="${escapeHtml(currentYear.endDate)}"
+                      class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center space-x-1"
+                      title="Редактировать параметры года">
+                ${renderIcon('edit', 'w-3.5 h-3.5')}
+                <span>Редактировать год</span>
+              </button>
+            ` : ''}
             ${currentYear && !currentYear.isActive ? `
               <button type="button" id="btn-set-active-year" data-year-id="${escapeHtml(currentYear.id)}"
                       class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer inline-flex items-center space-x-1">
@@ -257,7 +266,7 @@ export function renderSchoolYearView(options = {}) {
             ` : `
               <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200" id="badge-current-year-active">
                 ${renderIcon('check', 'w-3.5 h-3.5 mr-1 text-emerald-600')}
-                Текущий учебный год в CRM
+                Текущий учебный год
               </span>
             `}
           </div>
@@ -355,6 +364,55 @@ export function renderSchoolYearView(options = {}) {
               <button type="submit" id="btn-submit-add-year"
                       class="px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition-colors shadow-2xs cursor-pointer">
                 Создать
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="modal-edit-year" class="fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+        <div id="modal-edit-year-dialog" class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95">
+          <div class="flex items-center justify-between mb-1">
+            <h3 class="text-base font-bold text-slate-900">Редактировать учебный год</h3>
+            <button type="button" data-action="close-modal" title="Закрыть"
+                    class="text-slate-400 hover:text-slate-600 p-1 rounded-lg transition-colors cursor-pointer">
+              ${renderIcon('x', 'w-4 h-4')}
+            </button>
+          </div>
+          <p class="text-xs text-slate-500 mb-4">Изменение названия и общих дат учебного года.</p>
+
+          <form id="form-edit-year" class="space-y-4">
+            <input type="hidden" id="edit-year-id" />
+            <div id="edit-year-error" class="hidden text-xs font-medium text-rose-600 bg-rose-50 border border-rose-200 rounded-xl p-3"></div>
+
+            <div>
+              <label for="input-edit-year-name" class="block text-xs font-semibold text-slate-700 mb-1.5">Название учебного года</label>
+              <input type="text" id="input-edit-year-name" placeholder="2024/2025" required
+                     class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors placeholder:text-slate-400 text-slate-800" />
+              <p class="text-[11px] text-slate-400 mt-1">Формат: ГГГГ/ГГГГ (например, 2024/2025)</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label for="input-edit-year-start" class="block text-xs font-semibold text-slate-700 mb-1.5">Дата начала</label>
+                <input type="date" id="input-edit-year-start" required
+                       class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors text-slate-800 cursor-pointer" />
+              </div>
+              <div>
+                <label for="input-edit-year-end" class="block text-xs font-semibold text-slate-700 mb-1.5">Дата окончания</label>
+                <input type="date" id="input-edit-year-end" required
+                       class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors text-slate-800 cursor-pointer" />
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end space-x-2.5 pt-3 border-t border-slate-100">
+              <button type="button" data-action="close-modal"
+                      class="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-xs transition-colors cursor-pointer">
+                Отмена
+              </button>
+              <button type="submit" id="btn-submit-edit-year"
+                      class="px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition-colors shadow-2xs cursor-pointer">
+                Сохранить
               </button>
             </div>
           </form>
@@ -509,7 +567,7 @@ function closeModal(modalId) {
 }
 
 function closeAllModals() {
-  ['modal-add-year', 'modal-edit-quarter', 'modal-edit-vacation'].forEach(id => closeModal(id));
+  ['modal-add-year', 'modal-edit-year', 'modal-edit-quarter', 'modal-edit-vacation'].forEach(id => closeModal(id));
 }
 
 export function setupSchoolYearListeners(navigate) {
@@ -541,7 +599,7 @@ export function setupSchoolYearListeners(navigate) {
     const vacations = (currentYear && currentYear.vacations) || [];
     const upcomingVacation = findUpcomingVacation(vacations, meta.demoToday || '2024-10-28');
 
-const kpiActiveYear = document.getElementById('kpi-active-year-name');
+    const kpiActiveYear = document.getElementById('kpi-active-year-name');
     if (kpiActiveYear) kpiActiveYear.textContent = activeYear ? activeYear.name : 'Не выбран';
     const kpiActiveYearDates = document.getElementById('kpi-active-year-dates');
     if (kpiActiveYearDates) kpiActiveYearDates.textContent = activeYear ? `${formatDateRu(activeYear.startDate)} – ${formatDateRu(activeYear.endDate)}` : '—';
@@ -556,13 +614,22 @@ const kpiActiveYear = document.getElementById('kpi-active-year-name');
     const kpiVacDates = document.getElementById('kpi-upcoming-vacation-dates');
     if (kpiVacDates) kpiVacDates.textContent = upcomingVacation ? `${formatDateRu(upcomingVacation.startDate)} – ${formatDateRu(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : '—';
 
-const tabsContainer = document.getElementById('academic-years-tabs');
+    const tabsContainer = document.getElementById('academic-years-tabs');
     if (tabsContainer) tabsContainer.innerHTML = renderYearTabsHtml(years, currentYear ? currentYear.id : '');
 
-const actionsContainer = document.getElementById('year-actions-container');
+    const actionsContainer = document.getElementById('year-actions-container');
     if (actionsContainer && currentYear) {
+      const editBtnHtml = `
+        <button type="button" id="btn-open-edit-year" data-year-id="${escapeHtml(currentYear.id)}" data-year-name="${escapeHtml(currentYear.name)}" data-year-start="${escapeHtml(currentYear.startDate)}" data-year-end="${escapeHtml(currentYear.endDate)}"
+                class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center space-x-1"
+                title="Редактировать параметры года">
+          ${renderIcon('edit', 'w-3.5 h-3.5')}
+          <span>Редактировать год</span>
+        </button>
+      `;
       if (!currentYear.isActive) {
         actionsContainer.innerHTML = `
+          ${editBtnHtml}
           <button type="button" id="btn-set-active-year" data-year-id="${escapeHtml(currentYear.id)}"
                   class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer inline-flex items-center space-x-1">
             ${renderIcon('check', 'w-3.5 h-3.5')}
@@ -577,22 +644,23 @@ const actionsContainer = document.getElementById('year-actions-container');
         `;
       } else {
         actionsContainer.innerHTML = `
+          ${editBtnHtml}
           <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200" id="badge-current-year-active">
             ${renderIcon('check', 'w-3.5 h-3.5 mr-1 text-emerald-600')}
-            Текущий учебный год в CRM
+            Текущий учебный год
           </span>
         `;
       }
     }
 
-const quartersTbody = document.getElementById('quarters-table-body');
+    const quartersTbody = document.getElementById('quarters-table-body');
     if (quartersTbody) quartersTbody.innerHTML = renderQuartersTableHtml(quarters);
 
-const vacationsGrid = document.getElementById('vacations-grid');
+    const vacationsGrid = document.getElementById('vacations-grid');
     if (vacationsGrid) vacationsGrid.innerHTML = renderVacationsGridHtml(vacations);
   }
 
-function handleKeyDown(e) {
+  function handleKeyDown(e) {
     if (e.key === 'Escape') {
       closeAllModals();
     }
@@ -600,7 +668,7 @@ function handleKeyDown(e) {
   document.removeEventListener('keydown', handleKeyDown);
   document.addEventListener('keydown', handleKeyDown);
 
-['modal-add-year', 'modal-edit-quarter', 'modal-edit-vacation'].forEach(modalId => {
+  ['modal-add-year', 'modal-edit-quarter', 'modal-edit-vacation'].forEach(modalId => {
     const modalEl = document.getElementById(modalId);
     if (modalEl) {
       modalEl.addEventListener('click', (e) => {
@@ -611,7 +679,7 @@ function handleKeyDown(e) {
     }
   });
 
-view.addEventListener('click', (e) => {
+  view.addEventListener('click', (e) => {
 
     const closeBtn = e.target.closest('[data-action="close-modal"]');
     if (closeBtn) {
@@ -620,7 +688,7 @@ view.addEventListener('click', (e) => {
       return;
     }
 
-const tabBtn = e.target.closest('[data-year-tab]');
+    const tabBtn = e.target.closest('[data-year-tab]');
     if (tabBtn) {
       e.preventDefault();
       const targetYearId = tabBtn.getAttribute('data-year-tab');
@@ -629,7 +697,7 @@ const tabBtn = e.target.closest('[data-year-tab]');
       return;
     }
 
-const setActiveYearBtn = e.target.closest('#btn-set-active-year');
+    const setActiveYearBtn = e.target.closest('#btn-set-active-year');
     if (setActiveYearBtn) {
       const yearId = setActiveYearBtn.getAttribute('data-year-id');
       const res = setActiveAcademicYear(yearId);
@@ -642,7 +710,7 @@ const setActiveYearBtn = e.target.closest('#btn-set-active-year');
       return;
     }
 
-const deleteYearBtn = e.target.closest('#btn-delete-year');
+    const deleteYearBtn = e.target.closest('#btn-delete-year');
     if (deleteYearBtn) {
       const yearId = deleteYearBtn.getAttribute('data-year-id');
       const yearName = deleteYearBtn.getAttribute('data-year-name');
@@ -658,7 +726,7 @@ const deleteYearBtn = e.target.closest('#btn-delete-year');
       return;
     }
 
-const openAddYearBtn = e.target.closest('#btn-open-add-year');
+    const openAddYearBtn = e.target.closest('#btn-open-add-year');
     if (openAddYearBtn) {
       const errEl = document.getElementById('add-year-error');
       if (errEl) errEl.classList.add('hidden');
@@ -668,7 +736,30 @@ const openAddYearBtn = e.target.closest('#btn-open-add-year');
       return;
     }
 
-const setQuarterBtn = e.target.closest('[data-action="set-active-quarter"]');
+    const openEditYearBtn = e.target.closest('#btn-open-edit-year');
+    if (openEditYearBtn) {
+      const yearId = openEditYearBtn.getAttribute('data-year-id');
+      const yearName = openEditYearBtn.getAttribute('data-year-name');
+      const yearStart = openEditYearBtn.getAttribute('data-year-start');
+      const yearEnd = openEditYearBtn.getAttribute('data-year-end');
+
+      const idEl = document.getElementById('edit-year-id');
+      const nameEl = document.getElementById('input-edit-year-name');
+      const startEl = document.getElementById('input-edit-year-start');
+      const endEl = document.getElementById('input-edit-year-end');
+      const errEl = document.getElementById('edit-year-error');
+
+      if (idEl) idEl.value = yearId;
+      if (nameEl) nameEl.value = yearName;
+      if (startEl) startEl.value = yearStart;
+      if (endEl) endEl.value = yearEnd;
+      if (errEl) errEl.classList.add('hidden');
+
+      openModal('modal-edit-year');
+      return;
+    }
+
+    const setQuarterBtn = e.target.closest('[data-action="set-active-quarter"]');
     if (setQuarterBtn) {
       const quarterId = setQuarterBtn.getAttribute('data-quarter-id');
       const curYearId = getCurrentSelectedYearId();
@@ -682,7 +773,7 @@ const setQuarterBtn = e.target.closest('[data-action="set-active-quarter"]');
       return;
     }
 
-const editQuarterBtn = e.target.closest('[data-action="edit-quarter"]');
+    const editQuarterBtn = e.target.closest('[data-action="edit-quarter"]');
     if (editQuarterBtn) {
       const quarterId = editQuarterBtn.getAttribute('data-quarter-id');
       const quarterName = editQuarterBtn.getAttribute('data-quarter-name');
@@ -705,7 +796,7 @@ const editQuarterBtn = e.target.closest('[data-action="edit-quarter"]');
       return;
     }
 
-const addVacBtn = e.target.closest('#btn-add-vacation');
+    const addVacBtn = e.target.closest('#btn-add-vacation');
     if (addVacBtn) {
       const idEl = document.getElementById('edit-vacation-id');
       const titleEl = document.getElementById('modal-edit-vacation-title');
@@ -721,7 +812,7 @@ const addVacBtn = e.target.closest('#btn-add-vacation');
       return;
     }
 
-const editVacBtn = e.target.closest('[data-action="edit-vacation"]');
+    const editVacBtn = e.target.closest('[data-action="edit-vacation"]');
     if (editVacBtn) {
       const id = editVacBtn.getAttribute('data-vacation-id');
       const name = editVacBtn.getAttribute('data-vacation-name');
@@ -746,7 +837,7 @@ const editVacBtn = e.target.closest('[data-action="edit-vacation"]');
       return;
     }
 
-const delVacBtn = e.target.closest('[data-action="delete-vacation"]');
+    const delVacBtn = e.target.closest('[data-action="delete-vacation"]');
     if (delVacBtn) {
       const id = delVacBtn.getAttribute('data-vacation-id');
       const name = delVacBtn.getAttribute('data-vacation-name');
@@ -762,7 +853,7 @@ const delVacBtn = e.target.closest('[data-action="delete-vacation"]');
     }
   });
 
-const formAddYear = document.getElementById('form-add-year');
+  const formAddYear = document.getElementById('form-add-year');
   if (formAddYear) {
     formAddYear.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -786,7 +877,32 @@ const formAddYear = document.getElementById('form-add-year');
     });
   }
 
-const formEditQuarter = document.getElementById('form-edit-quarter');
+  const formEditYear = document.getElementById('form-edit-year');
+  if (formEditYear) {
+    formEditYear.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = (document.getElementById('edit-year-id')?.value || '').trim();
+      const name = (document.getElementById('input-edit-year-name')?.value || '').trim();
+      const startDate = document.getElementById('input-edit-year-start')?.value || '';
+      const endDate = document.getElementById('input-edit-year-end')?.value || '';
+      const errEl = document.getElementById('edit-year-error');
+
+      const res = updateAcademicYear(id, { name, startDate, endDate });
+      if (!res.success) {
+        if (errEl) {
+          errEl.textContent = res.error || 'Ошибка обновления';
+          errEl.classList.remove('hidden');
+        }
+        return;
+      }
+
+      closeModal('modal-edit-year');
+      updateViewData(res.year.id);
+      showToast(`Учебный год «${res.year.name}» успешно обновлен`);
+    });
+  }
+
+  const formEditQuarter = document.getElementById('form-edit-quarter');
   if (formEditQuarter) {
     formEditQuarter.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -812,7 +928,7 @@ const formEditQuarter = document.getElementById('form-edit-quarter');
     });
   }
 
-const formVac = document.getElementById('form-edit-vacation');
+  const formVac = document.getElementById('form-edit-vacation');
   if (formVac) {
     formVac.addEventListener('submit', (e) => {
       e.preventDefault();

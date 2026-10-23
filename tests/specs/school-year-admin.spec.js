@@ -163,4 +163,38 @@ await vacModal.click({ position: { x: 10, y: 10 } });
     await expect(vacModal).toHaveClass(/opacity-0/);
   });
 
+  test('[TC-SY-09] Редактирование параметров учебного года: изменение дат и названия', async ({ page }) => {
+    await openSchoolYearAsAdmin(page);
+
+    await page.click('#btn-open-edit-year');
+    const modal = page.locator('#modal-edit-year');
+    await expect(modal).toHaveClass(/opacity-100/);
+
+    const nameInput = page.locator('#input-edit-year-name');
+    await expect(nameInput).toHaveValue('2024/2025');
+
+    const endInput = page.locator('#input-edit-year-end');
+    await endInput.fill('2025-06-05');
+
+    await page.click('#btn-submit-edit-year');
+    await expect(modal).toHaveClass(/opacity-0/);
+
+    await expect(page.locator('#kpi-active-year-dates')).toContainText('05.06.2025');
+  });
+
+  test('[TC-SY-10] Валидация хронологии: даты четверти должны лежать в пределах года', async ({ page }) => {
+    await openSchoolYearAsAdmin(page);
+
+    await page.click('[data-action="edit-quarter"][data-quarter-id="q1_2024"]');
+    const modal = page.locator('#modal-edit-quarter');
+    await expect(modal).toHaveClass(/opacity-100/);
+
+    await page.fill('#input-edit-quarter-start', '2024-08-15');
+    await page.click('#btn-submit-edit-quarter');
+
+    const err = page.locator('#edit-quarter-error');
+    await expect(err).toBeVisible();
+    await expect(err).toContainText('не может быть раньше начала учебного года');
+  });
+
 });

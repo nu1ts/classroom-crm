@@ -1459,6 +1459,41 @@ export function addAcademicYear(data = {}) {
 /**
  * Удаление учебного года
  */
+export function updateAcademicYear(yearId, data = {}) {
+  if (!yearId) return { success: false, error: 'Укажите ID учебного года' };
+  const name = (data.name || '').trim();
+  const startDate = (data.startDate || '').trim();
+  const endDate = (data.endDate || '').trim();
+
+  if (!name) return { success: false, error: 'Укажите название учебного года' };
+  if (!/^\d{4}[\/\-]\d{4}$/.test(name)) {
+    return { success: false, error: 'Формат года должен быть ГГГГ/ГГГГ (например, 2025/2026)' };
+  }
+  if (!startDate || !endDate) return { success: false, error: 'Укажите даты начала и окончания учебного года' };
+  if (startDate >= endDate) return { success: false, error: 'Дата начала года должна быть раньше даты окончания' };
+
+  const db = getDB();
+  const years = getAcademicYears(db);
+  const targetYear = years.find(y => y.id === yearId);
+  if (!targetYear) return { success: false, error: 'Учебный год не найден' };
+
+  const formattedName = name.replace('-', '/');
+  const duplicate = years.find(y => y.id !== yearId && y.name.toLowerCase() === formattedName.toLowerCase());
+  if (duplicate) return { success: false, error: `Учебный год «${formattedName}» уже существует` };
+
+  targetYear.name = formattedName;
+  targetYear.startDate = startDate;
+  targetYear.endDate = endDate;
+
+  if (targetYear.isActive) {
+    db.meta = db.meta || {};
+    db.meta.academicYear = targetYear.name;
+  }
+
+  saveDB(db);
+  return { success: true, year: targetYear };
+}
+
 export function deleteAcademicYear(yearId) {
   if (!yearId) return { success: false, error: 'Укажите ID учебного года' };
   const db = getDB();
@@ -1523,7 +1558,29 @@ export function updateQuarter(yearId, quarterId, data = {}) {
   if (!targetYear) targetYear = years.find(y => (y.quarters || []).some(q => q.id === quarterId));
   if (!targetYear) return { success: false, error: 'Учебный год не найден' };
 
-  const targetQuarter = (targetYear.quarters || []).find(q => q.id === quarterId);
+  if (targetYear.startDate && startDate < targetYear.startDate) {
+    return { success: false, error: 'Дата начала четверти не может быть раньше начала учебного года' };
+  }
+  if (targetYear.endDate && endDate > targetYear.endDate) {
+    return { success: false, error: 'Дата окончания четверти не может быть позже окончания учебного года' };
+  }
+
+  const quartersList = targetYear.quarters || [];
+  const currentIndex = quartersList.findIndex(q => q.id === quarterId);
+  if (currentIndex > 0) {
+    const prevQuarter = quartersList[currentIndex - 1];
+    if (prevQuarter.endDate && startDate <= prevQuarter.endDate) {
+      return { success: false, error: `Дата начала четверти должна быть позже окончания ${prevQuarter.name}` };
+    }
+  }
+  if (currentIndex >= 0 && currentIndex < quartersList.length - 1) {
+    const nextQuarter = quartersList[currentIndex + 1];
+    if (nextQuarter.startDate && endDate >= nextQuarter.startDate) {
+      return { success: false, error: `Дата окончания четверти должна быть раньше начала ${nextQuarter.name}` };
+    }
+  }
+
+  const targetQuarter = quartersList.find(q => q.id === quarterId);
   if (!targetQuarter) return { success: false, error: 'Четверть не найдена' };
 
   if (name) targetQuarter.name = name;
@@ -1602,6 +1659,13 @@ export function updateVacation(yearId, vacationId, data = {}) {
   let targetYear = yearId ? years.find(y => y.id === yearId) : years.find(y => y.isActive);
   if (!targetYear) return { success: false, error: 'Учебный год не найден' };
 
+  if (targetYear.startDate && startDate < targetYear.startDate) {
+    return { success: false, error: 'Дата начала каникул не может быть раньше начала учебного года' };
+  }
+  if (targetYear.endDate && endDate > targetYear.endDate) {
+    return { success: false, error: 'Дата окончания каникул не может быть позже окончания учебного года' };
+  }
+
   if (!Array.isArray(targetYear.vacations)) targetYear.vacations = [];
   const vac = targetYear.vacations.find(v => v.id === vacationId);
   if (!vac) return { success: false, error: 'Период каникул не найден' };
@@ -1630,6 +1694,13 @@ export function addVacation(yearId, data = {}) {
   const years = getAcademicYears(db);
   let targetYear = yearId ? years.find(y => y.id === yearId) : years.find(y => y.isActive);
   if (!targetYear) return { success: false, error: 'Учебный год не найден' };
+
+  if (targetYear.startDate && startDate < targetYear.startDate) {
+    return { success: false, error: 'Дата начала каникул не может быть раньше начала учебного года' };
+  }
+  if (targetYear.endDate && endDate > targetYear.endDate) {
+    return { success: false, error: 'Дата окончания каникул не может быть позже окончания учебного года' };
+  }
 
   if (!Array.isArray(targetYear.vacations)) targetYear.vacations = [];
   const newVac = {
