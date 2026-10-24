@@ -24,6 +24,11 @@ export function renderJournalView(options = {}) {
   const classDisplayName = classObj ? classObj.name : "7Б";
 
   const students = (db.students || [])
+    .filter(
+      (s) =>
+        (!s.classId && selectedClassId === "class-7b") ||
+        s.classId === selectedClassId,
+    )
     .slice()
     .sort((a, b) => a.fullName.localeCompare(b.fullName, "ru"));
   const subjects = db.subjects || [];
@@ -37,11 +42,11 @@ export function renderJournalView(options = {}) {
           (currentUser.shortName && t.shortName === currentUser.shortName),
       )
     : null;
-  const teacherWorkload = teacherObj && Array.isArray(teacherObj.workload)
-    ? teacherObj.workload.filter(
-        (w) => w.classId === selectedClassId || w.className === classDisplayName,
-      )
-    : [];
+  const fullTeacherWorkload =
+    teacherObj && Array.isArray(teacherObj.workload) ? teacherObj.workload : [];
+  const teacherWorkload = fullTeacherWorkload.filter(
+    (w) => w.classId === selectedClassId || w.className === classDisplayName,
+  );
   const teacherSubjectIds = new Set(teacherWorkload.map((w) => w.subjectId));
   const availableSubjectsForUser = isSubjectTeacher
     ? subjects.filter((s) => teacherSubjectIds.has(s.id) || (teacherObj && s.teacher === teacherObj.shortName))
@@ -61,7 +66,14 @@ export function renderJournalView(options = {}) {
     selectedSubjectId = selectedSubjectId || "all";
   }
 
-  const allLessons = (db.lessons || []).slice().sort((a, b) => {
+  const allLessons = (db.lessons || [])
+    .filter(
+      (l) =>
+        (!l.classId && selectedClassId === "class-7b") ||
+        l.classId === selectedClassId,
+    )
+    .slice()
+    .sort((a, b) => {
     if (a.date !== b.date) return a.date.localeCompare(b.date);
     return (a.lessonNumber || 0) - (b.lessonNumber || 0);
   });
@@ -519,7 +531,33 @@ export function renderJournalView(options = {}) {
       </div>
 
       <div class="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${isSubjectTeacher ? "5" : "4"} gap-3">
+          ${
+            isSubjectTeacher && fullTeacherWorkload.length > 0
+              ? `
+          <div>
+            <label for="select-journal-class" class="block text-xs font-semibold text-slate-700 mb-1.5">Класс</label>
+            <div class="relative">
+              <select id="select-journal-class"
+                      class="w-full appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 cursor-pointer text-slate-800 text-xs font-medium focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all">
+                ${fullTeacherWorkload
+                  .map(
+                    (w) => `
+                  <option value="${w.classId}" data-subject-id="${w.subjectId}" ${w.classId === selectedClassId ? "selected" : ""}>
+                    ${w.className} (${w.subjectLabel || "Математика"})
+                  </option>
+                `,
+                  )
+                  .join("")}
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                ${renderIcon("chevron-down", "w-4 h-4")}
+              </div>
+            </div>
+          </div>
+          `
+              : ""
+          }
           <div>
             <label for="select-journal-subject" class="block text-xs font-semibold text-slate-700 mb-1.5">Предмет</label>
             <div class="relative">
@@ -711,7 +749,7 @@ export function renderJournalView(options = {}) {
                 <th class="px-3.5 py-3 border-b border-slate-200 border-r border-slate-200 text-slate-700 bg-slate-50 font-bold text-xs sticky left-0 z-20 min-w-[210px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
                   <div class="flex items-center space-x-2">
                     <span class="w-6 text-center text-slate-400 font-semibold flex-shrink-0">№</span>
-                    <span>Ученик (28 чел.)</span>
+                    <span>Ученик (${students.length} чел.)</span>
                   </div>
                 </th>
                 <th class="px-2.5 py-3 text-center border-b border-slate-200 border-r border-slate-200 text-slate-700 bg-slate-50 font-bold text-xs min-w-[50px]" title="Средний балл за период">

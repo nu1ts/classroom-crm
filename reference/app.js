@@ -27098,9 +27098,7 @@
     const displaySlots = TIME_SLOTS.slice(0, 5);
     return `
     <div class="space-y-5">
-      <!-- Верхняя панель по макету Figma -->
       <div class="bg-white rounded-2xl border border-slate-200/90 px-5 py-4 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <!-- Левая часть: Иконка календаря и заголовок недели -->
         <div class="flex items-center space-x-3.5">
           <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -27120,7 +27118,6 @@
           </div>
         </div>
 
-        <!-- Правая часть: Селектор и кнопки в стиле макета Figma -->
         <div class="flex flex-wrap items-center gap-3">
           <div class="relative">
             <select id="select-schedule-week"
@@ -27167,7 +27164,6 @@
         </div>
       </div>
 
-      <!-- Основная область: Пустая неделя ИЛИ табличная сетка по макету -->
       ${isVacationOrEmpty ? `
         <div id="schedule-empty-state" class="bg-white rounded-2xl border border-slate-200/90 p-12 text-center shadow-xs">
           <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-500">
@@ -27190,7 +27186,6 @@
           </div>
         </div>
       ` : `
-        <!-- Табличная сетка расписания (docs/Classroom CRM/Классрук/Расписание.png) -->
         <div id="schedule-grid" class="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse min-w-[840px]">
@@ -27216,13 +27211,11 @@
                 ${displaySlots.map((slot) => {
       return `
                   <tr class="hover:bg-slate-50/30 transition-colors">
-                    <!-- Колонка слота времени -->
                     <td class="py-4 px-4 align-top w-32 bg-slate-50/30">
                       <div class="text-xs font-extrabold text-slate-800">${slot.number} урок</div>
                       <div class="text-[11px] font-semibold text-slate-400 mt-0.5">${slot.time}</div>
                     </td>
 
-                    <!-- Ячейки по дням недели -->
                     ${weekDays.map((day) => {
         const lessonsInSlot = lessonsByDateAndTime.get(`${day.date}_${slot.time}`) || [];
         const isToday = day.date === todayIso;
@@ -27237,7 +27230,6 @@
                                          data-class-id="${lesson.classId || "class-7b"}"
                                          data-date="${lesson.date}">
                                       
-                                      <!-- Верх: Название предмета и класс -->
                                       <div class="flex items-start justify-between gap-2.5">
                                         <div class="text-xs font-bold text-slate-900 leading-snug">
                                           ${lesson.subjectName}
@@ -27247,7 +27239,6 @@
                                         </span>
                                       </div>
 
-                                      <!-- Низ: Аудитория (синим по макету) и статус с достаточным верхним и нижним отступом от линии -->
                                       <div class="flex items-center justify-between mt-3 pt-2.5 border-t border-slate-100 text-[11px]">
                                         <span class="font-bold text-brand-600">
                                           ${lesson.room || "Каб. 204"}
@@ -27367,14 +27358,17 @@
       (c) => c.id === selectedClassId || c.name === selectedClassId
     );
     const classDisplayName = classObj ? classObj.name : "7Б";
-    const students = (db.students || []).slice().sort((a, b) => a.fullName.localeCompare(b.fullName, "ru"));
+    const students = (db.students || []).filter(
+      (s) => !s.classId && selectedClassId === "class-7b" || s.classId === selectedClassId
+    ).slice().sort((a, b) => a.fullName.localeCompare(b.fullName, "ru"));
     const subjects = db.subjects || [];
     const teacherObj = isSubjectTeacher ? (db.teachers || []).find(
       (t) => t.accountUserId === currentUser.id || t.id === currentUser.teacherId || currentUser.personName && t.fullName === currentUser.personName || currentUser.shortName && t.shortName === currentUser.shortName
     ) : null;
-    const teacherWorkload = teacherObj && Array.isArray(teacherObj.workload) ? teacherObj.workload.filter(
+    const fullTeacherWorkload = teacherObj && Array.isArray(teacherObj.workload) ? teacherObj.workload : [];
+    const teacherWorkload = fullTeacherWorkload.filter(
       (w) => w.classId === selectedClassId || w.className === classDisplayName
-    ) : [];
+    );
     const teacherSubjectIds = new Set(teacherWorkload.map((w) => w.subjectId));
     const availableSubjectsForUser = isSubjectTeacher ? subjects.filter((s) => teacherSubjectIds.has(s.id) || teacherObj && s.teacher === teacherObj.shortName) : subjects;
     let selectedSubjectId = options.subjectId;
@@ -27388,7 +27382,9 @@
     } else {
       selectedSubjectId = selectedSubjectId || "all";
     }
-    const allLessons = (db.lessons || []).slice().sort((a, b) => {
+    const allLessons = (db.lessons || []).filter(
+      (l) => !l.classId && selectedClassId === "class-7b" || l.classId === selectedClassId
+    ).slice().sort((a, b) => {
       if (a.date !== b.date) return a.date.localeCompare(b.date);
       return (a.lessonNumber || 0) - (b.lessonNumber || 0);
     });
@@ -27740,7 +27736,27 @@
       </div>
 
       <div class="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${isSubjectTeacher ? "5" : "4"} gap-3">
+          ${isSubjectTeacher && fullTeacherWorkload.length > 0 ? `
+          <div>
+            <label for="select-journal-class" class="block text-xs font-semibold text-slate-700 mb-1.5">Класс</label>
+            <div class="relative">
+              <select id="select-journal-class"
+                      class="w-full appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 cursor-pointer text-slate-800 text-xs font-medium focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all">
+                ${fullTeacherWorkload.map(
+      (w) => `
+                  <option value="${w.classId}" data-subject-id="${w.subjectId}" ${w.classId === selectedClassId ? "selected" : ""}>
+                    ${w.className} (${w.subjectLabel || "Математика"})
+                  </option>
+                `
+    ).join("")}
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                ${renderIcon("chevron-down", "w-4 h-4")}
+              </div>
+            </div>
+          </div>
+          ` : ""}
           <div>
             <label for="select-journal-subject" class="block text-xs font-semibold text-slate-700 mb-1.5">Предмет</label>
             <div class="relative">
@@ -27924,7 +27940,7 @@
                 <th class="px-3.5 py-3 border-b border-slate-200 border-r border-slate-200 text-slate-700 bg-slate-50 font-bold text-xs sticky left-0 z-20 min-w-[210px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
                   <div class="flex items-center space-x-2">
                     <span class="w-6 text-center text-slate-400 font-semibold flex-shrink-0">№</span>
-                    <span>Ученик (28 чел.)</span>
+                    <span>Ученик (${students.length} чел.)</span>
                   </div>
                 </th>
                 <th class="px-2.5 py-3 text-center border-b border-slate-200 border-r border-slate-200 text-slate-700 bg-slate-50 font-bold text-xs min-w-[50px]" title="Средний балл за период">
@@ -28194,6 +28210,7 @@
       const absences = params.get("absences") === "true";
       const statusParam = params.get("status") || (unconfirmed ? "unconfirmed" : absences ? "absences" : "all");
       return {
+        classId: params.get("class") || "class-7b",
         subjectId: params.get("subject") || "all",
         weekId: params.get("week") || "all",
         filterStatus: statusParam,
@@ -28207,6 +28224,9 @@
       const current = getUrlParams();
       const merged = { ...current, ...newParams };
       const params = new URLSearchParams();
+      if (merged.classId) {
+        params.set("class", merged.classId);
+      }
       if (merged.subjectId && merged.subjectId !== "all")
         params.set("subject", merged.subjectId);
       if (merged.weekId && merged.weekId !== "all")
@@ -28227,6 +28247,17 @@
       } else {
         navigate(newHash);
       }
+    }
+    const selectClass = document.getElementById("select-journal-class");
+    if (selectClass) {
+      selectClass.addEventListener("change", () => {
+        const selectedOption = selectClass.selectedOptions[0];
+        const targetSubjectId = selectedOption ? selectedOption.getAttribute("data-subject-id") : null;
+        updateRoute({
+          classId: selectClass.value,
+          subjectId: targetSubjectId || "math"
+        });
+      });
     }
     if (selectSubject) {
       selectSubject.addEventListener("change", () => {
