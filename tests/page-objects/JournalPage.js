@@ -116,7 +116,12 @@ export class JournalPage {
    */
   async openCell(studentName, date) {
     const cell = this.getCell(studentName, date);
-    await cell.click();
+    const activeInput = cell.locator('input.grade-input:not([disabled])');
+    if (await activeInput.count() > 0) {
+      await cell.click({ position: { x: 10, y: 2 }, force: true });
+    } else {
+      await cell.click();
+    }
     await expect(this.entryModal).toHaveClass(/opacity-100/);
   }
 
@@ -172,5 +177,56 @@ export class JournalPage {
   async closeEntryModal() {
     await this.entryModalCloseBtn.click();
     await expect(this.entryModal).toHaveClass(/opacity-0/);
+  }
+
+  /**
+   * Найти инпут ввода оценки по имени ученика и дате урока
+   * @param {string} studentName
+   * @param {string} date 'YYYY-MM-DD'
+   * @returns {import('@playwright/test').Locator}
+   */
+  getGradeInput(studentName, date) {
+    const cell = this.getCell(studentName, date);
+    return cell.locator('input.grade-input');
+  }
+
+  /**
+   * Выставить значение оценки ученику за дату
+   * @param {string} studentName
+   * @param {string} date 'YYYY-MM-DD'
+   * @param {string|number} value
+   */
+  async setGrade(studentName, date, value) {
+    const input = this.getGradeInput(studentName, date);
+    await input.fill(String(value));
+  }
+
+  /**
+   * Найти кнопку отметки отсутствия
+   * @param {string} studentName
+   * @param {string} date 'YYYY-MM-DD'
+   * @returns {import('@playwright/test').Locator}
+   */
+  getAbsenceBtn(studentName, date) {
+    const cell = this.getCell(studentName, date);
+    return cell.locator('button.btn-toggle-absence');
+  }
+
+  /**
+   * Кликнуть по кнопке отметки отсутствия
+   * @param {string} studentName
+   * @param {string} date 'YYYY-MM-DD'
+   */
+  async toggleAbsence(studentName, date) {
+    const btn = this.getAbsenceBtn(studentName, date);
+    await btn.click();
+  }
+
+  /**
+   * Нажать кнопку «Сохранить» в журнале
+   */
+  async saveJournal() {
+    const btn = this.page.locator('#btn-save-journal');
+    await btn.click();
   }
 }

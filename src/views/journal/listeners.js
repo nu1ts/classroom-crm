@@ -4,12 +4,18 @@ import {
   confirmAbsenceRecord,
   addJournalComment,
   getJournalComments,
+  validateGradeValue,
+  saveGradeRecord,
+  deleteGradeRecord,
+  setLessonAttendance,
+  batchSaveLessonJournal,
 } from "../../services/storage.js";
 import { renderIcon } from "../../components/icons.js";
 import { getUnconfirmedAbsences } from "../../mock/calculations.js";
 import { hrefFor, navigate } from "../../services/navigation.js";
 
 export function setupJournalListeners(onNavigate) {
+  const currentUser = getCurrentUser();
   const selectSubject = document.getElementById("select-journal-subject");
   const selectWeek = document.getElementById("select-journal-week");
   const selectStatus = document.getElementById("select-journal-status");
@@ -265,6 +271,7 @@ export function setupJournalListeners(onNavigate) {
   let activeAttendanceRecord = null;
 
   function closeModal() {
+    
     if (!modal) return;
     modal.classList.remove("opacity-100", "pointer-events-auto");
     modal.classList.add("opacity-0", "pointer-events-none");
@@ -276,6 +283,8 @@ export function setupJournalListeners(onNavigate) {
   }
 
   function openJournalConfirmModal() {
+    const isSubjTeacher = currentUser && currentUser.role === "subject_teacher";
+    if (isSubjTeacher) return;
     if (!modalConfirm || !activeAttendanceRecord) return;
     const currentDB = getDB();
     const student = (currentDB.students || []).find(
@@ -361,6 +370,7 @@ export function setupJournalListeners(onNavigate) {
   });
 
   function openJournalEntryModal(lessonId, studentId) {
+    
     if (!modal) return;
     activeLessonId = lessonId;
     activeStudentId = studentId;
@@ -413,8 +423,14 @@ export function setupJournalListeners(onNavigate) {
             : "УЧ";
       elStudentAvatar.textContent = initials.toUpperCase();
     }
-    if (elStudentLink && student) {
-      elStudentLink.href = hrefFor(`/overview?student=${student.id}`);
+    if (elStudentLink) {
+      const isSubj = currentUser && currentUser.role === "subject_teacher";
+      if (isSubj) {
+        elStudentLink.classList.add("hidden");
+      } else if (student) {
+        elStudentLink.classList.remove("hidden");
+        elStudentLink.href = hrefFor(`/overview?student=${student.id}`);
+      }
     }
 
     if (elGrade) {
@@ -495,7 +511,14 @@ export function setupJournalListeners(onNavigate) {
             elAbsenceDetails.classList.add("hidden");
             elAbsenceDetails.innerHTML = "";
           }
-          if (elConfirmBlock) elConfirmBlock.classList.remove("hidden");
+          if (elConfirmBlock) {
+            const isSubjTeacher = currentUser && currentUser.role === "subject_teacher";
+            if (isSubjTeacher) {
+              elConfirmBlock.classList.add("hidden");
+            } else {
+              elConfirmBlock.classList.remove("hidden");
+            }
+          }
         }
       } else {
         elAtt.innerHTML = `
@@ -518,6 +541,7 @@ export function setupJournalListeners(onNavigate) {
 
     modal.classList.remove("opacity-0", "pointer-events-none");
     modal.classList.add("opacity-100", "pointer-events-auto");
+    
     if (modalDialog) {
       modalDialog.classList.remove("scale-95");
       modalDialog.classList.add("scale-100");
@@ -575,7 +599,14 @@ export function setupJournalListeners(onNavigate) {
   }
 
   document.querySelectorAll(".cell-journal-entry").forEach((cell) => {
-    cell.addEventListener("click", () => {
+    cell.addEventListener("click", (e) => {
+      
+      if (
+        e.target.closest(".grade-input:not([disabled])") ||
+        e.target.closest(".btn-toggle-absence")
+      ) {
+        return;
+      }
       const lessonId = cell.getAttribute("data-lesson-id");
       const studentId = cell.getAttribute("data-student-id");
       if (lessonId && studentId) {
@@ -642,12 +673,19 @@ export function setupJournalListeners(onNavigate) {
       const text = inputCommentText.value.trim();
       if (!text) return;
 
+      const currentUser = getCurrentUser();
+      const authorName =
+        currentUser && (currentUser.shortName || currentUser.personName)
+          ? currentUser.shortName || currentUser.personName
+          : "Смирнова М. В.";
+      const authorRole = currentUser ? currentUser.role : "teacher";
+
       const res = addJournalComment({
         lessonId: activeLessonId,
         studentId: activeStudentId,
         text,
-        author: "Смирнова М. В.",
-        role: "teacher",
+        author: authorName,
+        role: authorRole,
       });
 
       if (res.success) {
@@ -678,4 +716,189 @@ export function setupJournalListeners(onNavigate) {
       }
     });
   }
+
+  const localChanges = new Map();
+
+  document.querySelectorAll(".grade-input").forEach((input) => {
+    input.addEventListener("click", (e) => {
+      if (input.disabled) return;
+      e.stopPropagation();
+    });
+    input.addEventListener("mousedown", (e) => {
+      if (input.disabled) return;
+      e.stopPropagation();
+    });
+    input.addEventListener("input", (e) => {
+      const lessonId = input.getAttribute("data-lesson-id");
+      const studentId = input.getAttribute("data-student-id");
+      const rawVal = input.value.trim();
+
+      if (input.disabled) return;
+
+      const key = `${lessonId}_${studentId}`;
+      const change = localChanges.get(key) || { lessonId, studentId };
+
+      if (rawVal === "") {
+        input.classList.remove("border-rose-400", "bg-rose-50", "text-rose-700");
+        input.classList.add("border-amber-300", "bg-amber-50/40");
+        change.grade = "";
+        localChanges.set(key, change);
+      } else {
+        const val = parseInt(rawVal, 10);
+        if (Number.isInteger(val) && val >= 2 && val <= 5 && rawVal.length === 1) {
+          input.classList.remove("border-rose-400", "bg-rose-50", "text-rose-700");
+          input.classList.add("border-emerald-400", "bg-emerald-50/40");
+          change.grade = val;
+          localChanges.set(key, change);
+        } else {
+          input.classList.remove("border-emerald-400", "bg-emerald-50/40");
+          input.classList.add("border-rose-400", "bg-rose-50", "text-rose-700");
+          change.grade = "invalid";
+          localChanges.set(key, change);
+        }
+      }
+    });
+
+    input.addEventListener("blur", () => {
+      const rawVal = input.value.trim();
+      if (rawVal !== "") {
+        const val = parseInt(rawVal, 10);
+        if (!Number.isInteger(val) || val < 2 || val > 5) {
+          input.classList.add("ring-2", "ring-rose-500/20");
+        } else {
+          input.classList.remove("ring-2", "ring-rose-500/20");
+        }
+      }
+    });
+  });
+
+  document.querySelectorAll(".btn-toggle-absence").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const lessonId = btn.getAttribute("data-lesson-id");
+      const studentId = btn.getAttribute("data-student-id");
+      const currentStatus = btn.getAttribute("data-status");
+      const key = `${lessonId}_${studentId}`;
+      const input = document.querySelector(`.grade-input[data-lesson-id="${lessonId}"][data-student-id="${studentId}"]`);
+
+      if (currentStatus === "confirmed") {
+        alert("Причина подтверждена классным руководителем. Изменение отметки заблокировано.");
+        return;
+      }
+
+      const change = localChanges.get(key) || { lessonId, studentId };
+
+      if (currentStatus === "unconfirmed") {
+        btn.setAttribute("data-status", "present");
+        btn.className = "btn-toggle-absence inline-flex items-center justify-center w-5 h-6 text-[10px] font-bold text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer";
+        btn.title = "Отметить отсутствие ('Н')";
+
+        if (input) {
+          input.disabled = false;
+          input.placeholder = "—";
+          input.title = "Оценка (2, 3, 4, 5)";
+          input.classList.remove("bg-slate-100", "cursor-not-allowed", "pointer-events-none");
+          input.classList.add("bg-white", "text-slate-900");
+          input.focus();
+        }
+        change.isAbsent = false;
+        localChanges.set(key, change);
+      } else {
+        btn.setAttribute("data-status", "unconfirmed");
+        btn.className = "btn-toggle-absence inline-flex items-center justify-center min-w-[22px] h-6 px-1 text-xs font-bold rounded-lg border shadow-2xs transition-all bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100 cursor-pointer";
+        btn.title = "Отсутствовал (нажмите, чтобы снять отметку)";
+
+        if (input) {
+          input.value = "";
+          input.disabled = true;
+          input.placeholder = "—";
+          input.title = "Ученик отсутствовал";
+          input.classList.remove("bg-white", "text-slate-900", "border-emerald-400", "bg-emerald-50/40");
+          input.classList.add("bg-slate-100", "cursor-not-allowed");
+        }
+        change.isAbsent = true;
+        change.grade = "";
+        localChanges.set(key, change);
+      }
+    });
+  });
+
+  const btnSaveJournal = document.getElementById("btn-save-journal");
+  if (btnSaveJournal) {
+    btnSaveJournal.addEventListener("click", () => {
+      let hasInvalidValues = false;
+      document.querySelectorAll(".grade-input:not([disabled])").forEach((input) => {
+        const val = input.value.trim();
+        if (val !== "") {
+          const num = parseInt(val, 10);
+          if (!Number.isInteger(num) || num < 2 || num > 5 || val.length !== 1) {
+            hasInvalidValues = true;
+            input.classList.add("border-rose-500", "ring-2", "ring-rose-500/30");
+          }
+        }
+      });
+
+      if (hasInvalidValues) {
+        alert("Недопустимое значение оценки! Разрешены только оценки от 2 до 5.");
+        return;
+      }
+
+      const db = getDB();
+      const currentUser = getCurrentUser();
+      const teacherName =
+        currentUser && (currentUser.shortName || currentUser.personName)
+          ? currentUser.shortName || currentUser.personName
+          : "Козлов А. П.";
+
+      const lessonEntries = new Map();
+
+      document.querySelectorAll(".grade-input").forEach((input) => {
+        const lessonId = input.getAttribute("data-lesson-id");
+        const studentId = input.getAttribute("data-student-id");
+        if (!lessonId || !studentId) return;
+
+        const lesson = (db.lessons || []).find((l) => l.id === lessonId);
+        if (lesson && lesson.status === "closed") return; // закрытые не сохраняем
+
+        if (!lessonEntries.has(lessonId)) {
+          lessonEntries.set(lessonId, []);
+        }
+
+        const btnAbsence = document.querySelector(`.btn-toggle-absence[data-lesson-id="${lessonId}"][data-student-id="${studentId}"]`);
+        const isAbsent = btnAbsence && (btnAbsence.getAttribute("data-status") === "unconfirmed" || btnAbsence.getAttribute("data-status") === "confirmed");
+        const gradeVal = input.disabled ? "" : input.value.trim();
+
+        lessonEntries.get(lessonId).push({
+          studentId,
+          grade: gradeVal,
+          isAbsent: Boolean(isAbsent),
+        });
+      });
+
+      lessonEntries.forEach((entries, lessonId) => {
+        batchSaveLessonJournal({ lessonId, entries });
+      });
+
+      const prevHtml = btnSaveJournal.innerHTML;
+      btnSaveJournal.innerHTML = `
+        <span class="inline-flex items-center space-x-1.5 text-white font-bold">
+          <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+          </svg>
+          <span>Сохранено!</span>
+        </span>
+      `;
+      btnSaveJournal.classList.remove("bg-brand-500", "hover:bg-brand-600");
+      btnSaveJournal.classList.add("bg-emerald-600");
+
+      setTimeout(() => {
+        btnSaveJournal.innerHTML = prevHtml;
+        btnSaveJournal.classList.remove("bg-emerald-600");
+        btnSaveJournal.classList.add("bg-brand-500", "hover:bg-brand-600");
+      }, 2000);
+
+      localChanges.clear();
+    });
+  }
+
 }

@@ -676,3 +676,11 @@ export {
   addVacation,
   deleteVacation,
 } from "./school-year.js";
+
+export {
+  validateGradeValue,
+  saveGradeRecord,
+  deleteGradeRecord,
+  setLessonAttendance,
+  batchSaveLessonJournal,
+} from './grades-ops.js';

@@ -15,6 +15,7 @@ export function renderJournalView(options = {}) {
     role: "teacher",
     shortName: "Смирнова М. В.",
   };
+  const isSubjectTeacher = currentUser && currentUser.role === "subject_teacher";
 
   const selectedClassId = options.classId || "class-7b";
   const classObj = (db.classes || []).find(
@@ -26,6 +27,40 @@ export function renderJournalView(options = {}) {
     .slice()
     .sort((a, b) => a.fullName.localeCompare(b.fullName, "ru"));
   const subjects = db.subjects || [];
+
+  const teacherObj = isSubjectTeacher
+    ? (db.teachers || []).find(
+        (t) =>
+          t.accountUserId === currentUser.id ||
+          t.id === currentUser.teacherId ||
+          (currentUser.personName && t.fullName === currentUser.personName) ||
+          (currentUser.shortName && t.shortName === currentUser.shortName),
+      )
+    : null;
+  const teacherWorkload = teacherObj && Array.isArray(teacherObj.workload)
+    ? teacherObj.workload.filter(
+        (w) => w.classId === selectedClassId || w.className === classDisplayName,
+      )
+    : [];
+  const teacherSubjectIds = new Set(teacherWorkload.map((w) => w.subjectId));
+  const availableSubjectsForUser = isSubjectTeacher
+    ? subjects.filter((s) => teacherSubjectIds.has(s.id) || (teacherObj && s.teacher === teacherObj.shortName))
+    : subjects;
+
+  let selectedSubjectId = options.subjectId;
+  if (isSubjectTeacher) {
+    const hasValidSubject = availableSubjectsForUser.some(
+      (s) => s.id === selectedSubjectId,
+    );
+    if (!hasValidSubject) {
+      selectedSubjectId = availableSubjectsForUser[0]
+        ? availableSubjectsForUser[0].id
+        : "math";
+    }
+  } else {
+    selectedSubjectId = selectedSubjectId || "all";
+  }
+
   const allLessons = (db.lessons || []).slice().sort((a, b) => {
     if (a.date !== b.date) return a.date.localeCompare(b.date);
     return (a.lessonNumber || 0) - (b.lessonNumber || 0);
@@ -33,8 +68,6 @@ export function renderJournalView(options = {}) {
   const allGrades = db.grades || [];
   const allAttendance = db.attendance || [];
   const allComments = db.journalComments || [];
-
-  const selectedSubjectId = options.subjectId || "all";
   const selectedPeriodId = options.periodId || "q1_2024";
   const selectedWeek = options.weekId || "all";
   const filterStatus =
@@ -232,84 +265,156 @@ export function renderJournalView(options = {}) {
           const att = attendanceMap.get(`${l.id}_${s.id}`);
           const comments = commentsMap.get(`${l.id}_${s.id}`) || [];
           const hasComments = comments.length > 0;
+          const isClosed = l.status === "closed";
 
-          let cellContent =
-            '<span class="text-slate-300 font-light select-none">·</span>';
+          let cellContent = "";
           let cellBg = "hover:bg-slate-50/80";
           let tooltip = `${s.fullName} · ${l.date} (${l.subjectName || ""})`;
 
-          if (att && att.value === "absent") {
-            const isExcused =
-              att.status === "excused" || att.code === "УП" || att.code === "Б";
-            if (isExcused) {
-              cellContent = `
-            <span class="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200/80 shadow-2xs"
-                  title="Уважительная причина: ${att.reason || "Болезнь / справка"}">
-              Б
-            </span>
-          `;
-              tooltip += ` · Пропуск: уважительная причина (${att.reason || "Справка"})`;
-              cellBg = "bg-indigo-50/20 hover:bg-indigo-50/50";
-            } else {
-              cellContent = `
-            <span class="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-lg bg-rose-50 text-rose-700 border border-rose-300 shadow-2xs"
-                  title="Отсутствовал (причина не подтверждена, требуется справка)">
-              Н
-            </span>
-          `;
-              tooltip += ` · Пропуск: Не подтверждён (требуется справка)`;
-              cellBg = "bg-rose-50/30 hover:bg-rose-50/60";
-            }
-          } else if (grade) {
-            let badgeClass = "bg-slate-100 text-slate-700 border-slate-200";
-            if (grade.value === 5)
-              badgeClass =
-                "bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs";
-            else if (grade.value === 4)
-              badgeClass =
-                "bg-blue-50 text-blue-800 border-blue-300 shadow-2xs";
-            else if (grade.value === 3)
-              badgeClass =
-                "bg-amber-50 text-amber-800 border-amber-300 shadow-2xs";
-            else if (grade.value === 2)
-              badgeClass =
-                "bg-rose-50 text-rose-800 border-rose-300 shadow-2xs";
+          const isAbsent = att && att.value === "absent";
+          const isExcused =
+            isAbsent &&
+            (att.status === "excused" ||
+              att.status === "confirmed" ||
+              att.code === "УП" ||
+              att.code === "Б");
+          const isUnconfirmed =
+            isAbsent &&
+            (att.status === "unconfirmed" ||
+              att.status === "unexcused" ||
+              att.code === "Н");
 
-            cellContent = `
-          <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold rounded-lg border ${badgeClass}">
-            ${grade.value}
-          </span>
-        `;
+          if (isExcused) {
+            tooltip += ` · Пропуск: уважительная причина (${att.reason || "Справка"})`;
+            cellBg = "bg-indigo-50/20 hover:bg-indigo-50/50";
+          } else if (isUnconfirmed) {
+            tooltip += ` · Пропуск: Не подтверждён (требуется справка)`;
+            cellBg = "bg-rose-50/30 hover:bg-rose-50/60";
+          } else if (grade) {
             tooltip += ` · Оценка: ${grade.value} (Учитель: ${grade.teacher || "Предметник"})`;
           } else if (att && (att.value === "present" || att.code === "Был")) {
             tooltip += " · Присутствовал на уроке";
           }
 
+          if (isSubjectTeacher) {
+            if (isClosed) {
+              const badgeColor = isAbsent
+                ? (isExcused ? "bg-indigo-50 text-indigo-700 border-indigo-200" : "bg-rose-50 text-rose-700 border-rose-300")
+                : grade
+                  ? "bg-slate-100 text-slate-800 border-slate-300"
+                  : "bg-slate-50 text-slate-400 border-slate-200";
+              cellContent = `
+                <div class="flex items-center justify-center space-x-1" title="Урок завершён. Изменение и удаление недоступно">
+                  <input type="text"
+                         class="grade-input w-7 h-7 text-center text-xs font-bold rounded-lg border border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed select-none pointer-events-none"
+                         value="${grade ? grade.value : ''}"
+                         disabled
+                         data-lesson-id="${l.id}"
+                         data-student-id="${s.id}"
+                         title="Урок завершён. Изменение и удаление оценок недоступно" />
+                  ${isAbsent ? `<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1 text-[10px] font-bold rounded ${badgeColor}">${isExcused ? 'Б' : 'Н'}</span>` : ''}
+                </div>
+              `;
+            } else {
+              if (isAbsent) {
+                cellContent = `
+                  <div class="flex items-center justify-center space-x-1">
+                    <input type="text"
+                           class="grade-input w-7 h-7 text-center text-xs font-bold rounded-lg border border-slate-200 bg-slate-100 text-slate-500 hover:bg-slate-200/70 hover:border-slate-300 transition-colors cursor-pointer select-none"
+                           value=""
+                           disabled
+                           data-lesson-id="${l.id}"
+                           data-student-id="${s.id}"
+                           placeholder="—"
+                           title="Ученик отсутствовал. Кликните для открытия карточки записи" />
+                    <button type="button"
+                            class="btn-toggle-absence inline-flex items-center justify-center min-w-[22px] h-6 px-1 text-xs font-bold rounded-lg border shadow-2xs transition-all ${isExcused ? 'bg-indigo-50 text-indigo-700 border-indigo-200 cursor-not-allowed' : 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100 cursor-pointer'}"
+                            data-lesson-id="${l.id}"
+                            data-student-id="${s.id}"
+                            data-status="${isExcused ? 'confirmed' : 'unconfirmed'}"
+                            title="${isExcused ? 'Причина подтверждена классным руководителем' : 'Отсутствовал (нажмите, чтобы снять отметку)'}">
+                      ${isExcused ? 'Б' : 'Н'}
+                    </button>
+                  </div>
+                `;
+              } else {
+                cellContent = `
+                  <div class="flex items-center justify-center space-x-1">
+                    <input type="text"
+                           class="grade-input w-7 h-7 text-center text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-900 hover:border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none transition-all"
+                           value="${grade ? grade.value : ''}"
+                           maxlength="1"
+                           data-lesson-id="${l.id}"
+                           data-student-id="${s.id}"
+                           placeholder="—"
+                           title="Оценка (2, 3, 4, 5)" />
+                    <button type="button"
+                            class="btn-toggle-absence inline-flex items-center justify-center w-5 h-6 text-[10px] font-bold text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
+                            data-lesson-id="${l.id}"
+                            data-student-id="${s.id}"
+                            data-status="present"
+                            title="Отметить отсутствие ('Н')">
+                      Н
+                    </button>
+                  </div>
+                `;
+              }
+            }
+          } else {
+            if (isExcused) {
+              cellContent = `
+                <span class="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200/80 shadow-2xs"
+                      title="Уважительная причина: ${att.reason || 'Болезнь / справка'}">
+                  Б
+                </span>
+              `;
+            } else if (isUnconfirmed) {
+              cellContent = `
+                <span class="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-lg bg-rose-50 text-rose-700 border border-rose-300 shadow-2xs"
+                      title="Отсутствовал (причина не подтверждена, требуется справка)">
+                  Н
+                </span>
+              `;
+            } else if (grade) {
+              let badgeClass = "bg-slate-100 text-slate-700 border-slate-200";
+              if (grade.value === 5)
+                badgeClass = "bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs";
+              else if (grade.value === 4)
+                badgeClass = "bg-blue-50 text-blue-800 border-blue-300 shadow-2xs";
+              else if (grade.value === 3)
+                badgeClass = "bg-amber-50 text-amber-800 border-amber-300 shadow-2xs";
+              else if (grade.value === 2)
+                badgeClass = "bg-rose-50 text-rose-800 border-rose-300 shadow-2xs";
+
+              cellContent = `
+                <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold rounded-lg border ${badgeClass}">
+                  ${grade.value}
+                </span>
+              `;
+            } else {
+              cellContent = '<span class="text-slate-300 font-light select-none">·</span>';
+            }
+          }
+
           const commentIndicator = hasComments
-            ? `<span class="indicator-comment absolute top-1 right-1 w-2 h-2 rounded-full bg-brand-500 ring-2 ring-white" title="Комментарии: ${comments.length}"></span>`
+            ? `<span class="indicator-comment absolute top-1 right-1 w-2 h-2 rounded-full bg-brand-500 ring-2 ring-white pointer-events-none" title="Комментарии: ${comments.length}"></span>`
             : "";
 
-          const isUnconfirmed =
-            att &&
-            att.value === "absent" &&
-            (att.status === "unconfirmed" ||
-              att.status === "unexcused" ||
-              att.code === "Н");
           const cellStatusClass = isUnconfirmed
             ? "journal-cell-unconfirmed"
             : "journal-cell-normal";
 
           return `
-        <td class="p-1 text-center border-b border-slate-200 border-r border-slate-100 relative cursor-pointer ${cellBg} transition-all cell-journal-entry ${cellStatusClass}"
-            data-lesson-id="${l.id}"
-            data-student-id="${s.id}"
-            title="${tooltip}">
-          <div class="flex items-center justify-center min-h-[30px] w-full">
-            ${cellContent}
-            ${commentIndicator}
-          </div>
-        </td>
-      `;
+            <td class="p-1 text-center border-b border-slate-200 border-r border-slate-100 relative cursor-pointer ${cellBg} transition-all cell-journal-entry ${cellStatusClass}"
+                data-lesson-id="${l.id}"
+                data-student-id="${s.id}"
+                title="${tooltip}">
+              <div class="flex items-center justify-center min-h-[30px] w-full">
+                ${cellContent}
+                ${commentIndicator}
+              </div>
+            </td>
+          `;
         })
         .join("");
 
@@ -318,9 +423,11 @@ export function renderJournalView(options = {}) {
         <td class="px-3.5 py-2.5 text-xs font-semibold text-slate-900 border-b border-slate-200 border-r border-slate-200 sticky left-0 bg-white group-hover:bg-slate-50 z-10 min-w-[210px] whitespace-nowrap shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
           <div class="flex items-center space-x-2.5">
             <span class="w-6 text-center text-slate-400 font-semibold flex-shrink-0">${idx + 1}</span>
-            <a href="/overview?student=${s.id}" class="hover:text-brand-600 transition-colors truncate font-semibold text-slate-900">
-              ${s.fullName}
-            </a>
+            ${
+              isSubjectTeacher
+                ? `<span class="truncate font-semibold text-slate-900">${s.fullName}</span>`
+                : `<a href="/overview?student=${s.id}" class="hover:text-brand-600 transition-colors truncate font-semibold text-slate-900">${s.fullName}</a>`
+            }
           </div>
         </td>
         <td class="px-2.5 py-2.5 text-xs text-center border-b border-slate-200 border-r border-slate-200 bg-slate-50/50 font-bold whitespace-nowrap ${studentAvg !== "—" && parseFloat(studentAvg) < 3.5 ? "text-amber-700 bg-amber-50/30" : "text-slate-800"}">
@@ -355,11 +462,23 @@ export function renderJournalView(options = {}) {
         </div>
 
         <div class="flex items-center space-x-2.5">
-          <a href="/attendance"
-             class="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors shadow-xs">
-            ${renderIcon("check-square", "w-4 h-4 text-brand-500")}
-            <span>Подтверждение пропусков</span>
-          </a>
+          ${
+            isSubjectTeacher
+              ? `
+            <button type="button" id="btn-save-journal"
+                    class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer">
+              ${renderIcon("check-square", "w-4 h-4 text-white")}
+              <span>Сохранить</span>
+            </button>
+          `
+              : `
+            <a href="/attendance"
+               class="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors shadow-xs">
+              ${renderIcon("check-square", "w-4 h-4 text-brand-500")}
+              <span>Подтверждение пропусков</span>
+            </a>
+          `
+          }
         </div>
       </div>
 
@@ -406,19 +525,39 @@ export function renderJournalView(options = {}) {
           <div>
             <label for="select-journal-subject" class="block text-xs font-semibold text-slate-700 mb-1.5">Предмет</label>
             <div class="relative">
-              <select id="select-journal-subject"
-                      class="w-full appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
-                <option value="all" ${selectedSubjectId === "all" ? "selected" : ""}>Все предметы (сводный журнал)</option>
-                ${subjects
-                  .map(
-                    (sub) => `
-                  <option value="${sub.id}" ${selectedSubjectId === sub.id ? "selected" : ""}>
-                    ${sub.name} (${sub.teacher || "Учитель"})
-                  </option>
-                `,
-                  )
-                  .join("")}
-              </select>
+              ${
+                isSubjectTeacher
+                  ? `
+                <select id="select-journal-subject"
+                        ${availableSubjectsForUser.length <= 1 ? "disabled" : ""}
+                        class="w-full appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-slate-200 ${availableSubjectsForUser.length <= 1 ? "bg-slate-100 text-slate-600 cursor-not-allowed select-none" : "bg-white hover:border-slate-300 cursor-pointer text-slate-800"} text-xs font-medium focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all">
+                  ${availableSubjectsForUser
+                    .map(
+                      (sub) => `
+                    <option value="${sub.id}" ${selectedSubjectId === sub.id || availableSubjectsForUser.length === 1 ? "selected" : ""}>
+                      ${sub.name} (${sub.teacher || "Учитель"})
+                    </option>
+                  `,
+                    )
+                    .join("")}
+                </select>
+                `
+                  : `
+                <select id="select-journal-subject"
+                        class="w-full appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                  <option value="all" ${selectedSubjectId === "all" ? "selected" : ""}>Все предметы (сводный журнал)</option>
+                  ${subjects
+                    .map(
+                      (sub) => `
+                    <option value="${sub.id}" ${selectedSubjectId === sub.id ? "selected" : ""}>
+                      ${sub.name} (${sub.teacher || "Учитель"})
+                    </option>
+                  `,
+                    )
+                    .join("")}
+                </select>
+                `
+              }
               <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                 ${renderIcon("chevron-down", "w-4 h-4")}
               </div>
@@ -657,7 +796,7 @@ export function renderJournalView(options = {}) {
                 <p class="text-[11px] text-slate-500 mt-0.5">Ученик класса · Полная сводка успеваемости</p>
               </div>
             </div>
-            <a id="entry-modal-student-link" href="/overview" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-brand-50 text-brand-600 border border-slate-200 text-xs font-semibold transition-colors flex items-center space-x-1 flex-shrink-0 shadow-sm">
+            <a id="entry-modal-student-link" href="/overview" class="${isSubjectTeacher ? "hidden " : ""}px-2.5 py-1.5 rounded-xl bg-white hover:bg-brand-50 text-brand-600 border border-slate-200 text-xs font-semibold transition-colors flex items-center space-x-1 flex-shrink-0 shadow-sm">
               <span>Профиль</span>
               ${renderIcon("external-link", "w-3.5 h-3.5")}
             </a>

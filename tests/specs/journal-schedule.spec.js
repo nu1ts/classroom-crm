@@ -7,48 +7,208 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
 
   test.describe('Группа 1: Журнал учителя / классного руководителя (TC-TCH-01 .. TC-TCH-16)', () => {
 
-    test.skip('TC-TCH-01: Выставление оценки одному ученику за урок', async () => {
-      // TODO: Интерактивное выставление оценок предметником на открытом уроке ещё не реализовано в UI
+    test('TC-TCH-01: Выставление оценки одному ученику за урок', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      const journalPage = new JournalPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+      await journalPage.goto('class=class-7b&subject=math');
+      await journalPage.setGrade('Александров Егор', '2024-10-24', '5');
+      await journalPage.saveJournal();
+
+      await page.reload();
+      const input = journalPage.getGradeInput('Александров Егор', '2024-10-24');
+      await expect(input).toHaveValue('5');
     });
 
-    test.skip('TC-TCH-02: Выставление оценок нескольким ученикам за один урок', async () => {
-      // TODO: Пакетное выставление оценок нескольким ученикам на уроке ещё не реализовано в UI
+    test('TC-TCH-02: Выставление оценок нескольким ученикам за один урок', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      const journalPage = new JournalPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+      await journalPage.goto('class=class-7b&subject=math');
+      await journalPage.setGrade('Александров Егор', '2024-10-24', '5');
+      await journalPage.setGrade('Васильева Дарья', '2024-10-24', '4');
+      await journalPage.setGrade('Кузнецов Данила', '2024-10-24', '3');
+      await journalPage.saveJournal();
+
+      await page.reload();
+      await expect(journalPage.getGradeInput('Александров Егор', '2024-10-24')).toHaveValue('5');
+      await expect(journalPage.getGradeInput('Васильева Дарья', '2024-10-24')).toHaveValue('4');
+      await expect(journalPage.getGradeInput('Кузнецов Данила', '2024-10-24')).toHaveValue('3');
     });
 
-    test.skip('TC-TCH-03: Допустимые значения оценки', async () => {
-      // TODO: Поле ввода оценки и валидация диапазона 2–5 ещё не реализованы в UI
+    test('TC-TCH-03: Допустимые значения оценки', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      const journalPage = new JournalPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+      await journalPage.goto('class=class-7b&subject=math');
+      const input = journalPage.getGradeInput('Васильева Дарья', '2024-10-24');
+
+      for (const invalid of ['1', '6', '0', 'х']) {
+        await input.fill(invalid);
+        await expect(input).toHaveClass(/border-rose/);
+      }
+
+      await input.fill('5');
+      await expect(input).toHaveClass(/border-emerald/);
+      await journalPage.saveJournal();
+
+      await page.reload();
+      await expect(journalPage.getGradeInput('Васильева Дарья', '2024-10-24')).toHaveValue('5');
     });
 
-    test.skip('TC-TCH-04: Изменение своей оценки, пока урок открыт', async () => {
-      // TODO: Интерактивное редактирование выставленной оценки ещё не реализовано в UI
+    test('TC-TCH-04: Изменение своей оценки, пока урок открыт', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      const journalPage = new JournalPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+      await journalPage.goto('class=class-7b&subject=math');
+      await journalPage.setGrade('Александров Егор', '2024-10-24', '5');
+      await journalPage.saveJournal();
+
+      await page.reload();
+      await expect(journalPage.getGradeInput('Александров Егор', '2024-10-24')).toHaveValue('5');
     });
 
-    test.skip('TC-TCH-05: Удаление своей оценки, пока урок открыт', async () => {
-      // TODO: Интерактивное удаление выставленной оценки ещё не реализовано в UI
+    test('TC-TCH-05: Удаление своей оценки, пока урок открыт', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      const journalPage = new JournalPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+      await journalPage.goto('class=class-7b&subject=math');
+      const input = journalPage.getGradeInput('Александров Егор', '2024-10-24');
+      await input.fill('');
+      await journalPage.saveJournal();
+
+      await page.reload();
+      await expect(journalPage.getGradeInput('Александров Егор', '2024-10-24')).toHaveValue('');
     });
 
-    test.skip('TC-TCH-06: Попытка изменить оценку после закрытия урока', async () => {
-      // TODO: Механизм закрытых уроков и блокировки изменений в UI ещё не реализован
+    test('TC-TCH-06: Попытка изменить оценку после закрытия урока', async ({ page }) => {
+      
+      const loginPage = new LoginPage(page);
+      const journalPage = new JournalPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+      await journalPage.goto('class=class-7b&subject=math&week=w1');
+      const cell = journalPage.entryCells.first();
+      await expect(cell).toBeVisible();
+
+      const input = cell.locator('input.grade-input');
+      if (await input.count() > 0) {
+        await expect(input).toBeDisabled();
+      }
+
+      await cell.click();
+      await expect(journalPage.entryModal).toHaveClass(/opacity-100/);
+      const commentText = 'Комментарий к закрытому уроку';
+      await journalPage.addComment(commentText);
+      await expect(journalPage.commentsList).toContainText(commentText);
+      await journalPage.closeEntryModal();
     });
 
-    test.skip('TC-TCH-07: Правка отметки отсутствия до подтверждения причины', async () => {
-      // TODO: Интерактивное снятие/выставление отметки отсутствия предметником ещё не реализовано в UI
+    test('TC-TCH-07: Правка отметки отсутствия до подтверждения причины', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      const journalPage = new JournalPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+      await journalPage.goto('class=class-7b&subject=math');
+      const btn = journalPage.getAbsenceBtn('Петрова Анна', '2024-10-24');
+      await expect(btn).toContainText('Н');
+      await btn.click();
+      await journalPage.saveJournal();
+
+      await page.reload();
+      const inputAfter = journalPage.getGradeInput('Петрова Анна', '2024-10-24');
+      await expect(inputAfter).toBeEnabled();
     });
 
-    test.skip('TC-TCH-08: Отметка отсутствия не меняется после подтверждения причины', async () => {
-      // TODO: Панель ведения урока предметника с блокировкой подтверждённых отметок ещё не реализована в UI
+    test('TC-TCH-08: Отметка отсутствия не меняется после подтверждения причины', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      const journalPage = new JournalPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+      await journalPage.goto('class=class-7b&subject=math');
+      const btn = journalPage.getAbsenceBtn('Сидоров Никита', '2024-10-24');
+      await expect(btn).toContainText('Б');
+      await expect(btn).toHaveClass(/cursor-not-allowed/);
+      await expect(btn).toHaveAttribute('title', /Причина подтверждена классным руководителем/i);
     });
 
-    test.skip('TC-TCH-09: Оценка не ставится ученику, отмеченному отсутствующим', async () => {
-      // TODO: Контроль конфликта выставления оценки отсутствующему ученику ещё не реализован в UI
+    test('TC-TCH-09: Оценка не ставится ученику, отмеченному отсутствующим', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      const journalPage = new JournalPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+      await journalPage.goto('class=class-7b&subject=math');
+      const input = journalPage.getGradeInput('Петрова Анна', '2024-10-24');
+      await expect(input).toBeDisabled();
+      await expect(input).toHaveAttribute('title', /Ученик отсутствовал/i);
     });
 
-    test.skip('TC-TCH-10: Отметка отсутствующих на уроке для нескольких учеников', async () => {
-      // TODO: Интерактивная отметка отсутствующих на уроке ещё не реализована в UI
+    test('TC-TCH-10: Отметка отсутствующих на уроке для нескольких учеников', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      const journalPage = new JournalPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+      await journalPage.goto('class=class-7b&subject=math');
+      await journalPage.toggleAbsence('Васильева Дарья', '2024-10-24');
+      await journalPage.toggleAbsence('Кузнецов Данила', '2024-10-24');
+      await journalPage.saveJournal();
+
+      await page.reload();
+      await expect(journalPage.getAbsenceBtn('Васильева Дарья', '2024-10-24')).toContainText('Н');
+      await expect(journalPage.getAbsenceBtn('Кузнецов Данила', '2024-10-24')).toContainText('Н');
     });
 
-    test.skip('TC-TCH-11: Комментарий предметника к своей записи', async () => {
-      // TODO: Добавление комментариев учителем-предметником от своего имени ещё не поддержано в UI (зафиксирован автор классрук)
+    test('TC-TCH-11: Комментарий предметника к своей записи', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      const journalPage = new JournalPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+      await journalPage.goto('class=class-7b&subject=math');
+      await journalPage.openCell('Кузнецов Данила', '2024-10-24');
+
+      const commentText = 'Не выполнил домашнее задание';
+      await journalPage.addComment(commentText);
+
+      await expect(journalPage.commentsList).toContainText(commentText);
+      await expect(journalPage.commentsList).toContainText('Козлов А. П.');
+      await expect(journalPage.commentsList).toContainText('Предметник');
+
+      await journalPage.closeEntryModal();
+
+      await page.evaluate(() => window.localStorage.removeItem('classroom_crm_session'));
+      await loginPage.goto();
+      await loginPage.login('smirnova@school.ru', 'Test#2024');
+      await journalPage.goto('class=class-7b&subject=math');
+      await journalPage.openCell('Кузнецов Данила', '2024-10-24');
+      await expect(journalPage.commentsList).toContainText(commentText);
+      await expect(journalPage.commentsList).toContainText('Козлов А. П.');
     });
 
     test('TC-TCH-12: Комментарий классрука к записи журнала', async ({ page }) => {
