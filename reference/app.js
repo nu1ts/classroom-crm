@@ -21357,31 +21357,29 @@
     "announcements": [
       {
         "id": "anc-01",
-        "title": "Организационное собрание по экскурсии",
-        "date": "2024-10-28",
+        "title": "Родительское собрание 31 октября",
+        "date": "2024-10-25",
         "author": "Смирнова М. В.",
-        "content": "Уважаемые родители, просим ознакомиться с планом экскурсионной поездки в Музей Космонавтики. Сбор согласий до среды.",
-        "target": "parents",
-        "status": "published",
-        "surveyId": "srv-01"
-      },
-      {
-        "id": "anc-02",
-        "title": "График дежурства на ноябрь",
-        "date": "2024-10-27",
-        "author": "Смирнова М. В.",
-        "content": "Ребята, опубликован новый график дежурства по классу на ноябрь. Проверьте свои дни дежурства.",
-        "target": "students",
+        "classId": "class-7b",
+        "target": "all",
+        "content": "Уважаемые родители и ученики! 31 октября в 18:30 в Каб. 302 состоится родительское собрание по итогам первой четверти 7Б класса. Повестка: 1) Результаты первой четверти класса 7Б. 2) Проблемы с посещаемостью и успеваемостью. 3) Безопасность на осенних каникулах.",
+        "readBy": ["st-01", "st-02", "st-03", "st-04", "st-05", "st-06", "st-07", "st-08", "st-09", "st-10", "st-11", "st-12", "st-13", "st-14", "st-15", "st-16", "st-17", "st-18", "st-19"],
+        "readCount": 19,
+        "totalCount": 28,
         "status": "published"
       },
       {
-        "id": "anc-03",
-        "title": "Подготовка к новогоднему вечеру",
-        "date": "2024-10-26",
+        "id": "anc-02",
+        "title": "Каникулы с 28 октября по 5 ноября",
+        "date": "2024-10-24",
         "author": "Смирнова М. В.",
-        "content": "Обсуждение идей сценария праздника. Жду ваши предложения по ролям и музыкальному оформлению.",
-        "target": "students",
-        "status": "draft"
+        "classId": "class-7b",
+        "target": "all",
+        "content": "Осенние каникулы продлятся с 28 октября по 5 ноября 2024 года. Начало занятий во второй четверти — 6 ноября 2024 года. Просьба соблюдать режим и правила безопасности.",
+        "readBy": ["st-01", "st-02", "st-03", "st-04", "st-05", "st-06", "st-07", "st-08", "st-09", "st-10", "st-11", "st-12", "st-13", "st-14", "st-15", "st-16", "st-17", "st-18", "st-19", "st-20", "st-21", "st-22"],
+        "readCount": 22,
+        "totalCount": 28,
+        "status": "published"
       }
     ]
   };
@@ -23489,8 +23487,7 @@
           title: "Объявления",
           path: "/announcements",
           icon: "megaphone"
-        },
-        { id: "nav-profile", title: "Профиль", path: "/profile", icon: "user" }
+        }
       ],
       allowedRoutes: ["/child", "/schedule", "/announcements", "/profile"]
     },
@@ -23991,8 +23988,8 @@
 
       <div class="p-3 border-t border-slate-800/80 bg-slate-900/40">
         <div class="flex items-center justify-between p-2 rounded-xl hover:bg-brand-sidebarHover/80 transition-colors">
-          <a href="/profile" id="sidebar-profile-link" data-profile-card class="flex items-center space-x-3 overflow-hidden flex-1 group ${currentUser.role === "subject_teacher" ? "nav-profile-alias" : ""}">
-            ${currentUser.role === "subject_teacher" ? '<span id="nav-profile" class="sr-only">Профиль</span>' : ""}
+          <a href="/profile" id="sidebar-profile-link" data-profile-card class="flex items-center space-x-3 overflow-hidden flex-1 group ${currentUser.role === "subject_teacher" || currentUser.role === "parent" ? "nav-profile-alias" : ""}">
+            ${currentUser.role === "subject_teacher" || currentUser.role === "parent" ? '<span id="nav-profile" class="sr-only">Профиль</span>' : ""}
             <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-600 to-sky-500 flex items-center justify-center text-white font-semibold text-xs shadow-inner flex-shrink-0">
               ${initials}
             </div>
@@ -24127,6 +24124,269 @@
       </a>
     </div>
   `;
+  }
+
+  // src/views/announcements/render.js
+  function formatDateRu(isoDate) {
+    if (!isoDate) return "";
+    const [yyyy, mm, dd] = isoDate.split("-");
+    return `${dd}.${mm}.${yyyy}`;
+  }
+  function renderAnnouncementsView() {
+    const currentUser = getCurrentUser();
+    const db = getDB();
+    const isTeacher = currentUser && currentUser.role === "teacher";
+    const isParent = currentUser && currentUser.role === "parent";
+    const isStudent = currentUser && currentUser.role === "student";
+    let targetClassId = "class-7b";
+    if (isParent) {
+      const child = (db.students || []).find((s) => s.id === currentUser.childStudentId);
+      targetClassId = child && child.classId || currentUser.classId || "class-7b";
+    } else if (currentUser && currentUser.classId) {
+      targetClassId = currentUser.classId;
+    }
+    const className = targetClassId === "class-7b" ? "7Б" : "7Б";
+    const announcements = (db.announcements || []).filter(
+      (a) => (!a.classId || a.classId === targetClassId || a.target === "all") && a.status !== "deleted"
+    );
+    return `
+    <div class="space-y-6 max-w-5xl mx-auto">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90">
+        <div>
+          <div class="flex items-center space-x-3">
+            <h1 id="announcements-page-title" class="text-2xl font-black text-slate-900 tracking-tight">
+              Объявления ${className}
+            </h1>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200/70">
+              ${announcements.length} ${announcements.length === 1 ? "объявление" : announcements.length > 1 && announcements.length < 5 ? "объявления" : "объявлений"}
+            </span>
+          </div>
+          <p id="announcements-page-subtitle" class="text-xs font-semibold text-slate-500 mt-1">
+            Читают родители и ученики класса
+          </p>
+        </div>
+
+        ${isTeacher ? `
+          <button id="btn-create-announcement"
+                  class="inline-flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer">
+            ${renderIcon("plus", "w-4 h-4")}
+            <span>Новое объявление</span>
+          </button>
+        ` : ""}
+      </div>
+
+      ${announcements.length === 0 ? `
+        <div id="announcements-empty-state" class="bg-white rounded-3xl p-12 text-center border border-slate-200/90 shadow-xs">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+            </svg>
+          </div>
+          <h3 class="text-base font-bold text-slate-900 mb-1">
+            ${isTeacher ? "Объявлений пока нет. Опубликуйте первое — его увидят родители и ученики класса" : "Объявлений пока нет"}
+          </h3>
+          <p class="text-xs text-slate-500 max-w-sm mx-auto font-medium">
+            ${isTeacher ? "Здесь будут отображаться важные сообщения и уведомления для родителей и учеников 7Б класса." : "Когда классный руководитель опубликует объявление, оно сразу появится в этой ленте."}
+          </p>
+        </div>
+      ` : `
+        <div id="announcements-list" class="space-y-4">
+          ${announcements.map((item) => {
+      const dateStr = item.date.includes("-") ? formatDateRu(item.date) : item.date;
+      const hasRead = currentUser && item.readBy && (item.readBy.includes(currentUser.id) || currentUser.childStudentId && item.readBy.includes(currentUser.childStudentId));
+      return `
+              <article class="announcement-card bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90 transition-all hover:border-slate-300 relative"
+                       data-id="${item.id}">
+                
+                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
+                  <div class="space-y-1.5 flex-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="announcement-target inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/70">
+                        Адресовано классу ${className}
+                      </span>
+                      ${hasRead ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/70">Прочитано вами</span>` : ""}
+                    </div>
+
+                    <h2 class="announcement-title text-lg font-bold text-slate-900 tracking-tight leading-snug">
+                      ${item.title}
+                    </h2>
+                  </div>
+
+                  <div class="text-right shrink-0">
+                    <span class="announcement-reads text-xs font-semibold text-slate-500 block">
+                      прочитали ${Math.min(item.totalCount || 28, item.readCount || 0)} из ${item.totalCount || 28}
+                    </span>
+                    <span class="announcement-date text-[11px] text-slate-400 font-medium block mt-0.5">
+                      ${dateStr}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="announcement-text text-xs leading-relaxed text-slate-700 font-medium line-clamp-3 mb-4">
+                  ${item.content}
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs">
+                  <div class="flex items-center space-x-2 text-slate-500 font-medium text-[11px]">
+                    <span class="announcement-author font-semibold text-slate-700">Автор: ${item.author || "Смирнова М. В."}</span>
+                  </div>
+
+                  <div class="flex items-center space-x-3">
+                    <button type="button"
+                            class="btn-read-full inline-flex items-center space-x-1 font-semibold text-brand-600 hover:text-brand-700 transition-colors cursor-pointer"
+                            data-id="${item.id}">
+                      <span>Читать полностью</span>
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                      </svg>
+                    </button>
+
+                    ${isTeacher ? `
+                      <button type="button"
+                              class="btn-edit-announcement text-slate-600 hover:text-slate-900 font-semibold px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                              data-id="${item.id}">
+                        Изменить
+                      </button>
+                      <button type="button"
+                              class="btn-delete-announcement text-rose-600 hover:text-rose-700 font-semibold px-2 py-1 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                              data-id="${item.id}">
+                        Удалить
+                      </button>
+                    ` : ""}
+                  </div>
+                </div>
+              </article>
+            `;
+    }).join("")}
+        </div>
+      `}
+    </div>
+
+    <div id="modal-announcement-detail" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-slate-200/90 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+          <div class="space-y-1">
+            <span id="modal-announcement-target" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/70">
+              Адресовано классу ${className}
+            </span>
+            <h3 id="modal-announcement-title" class="text-base font-bold text-slate-900"></h3>
+          </div>
+          <button id="btn-close-announcement-modal" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between text-2xs text-slate-400 font-semibold">
+          <span id="modal-announcement-author" class="text-slate-600"></span>
+          <span id="modal-announcement-date"></span>
+        </div>
+
+        <div id="modal-announcement-content" class="text-xs leading-relaxed text-slate-700 font-medium whitespace-pre-line py-2">
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+          <span id="modal-announcement-reads" class="text-xs font-semibold text-slate-500"></span>
+          <button id="btn-modal-dismiss" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
+            Закрыть
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  }
+
+  // src/views/announcements/listeners.js
+  function formatDateRu2(isoDate) {
+    if (!isoDate) return "";
+    const [yyyy, mm, dd] = isoDate.split("-");
+    return `${dd}.${mm}.${yyyy}`;
+  }
+  function setupAnnouncementsListeners(navigate2) {
+    const currentUser = getCurrentUser();
+    const db = getDB();
+    const modal = document.getElementById("modal-announcement-detail");
+    const modalTitle = document.getElementById("modal-announcement-title");
+    const modalContent = document.getElementById("modal-announcement-content");
+    const modalAuthor = document.getElementById("modal-announcement-author");
+    const modalDate = document.getElementById("modal-announcement-date");
+    const modalReads = document.getElementById("modal-announcement-reads");
+    const closeModal2 = () => {
+      if (modal) {
+        modal.classList.add("hidden");
+      }
+    };
+    const btnClose = document.getElementById("btn-close-announcement-modal");
+    if (btnClose) {
+      btnClose.addEventListener("click", closeModal2);
+    }
+    const btnDismiss = document.getElementById("btn-modal-dismiss");
+    if (btnDismiss) {
+      btnDismiss.addEventListener("click", closeModal2);
+    }
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          closeModal2();
+        }
+      });
+    }
+    document.querySelectorAll(".btn-read-full").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const currentDB = getDB();
+        const announcement = (currentDB.announcements || []).find((a) => a.id === id);
+        if (!announcement) return;
+        if (currentUser) {
+          if (!Array.isArray(announcement.readBy)) {
+            announcement.readBy = [];
+          }
+          const userKey = currentUser.id || currentUser.email;
+          if (!announcement.readBy.includes(userKey)) {
+            announcement.readBy.push(userKey);
+            announcement.readCount = announcement.readBy.length;
+            saveDB(currentDB);
+            const card = document.querySelector(`.announcement-card[data-id="${id}"]`);
+            if (card) {
+              const readsEl = card.querySelector(".announcement-reads");
+              if (readsEl) {
+                const safeReads = Math.min(announcement.totalCount || 28, announcement.readCount);
+                readsEl.textContent = `прочитали ${safeReads} из ${announcement.totalCount || 28}`;
+              }
+            }
+          }
+        }
+        if (modal && modalTitle && modalContent) {
+          modalTitle.textContent = announcement.title;
+          modalContent.textContent = announcement.content;
+          if (modalAuthor) modalAuthor.textContent = `Автор: ${announcement.author || "Смирнова М. В."}`;
+          if (modalDate) {
+            modalDate.textContent = announcement.date.includes("-") ? formatDateRu2(announcement.date) : announcement.date;
+          }
+          if (modalReads) {
+            const safeReads = Math.min(announcement.totalCount || 28, announcement.readCount || 0);
+            modalReads.textContent = `прочитали ${safeReads} из ${announcement.totalCount || 28}`;
+          }
+          modal.classList.remove("hidden");
+        }
+      });
+    });
+    document.querySelectorAll(".btn-delete-announcement").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        if (window.confirm("Удалить объявление?")) {
+          const currentDB = getDB();
+          currentDB.announcements = (currentDB.announcements || []).filter((a) => a.id !== id);
+          saveDB(currentDB);
+          if (navigate2) {
+            navigate2("announcements");
+          } else {
+            window.location.reload();
+          }
+        }
+      });
+    });
   }
 
   // src/views/classes/render.js
@@ -24666,7 +24926,7 @@
   }
 
   // src/views/child/render.js
-  function formatDateRu(dateStr) {
+  function formatDateRu3(dateStr) {
     if (!dateStr) return "";
     const parts = dateStr.split("-");
     if (parts.length === 3) {
@@ -24884,7 +25144,7 @@
               ${absencesByDateMap.size > 0 ? Array.from(absencesByDateMap.entries()).map(([date, recs]) => `
                 <div class="p-3 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center justify-between text-xs">
                   <div class="space-y-0.5">
-                    <span class="font-bold text-slate-800">${formatDateRu(date)}</span>
+                    <span class="font-bold text-slate-800">${formatDateRu3(date)}</span>
                     <p class="text-slate-500 text-2xs">
                       ${recs.map((r) => r.lesson ? r.lesson.subjectName : "Урок").join(", ")}
                     </p>
@@ -24916,7 +25176,7 @@
                         <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-1">
                           <span class="flex items-center space-x-1">
                             ${renderIcon("calendar", "w-3.5 h-3.5 text-indigo-500")}
-                            <span>${formatDateRu(mtg.date)} в ${mtg.time}</span>
+                            <span>${formatDateRu3(mtg.date)} в ${mtg.time}</span>
                           </span>
                           <span>&bull;</span>
                           <span>${mtg.room || "Каб. 302"}</span>
@@ -24944,7 +25204,7 @@
                     <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
                       <div>
                         <p class="font-semibold text-slate-800">${mtg.title}</p>
-                        <p class="text-slate-400 text-2xs mt-0.5">${formatDateRu(mtg.date)} &bull; ${mtg.room || "Каб. 302"}</p>
+                        <p class="text-slate-400 text-2xs mt-0.5">${formatDateRu3(mtg.date)} &bull; ${mtg.room || "Каб. 302"}</p>
                       </div>
                       <span class="text-2xs font-medium px-2 py-0.5 rounded-md bg-slate-200/80 text-slate-600">
                         Завершено
@@ -24966,7 +25226,7 @@
               <div class="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100/80 space-y-2.5">
                 <div class="flex items-center space-x-2 text-2xs text-slate-500 font-semibold">
                   ${renderIcon("calendar", "w-3.5 h-3.5 text-indigo-600")}
-                  <span>${latestAnnouncement.author || "Смирнова М. В."} &bull; ${formatDateRu(latestAnnouncement.date)}</span>
+                  <span>${latestAnnouncement.author || "Смирнова М. В."} &bull; ${formatDateRu3(latestAnnouncement.date)}</span>
                 </div>
                 <h3 class="text-xs font-bold text-slate-900 leading-snug">
                   ${latestAnnouncement.title}
@@ -30757,7 +31017,7 @@
   }
 
   // src/views/student-summary/helpers.js
-  function formatDateRu2(isoDate) {
+  function formatDateRu4(isoDate) {
     if (!isoDate) return "";
     const parts = isoDate.split("-");
     if (parts.length === 3) {
@@ -31017,7 +31277,7 @@
 
             <h1 class="text-lg font-bold text-slate-900 leading-snug">${student.fullName}</h1>
             <p class="text-xs text-slate-500 mt-1">
-              Дата рождения: ${formatDateRu2(student.birthDate)} (${calculateAge(student.birthDate)} лет)
+              Дата рождения: ${formatDateRu4(student.birthDate)} (${calculateAge(student.birthDate)} лет)
             </p>
 
             <div class="flex items-center justify-center gap-2 mt-3 flex-wrap">
@@ -31073,7 +31333,7 @@
                   <span>Напоминание о повторном контакте</span>
                 </div>
                 <div class="text-xs text-amber-900">
-                  Дата: <strong class="font-semibold">${formatDateRu2(pendingContact.nextContactDate)}</strong>
+                  Дата: <strong class="font-semibold">${formatDateRu4(pendingContact.nextContactDate)}</strong>
                 </div>
                 <div class="text-[11px] text-amber-700">
                   Договорённость ранее не была достигнута. Требуется контрольная беседа.
@@ -31162,7 +31422,7 @@
       const valClass = g.value >= 4 ? "text-emerald-600 font-bold" : g.value <= 2 ? "text-rose-600 font-bold" : "text-slate-800 font-bold";
       return `
                           <tr class="hover:bg-slate-50">
-                            <td class="py-2 text-slate-500">${formatDateRu2(g.date)}</td>
+                            <td class="py-2 text-slate-500">${formatDateRu4(g.date)}</td>
                             <td class="py-2 font-semibold text-slate-800">${subj ? subj.name : "—"}</td>
                             <td class="py-2 ${valClass} text-sm">${g.value}</td>
                             <td class="py-2 text-slate-500">${g.comment || g.topic || "Ответ на уроке"}</td>
@@ -31202,7 +31462,7 @@
       return `
                     <div class="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div class="flex items-center space-x-4">
-                        <div class="text-xs font-bold text-slate-900 min-w-[75px]">${formatDateRu2(date)}</div>
+                        <div class="text-xs font-bold text-slate-900 min-w-[75px]">${formatDateRu4(date)}</div>
                         <div class="text-xs text-slate-500 min-w-[100px]">${lessonText}</div>
                         <div class="text-xs text-slate-700">
                           ${displayText}
@@ -31271,7 +31531,7 @@
                     <div class="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/80 space-y-2">
                       <div class="flex items-center justify-between flex-wrap gap-2">
                         <div class="flex items-center space-x-2">
-                          <span class="text-xs font-bold text-slate-900">${formatDateRu2(c.date)}</span>
+                          <span class="text-xs font-bold text-slate-900">${formatDateRu4(c.date)}</span>
                           <span class="text-slate-400 text-xs">·</span>
                           <span class="text-xs text-slate-500">Автор: <strong class="text-slate-700 font-semibold">${c.author || "Смирнова М. В."}</strong></span>
                         </div>
@@ -31295,7 +31555,7 @@
                           </span>
                         ` : c.nextContactDate ? `
                           <span class="inline-flex items-center text-[10px] font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                            ${renderIcon("calendar", "w-3 h-3 mr-1 text-amber-600")} Повторный контакт: ${formatDateRu2(c.nextContactDate)}
+                            ${renderIcon("calendar", "w-3 h-3 mr-1 text-amber-600")} Повторный контакт: ${formatDateRu4(c.nextContactDate)}
                           </span>
                         ` : `
                           <span class="inline-flex items-center text-[10px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
@@ -36551,7 +36811,7 @@
   function escapeHtml5(text) {
     return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
-  function formatDateRu3(dateStr) {
+  function formatDateRu5(dateStr) {
     if (!dateStr || typeof dateStr !== "string") return "";
     const parts = dateStr.split("-");
     if (parts.length !== 3) return dateStr;
@@ -36607,7 +36867,7 @@
           <span class="quarter-name">${escapeHtml5(q.name)}</span>
         </td>
         <td class="py-3.5 px-4 font-medium text-slate-800 quarter-dates">
-          ${formatDateRu3(q.startDate)} – ${formatDateRu3(q.endDate)}
+          ${formatDateRu5(q.startDate)} – ${formatDateRu5(q.endDate)}
         </td>
         <td class="py-3.5 px-4 text-slate-500">
           ${getDurationText(q.startDate, q.endDate)}
@@ -36658,7 +36918,7 @@
           </button>
         </div>
         <div class="text-xs font-semibold text-slate-700 mt-1.5">
-          ${formatDateRu3(v.startDate)} – ${formatDateRu3(v.endDate)}
+          ${formatDateRu5(v.startDate)} – ${formatDateRu5(v.endDate)}
         </div>
         <div class="text-[11px] text-slate-500 mt-0.5">
           ${getDurationText(v.startDate, v.endDate)}
@@ -36724,7 +36984,7 @@
               ${escapeHtml5(activeYear ? activeYear.name : "Не выбран")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-active-year-dates">
-              ${activeYear ? `${formatDateRu3(activeYear.startDate)} – ${formatDateRu3(activeYear.endDate)}` : "—"}
+              ${activeYear ? `${formatDateRu5(activeYear.startDate)} – ${formatDateRu5(activeYear.endDate)}` : "—"}
             </div>
           </div>
         </div>
@@ -36741,7 +37001,7 @@
               ${escapeHtml5(activePeriod.name || "I четверть")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-active-quarter-dates">
-              ${formatDateRu3(activePeriod.startDate)} – ${formatDateRu3(activePeriod.endDate)}
+              ${formatDateRu5(activePeriod.startDate)} – ${formatDateRu5(activePeriod.endDate)}
             </div>
           </div>
         </div>
@@ -36756,7 +37016,7 @@
               ${escapeHtml5(upcomingVacation ? upcomingVacation.name : "Каникулы не запланированы")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-upcoming-vacation-dates">
-              ${upcomingVacation ? `${formatDateRu3(upcomingVacation.startDate)} – ${formatDateRu3(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—"}
+              ${upcomingVacation ? `${formatDateRu5(upcomingVacation.startDate)} – ${formatDateRu5(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—"}
             </div>
           </div>
         </div>
@@ -37133,19 +37393,19 @@
         kpiActiveYear.textContent = activeYear ? activeYear.name : "Не выбран";
       const kpiActiveYearDates = document.getElementById("kpi-active-year-dates");
       if (kpiActiveYearDates)
-        kpiActiveYearDates.textContent = activeYear ? `${formatDateRu3(activeYear.startDate)} – ${formatDateRu3(activeYear.endDate)}` : "—";
+        kpiActiveYearDates.textContent = activeYear ? `${formatDateRu5(activeYear.startDate)} – ${formatDateRu5(activeYear.endDate)}` : "—";
       const kpiQuarterName = document.getElementById("kpi-active-quarter-name");
       if (kpiQuarterName)
         kpiQuarterName.textContent = activePeriod.name || "I четверть";
       const kpiQuarterDates = document.getElementById("kpi-active-quarter-dates");
       if (kpiQuarterDates)
-        kpiQuarterDates.textContent = `${formatDateRu3(activePeriod.startDate)} – ${formatDateRu3(activePeriod.endDate)}`;
+        kpiQuarterDates.textContent = `${formatDateRu5(activePeriod.startDate)} – ${formatDateRu5(activePeriod.endDate)}`;
       const kpiVacName = document.getElementById("kpi-upcoming-vacation-name");
       if (kpiVacName)
         kpiVacName.textContent = upcomingVacation ? upcomingVacation.name : "Каникулы не запланированы";
       const kpiVacDates = document.getElementById("kpi-upcoming-vacation-dates");
       if (kpiVacDates)
-        kpiVacDates.textContent = upcomingVacation ? `${formatDateRu3(upcomingVacation.startDate)} – ${formatDateRu3(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—";
+        kpiVacDates.textContent = upcomingVacation ? `${formatDateRu5(upcomingVacation.startDate)} – ${formatDateRu5(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—";
       const tabsContainer = document.getElementById("academic-years-tabs");
       if (tabsContainer)
         tabsContainer.innerHTML = renderYearTabsHtml(
@@ -37652,13 +37912,8 @@
     },
     "/announcements": {
       title: "Объявления",
-      render: () => renderPlaceholderView(
-        "Объявления",
-        "Информационные сообщения и объявления для родителей",
-        "/announcements"
-      ),
-      setup: () => {
-      }
+      render: () => renderAnnouncementsView(),
+      setup: (navigate2) => setupAnnouncementsListeners(navigate2)
     },
     "/analytics": {
       title: "Аналитика",

@@ -570,36 +570,135 @@ test.describe('Родители и Собрания', () => {
     // TODO: Раздел «Собрания» (#/meetings) в интерфейсе не реализован (является заглушкой)
   });
 
-  test.skip('TC-AN-01: Список объявлений класса', async () => {
-    // TODO: Раздел «Объявления» (#/announcements) в интерфейсе не реализован (является заглушкой)
+  test('TC-AN-01: Список объявлений класса', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('smirnova@school.ru', 'Test#2024');
+
+    await page.goto('announcements');
+    await expect(page.locator('#announcements-page-title')).toContainText('Объявления 7Б');
+    await expect(page.locator('#announcements-page-subtitle')).toContainText('Читают родители и ученики класса');
+    await expect(page.locator('#btn-create-announcement')).toBeVisible();
+
+    const cards = page.locator('.announcement-card');
+    await expect(cards).toHaveCount(2);
+
+    const firstCard = cards.filter({ hasText: 'Родительское собрание 31 октября' });
+    await expect(firstCard).toContainText('25.10.2024');
+    await expect(firstCard).toContainText('прочитали 19 из 28');
+    await expect(firstCard).toContainText('Адресовано классу 7Б');
+    await expect(firstCard.locator('.btn-read-full')).toBeVisible();
+    await expect(firstCard.locator('.btn-edit-announcement')).toBeVisible();
+    await expect(firstCard.locator('.btn-delete-announcement')).toBeVisible();
+
+    const secondCard = cards.filter({ hasText: 'Каникулы с 28 октября по 5 ноября' });
+    await expect(secondCard).toContainText('24.10.2024');
+    await expect(secondCard).toContainText('прочитали 22 из 28');
+    await expect(secondCard).toContainText('Адресовано классу 7Б');
   });
 
   test.skip('TC-AN-02: Публикация объявления', async () => {
-    // TODO: Раздел «Объявления» (#/announcements) в интерфейсе не реализован (является заглушкой)
+    // TODO: Будет реализовано в задаче классного руководителя
   });
 
   test.skip('TC-AN-03: Публикация без обязательных полей', async () => {
-    // TODO: Раздел «Объявления» (#/announcements) в интерфейсе не реализован (является заглушкой)
+    // TODO: Будет реализовано в задаче классного руководителя
   });
 
   test.skip('TC-AN-04: Изменение объявления', async () => {
-    // TODO: Раздел «Объявления» (#/announcements) в интерфейсе не реализован (является заглушкой)
+    // TODO: Будет реализовано в задаче классного руководителя
   });
 
-  test.skip('TC-AN-05: Удаление объявления и пустое состояние', async () => {
-    // TODO: Раздел «Объявления» (#/announcements) в интерфейсе не реализован (является заглушкой)
+  test('TC-AN-05: Удаление объявления и пустое состояние', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    const navPage = new NavigationPage(page);
+
+    await loginPage.goto();
+    await loginPage.login('smirnova@school.ru', 'Test#2024');
+
+    await page.goto('announcements');
+
+    const deleteButtons = page.locator('.btn-delete-announcement');
+    while (await deleteButtons.count() > 0) {
+      page.once('dialog', async (dialog) => {
+        await dialog.accept();
+      });
+      await deleteButtons.first().click();
+      await page.waitForTimeout(300);
+    }
+
+    await expect(page.locator('#announcements-empty-state')).toBeVisible();
+    await expect(page.locator('#announcements-empty-state')).toContainText('Объявлений пока нет');
+
+    await navPage.logout();
+    await loginPage.goto();
+    await loginPage.login('petrov@mail.ru', 'Test#2024');
+    await page.goto('announcements');
+    await expect(page.locator('#announcements-empty-state')).toBeVisible();
+    await expect(page.locator('#announcements-empty-state')).toContainText('Объявлений пока нет');
+
+    await navPage.logout();
+    await loginPage.goto();
+    await loginPage.login('petrova.a@school.ru', 'Test#2024');
+    await page.goto('announcements');
+    await expect(page.locator('#announcements-empty-state')).toBeVisible();
+    await expect(page.locator('#announcements-empty-state')).toContainText('Объявлений пока нет');
   });
 
-  test.skip('TC-AN-06: Объявление видят родители и ученики класса', async () => {
-    // TODO: Раздел «Объявления» (#/announcements) в интерфейсе не реализован (является заглушкой)
+  test('TC-AN-06: Объявление видят родители и ученики класса', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    const navPage = new NavigationPage(page);
+
+    await loginPage.goto();
+    await loginPage.login('petrov@mail.ru', 'Test#2024');
+
+    await page.goto('announcements');
+    await expect(page.locator('#announcements-page-title')).toContainText('Объявления 7Б');
+
+    await expect(page.locator('#btn-create-announcement')).toHaveCount(0);
+    await expect(page.locator('.btn-edit-announcement')).toHaveCount(0);
+    await expect(page.locator('.btn-delete-announcement')).toHaveCount(0);
+
+    const firstCard = page.locator('.announcement-card').filter({ hasText: 'Родительское собрание 31 октября' });
+    await expect(firstCard).toContainText('прочитали 19 из 28');
+
+    await firstCard.locator('.btn-read-full').click();
+    await expect(page.locator('#modal-announcement-detail')).toBeVisible();
+    await expect(page.locator('#modal-announcement-title')).toContainText('Родительское собрание 31 октября');
+    await expect(page.locator('#modal-announcement-reads')).toContainText('прочитали 20 из 28');
+
+    await page.locator('#btn-close-announcement-modal').click();
+    await expect(page.locator('#modal-announcement-detail')).toBeHidden();
+    await expect(firstCard).toContainText('прочитали 20 из 28');
+
+    await navPage.logout();
+    await loginPage.goto();
+    await loginPage.login('petrova.a@school.ru', 'Test#2024');
+
+    await page.goto('announcements');
+    const studentCard = page.locator('.announcement-card').filter({ hasText: 'Родительское собрание 31 октября' });
+    await expect(studentCard).toContainText('прочитали 20 из 28');
+
+    await studentCard.locator('.btn-read-full').click();
+    await expect(page.locator('#modal-announcement-detail')).toBeVisible();
+    await expect(page.locator('#modal-announcement-reads')).toContainText('прочитали 21 из 28');
+    await page.locator('#btn-modal-dismiss').click();
+    await expect(page.locator('#modal-announcement-detail')).toBeHidden();
+
+    await navPage.logout();
+    await loginPage.goto();
+    await loginPage.login('smirnova@school.ru', 'Test#2024');
+    await page.goto('announcements');
+    const teacherCard = page.locator('.announcement-card').filter({ hasText: 'Родительское собрание 31 октября' });
+    await expect(teacherCard).toContainText('прочитали 21 из 28');
   });
 
   test.skip('TC-AN-07: Удаление объявления не влияет на собрание', async () => {
-    // TODO: Раздел «Объявления» (#/announcements) в интерфейсе не реализован (является заглушкой)
+    // TODO: Будет реализовано в связке с разделом собраний
   });
 
   test.skip('TC-AN-08: Публикация объявления из карточки собрания', async () => {
-    // TODO: Раздел «Объявления» (#/announcements) в интерфейсе не реализован (является заглушкой)
+    // TODO: Будет реализовано в связке с разделом собраний
   });
 
 });
