@@ -61,6 +61,7 @@ export function setupMeetingsListeners(navigate) {
   setupSaveMeetingHandler(navigate);
   setupAttendanceHandlers();
   setupSummaryHandlers();
+  setupPublishAnnouncementHandlers(navigate);
 }
 
 /**
@@ -814,4 +815,23 @@ function openSummaryModal(meetingId) {
   }
 
   openModal("modal-meeting-summary");
+}
+
+function setupPublishAnnouncementHandlers(navigate) {
+  document.querySelectorAll(".btn-publish-announcement").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const title = btn.getAttribute("data-meeting-title") || "";
+      try {
+        sessionStorage.setItem("announcement_preset_title", title);
+      } catch {
+        // ignore
+      }
+      if (navigate) {
+        navigate("announcements");
+      } else {
+        window.location.hash = "#/announcements";
+      }
+    });
+  });
 }

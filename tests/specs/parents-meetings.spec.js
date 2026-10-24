@@ -832,16 +832,108 @@ test.describe('Родители и Собрания', () => {
     await expect(secondCard).toContainText('Адресовано классу 7Б');
   });
 
-  test.skip('TC-AN-02: Публикация объявления', async () => {
-    // TODO: Будет реализовано в задаче классного руководителя
+  test('TC-AN-02: Публикация объявления', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('smirnova@school.ru', 'Test#2024');
+
+    await page.goto('announcements');
+    await page.locator('#btn-create-announcement').click();
+
+    await expect(page.locator('#modal-announcement-create')).toBeVisible();
+    await expect(page.locator('#announcement-create-class')).toHaveValue('7Б');
+    await expect(page.locator('#announcement-create-date')).toHaveValue('28.10.2024');
+
+    await page.locator('#announcement-create-title').fill('Организация дежурства');
+    await page.locator('#announcement-create-content').fill('Утвержден новый график дежурств по классу 7Б на вторую четверть. Просьба ознакомиться.');
+
+    await page.locator('#btn-submit-create-announcement').click();
+    await expect(page.locator('#modal-announcement-create')).toBeHidden();
+
+    const cards = page.locator('.announcement-card');
+    await expect(cards).toHaveCount(3);
+
+    const firstCard = cards.first();
+    await expect(firstCard).toContainText('Организация дежурства');
+    await expect(firstCard).toContainText('28.10.2024');
+    await expect(firstCard).toContainText('прочитали 0 из 28');
+    await expect(firstCard).toContainText('Адресовано классу 7Б');
+
+    await page.reload();
+    const cardsAfterReload = page.locator('.announcement-card');
+    await expect(cardsAfterReload).toHaveCount(3);
+    await expect(cardsAfterReload.first()).toContainText('Организация дежурства');
   });
 
-  test.skip('TC-AN-03: Публикация без обязательных полей', async () => {
-    // TODO: Будет реализовано в задаче классного руководителя
+  test('TC-AN-03: Публикация без обязательных полей', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('smirnova@school.ru', 'Test#2024');
+
+    await page.goto('announcements');
+    await page.locator('#btn-create-announcement').click();
+    await expect(page.locator('#modal-announcement-create')).toBeVisible();
+
+    await page.locator('#announcement-create-content').fill('Текст объявления без заголовка');
+    await page.locator('#btn-submit-create-announcement').click();
+
+    await expect(page.locator('#announcement-title-error')).toBeVisible();
+    await expect(page.locator('#announcement-title-error')).toContainText('обязателен для заполнения');
+    await expect(page.locator('#modal-announcement-create')).toBeVisible();
+
+    await page.locator('#announcement-create-title').fill('Заголовок без текста');
+    await page.locator('#announcement-create-content').fill('');
+    await page.locator('#btn-submit-create-announcement').click();
+
+    await expect(page.locator('#announcement-content-error')).toBeVisible();
+    await expect(page.locator('#announcement-content-error')).toContainText('обязателен для заполнения');
+    await expect(page.locator('#modal-announcement-create')).toBeVisible();
+
+    await page.locator('#btn-close-create-modal').click();
+    await expect(page.locator('#modal-announcement-create')).toBeHidden();
+
+    const cards = page.locator('.announcement-card');
+    await expect(cards).toHaveCount(2);
   });
 
-  test.skip('TC-AN-04: Изменение объявления', async () => {
-    // TODO: Будет реализовано в задаче классного руководителя
+  test('TC-AN-04: Изменение объявления', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    const navPage = new NavigationPage(page);
+
+    await loginPage.goto();
+    await loginPage.login('smirnova@school.ru', 'Test#2024');
+
+    await page.goto('announcements');
+
+    const card = page.locator('.announcement-card').filter({ hasText: 'Каникулы с 28 октября по 5 ноября' });
+    await expect(card).toBeVisible();
+    await expect(card).toContainText('прочитали 22 из 28');
+    await expect(card).toContainText('24.10.2024');
+
+    await card.locator('.btn-edit-announcement').click();
+    await expect(page.locator('#modal-announcement-edit')).toBeVisible();
+
+    const currentText = await page.locator('#announcement-edit-content').inputValue();
+    await page.locator('#announcement-edit-content').fill(currentText + ' Просьба сообщить классному руководителю о планах поездок.');
+    await page.locator('#btn-submit-edit-announcement').click();
+
+    await expect(page.locator('#modal-announcement-edit')).toBeHidden();
+
+    await expect(page.locator('.announcement-card')).toHaveCount(2);
+    const updatedCard = page.locator('.announcement-card').filter({ hasText: 'Каникулы с 28 октября по 5 ноября' });
+    await expect(updatedCard).toContainText('Просьба сообщить классному руководителю о планах поездок');
+    await expect(updatedCard).toContainText('24.10.2024');
+    await expect(updatedCard).toContainText('прочитали 22 из 28');
+
+    await navPage.logout();
+    await loginPage.goto();
+    await loginPage.login('petrov@mail.ru', 'Test#2024');
+    await page.goto('announcements');
+
+    const parentCard = page.locator('.announcement-card').filter({ hasText: 'Каникулы с 28 октября по 5 ноября' });
+    await expect(parentCard).toContainText('Просьба сообщить классному руководителю о планах поездок');
+    await expect(parentCard).toContainText('24.10.2024');
+    await expect(parentCard).toContainText('прочитали 22 из 28');
   });
 
   test('TC-AN-05: Удаление объявления и пустое состояние', async ({ page }) => {
@@ -928,12 +1020,66 @@ test.describe('Родители и Собрания', () => {
     await expect(teacherCard).toContainText('прочитали 21 из 28');
   });
 
-  test.skip('TC-AN-07: Удаление объявления не влияет на собрание', async () => {
-    // TODO: Будет реализовано в связке с разделом собраний
+  test('TC-AN-07: Удаление объявления не влияет на собрание', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('smirnova@school.ru', 'Test#2024');
+
+    await page.goto('meetings');
+    await expect(page.locator('#section-next-meeting')).toBeVisible();
+    await expect(page.locator('#section-next-meeting')).toContainText('Итоги первой четверти 7Б');
+    await expect(page.locator('#section-next-meeting')).toContainText('31.10.2024');
+    await expect(page.locator('#section-next-meeting')).toContainText('18:30');
+
+    await page.goto('announcements');
+    const meetingAnnouncement = page.locator('.announcement-card').filter({ hasText: 'Родительское собрание 31 октября' });
+    await expect(meetingAnnouncement).toBeVisible();
+
+    page.once('dialog', async (dialog) => {
+      await dialog.accept();
+    });
+    await meetingAnnouncement.locator('.btn-delete-announcement').click();
+    await page.waitForTimeout(300);
+
+    await expect(page.locator('.announcement-card').filter({ hasText: 'Родительское собрание 31 октября' })).toHaveCount(0);
+
+    await page.goto('meetings');
+    const banner = page.locator('#section-next-meeting');
+    await expect(banner).toBeVisible();
+    await expect(banner).toContainText('Итоги первой четверти 7Б');
+    await expect(banner).toContainText('31.10.2024');
+    await expect(banner).toContainText('18:30');
+    await expect(banner).toContainText('Каб. 302');
   });
 
-  test.skip('TC-AN-08: Публикация объявления из карточки собрания', async () => {
-    // TODO: Будет реализовано в связке с разделом собраний
+  test('TC-AN-08: Публикация объявления из карточки собрания', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('smirnova@school.ru', 'Test#2024');
+
+    await page.goto('meetings');
+    const publishBtn = page.locator('.btn-publish-announcement').first();
+    await expect(publishBtn).toBeVisible();
+    await publishBtn.click();
+
+    await expect(page.locator('#modal-announcement-create')).toBeVisible();
+    await expect(page.locator('#announcement-create-title')).toHaveValue('Итоги первой четверти 7Б');
+    await expect(page.locator('#announcement-create-class')).toHaveValue('7Б');
+
+    await page.locator('#announcement-create-content').fill('Напоминание о собрании в Каб. 302 в 18:30. Явка родителей обязательна.');
+    await page.locator('#btn-submit-create-announcement').click();
+    await expect(page.locator('#modal-announcement-create')).toBeHidden();
+
+    const cards = page.locator('.announcement-card');
+    await expect(cards.first()).toContainText('Итоги первой четверти 7Б');
+    await expect(cards.first()).toContainText('прочитали 0 из 28');
+
+    await page.goto('meetings');
+    const banner = page.locator('#section-next-meeting');
+    await expect(banner).toBeVisible();
+    await expect(banner).toContainText('Итоги первой четверти 7Б');
+    await expect(banner).toContainText('31.10.2024');
+    await expect(banner).toContainText('18:30');
   });
 
 });

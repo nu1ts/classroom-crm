@@ -24004,29 +24004,147 @@
   `;
   }
 
-  // src/views/announcements/render.js
+  // src/services/announcements-ops.js
+  var DEMO_ANNOUNCEMENT_DATE = "2024-10-28";
   function formatDateRu(isoDate) {
     if (!isoDate) return "";
-    const [yyyy, mm, dd] = isoDate.split("-");
-    return `${dd}.${mm}.${yyyy}`;
+    const parts = isoDate.split("-");
+    if (parts.length === 3) {
+      const [yyyy, mm, dd] = parts;
+      return `${dd}.${mm}.${yyyy}`;
+    }
+    return isoDate;
+  }
+  function validateAnnouncementData({ title, content }) {
+    const errors = {};
+    const trimmedTitle = (title || "").trim();
+    const trimmedContent = (content || "").trim();
+    if (!trimmedTitle) {
+      errors.title = "Заголовок объявления обязателен для заполнения";
+    } else if (trimmedTitle.length < 3) {
+      errors.title = "Заголовок должен содержать не менее 3 символов";
+    }
+    if (!trimmedContent) {
+      errors.content = "Текст объявления обязателен для заполнения";
+    } else if (trimmedContent.length < 5) {
+      errors.content = "Текст должен содержать не менее 5 символов";
+    }
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors
+    };
+  }
+  function getAnnouncements(targetClassId = "class-7b") {
+    const db = getDB();
+    const list = (db.announcements || []).filter(
+      (a) => (!a.classId || a.classId === targetClassId || a.target === "all") && a.status !== "deleted"
+    );
+    return list;
+  }
+  function createAnnouncement({
+    title,
+    content,
+    classId = "class-7b",
+    date = DEMO_ANNOUNCEMENT_DATE,
+    author
+  }) {
+    const validation = validateAnnouncementData({ title, content });
+    if (!validation.isValid) {
+      return { success: false, errors: validation.errors };
+    }
+    const db = getDB();
+    const currentUser = getCurrentUser();
+    const authorName = author || currentUser && currentUser.name || "Смирнова М. В.";
+    const totalCount = (db.students || []).filter((s) => s.classId === classId).length || 28;
+    const newAnnouncement = {
+      id: `anc-${Date.now()}`,
+      title: title.trim(),
+      content: content.trim(),
+      date: date || DEMO_ANNOUNCEMENT_DATE,
+      author: authorName,
+      classId,
+      target: "all",
+      readBy: [],
+      readCount: 0,
+      totalCount,
+      status: "published",
+      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    if (!Array.isArray(db.announcements)) {
+      db.announcements = [];
+    }
+    db.announcements.unshift(newAnnouncement);
+    saveDB(db);
+    return { success: true, item: newAnnouncement };
+  }
+  function updateAnnouncement(id, { title, content }) {
+    const validation = validateAnnouncementData({ title, content });
+    if (!validation.isValid) {
+      return { success: false, errors: validation.errors };
+    }
+    const db = getDB();
+    const item = (db.announcements || []).find((a) => a.id === id);
+    if (!item) {
+      return { success: false, errors: { general: "Объявление не найдено" } };
+    }
+    item.title = title.trim();
+    item.content = content.trim();
+    item.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
+    saveDB(db);
+    return { success: true, item };
+  }
+  function deleteAnnouncement(id) {
+    const db = getDB();
+    const initialLength = (db.announcements || []).length;
+    db.announcements = (db.announcements || []).filter((a) => a.id !== id);
+    saveDB(db);
+    return db.announcements.length < initialLength;
+  }
+  function markAnnouncementRead(id, userIdentifier) {
+    if (!userIdentifier) return false;
+    const currentUser = getCurrentUser();
+    if (currentUser && currentUser.role !== "parent" && currentUser.role !== "student") {
+      return false;
+    }
+    const db = getDB();
+    const item = (db.announcements || []).find((a) => a.id === id);
+    if (!item) return false;
+    if (!Array.isArray(item.readBy)) {
+      item.readBy = [];
+    }
+    if (!item.readBy.includes(userIdentifier)) {
+      item.readBy.push(userIdentifier);
+      item.readCount = item.readBy.length;
+      saveDB(db);
+      return true;
+    }
+    return false;
+  }
+
+  // src/views/announcements/render.js
+  function pluralizeAnnouncements(count) {
+    const mod10 = count % 10;
+    const mod100 = count % 100;
+    if (mod100 >= 11 && mod100 <= 19) return `${count} объявлений`;
+    if (mod10 === 1) return `${count} объявление`;
+    if (mod10 >= 2 && mod10 <= 4) return `${count} объявления`;
+    return `${count} объявлений`;
   }
   function renderAnnouncementsView() {
     const currentUser = getCurrentUser();
-    const db = getDB();
     const isTeacher = currentUser && currentUser.role === "teacher";
     const isParent = currentUser && currentUser.role === "parent";
     const isStudent = currentUser && currentUser.role === "student";
     let targetClassId = "class-7b";
     if (isParent) {
-      const child = (db.students || []).find((s) => s.id === currentUser.childStudentId);
-      targetClassId = child && child.classId || currentUser.classId || "class-7b";
+      targetClassId = currentUser.childClassId || currentUser.classId || "class-7b";
     } else if (currentUser && currentUser.classId) {
       targetClassId = currentUser.classId;
     }
-    const className = targetClassId === "class-7b" ? "7Б" : "7Б";
-    const announcements = (db.announcements || []).filter(
-      (a) => (!a.classId || a.classId === targetClassId || a.target === "all") && a.status !== "deleted"
-    );
+    const rawClass = currentUser && currentUser.className || "7Б";
+    const className = rawClass.replace(/\s*\([^)]*\)/g, "").replace(/\s*класс/i, "").trim() || "7Б";
+    const announcements = getAnnouncements(targetClassId);
+    const formattedToday = formatDateRu(DEMO_ANNOUNCEMENT_DATE);
     return `
     <div class="space-y-6 max-w-5xl mx-auto">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90">
@@ -24036,7 +24154,7 @@
               Объявления ${className}
             </h1>
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200/70">
-              ${announcements.length} ${announcements.length === 1 ? "объявление" : announcements.length > 1 && announcements.length < 5 ? "объявления" : "объявлений"}
+              ${pluralizeAnnouncements(announcements.length)}
             </span>
           </div>
           <p id="announcements-page-subtitle" class="text-xs font-semibold text-slate-500 mt-1">
@@ -24076,7 +24194,10 @@
         <div id="announcements-list" class="space-y-4">
           ${announcements.map((item) => {
       const dateStr = item.date.includes("-") ? formatDateRu(item.date) : item.date;
-      const hasRead = currentUser && item.readBy && (item.readBy.includes(currentUser.id) || currentUser.childStudentId && item.readBy.includes(currentUser.childStudentId));
+      const userIdentifier = currentUser && (currentUser.id || currentUser.email) || "";
+      const isRecipient = currentUser && (currentUser.role === "parent" || currentUser.role === "student");
+      const hasRead = isRecipient && item.readBy && (item.readBy.includes(userIdentifier) || currentUser.childStudentId && item.readBy.includes(currentUser.childStudentId));
+      const currentReads = Math.min(item.totalCount || 28, item.readCount || 0);
       return `
               <article class="announcement-card bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90 transition-all hover:border-slate-300 relative"
                        data-id="${item.id}">
@@ -24097,7 +24218,7 @@
 
                   <div class="text-right shrink-0">
                     <span class="announcement-reads text-xs font-semibold text-slate-500 block">
-                      прочитали ${Math.min(item.totalCount || 28, item.readCount || 0)} из ${item.totalCount || 28}
+                      прочитали ${currentReads} из ${item.totalCount || 28}
                     </span>
                     <span class="announcement-date text-[11px] text-slate-400 font-medium block mt-0.5">
                       ${dateStr}
@@ -24145,123 +24266,455 @@
       `}
     </div>
 
-    <div id="modal-announcement-detail" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-      <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-slate-200/90 space-y-4 animate-in fade-in zoom-in-95 duration-150">
-        <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+    <div id="modal-announcement-detail"
+         class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+      <div id="modal-announcement-detail-dialog"
+           class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 space-y-4 max-h-[92vh] flex flex-col overflow-hidden">
+        <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3 shrink-0">
           <div class="space-y-1">
             <span id="modal-announcement-target" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/70">
               Адресовано классу ${className}
             </span>
             <h3 id="modal-announcement-title" class="text-base font-bold text-slate-900"></h3>
           </div>
-          <button id="btn-close-announcement-modal" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
+          <button id="btn-close-announcement-modal"
+                  type="button"
+                  class="btn-close-modal p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                  title="Закрыть">
+            ${renderIcon("x", "w-5 h-5")}
           </button>
         </div>
 
-        <div class="flex items-center justify-between text-2xs text-slate-400 font-semibold">
+        <div class="flex items-center justify-between text-2xs text-slate-400 font-semibold shrink-0">
           <span id="modal-announcement-author" class="text-slate-600"></span>
           <span id="modal-announcement-date"></span>
         </div>
 
-        <div id="modal-announcement-content" class="text-xs leading-relaxed text-slate-700 font-medium whitespace-pre-line py-2">
+        <div id="modal-announcement-content" class="text-xs leading-relaxed text-slate-700 font-medium whitespace-pre-line py-2 overflow-y-auto flex-1">
         </div>
 
-        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+        <div class="flex items-center justify-between pt-3 border-t border-slate-100 shrink-0">
           <span id="modal-announcement-reads" class="text-xs font-semibold text-slate-500"></span>
-          <button id="btn-modal-dismiss" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
+          <button id="btn-modal-dismiss"
+                  type="button"
+                  class="btn-close-modal px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
             Закрыть
           </button>
         </div>
+      </div>
+    </div>
+
+    <div id="modal-announcement-create"
+         class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+      <div id="modal-announcement-create-dialog"
+           class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 space-y-5 max-h-[92vh] flex flex-col overflow-hidden">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600">
+              ${renderIcon("megaphone", "w-4 h-4")}
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Новое объявление</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Публикация для учеников и родителей</p>
+            </div>
+          </div>
+          <button id="btn-close-create-modal"
+                  type="button"
+                  class="btn-close-modal p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                  title="Закрыть">
+            ${renderIcon("x", "w-5 h-5")}
+          </button>
+        </div>
+
+        <form id="form-create-announcement" class="space-y-4 overflow-y-auto flex-1 pr-0.5" novalidate>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Класс
+              </label>
+              <input id="announcement-create-class"
+                     type="text"
+                     value="${className}"
+                     disabled
+                     class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 cursor-not-allowed" />
+            </div>
+            <div>
+              <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Дата публикации
+              </label>
+              <input id="announcement-create-date"
+                     type="text"
+                     value="${formattedToday}"
+                     disabled
+                     class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 cursor-not-allowed" />
+            </div>
+          </div>
+
+          <div>
+            <label for="announcement-create-title" class="block text-2xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+              Заголовок объявления <span class="text-rose-500">*</span>
+            </label>
+            <input id="announcement-create-title"
+                   name="title"
+                   type="text"
+                   placeholder="Например, Организация дежурства"
+                   class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all" />
+            <p id="announcement-title-error" class="hidden text-2xs text-rose-600 font-semibold mt-1"></p>
+          </div>
+
+          <div>
+            <label for="announcement-create-content" class="block text-2xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+              Текст объявления <span class="text-rose-500">*</span>
+            </label>
+            <textarea id="announcement-create-content"
+                      name="content"
+                      rows="4"
+                      placeholder="Введите подробный текст объявления для учеников и родителей..."
+                      class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all resize-none"></textarea>
+            <p id="announcement-content-error" class="hidden text-2xs text-rose-600 font-semibold mt-1"></p>
+          </div>
+
+          <div class="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100 shrink-0">
+            <button id="btn-cancel-create-announcement"
+                    type="button"
+                    class="btn-close-modal px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
+              Отмена
+            </button>
+            <button id="btn-submit-create-announcement"
+                    type="submit"
+                    class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer">
+              Опубликовать
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="modal-announcement-edit"
+         class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+      <div id="modal-announcement-edit-dialog"
+           class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 space-y-5 max-h-[92vh] flex flex-col overflow-hidden">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600">
+              ${renderIcon("edit", "w-4 h-4")}
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Изменить объявление</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Редактирование темы и текста публикации</p>
+            </div>
+          </div>
+          <button id="btn-close-edit-modal"
+                  type="button"
+                  class="btn-close-modal p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                  title="Закрыть">
+            ${renderIcon("x", "w-5 h-5")}
+          </button>
+        </div>
+
+        <form id="form-edit-announcement" class="space-y-4 overflow-y-auto flex-1 pr-0.5" novalidate>
+          <input type="hidden" id="announcement-edit-id" />
+
+          <div>
+            <label for="announcement-edit-title" class="block text-2xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+              Заголовок объявления <span class="text-rose-500">*</span>
+            </label>
+            <input id="announcement-edit-title"
+                   name="title"
+                   type="text"
+                   class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all" />
+            <p id="announcement-edit-title-error" class="hidden text-2xs text-rose-600 font-semibold mt-1"></p>
+          </div>
+
+          <div>
+            <label for="announcement-edit-content" class="block text-2xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+              Текст объявления <span class="text-rose-500">*</span>
+            </label>
+            <textarea id="announcement-edit-content"
+                      name="content"
+                      rows="4"
+                      class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all resize-none"></textarea>
+            <p id="announcement-edit-content-error" class="hidden text-2xs text-rose-600 font-semibold mt-1"></p>
+          </div>
+
+          <div class="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100 shrink-0">
+            <button id="btn-cancel-edit-announcement"
+                    type="button"
+                    class="btn-close-modal px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
+              Отмена
+            </button>
+            <button id="btn-submit-edit-announcement"
+                    type="submit"
+                    class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer">
+              Сохранить
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   `;
   }
 
   // src/views/announcements/listeners.js
-  function formatDateRu2(isoDate) {
-    if (!isoDate) return "";
-    const [yyyy, mm, dd] = isoDate.split("-");
-    return `${dd}.${mm}.${yyyy}`;
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.remove("opacity-100", "pointer-events-auto");
+    modal.classList.add("opacity-0", "pointer-events-none");
+    const dialog = document.getElementById(`${modalId}-dialog`);
+    if (dialog) {
+      dialog.classList.remove("scale-100");
+      dialog.classList.add("scale-95");
+    }
+    modal.classList.add("hidden");
+  }
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.remove("hidden");
+    requestAnimationFrame(() => {
+      modal.classList.remove("opacity-0", "pointer-events-none");
+      modal.classList.add("opacity-100", "pointer-events-auto");
+      const dialog = document.getElementById(`${modalId}-dialog`);
+      if (dialog) {
+        dialog.classList.remove("scale-95");
+        dialog.classList.add("scale-100");
+      }
+    });
   }
   function setupAnnouncementsListeners(navigate2) {
     const currentUser = getCurrentUser();
-    const db = getDB();
-    const modal = document.getElementById("modal-announcement-detail");
+    const allModalIds = [
+      "modal-announcement-detail",
+      "modal-announcement-create",
+      "modal-announcement-edit"
+    ];
+    document.querySelectorAll(".btn-close-modal").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const modal = btn.closest(".fixed");
+        if (modal && modal.id) {
+          closeModal(modal.id);
+        }
+      });
+    });
+    allModalIds.forEach((id) => {
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.addEventListener("click", (e) => {
+          if (e.target === modal) {
+            closeModal(id);
+          }
+        });
+      }
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        allModalIds.forEach((id) => closeModal(id));
+      }
+    });
     const modalTitle = document.getElementById("modal-announcement-title");
     const modalContent = document.getElementById("modal-announcement-content");
     const modalAuthor = document.getElementById("modal-announcement-author");
     const modalDate = document.getElementById("modal-announcement-date");
     const modalReads = document.getElementById("modal-announcement-reads");
-    const closeModal3 = () => {
-      if (modal) {
-        modal.classList.add("hidden");
-      }
-    };
-    const btnClose = document.getElementById("btn-close-announcement-modal");
-    if (btnClose) {
-      btnClose.addEventListener("click", closeModal3);
-    }
-    const btnDismiss = document.getElementById("btn-modal-dismiss");
-    if (btnDismiss) {
-      btnDismiss.addEventListener("click", closeModal3);
-    }
-    if (modal) {
-      modal.addEventListener("click", (e) => {
-        if (e.target === modal) {
-          closeModal3();
-        }
-      });
-    }
     document.querySelectorAll(".btn-read-full").forEach((btn) => {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-id");
         const currentDB = getDB();
         const announcement = (currentDB.announcements || []).find((a) => a.id === id);
         if (!announcement) return;
-        if (currentUser) {
-          if (!Array.isArray(announcement.readBy)) {
-            announcement.readBy = [];
-          }
-          const userKey = currentUser.id || currentUser.email;
-          if (!announcement.readBy.includes(userKey)) {
-            announcement.readBy.push(userKey);
-            announcement.readCount = announcement.readBy.length;
-            saveDB(currentDB);
-            const card = document.querySelector(`.announcement-card[data-id="${id}"]`);
-            if (card) {
-              const readsEl = card.querySelector(".announcement-reads");
-              if (readsEl) {
-                const safeReads = Math.min(announcement.totalCount || 28, announcement.readCount);
-                readsEl.textContent = `прочитали ${safeReads} из ${announcement.totalCount || 28}`;
-              }
-            }
+        const user = getCurrentUser();
+        const isRecipient = user && (user.role === "parent" || user.role === "student");
+        if (isRecipient) {
+          const userKey = user.id || user.email;
+          markAnnouncementRead(id, userKey);
+        }
+        const refreshedDB = getDB();
+        const refreshedItem = (refreshedDB.announcements || []).find((a) => a.id === id) || announcement;
+        const safeReads = Math.min(refreshedItem.totalCount || 28, refreshedItem.readCount || 0);
+        const card = document.querySelector(`.announcement-card[data-id="${id}"]`);
+        if (card) {
+          const readsEl = card.querySelector(".announcement-reads");
+          if (readsEl) {
+            readsEl.textContent = `прочитали ${safeReads} из ${refreshedItem.totalCount || 28}`;
           }
         }
-        if (modal && modalTitle && modalContent) {
-          modalTitle.textContent = announcement.title;
-          modalContent.textContent = announcement.content;
-          if (modalAuthor) modalAuthor.textContent = `Автор: ${announcement.author || "Смирнова М. В."}`;
+        if (modalTitle && modalContent) {
+          modalTitle.textContent = refreshedItem.title;
+          modalContent.textContent = refreshedItem.content;
+          if (modalAuthor) modalAuthor.textContent = `Автор: ${refreshedItem.author || "Смирнова М. В."}`;
           if (modalDate) {
-            modalDate.textContent = announcement.date.includes("-") ? formatDateRu2(announcement.date) : announcement.date;
+            modalDate.textContent = refreshedItem.date.includes("-") ? formatDateRu(refreshedItem.date) : refreshedItem.date;
           }
           if (modalReads) {
-            const safeReads = Math.min(announcement.totalCount || 28, announcement.readCount || 0);
-            modalReads.textContent = `прочитали ${safeReads} из ${announcement.totalCount || 28}`;
+            modalReads.textContent = `прочитали ${safeReads} из ${refreshedItem.totalCount || 28}`;
           }
-          modal.classList.remove("hidden");
+          openModal("modal-announcement-detail");
         }
       });
     });
+    const formCreate = document.getElementById("form-create-announcement");
+    const titleCreateInput = document.getElementById("announcement-create-title");
+    const contentCreateInput = document.getElementById("announcement-create-content");
+    const titleCreateError = document.getElementById("announcement-title-error");
+    const contentCreateError = document.getElementById("announcement-content-error");
+    const btnCreateOpen = document.getElementById("btn-create-announcement");
+    const openCreateDialog = (initialTitle = "") => {
+      if (titleCreateError) titleCreateError.classList.add("hidden");
+      if (contentCreateError) contentCreateError.classList.add("hidden");
+      if (titleCreateInput) {
+        titleCreateInput.classList.remove("border-rose-400", "bg-rose-50/20");
+        titleCreateInput.value = initialTitle;
+      }
+      if (contentCreateInput) {
+        contentCreateInput.classList.remove("border-rose-400", "bg-rose-50/20");
+        contentCreateInput.value = "";
+      }
+      openModal("modal-announcement-create");
+      if (initialTitle && contentCreateInput) {
+        contentCreateInput.focus();
+      } else if (titleCreateInput) {
+        titleCreateInput.focus();
+      }
+    };
+    if (btnCreateOpen) {
+      btnCreateOpen.addEventListener("click", () => openCreateDialog());
+    }
+    if (titleCreateInput) {
+      titleCreateInput.addEventListener("input", () => {
+        titleCreateInput.classList.remove("border-rose-400", "bg-rose-50/20");
+        if (titleCreateError) titleCreateError.classList.add("hidden");
+      });
+    }
+    if (contentCreateInput) {
+      contentCreateInput.addEventListener("input", () => {
+        contentCreateInput.classList.remove("border-rose-400", "bg-rose-50/20");
+        if (contentCreateError) contentCreateError.classList.add("hidden");
+      });
+    }
+    if (formCreate) {
+      formCreate.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const titleVal = titleCreateInput ? titleCreateInput.value.trim() : "";
+        const contentVal = contentCreateInput ? contentCreateInput.value.trim() : "";
+        let hasError = false;
+        if (!titleVal) {
+          hasError = true;
+          if (titleCreateInput) {
+            titleCreateInput.classList.add("border-rose-400", "bg-rose-50/20");
+          }
+          if (titleCreateError) {
+            titleCreateError.textContent = "Заголовок объявления обязателен для заполнения";
+            titleCreateError.classList.remove("hidden");
+          }
+        }
+        if (!contentVal) {
+          hasError = true;
+          if (contentCreateInput) {
+            contentCreateInput.classList.add("border-rose-400", "bg-rose-50/20");
+          }
+          if (contentCreateError) {
+            contentCreateError.textContent = "Текст объявления обязателен для заполнения";
+            contentCreateError.classList.remove("hidden");
+          }
+        }
+        if (hasError) return;
+        const result = createAnnouncement({
+          title: titleVal,
+          content: contentVal,
+          classId: "class-7b"
+        });
+        if (result.success) {
+          closeModal("modal-announcement-create");
+          if (navigate2) {
+            navigate2("announcements");
+          } else {
+            window.location.reload();
+          }
+        }
+      });
+    }
+    const formEdit = document.getElementById("form-edit-announcement");
+    const idEditInput = document.getElementById("announcement-edit-id");
+    const titleEditInput = document.getElementById("announcement-edit-title");
+    const contentEditInput = document.getElementById("announcement-edit-content");
+    const titleEditError = document.getElementById("announcement-edit-title-error");
+    const contentEditError = document.getElementById("announcement-edit-content-error");
+    if (titleEditInput) {
+      titleEditInput.addEventListener("input", () => {
+        titleEditInput.classList.remove("border-rose-400", "bg-rose-50/20");
+        if (titleEditError) titleEditError.classList.add("hidden");
+      });
+    }
+    if (contentEditInput) {
+      contentEditInput.addEventListener("input", () => {
+        contentEditInput.classList.remove("border-rose-400", "bg-rose-50/20");
+        if (contentEditError) contentEditError.classList.add("hidden");
+      });
+    }
+    document.querySelectorAll(".btn-edit-announcement").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const db = getDB();
+        const item = (db.announcements || []).find((a) => a.id === id);
+        if (!item) return;
+        if (idEditInput) idEditInput.value = item.id;
+        if (titleEditInput) {
+          titleEditInput.value = item.title;
+          titleEditInput.classList.remove("border-rose-400", "bg-rose-50/20");
+        }
+        if (contentEditInput) {
+          contentEditInput.value = item.content;
+          contentEditInput.classList.remove("border-rose-400", "bg-rose-50/20");
+        }
+        if (titleEditError) titleEditError.classList.add("hidden");
+        if (contentEditError) contentEditError.classList.add("hidden");
+        openModal("modal-announcement-edit");
+      });
+    });
+    if (formEdit) {
+      formEdit.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const id = idEditInput ? idEditInput.value : "";
+        const titleVal = titleEditInput ? titleEditInput.value.trim() : "";
+        const contentVal = contentEditInput ? contentEditInput.value.trim() : "";
+        let hasError = false;
+        if (!titleVal) {
+          hasError = true;
+          if (titleEditInput) titleEditInput.classList.add("border-rose-400", "bg-rose-50/20");
+          if (titleEditError) {
+            titleEditError.textContent = "Заголовок объявления обязателен для заполнения";
+            titleEditError.classList.remove("hidden");
+          }
+        }
+        if (!contentVal) {
+          hasError = true;
+          if (contentEditInput) contentEditInput.classList.add("border-rose-400", "bg-rose-50/20");
+          if (contentEditError) {
+            contentEditError.textContent = "Текст объявления обязателен для заполнения";
+            contentEditError.classList.remove("hidden");
+          }
+        }
+        if (hasError) return;
+        const result = updateAnnouncement(id, {
+          title: titleVal,
+          content: contentVal
+        });
+        if (result.success) {
+          closeModal("modal-announcement-edit");
+          if (navigate2) {
+            navigate2("announcements");
+          } else {
+            window.location.reload();
+          }
+        }
+      });
+    }
     document.querySelectorAll(".btn-delete-announcement").forEach((btn) => {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-id");
         if (window.confirm("Удалить объявление?")) {
-          const currentDB = getDB();
-          currentDB.announcements = (currentDB.announcements || []).filter((a) => a.id !== id);
-          saveDB(currentDB);
+          deleteAnnouncement(id);
           if (navigate2) {
             navigate2("announcements");
           } else {
@@ -24270,6 +24723,14 @@
         }
       });
     });
+    try {
+      const presetTitle = sessionStorage.getItem("announcement_preset_title");
+      if (presetTitle) {
+        sessionStorage.removeItem("announcement_preset_title");
+        openCreateDialog(presetTitle);
+      }
+    } catch {
+    }
   }
 
   // src/views/classes/render.js
@@ -24809,7 +25270,7 @@
   }
 
   // src/views/child/render.js
-  function formatDateRu3(dateStr) {
+  function formatDateRu2(dateStr) {
     if (!dateStr) return "";
     const parts = dateStr.split("-");
     if (parts.length === 3) {
@@ -25027,7 +25488,7 @@
               ${absencesByDateMap.size > 0 ? Array.from(absencesByDateMap.entries()).map(([date, recs]) => `
                 <div class="p-3 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center justify-between text-xs">
                   <div class="space-y-0.5">
-                    <span class="font-bold text-slate-800">${formatDateRu3(date)}</span>
+                    <span class="font-bold text-slate-800">${formatDateRu2(date)}</span>
                     <p class="text-slate-500 text-2xs">
                       ${recs.map((r) => r.lesson ? r.lesson.subjectName : "Урок").join(", ")}
                     </p>
@@ -25059,7 +25520,7 @@
                         <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-1">
                           <span class="flex items-center space-x-1">
                             ${renderIcon("calendar", "w-3.5 h-3.5 text-indigo-500")}
-                            <span>${formatDateRu3(mtg.date)} в ${mtg.time}</span>
+                            <span>${formatDateRu2(mtg.date)} в ${mtg.time}</span>
                           </span>
                           <span>&bull;</span>
                           <span>${mtg.room || "Каб. 302"}</span>
@@ -25087,7 +25548,7 @@
                     <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
                       <div>
                         <p class="font-semibold text-slate-800">${mtg.title}</p>
-                        <p class="text-slate-400 text-2xs mt-0.5">${formatDateRu3(mtg.date)} &bull; ${mtg.room || "Каб. 302"}</p>
+                        <p class="text-slate-400 text-2xs mt-0.5">${formatDateRu2(mtg.date)} &bull; ${mtg.room || "Каб. 302"}</p>
                       </div>
                       <span class="text-2xs font-medium px-2 py-0.5 rounded-md bg-slate-200/80 text-slate-600">
                         Завершено
@@ -25109,7 +25570,7 @@
               <div class="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100/80 space-y-2.5">
                 <div class="flex items-center space-x-2 text-2xs text-slate-500 font-semibold">
                   ${renderIcon("calendar", "w-3.5 h-3.5 text-indigo-600")}
-                  <span>${latestAnnouncement.author || "Смирнова М. В."} &bull; ${formatDateRu3(latestAnnouncement.date)}</span>
+                  <span>${latestAnnouncement.author || "Смирнова М. В."} &bull; ${formatDateRu2(latestAnnouncement.date)}</span>
                 </div>
                 <h3 class="text-xs font-bold text-slate-900 leading-snug">
                   ${latestAnnouncement.title}
@@ -25564,7 +26025,7 @@
     const modalDialog = document.getElementById("modal-forgot-dialog");
     const closeForgotBtn = document.getElementById("btn-close-modal-forgot");
     const closeForgotX = document.getElementById("btn-close-modal-forgot-x");
-    function openModal3() {
+    function openModal4() {
       if (!modalForgot) return;
       modalForgot.classList.remove("opacity-0", "pointer-events-none");
       modalForgot.classList.add("opacity-100", "pointer-events-auto");
@@ -25573,7 +26034,7 @@
         modalDialog.classList.add("scale-100");
       }
     }
-    function closeModal3() {
+    function closeModal4() {
       if (!modalForgot) return;
       modalForgot.classList.remove("opacity-100", "pointer-events-auto");
       modalForgot.classList.add("opacity-0", "pointer-events-none");
@@ -25582,17 +26043,17 @@
         modalDialog.classList.add("scale-95");
       }
     }
-    if (forgotBtn) forgotBtn.addEventListener("click", openModal3);
-    if (closeForgotBtn) closeForgotBtn.addEventListener("click", closeModal3);
-    if (closeForgotX) closeForgotX.addEventListener("click", closeModal3);
+    if (forgotBtn) forgotBtn.addEventListener("click", openModal4);
+    if (closeForgotBtn) closeForgotBtn.addEventListener("click", closeModal4);
+    if (closeForgotX) closeForgotX.addEventListener("click", closeModal4);
     if (modalForgot) {
       modalForgot.addEventListener("click", (e) => {
-        if (e.target === modalForgot) closeModal3();
+        if (e.target === modalForgot) closeModal4();
       });
     }
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && modalForgot && !modalForgot.classList.contains("pointer-events-none")) {
-        closeModal3();
+        closeModal4();
       }
     });
   }
@@ -28858,7 +29319,7 @@
   }
 
   // src/views/meetings/render.js
-  function formatDateRu4(dateStr) {
+  function formatDateRu3(dateStr) {
     if (!dateStr) return "";
     const parts = String(dateStr).split("-");
     if (parts.length === 3) {
@@ -28933,7 +29394,7 @@
     `;
     }
     const agendaList = Array.isArray(meeting.agendaItems) && meeting.agendaItems.length > 0 ? meeting.agendaItems : meeting.agenda ? [meeting.agenda] : [];
-    const dateRu = formatDateRu4(meeting.date);
+    const dateRu = formatDateRu3(meeting.date);
     return `
     <div id="section-next-meeting" class="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-xs relative overflow-hidden">
       <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-500 to-brand-300"></div>
@@ -28977,6 +29438,7 @@
 
           <a
             href="announcements"
+            data-meeting-title="${meeting.title}"
             class="btn-publish-announcement inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200/60 text-xs font-bold transition-all cursor-pointer shadow-2xs"
           >
             ${renderIcon("megaphone", "w-3.5 h-3.5 text-brand-600")}
@@ -29037,7 +29499,7 @@
           <div class="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-xs flex items-start justify-between gap-4">
             <div class="space-y-1.5">
               <span class="inline-flex items-center px-2 py-0.5 rounded-md text-2xs font-semibold text-brand-700 bg-brand-50/80 border border-brand-200/60">
-                ${formatDateRu4(m.date)} · ${m.time}
+                ${formatDateRu3(m.date)} · ${m.time}
               </span>
               <h4 class="text-sm font-bold text-slate-900">${m.title}</h4>
               <p class="text-xs font-medium text-slate-500">${m.room || "Каб. 302"}</p>
@@ -29081,7 +29543,7 @@
       ` : `
         <div class="space-y-3">
           ${meetings.map((m) => {
-      const dateRu = formatDateRu4(m.date);
+      const dateRu = formatDateRu3(m.date);
       return `
               <div
                 class="past-meeting-row bg-white rounded-3xl p-5 border border-slate-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs transition-all hover:border-slate-300"
@@ -29480,8 +29942,9 @@
     setupSaveMeetingHandler(navigate2);
     setupAttendanceHandlers();
     setupSummaryHandlers();
+    setupPublishAnnouncementHandlers(navigate2);
   }
-  function closeModal(modalId) {
+  function closeModal2(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
     modal.classList.remove("opacity-100", "pointer-events-auto");
@@ -29493,7 +29956,7 @@
     }
     modal.classList.add("hidden");
   }
-  function openModal(modalId) {
+  function openModal2(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
     modal.classList.remove("hidden");
@@ -29512,7 +29975,7 @@
       btn.addEventListener("click", () => {
         const modal = btn.closest(".fixed");
         if (modal && modal.id) {
-          closeModal(modal.id);
+          closeModal2(modal.id);
         }
       });
     });
@@ -29526,7 +29989,7 @@
       if (modal) {
         modal.addEventListener("click", (e) => {
           if (e.target === modal) {
-            closeModal(id);
+            closeModal2(id);
           }
         });
       }
@@ -29538,7 +30001,7 @@
           "modal-cancel-meeting",
           "modal-meeting-attendance",
           "modal-meeting-summary"
-        ].forEach((id) => closeModal(id));
+        ].forEach((id) => closeModal2(id));
         closeAllDropdowns();
       }
     });
@@ -29567,7 +30030,7 @@
       currentEditingAgendaIndex = -1;
       renderModalAgendaList();
       clearMeetingFormErrors();
-      openModal("modal-meeting-form");
+      openModal2("modal-meeting-form");
     });
   }
   function setupEditMeetingHandlers() {
@@ -29586,7 +30049,7 @@
         currentAgendaItems = Array.isArray(meeting.agendaItems) ? [...meeting.agendaItems] : meeting.agenda ? [meeting.agenda] : [];
         renderModalAgendaList();
         clearMeetingFormErrors();
-        openModal("modal-meeting-form");
+        openModal2("modal-meeting-form");
       });
     });
   }
@@ -29613,7 +30076,7 @@
         closeAllDropdowns();
         const meetingId = btn.getAttribute("data-meeting-id");
         document.getElementById("cancel-meeting-id").value = meetingId;
-        openModal("modal-cancel-meeting");
+        openModal2("modal-cancel-meeting");
       });
     });
     const confirmBtn = document.getElementById("btn-confirm-cancel-meeting");
@@ -29622,7 +30085,7 @@
         const meetingId = document.getElementById("cancel-meeting-id").value;
         if (meetingId) {
           cancelMeeting(meetingId);
-          closeModal("modal-cancel-meeting");
+          closeModal2("modal-cancel-meeting");
           window.location.reload();
         }
       });
@@ -29883,7 +30346,7 @@
         }
         return;
       }
-      closeModal("modal-meeting-form");
+      closeModal2("modal-meeting-form");
       window.location.reload();
     });
   }
@@ -29935,7 +30398,7 @@
           }
           return;
         }
-        closeModal("modal-meeting-attendance");
+        closeModal2("modal-meeting-attendance");
         window.location.reload();
       });
     }
@@ -29949,7 +30412,7 @@
     }
     document.getElementById("attendance-meeting-id").value = meeting.id;
     document.getElementById("modal-attendance-title").textContent = "Отметка явки на собрание";
-    document.getElementById("modal-attendance-subtitle").textContent = `${formatDateRu4(meeting.date)} · ${meeting.title}`;
+    document.getElementById("modal-attendance-subtitle").textContent = `${formatDateRu3(meeting.date)} · ${meeting.title}`;
     const errEl = document.getElementById("attendance-general-error");
     if (errEl) errEl.classList.add("hidden");
     const attendance = getMeetingAttendance(meeting.id);
@@ -30039,7 +30502,7 @@
       });
     });
     updateCounter();
-    openModal("modal-meeting-attendance");
+    openModal2("modal-meeting-attendance");
   }
   function setupSummaryHandlers() {
     document.querySelectorAll(".btn-meeting-summary").forEach((btn) => {
@@ -30052,7 +30515,7 @@
     if (btnOpenAttendance) {
       btnOpenAttendance.addEventListener("click", () => {
         const meetingId = btnOpenAttendance.getAttribute("data-meeting-id");
-        closeModal("modal-meeting-summary");
+        closeModal2("modal-meeting-summary");
         if (meetingId) {
           openAttendanceModal(meetingId);
         }
@@ -30063,7 +30526,7 @@
     const meeting = getMeetingById(meetingId);
     if (!meeting) return;
     const summary = getMeetingSummary(meeting.id);
-    document.getElementById("modal-summary-subtitle").textContent = `${formatDateRu4(meeting.date)} · ${meeting.title}`;
+    document.getElementById("modal-summary-subtitle").textContent = `${formatDateRu3(meeting.date)} · ${meeting.title}`;
     document.getElementById("summary-ratio-text").textContent = summary.ratioText;
     const percent = summary.total > 0 ? Math.round(summary.presentCount / summary.total * 100) : 0;
     document.getElementById("summary-percentage-text").textContent = `${percent}%`;
@@ -30108,7 +30571,24 @@
         }).join("");
       }
     }
-    openModal("modal-meeting-summary");
+    openModal2("modal-meeting-summary");
+  }
+  function setupPublishAnnouncementHandlers(navigate2) {
+    document.querySelectorAll(".btn-publish-announcement").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const title = btn.getAttribute("data-meeting-title") || "";
+        try {
+          sessionStorage.setItem("announcement_preset_title", title);
+        } catch {
+        }
+        if (navigate2) {
+          navigate2("announcements");
+        } else {
+          window.location.hash = "#/announcements";
+        }
+      });
+    });
   }
 
   // src/views/journal/render.js
@@ -31205,7 +31685,7 @@
     let activeLessonId = null;
     let activeStudentId = null;
     let activeAttendanceRecord = null;
-    function closeModal3() {
+    function closeModal4() {
       if (!modal) return;
       modal.classList.remove("opacity-100", "pointer-events-auto");
       modal.classList.add("opacity-0", "pointer-events-none");
@@ -31255,11 +31735,11 @@
       }
       if (formConfirmAbsence) formConfirmAbsence.reset();
     }
-    if (btnCloseX) btnCloseX.onclick = closeModal3;
-    if (btnCloseFooter) btnCloseFooter.onclick = closeModal3;
+    if (btnCloseX) btnCloseX.onclick = closeModal4;
+    if (btnCloseFooter) btnCloseFooter.onclick = closeModal4;
     if (modal) {
       modal.addEventListener("click", (e) => {
-        if (e.target === modal) closeModal3();
+        if (e.target === modal) closeModal4();
       });
     }
     if (btnCloseConfirmX) btnCloseConfirmX.onclick = closeJournalConfirmModal;
@@ -31283,7 +31763,7 @@
         if (modalConfirm && !modalConfirm.classList.contains("pointer-events-none")) {
           closeJournalConfirmModal();
         } else if (modal && !modal.classList.contains("pointer-events-none")) {
-          closeModal3();
+          closeModal4();
         }
       }
     });
@@ -31524,7 +32004,7 @@
           confirmedBy: "Смирнова М. В."
         });
         closeJournalConfirmModal();
-        closeModal3();
+        closeModal4();
         const currentHash = "/journal" + (window.location.search || "");
         if (onNavigate) {
           onNavigate(currentHash);
@@ -33113,7 +33593,7 @@
   }
 
   // src/views/student-summary/helpers.js
-  function formatDateRu5(isoDate) {
+  function formatDateRu4(isoDate) {
     if (!isoDate) return "";
     const parts = isoDate.split("-");
     if (parts.length === 3) {
@@ -33373,7 +33853,7 @@
 
             <h1 class="text-lg font-bold text-slate-900 leading-snug">${student.fullName}</h1>
             <p class="text-xs text-slate-500 mt-1">
-              Дата рождения: ${formatDateRu5(student.birthDate)} (${calculateAge(student.birthDate)} лет)
+              Дата рождения: ${formatDateRu4(student.birthDate)} (${calculateAge(student.birthDate)} лет)
             </p>
 
             <div class="flex items-center justify-center gap-2 mt-3 flex-wrap">
@@ -33429,7 +33909,7 @@
                   <span>Напоминание о повторном контакте</span>
                 </div>
                 <div class="text-xs text-amber-900">
-                  Дата: <strong class="font-semibold">${formatDateRu5(pendingContact.nextContactDate)}</strong>
+                  Дата: <strong class="font-semibold">${formatDateRu4(pendingContact.nextContactDate)}</strong>
                 </div>
                 <div class="text-[11px] text-amber-700">
                   Договорённость ранее не была достигнута. Требуется контрольная беседа.
@@ -33518,7 +33998,7 @@
       const valClass = g.value >= 4 ? "text-emerald-600 font-bold" : g.value <= 2 ? "text-rose-600 font-bold" : "text-slate-800 font-bold";
       return `
                           <tr class="hover:bg-slate-50">
-                            <td class="py-2 text-slate-500">${formatDateRu5(g.date)}</td>
+                            <td class="py-2 text-slate-500">${formatDateRu4(g.date)}</td>
                             <td class="py-2 font-semibold text-slate-800">${subj ? subj.name : "—"}</td>
                             <td class="py-2 ${valClass} text-sm">${g.value}</td>
                             <td class="py-2 text-slate-500">${g.comment || g.topic || "Ответ на уроке"}</td>
@@ -33558,7 +34038,7 @@
       return `
                     <div class="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div class="flex items-center space-x-4">
-                        <div class="text-xs font-bold text-slate-900 min-w-[75px]">${formatDateRu5(date)}</div>
+                        <div class="text-xs font-bold text-slate-900 min-w-[75px]">${formatDateRu4(date)}</div>
                         <div class="text-xs text-slate-500 min-w-[100px]">${lessonText}</div>
                         <div class="text-xs text-slate-700">
                           ${displayText}
@@ -33627,7 +34107,7 @@
                     <div class="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/80 space-y-2">
                       <div class="flex items-center justify-between flex-wrap gap-2">
                         <div class="flex items-center space-x-2">
-                          <span class="text-xs font-bold text-slate-900">${formatDateRu5(c.date)}</span>
+                          <span class="text-xs font-bold text-slate-900">${formatDateRu4(c.date)}</span>
                           <span class="text-slate-400 text-xs">·</span>
                           <span class="text-xs text-slate-500">Автор: <strong class="text-slate-700 font-semibold">${c.author || "Смирнова М. В."}</strong></span>
                         </div>
@@ -33651,7 +34131,7 @@
                           </span>
                         ` : c.nextContactDate ? `
                           <span class="inline-flex items-center text-[10px] font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                            ${renderIcon("calendar", "w-3 h-3 mr-1 text-amber-600")} Повторный контакт: ${formatDateRu5(c.nextContactDate)}
+                            ${renderIcon("calendar", "w-3 h-3 mr-1 text-amber-600")} Повторный контакт: ${formatDateRu4(c.nextContactDate)}
                           </span>
                         ` : `
                           <span class="inline-flex items-center text-[10px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
@@ -38764,7 +39244,7 @@
         errorBox.classList.add("hidden");
       }
     }
-    function openModal3(rowId) {
+    function openModal4(rowId) {
       if (!modal) return;
       editingRowId = rowId || null;
       showError("");
@@ -38799,7 +39279,7 @@
         modalDialog.classList.add("scale-100");
       }
     }
-    function closeModal3() {
+    function closeModal4() {
       if (!modal) return;
       editingRowId = null;
       modal.classList.remove("opacity-100", "pointer-events-auto");
@@ -38843,7 +39323,7 @@
       });
     }
     if (addBtn) {
-      addBtn.addEventListener("click", () => openModal3(null));
+      addBtn.addEventListener("click", () => openModal4(null));
     }
     if (submitBtn) {
       submitBtn.addEventListener("click", () => {
@@ -38862,7 +39342,7 @@
           showError(res.error);
           return;
         }
-        closeModal3();
+        closeModal4();
         renderTable();
         showToast2(res.message);
       });
@@ -38874,7 +39354,7 @@
         const action = btn.getAttribute("data-action");
         const rowId = btn.getAttribute("data-row-id");
         if (action === "edit-workload") {
-          openModal3(rowId);
+          openModal4(rowId);
         }
         if (action === "remove-workload") {
           const res = removeWorkloadRow(rowId);
@@ -38889,16 +39369,16 @@
     }
     document.addEventListener("click", (e) => {
       const btn = e.target.closest('[data-action="close-workload-modal"]');
-      if (btn) closeModal3();
+      if (btn) closeModal4();
     });
     if (modal) {
       modal.addEventListener("click", (e) => {
-        if (e.target === modal) closeModal3();
+        if (e.target === modal) closeModal4();
       });
     }
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && modal && !modal.classList.contains("pointer-events-none")) {
-        closeModal3();
+        closeModal4();
       }
     });
   }
@@ -38907,7 +39387,7 @@
   function escapeHtml6(text) {
     return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
-  function formatDateRu6(dateStr) {
+  function formatDateRu5(dateStr) {
     if (!dateStr || typeof dateStr !== "string") return "";
     const parts = dateStr.split("-");
     if (parts.length !== 3) return dateStr;
@@ -38963,7 +39443,7 @@
           <span class="quarter-name">${escapeHtml6(q.name)}</span>
         </td>
         <td class="py-3.5 px-4 font-medium text-slate-800 quarter-dates">
-          ${formatDateRu6(q.startDate)} – ${formatDateRu6(q.endDate)}
+          ${formatDateRu5(q.startDate)} – ${formatDateRu5(q.endDate)}
         </td>
         <td class="py-3.5 px-4 text-slate-500">
           ${getDurationText(q.startDate, q.endDate)}
@@ -39014,7 +39494,7 @@
           </button>
         </div>
         <div class="text-xs font-semibold text-slate-700 mt-1.5">
-          ${formatDateRu6(v.startDate)} – ${formatDateRu6(v.endDate)}
+          ${formatDateRu5(v.startDate)} – ${formatDateRu5(v.endDate)}
         </div>
         <div class="text-[11px] text-slate-500 mt-0.5">
           ${getDurationText(v.startDate, v.endDate)}
@@ -39080,7 +39560,7 @@
               ${escapeHtml6(activeYear ? activeYear.name : "Не выбран")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-active-year-dates">
-              ${activeYear ? `${formatDateRu6(activeYear.startDate)} – ${formatDateRu6(activeYear.endDate)}` : "—"}
+              ${activeYear ? `${formatDateRu5(activeYear.startDate)} – ${formatDateRu5(activeYear.endDate)}` : "—"}
             </div>
           </div>
         </div>
@@ -39097,7 +39577,7 @@
               ${escapeHtml6(activePeriod.name || "I четверть")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-active-quarter-dates">
-              ${formatDateRu6(activePeriod.startDate)} – ${formatDateRu6(activePeriod.endDate)}
+              ${formatDateRu5(activePeriod.startDate)} – ${formatDateRu5(activePeriod.endDate)}
             </div>
           </div>
         </div>
@@ -39112,7 +39592,7 @@
               ${escapeHtml6(upcomingVacation ? upcomingVacation.name : "Каникулы не запланированы")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-upcoming-vacation-dates">
-              ${upcomingVacation ? `${formatDateRu6(upcomingVacation.startDate)} – ${formatDateRu6(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—"}
+              ${upcomingVacation ? `${formatDateRu5(upcomingVacation.startDate)} – ${formatDateRu5(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—"}
             </div>
           </div>
         </div>
@@ -39426,7 +39906,7 @@
       toast.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
     }, 3200);
   }
-  function openModal2(modalId) {
+  function openModal3(modalId) {
     const modal = document.getElementById(modalId);
     const dialog = document.getElementById(`${modalId}-dialog`);
     if (!modal) return;
@@ -39437,7 +39917,7 @@
       dialog.classList.add("scale-100");
     }
   }
-  function closeModal2(modalId) {
+  function closeModal3(modalId) {
     const modal = document.getElementById(modalId);
     const dialog = document.getElementById(`${modalId}-dialog`);
     if (!modal) return;
@@ -39454,7 +39934,7 @@
       "modal-edit-year",
       "modal-edit-quarter",
       "modal-edit-vacation"
-    ].forEach((id) => closeModal2(id));
+    ].forEach((id) => closeModal3(id));
   }
 
   // src/views/school-year/listeners.js
@@ -39489,19 +39969,19 @@
         kpiActiveYear.textContent = activeYear ? activeYear.name : "Не выбран";
       const kpiActiveYearDates = document.getElementById("kpi-active-year-dates");
       if (kpiActiveYearDates)
-        kpiActiveYearDates.textContent = activeYear ? `${formatDateRu6(activeYear.startDate)} – ${formatDateRu6(activeYear.endDate)}` : "—";
+        kpiActiveYearDates.textContent = activeYear ? `${formatDateRu5(activeYear.startDate)} – ${formatDateRu5(activeYear.endDate)}` : "—";
       const kpiQuarterName = document.getElementById("kpi-active-quarter-name");
       if (kpiQuarterName)
         kpiQuarterName.textContent = activePeriod.name || "I четверть";
       const kpiQuarterDates = document.getElementById("kpi-active-quarter-dates");
       if (kpiQuarterDates)
-        kpiQuarterDates.textContent = `${formatDateRu6(activePeriod.startDate)} – ${formatDateRu6(activePeriod.endDate)}`;
+        kpiQuarterDates.textContent = `${formatDateRu5(activePeriod.startDate)} – ${formatDateRu5(activePeriod.endDate)}`;
       const kpiVacName = document.getElementById("kpi-upcoming-vacation-name");
       if (kpiVacName)
         kpiVacName.textContent = upcomingVacation ? upcomingVacation.name : "Каникулы не запланированы";
       const kpiVacDates = document.getElementById("kpi-upcoming-vacation-dates");
       if (kpiVacDates)
-        kpiVacDates.textContent = upcomingVacation ? `${formatDateRu6(upcomingVacation.startDate)} – ${formatDateRu6(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—";
+        kpiVacDates.textContent = upcomingVacation ? `${formatDateRu5(upcomingVacation.startDate)} – ${formatDateRu5(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—";
       const tabsContainer = document.getElementById("academic-years-tabs");
       if (tabsContainer)
         tabsContainer.innerHTML = renderYearTabsHtml(
@@ -39563,7 +40043,7 @@
         if (modalEl) {
           modalEl.addEventListener("click", (e) => {
             if (e.target === modalEl) {
-              closeModal2(modalId);
+              closeModal3(modalId);
             }
           });
         }
@@ -39573,7 +40053,7 @@
       const closeBtn = e.target.closest('[data-action="close-modal"]');
       if (closeBtn) {
         const parentModal = closeBtn.closest(".fixed.inset-0");
-        if (parentModal) closeModal2(parentModal.id);
+        if (parentModal) closeModal3(parentModal.id);
         return;
       }
       const tabBtn = e.target.closest("[data-year-tab]");
@@ -39617,7 +40097,7 @@
         if (errEl) errEl.classList.add("hidden");
         const form = document.getElementById("form-add-year");
         if (form) form.reset();
-        openModal2("modal-add-year");
+        openModal3("modal-add-year");
         return;
       }
       const openEditYearBtn = e.target.closest("#btn-open-edit-year");
@@ -39636,7 +40116,7 @@
         if (startEl) startEl.value = yearStart;
         if (endEl) endEl.value = yearEnd;
         if (errEl) errEl.classList.add("hidden");
-        openModal2("modal-edit-year");
+        openModal3("modal-edit-year");
         return;
       }
       const setQuarterBtn = e.target.closest(
@@ -39670,7 +40150,7 @@
         if (startEl) startEl.value = startDate;
         if (endEl) endEl.value = endDate;
         if (errEl) errEl.classList.add("hidden");
-        openModal2("modal-edit-quarter");
+        openModal3("modal-edit-quarter");
         return;
       }
       const addVacBtn = e.target.closest("#btn-add-vacation");
@@ -39683,7 +40163,7 @@
         if (titleEl) titleEl.textContent = "Добавление каникул";
         if (form) form.reset();
         if (errEl) errEl.classList.add("hidden");
-        openModal2("modal-edit-vacation");
+        openModal3("modal-edit-vacation");
         return;
       }
       const editVacBtn = e.target.closest('[data-action="edit-vacation"]');
@@ -39704,7 +40184,7 @@
         if (startEl) startEl.value = start;
         if (endEl) endEl.value = end;
         if (errEl) errEl.classList.add("hidden");
-        openModal2("modal-edit-vacation");
+        openModal3("modal-edit-vacation");
         return;
       }
       const delVacBtn = e.target.closest('[data-action="delete-vacation"]');
@@ -39737,7 +40217,7 @@
           }
           return;
         }
-        closeModal2("modal-add-year");
+        closeModal3("modal-add-year");
         updateViewData(res.year.id);
         showToast(`Учебный год «${res.year.name}» успешно создан`);
       });
@@ -39759,7 +40239,7 @@
           }
           return;
         }
-        closeModal2("modal-edit-year");
+        closeModal3("modal-edit-year");
         updateViewData(res.year.id);
         showToast(`Учебный год «${res.year.name}» успешно обновлен`);
       });
@@ -39786,7 +40266,7 @@
           }
           return;
         }
-        closeModal2("modal-edit-quarter");
+        closeModal3("modal-edit-quarter");
         updateViewData(curYearId);
         showToast(`Даты четверти «${res.quarter.name}» обновлены`);
       });
@@ -39814,7 +40294,7 @@
           }
           return;
         }
-        closeModal2("modal-edit-vacation");
+        closeModal3("modal-edit-vacation");
         updateViewData(curYearId);
         showToast(`Каникулы «${name}» сохранены`);
       });

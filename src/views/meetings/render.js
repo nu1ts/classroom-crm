@@ -151,6 +151,7 @@ function renderNextMeetingSection(meeting) {
 
           <a
             href="announcements"
+            data-meeting-title="${meeting.title}"
             class="btn-publish-announcement inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200/60 text-xs font-bold transition-all cursor-pointer shadow-2xs"
           >
             ${renderIcon("megaphone", "w-3.5 h-3.5 text-brand-600")}
