@@ -29027,7 +29027,7 @@
         ${meetings.map((m) => `
           <div class="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-xs flex items-start justify-between gap-4">
             <div class="space-y-1.5">
-              <span class="text-2xs font-bold uppercase tracking-wider text-brand-700 bg-brand-50 border border-brand-200/60 px-2 py-0.5 rounded-md">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-md text-2xs font-semibold text-brand-700 bg-brand-50/80 border border-brand-200/60">
                 ${formatDateRu4(m.date)} · ${m.time}
               </span>
               <h4 class="text-sm font-bold text-slate-900">${m.title}</h4>
