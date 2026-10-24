@@ -719,6 +719,139 @@ export function setupJournalListeners(onNavigate) {
 
   const localChanges = new Map();
 
+  function recalculateJournalStats() {
+    let totalGradesSum = 0;
+    let totalGradesCount = 0;
+    let totalAbsencesCount = 0;
+    let totalUnconfirmedCount = 0;
+
+    const rows = document.querySelectorAll("tr.student-row");
+    rows.forEach((row) => {
+      let studentSum = 0;
+      let studentGradesCount = 0;
+      let studentAbsences = 0;
+      let studentUnconfirmed = 0;
+
+      row.querySelectorAll(".grade-input").forEach((input) => {
+        const valStr = input.value.trim();
+        if (valStr !== "") {
+          const val = parseInt(valStr, 10);
+          if (Number.isInteger(val) && val >= 2 && val <= 5 && !input.disabled) {
+            studentSum += val;
+            studentGradesCount++;
+          } else if (Number.isInteger(val) && val >= 2 && val <= 5 && input.disabled && !input.classList.contains("cursor-pointer")) {
+            studentSum += val;
+            studentGradesCount++;
+          }
+        }
+      });
+
+      row.querySelectorAll(".cell-journal-entry > div > span").forEach((span) => {
+        const text = span.textContent.trim();
+        const num = parseInt(text, 10);
+        if (Number.isInteger(num) && num >= 2 && num <= 5 && text.length === 1) {
+          studentSum += num;
+          studentGradesCount++;
+        }
+      });
+
+      row.querySelectorAll(".btn-toggle-absence").forEach((btn) => {
+        const status = btn.getAttribute("data-status");
+        if (status === "unconfirmed") {
+          studentAbsences++;
+          studentUnconfirmed++;
+        } else if (status === "confirmed") {
+          studentAbsences++;
+        }
+      });
+
+      row.querySelectorAll(".cell-journal-entry > div > span").forEach((span) => {
+        const text = span.textContent.trim();
+        if (text === "Н") {
+          studentAbsences++;
+          studentUnconfirmed++;
+        } else if (text === "Б" || text === "УП") {
+          studentAbsences++;
+        }
+      });
+
+      const avgCell = row.querySelector(".student-avg-cell");
+      if (avgCell) {
+        if (studentGradesCount > 0) {
+          const avg = (studentSum / studentGradesCount).toFixed(1);
+          avgCell.textContent = avg;
+          if (parseFloat(avg) < 3.5) {
+            avgCell.classList.add("text-amber-700", "bg-amber-50/30");
+            avgCell.classList.remove("text-slate-800");
+          } else {
+            avgCell.classList.remove("text-amber-700", "bg-amber-50/30");
+            avgCell.classList.add("text-slate-800");
+          }
+        } else {
+          avgCell.textContent = "—";
+          avgCell.classList.remove("text-amber-700", "bg-amber-50/30");
+          avgCell.classList.add("text-slate-800");
+        }
+      }
+
+      const absCell = row.querySelector(".student-absences-cell");
+      if (absCell) {
+        if (studentAbsences > 0) {
+          absCell.innerHTML = `
+            <span class="inline-flex items-center space-x-1 text-[11px] font-semibold text-slate-700">
+              <span>${studentAbsences}</span>
+              ${studentUnconfirmed > 0 ? `<span class="text-rose-600 font-bold" title="Неподтверждённых: ${studentUnconfirmed}">(${studentUnconfirmed}Н)</span>` : ""}
+            </span>
+          `;
+        } else {
+          absCell.innerHTML = '<span class="text-slate-300">0</span>';
+        }
+      }
+
+      totalGradesSum += studentSum;
+      totalGradesCount += studentGradesCount;
+      totalAbsencesCount += studentAbsences;
+      totalUnconfirmedCount += studentUnconfirmed;
+    });
+
+    const elTotalGrades = document.getElementById("stat-total-grades");
+    if (elTotalGrades) elTotalGrades.textContent = totalGradesCount;
+
+    const elTotalGradesLabel = document.getElementById("stat-total-grades-label");
+    if (elTotalGradesLabel) {
+      elTotalGradesLabel.textContent =
+        totalGradesCount % 10 === 1 && totalGradesCount % 100 !== 11
+          ? "оценка"
+          : totalGradesCount % 10 >= 2 && totalGradesCount % 10 <= 4 && (totalGradesCount % 100 < 10 || totalGradesCount % 100 >= 20)
+            ? "оценки"
+            : "оценок";
+    }
+
+    const elAvgGrade = document.getElementById("stat-avg-grade");
+    if (elAvgGrade) {
+      elAvgGrade.textContent = totalGradesCount > 0 ? (totalGradesSum / totalGradesCount).toFixed(1) : "—";
+    }
+
+    const elTotalAbsences = document.getElementById("stat-total-absences");
+    if (elTotalAbsences) elTotalAbsences.textContent = totalAbsencesCount;
+
+    const elUnconfirmedAbsences = document.getElementById("stat-unconfirmed-absences");
+    if (elUnconfirmedAbsences) {
+      if (totalUnconfirmedCount > 0) {
+        elUnconfirmedAbsences.textContent = `${totalUnconfirmedCount} не подтверждено`;
+        elUnconfirmedAbsences.className = "text-xs font-semibold text-rose-600";
+      } else {
+        elUnconfirmedAbsences.textContent = "Все подтверждены";
+        elUnconfirmedAbsences.className = "text-xs font-semibold text-emerald-600";
+      }
+    }
+
+    const elHighlightBadge = document.querySelector("#btn-toggle-highlight-unconfirmed .badge-unconfirmed-count");
+    if (elHighlightBadge) {
+      elHighlightBadge.textContent = totalUnconfirmedCount;
+    }
+  }
+
   document.querySelectorAll(".grade-input").forEach((input) => {
     input.addEventListener("click", (e) => {
       if (input.disabled) return;
@@ -757,6 +890,7 @@ export function setupJournalListeners(onNavigate) {
           localChanges.set(key, change);
         }
       }
+      recalculateJournalStats();
     });
 
     input.addEventListener("blur", () => {
@@ -820,6 +954,7 @@ export function setupJournalListeners(onNavigate) {
         change.grade = "";
         localChanges.set(key, change);
       }
+      recalculateJournalStats();
     });
   });
 
@@ -898,6 +1033,7 @@ export function setupJournalListeners(onNavigate) {
       }, 2000);
 
       localChanges.clear();
+      recalculateJournalStats();
     });
   }
 

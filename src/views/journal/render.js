@@ -430,10 +430,10 @@ export function renderJournalView(options = {}) {
             }
           </div>
         </td>
-        <td class="px-2.5 py-2.5 text-xs text-center border-b border-slate-200 border-r border-slate-200 bg-slate-50/50 font-bold whitespace-nowrap ${studentAvg !== "—" && parseFloat(studentAvg) < 3.5 ? "text-amber-700 bg-amber-50/30" : "text-slate-800"}">
+        <td class="student-avg-cell px-2.5 py-2.5 text-xs text-center border-b border-slate-200 border-r border-slate-200 bg-slate-50/50 font-bold whitespace-nowrap ${studentAvg !== "—" && parseFloat(studentAvg) < 3.5 ? "text-amber-700 bg-amber-50/30" : "text-slate-800"}" data-student-id="${s.id}">
           ${studentAvg}
         </td>
-        <td class="px-2 py-2.5 text-xs text-center border-b border-slate-200 border-r border-slate-200 bg-slate-50/30 whitespace-nowrap">
+        <td class="student-absences-cell px-2 py-2.5 text-xs text-center border-b border-slate-200 border-r border-slate-200 bg-slate-50/30 whitespace-nowrap" data-student-id="${s.id}">
           ${
             studentAbsences.length > 0
               ? `<span class="inline-flex items-center space-x-1 text-[11px] font-semibold text-slate-700">
@@ -494,15 +494,15 @@ export function renderJournalView(options = {}) {
         <div class="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Выставлено оценок</div>
           <div class="flex items-baseline space-x-2">
-            <span class="text-2xl font-bold text-slate-900">${periodGrades.length}</span>
-            <span class="text-xs text-slate-500">${periodGrades.length % 10 === 1 && periodGrades.length % 100 !== 11 ? "оценка" : periodGrades.length % 10 >= 2 && periodGrades.length % 10 <= 4 && (periodGrades.length % 100 < 10 || periodGrades.length % 100 >= 20) ? "оценки" : "оценок"}</span>
+            <span id="stat-total-grades" class="text-2xl font-bold text-slate-900">${periodGrades.length}</span>
+            <span id="stat-total-grades-label" class="text-xs text-slate-500">${periodGrades.length % 10 === 1 && periodGrades.length % 100 !== 11 ? "оценка" : periodGrades.length % 10 >= 2 && periodGrades.length % 10 <= 4 && (periodGrades.length % 100 < 10 || periodGrades.length % 100 >= 20) ? "оценки" : "оценок"}</span>
           </div>
         </div>
 
         <div class="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Средний балл</div>
           <div class="flex items-baseline space-x-2">
-            <span class="text-2xl font-bold text-slate-900">${avgGrade}</span>
+            <span id="stat-avg-grade" class="text-2xl font-bold text-slate-900">${avgGrade}</span>
             <span class="text-xs text-emerald-600 font-medium">класс 7Б</span>
           </div>
         </div>
@@ -510,12 +510,10 @@ export function renderJournalView(options = {}) {
         <div class="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Пропуски за период</div>
           <div class="flex items-baseline space-x-2">
-            <span class="text-2xl font-bold text-slate-900">${periodAbsences.length}</span>
-            ${
-              periodUnconfirmed.length > 0
-                ? `<span class="text-xs font-semibold text-rose-600" title="Требуют справку">${periodUnconfirmed.length} не подтверждено</span>`
-                : `<span class="text-xs font-semibold text-emerald-600">Все подтверждены</span>`
-            }
+            <span id="stat-total-absences" class="text-2xl font-bold text-slate-900">${periodAbsences.length}</span>
+            <span id="stat-unconfirmed-absences" class="text-xs font-semibold ${periodUnconfirmed.length > 0 ? "text-rose-600" : "text-emerald-600"}" title="Требуют справку">
+              ${periodUnconfirmed.length > 0 ? `${periodUnconfirmed.length} не подтверждено` : "Все подтверждены"}
+            </span>
           </div>
         </div>
       </div>
@@ -628,7 +626,7 @@ export function renderJournalView(options = {}) {
                     class="inline-flex items-center h-9 space-x-2 px-3.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap shadow-2xs ${highlightUnconfirmed ? "bg-rose-50 text-rose-700 border-rose-300 ring-2 ring-rose-500/20" : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300"}">
               <span class="w-2 h-2 rounded-full ${highlightUnconfirmed ? "bg-rose-600 animate-pulse" : "bg-rose-400"}"></span>
               <span>Подсветить неподтверждённые («Н»)</span>
-              <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold ${highlightUnconfirmed ? "bg-rose-600 text-white" : "bg-rose-100 text-rose-700"}">
+              <span class="badge-unconfirmed-count px-1.5 py-0.5 rounded-full text-[10px] font-bold ${highlightUnconfirmed ? "bg-rose-600 text-white" : "bg-rose-100 text-rose-700"}">
                 ${periodUnconfirmed.length}
               </span>
             </button>
