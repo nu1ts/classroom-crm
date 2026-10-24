@@ -691,7 +691,7 @@ function openSummaryModal(meetingId) {
                 }">
                   ${a.statusLabel || "Не пришёл"}
                 </span>
-                <span class="text-[10px] text-slate-500 block mt-0.5 font-medium italic max-w-[150px] truncate" title="${a.note || ""}">
+                <span class="text-xs text-slate-600 block mt-0.5 font-medium italic max-w-[180px] truncate" title="${a.note || ""}">
                   ${a.note ? `«${a.note}»` : "Причина не указана"}
                 </span>
               </div>

@@ -606,18 +606,18 @@ function renderSummaryModal() {
 
         <div class="p-3.5 rounded-2xl bg-gradient-to-br from-brand-50/70 via-white to-brand-50/30 border border-brand-100 shadow-2xs space-y-1.5">
           <div class="flex items-center justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Общая явка</span>
-            <span id="summary-percentage-text" class="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">86%</span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Общая явка</span>
+            <span id="summary-percentage-text" class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">86%</span>
           </div>
           <div class="flex items-baseline gap-2">
-            <span id="summary-ratio-text" class="text-sm font-bold text-slate-800">24 из 28</span>
-            <span class="text-[11px] font-medium text-slate-500">родителей присутствовали</span>
+            <span id="summary-ratio-text" class="text-2xl font-bold text-slate-900">24 из 28</span>
+            <span class="text-xs font-medium text-slate-500">родителей присутствовали</span>
           </div>
           <p class="text-[10px] text-slate-400 pt-1 border-t border-brand-100/50">Счётчик рассчитывается по фактическим отметкам родителей класса 7Б</p>
         </div>
 
         <div class="space-y-1.5">
-          <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500">
             Отсутствовали на собрании
           </h4>
           <div id="summary-absent-list" class="space-y-1.5 max-h-52 overflow-y-auto pr-1"></div>

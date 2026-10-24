@@ -28927,10 +28927,8 @@
     const dateRu = formatDateRu4(meeting.date);
     return `
     <div id="section-next-meeting" class="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-xs relative overflow-hidden">
-      <!-- Декоративная полоса акцента -->
       <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-500 to-brand-300"></div>
 
-      <!-- Верхняя часть: заголовки слева, кнопки действий справа -->
       <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pt-1">
         <div class="space-y-3 flex-1 min-w-0">
           <div class="flex flex-wrap items-center gap-2.5">
@@ -28958,7 +28956,6 @@
           </div>
         </div>
 
-        <!-- Кнопки действий справа -->
         <div class="flex items-center gap-2 shrink-0 pt-0.5">
           <button
             class="btn-edit-meeting inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
@@ -29000,7 +28997,6 @@
         </div>
       </div>
 
-      <!-- Повестка собрания на всю ширину карточки до конца баннера -->
       <div class="mt-5 pt-4 border-t border-slate-100 space-y-2.5 w-full">
         <div class="flex items-center justify-between">
           <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -29405,22 +29401,20 @@
           </button>
         </div>
 
-        <!-- Виджет счётчика явки (TC-MG-10) в фирменных цветах проекта -->
         <div class="p-3.5 rounded-2xl bg-gradient-to-br from-brand-50/70 via-white to-brand-50/30 border border-brand-100 shadow-2xs space-y-1.5">
           <div class="flex items-center justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Общая явка</span>
-            <span id="summary-percentage-text" class="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">86%</span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Общая явка</span>
+            <span id="summary-percentage-text" class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">86%</span>
           </div>
           <div class="flex items-baseline gap-2">
-            <span id="summary-ratio-text" class="text-sm font-bold text-slate-800">24 из 28</span>
-            <span class="text-[11px] font-medium text-slate-500">родителей присутствовали</span>
+            <span id="summary-ratio-text" class="text-2xl font-bold text-slate-900">24 из 28</span>
+            <span class="text-xs font-medium text-slate-500">родителей присутствовали</span>
           </div>
           <p class="text-[10px] text-slate-400 pt-1 border-t border-brand-100/50">Счётчик рассчитывается по фактическим отметкам родителей класса 7Б</p>
         </div>
 
-        <!-- Список отсутствовавших -->
         <div class="space-y-1.5">
-          <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500">
             Отсутствовали на собрании
           </h4>
           <div id="summary-absent-list" class="space-y-1.5 max-h-52 overflow-y-auto pr-1"></div>
@@ -29986,7 +29980,7 @@
                 <span class="inline-block px-2 py-0.5 rounded-full text-2xs font-bold ${isExcused ? "bg-amber-50 text-amber-800 border border-amber-200/70" : "bg-rose-50 text-rose-800 border border-rose-200/70"}">
                   ${a.statusLabel || "Не пришёл"}
                 </span>
-                <span class="text-[10px] text-slate-500 block mt-0.5 font-medium italic max-w-[150px] truncate" title="${a.note || ""}">
+                <span class="text-xs text-slate-600 block mt-0.5 font-medium italic max-w-[180px] truncate" title="${a.note || ""}">
                   ${a.note ? `«${a.note}»` : "Причина не указана"}
                 </span>
               </div>
