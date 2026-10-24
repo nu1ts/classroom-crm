@@ -21520,10 +21520,6 @@
     const found = dir.find((c) => c.id === classId);
     return found ? found.name : db.meta && db.meta.classId === classId ? db.meta.className : classId;
   }
-  function getSubjectShortName(subjectId, db) {
-    const subject = (db.subjects || []).find((s) => s.id === subjectId);
-    return subject ? subject.shortName || subject.name : subjectId;
-  }
   function getSubjectDirectory(db = getDB()) {
     return (db.subjects || []).map((s) => ({
       id: s.id,
@@ -21844,15 +21840,17 @@
     const rows = [];
     (db.teachers || []).forEach((teacher) => {
       (teacher.workload || []).forEach((w) => {
+        const subject = (db.subjects || []).find((s) => s.id === w.subjectId);
+        const schoolClass = (db.classes || []).find((c) => c.id === w.classId);
         rows.push({
           id: w.id || `wl-${teacher.id}-${w.classId}-${w.subjectId}`,
           teacherId: teacher.id,
           teacherName: teacher.fullName,
           teacherShortName: teacher.shortName,
           subjectId: w.subjectId,
-          subjectLabel: w.subjectLabel || getSubjectShortName(w.subjectId, db),
+          subjectLabel: subject ? subject.shortName || subject.name : w.subjectLabel,
           classId: w.classId,
-          className: w.className || getClassNameById(w.classId, db),
+          className: schoolClass ? schoolClass.name : w.className,
           hours: w.hours || 0
         });
       });
@@ -33146,11 +33144,15 @@
     const teachers = db.teachers || [];
     return teachers.map((teacher) => {
       const account = teacher.accountUserId ? users.find((u) => u.id === teacher.accountUserId) : users.find((u) => (u.cardName || u.shortName) === teacher.shortName);
-      const workload = (teacher.workload || []).map((w) => ({
-        className: w.className,
-        subjectLabel: w.subjectLabel,
-        hours: w.hours
-      }));
+      const workload = (teacher.workload || []).map((w) => {
+        const subject = (db.subjects || []).find((s) => s.id === w.subjectId);
+        const schoolClass = (db.classes || []).find((c) => c.id === w.classId);
+        return {
+          className: schoolClass ? schoolClass.name : w.className,
+          subjectLabel: subject ? subject.shortName || subject.name : w.subjectLabel,
+          hours: w.hours
+        };
+      });
       const totalHours = workload.reduce((sum, w) => sum + (w.hours || 0), 0);
       const classNames = [...new Set(workload.map((w) => w.className))];
       return {
@@ -33594,7 +33596,9 @@
     function fillSubjectOptions(selectedIds) {
       const box = document.getElementById("teacher-subjects");
       if (!box) return;
-      const subjects = getDB().subjects || [];
+      const subjects = (getDB().subjects || []).filter(
+        (s) => s.isActive !== false || (selectedIds || []).includes(s.id)
+      );
       box.innerHTML = subjects.map(
         (s) => `
       <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 cursor-pointer transition-colors">
@@ -33610,13 +33614,15 @@
       if (!select) return;
       const db = getDB();
       const classNameById = {};
-      (db.teachers || []).forEach((t) => {
-        (t.workload || []).forEach((w) => {
-          if (w.classId) classNameById[w.classId] = w.className;
-        });
+      (db.classes || []).forEach((c) => {
+        if (c.isActive !== false) classNameById[c.id] = c.name;
       });
-      if (db.meta && db.meta.classId)
-        classNameById[db.meta.classId] = db.meta.className || "7Б";
+      const current = (db.classes || []).find((c) => c.id === selectedId);
+      if (selectedId && !classNameById[selectedId] && current) {
+        classNameById[selectedId] = current.name;
+      }
+      if (!classNameById[selectedId] && db.meta && db.meta.classId === selectedId)
+        classNameById[selectedId] = db.meta.className || "7Б";
       select.innerHTML = [
         '<option value="">Не назначен</option>',
         ...Object.entries(classNameById).map(
@@ -34352,6 +34358,8 @@
     const allRows = getWorkloadRows(db);
     const classes = getClassDirectory(db);
     const subjects = db.subjects || [];
+    const activeSubjects = subjects.filter((s) => s.isActive !== false);
+    const activeClasses = classes.filter((c) => c.isActive !== false);
     const teachers = db.teachers || [];
     const searchQuery = (options.searchQuery || "").trim();
     const filterSubject = options.filterSubject || "all";
@@ -34477,7 +34485,7 @@
                 <select id="select-workload-subject-modal"
                         class="appearance-none w-full px-3.5 py-2.5 pr-9 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors cursor-pointer">
                   <option value="">Выберите предмет</option>
-                  ${subjects.map((s) => `<option value="${escapeHtml4(s.id)}">${escapeHtml4(s.name)}</option>`).join("")}
+                  ${activeSubjects.map((s) => `<option value="${escapeHtml4(s.id)}">${escapeHtml4(s.name)}</option>`).join("")}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
                   ${renderIcon("chevron-down", "w-4 h-4")}
@@ -34491,7 +34499,7 @@
                 <select id="select-workload-class-modal"
                         class="appearance-none w-full px-3.5 py-2.5 pr-9 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors cursor-pointer">
                   <option value="">Выберите класс</option>
-                  ${classes.map((c) => `<option value="${escapeHtml4(c.id)}">${escapeHtml4(c.name)}</option>`).join("")}
+                  ${activeClasses.map((c) => `<option value="${escapeHtml4(c.id)}">${escapeHtml4(c.name)}</option>`).join("")}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
                   ${renderIcon("chevron-down", "w-4 h-4")}
@@ -34683,8 +34691,24 @@
         modalTitle.textContent = row ? "Изменить нагрузку" : "Назначить нагрузку";
       }
       if (teacherSelect) teacherSelect.value = row ? row.teacherId : "";
-      if (subjectSelect) subjectSelect.value = row ? row.subjectId : "";
-      if (classSelect) classSelect.value = row ? row.classId : "";
+      if (subjectSelect) {
+        if (row && ![...subjectSelect.options].some((o) => o.value === row.subjectId)) {
+          const option = document.createElement("option");
+          option.value = row.subjectId;
+          option.textContent = row.subjectLabel;
+          subjectSelect.appendChild(option);
+        }
+        subjectSelect.value = row ? row.subjectId : "";
+      }
+      if (classSelect) {
+        if (row && ![...classSelect.options].some((o) => o.value === row.classId)) {
+          const option = document.createElement("option");
+          option.value = row.classId;
+          option.textContent = row.className;
+          classSelect.appendChild(option);
+        }
+        classSelect.value = row ? row.classId : "";
+      }
       if (hoursInput) hoursInput.value = row ? row.hours : 3;
       modal.classList.remove("opacity-0", "pointer-events-none");
       modal.classList.add("opacity-100", "pointer-events-auto");

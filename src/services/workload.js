@@ -8,7 +8,6 @@ import {
   getKnownClassIds,
   getClassDirectory,
   getClassNameById,
-  getSubjectShortName,
 } from "./directories.js";
 
 /**
@@ -18,15 +17,19 @@ export function getWorkloadRows(db = getDB()) {
   const rows = [];
   (db.teachers || []).forEach((teacher) => {
     (teacher.workload || []).forEach((w) => {
+      const subject = (db.subjects || []).find((s) => s.id === w.subjectId);
+      const schoolClass = (db.classes || []).find((c) => c.id === w.classId);
       rows.push({
         id: w.id || `wl-${teacher.id}-${w.classId}-${w.subjectId}`,
         teacherId: teacher.id,
         teacherName: teacher.fullName,
         teacherShortName: teacher.shortName,
         subjectId: w.subjectId,
-        subjectLabel: w.subjectLabel || getSubjectShortName(w.subjectId, db),
+        subjectLabel: subject
+          ? subject.shortName || subject.name
+          : w.subjectLabel,
         classId: w.classId,
-        className: w.className || getClassNameById(w.classId, db),
+        className: schoolClass ? schoolClass.name : w.className,
         hours: w.hours || 0,
       });
     });
