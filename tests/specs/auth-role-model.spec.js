@@ -391,6 +391,30 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     ]);
 
     await navigationPage.expectReadOnlyBadge(true);
+
+    await page.locator('#nav-grades').click();
+    await page.waitForURL(/\/grades\/?/, { timeout: 7000 });
+
+    await expect(page.locator('h1')).toContainText('Мои оценки');
+    await expect(page.locator('#badge-readonly')).toBeVisible();
+    await expect(page.locator('#badge-readonly')).toContainText('Только для просмотра');
+
+    await expect(page.locator('#kpi-average-grade')).toHaveText('4.50');
+    await expect(page.locator('#kpi-attendance-rate')).toContainText('90.9%');
+
+    const gradesTable = page.locator('#grades-table');
+    await expect(gradesTable).toBeVisible();
+    await expect(gradesTable.locator('text=Математика (Алгебра)')).toBeVisible();
+    await expect(gradesTable.locator('text=Русский язык')).toBeVisible();
+
+    await page.selectOption('#grades-period-select', 'q2_2024');
+    await expect(page.locator('#grades-empty-state')).toBeVisible();
+    await page.selectOption('#grades-period-select', 'q1_2024');
+    await expect(gradesTable).toBeVisible();
+
+    await expect(page.locator('button:has-text("Выставить")')).toHaveCount(0);
+    await expect(page.locator('button:has-text("Изменить")')).toHaveCount(0);
+    await expect(page.locator('button:has-text("Добавить")')).toHaveCount(0);
   });
 
   test.skip('[TC-RM-06] Недоступные действия скрыты и отклоняются сервером (Негативный)', async () => {
@@ -531,6 +555,16 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await page.goto('student?id=st-14');
     await expect(page.locator('text=Доступ ограничен')).toBeVisible();
     await expect(page.locator('text=У вас нет прав для просмотра данного раздела или объекта системы')).toBeVisible();
+
+    await page.goto('grades?id=st-14');
+    await expect(page.locator('text=Доступ ограничен')).toBeVisible();
+    await expect(page.locator('text=У вас нет прав для просмотра данного раздела или объекта системы')).toBeVisible();
+    await expect(page.locator('#grades-table')).toHaveCount(0);
+
+    await page.goto('grades?id=nonexistent-999');
+    await expect(page.locator('text=Доступ ограничен')).toBeVisible();
+    await expect(page.locator('text=У вас нет прав для просмотра данного раздела или объекта системы')).toBeVisible();
+    await expect(page.locator('#grades-table')).toHaveCount(0);
   });
 
   test('[TC-RM-13] Профиль показывает роль и привязку без права правки (Правило)', async ({ page, loginPage, profilePage, navigationPage }) => {

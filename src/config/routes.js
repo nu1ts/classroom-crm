@@ -33,6 +33,10 @@ import {
   setupProfileListeners,
 } from "../views/profile/index.js";
 import { renderForbiddenView } from "../views/forbidden.js";
+import {
+  renderGradesView,
+  setupGradesListeners,
+} from "../views/grades/index.js";
 import { renderPlaceholderView } from "../views/placeholder.js";
 import {
   renderAttendanceView,
@@ -351,13 +355,14 @@ export const ROUTE_HANDLERS = {
 
   "/grades": {
     title: "Оценки",
-    render: () =>
-      renderPlaceholderView(
-        "Оценки",
-        "Текущие оценки и средний балл по четвертям",
-        "/grades",
-      ),
-    setup: () => {},
+    render: () => {
+      const params = getRouteParams();
+      return renderGradesView({
+        id: params.get("id") || params.get("student") || null,
+        periodId: params.get("period") || params.get("periodId") || "q1_2024",
+      });
+    },
+    setup: (navigate) => setupGradesListeners(navigate),
   },
 
   "/accounts": {
