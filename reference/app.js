@@ -28005,6 +28005,7 @@
     const isSubjectTeacher = currentUser && currentUser.role === "subject_teacher";
     const isParent = currentUser && currentUser.role === "parent";
     const isStudent = currentUser && currentUser.role === "student";
+    const isTeacher = currentUser && (currentUser.role === "teacher" || currentUser.role === "admin");
     let allowedClassId = "class-7b";
     if (isParent) {
       const child = (db.students || []).find((s) => s.id === currentUser.childStudentId);
@@ -28110,7 +28111,12 @@
           </div>
 
           <div class="flex items-center space-x-2">
-            <button id="btn-prev-week"
+            ${isTeacher ? `<button id="btn-add-lesson"
+                           class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white shadow-2xs transition-colors cursor-pointer mr-1"
+                           title="Добавить занятие">
+                     ${renderIcon("plus", "w-3.5 h-3.5")}
+                     <span>Добавить занятие</span>
+                   </button>` : ""}<button id="btn-prev-week"
                     data-week-id="${prevWeek ? prevWeek.id : ""}"
                     ${!prevWeek ? "disabled" : ""}
                     class="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
@@ -28149,8 +28155,13 @@
           <p class="text-xs font-medium text-slate-500 max-w-md mx-auto">
             ${selectedWeek.isVacation ? "На эту неделю занятия не запланированы (каникулы). Учебный процесс возобновится со следующей недели." : "В расписании на указанный период уроки отсутствуют."}
           </p>
-          <div class="mt-5">
-            <button id="btn-empty-return-current"
+          <div class="mt-5 flex items-center justify-center gap-3">
+            ${isTeacher ? `<button id="btn-empty-add-lesson"
+                           class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white transition-colors cursor-pointer"
+                           title="Добавить занятие">
+                     ${renderIcon("plus", "w-3.5 h-3.5")}
+                     <span>Добавить занятие</span>
+                   </button>` : ""}<button id="btn-empty-return-current"
                     data-week-id="w8"
                     class="inline-flex items-center px-4 py-2 rounded-lg text-xs font-semibold bg-[#EDE9FE] hover:bg-[#E0E7FE] text-[#6D28D9] transition-colors cursor-pointer">
               Вернуться на текущую неделю
@@ -28211,9 +28222,27 @@
                                             ${lesson.teacher || "Козлов А. П."}
                                           </div>
                                         </div>
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black shrink-0 ${badgeStyle}">
-                                          ${className}
-                                        </span>
+                                        <div class="flex items-center gap-1 shrink-0">
+                                          <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black ${badgeStyle}">
+                                            ${className}
+                                          </span>
+                                          ${isTeacher ? `<div class="flex items-center gap-0.5 ml-1">
+                                                   <button type="button"
+                                                           data-action="edit-lesson"
+                                                           data-lesson-id="${lesson.id}"
+                                                           class="p-1 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded transition-colors cursor-pointer"
+                                                           title="Изменить занятие">
+                                                     ${renderIcon("edit", "w-3.5 h-3.5")}
+                                                   </button>
+                                                   <button type="button"
+                                                           data-action="delete-lesson"
+                                                           data-lesson-id="${lesson.id}"
+                                                           class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
+                                                           title="Отменить занятие">
+                                                     ${renderIcon("trash", "w-3.5 h-3.5")}
+                                                   </button>
+                                                 </div>` : ""}
+                                        </div>
                                       </div>
 
                                       <div class="flex items-center justify-between mt-3 pt-2.5 border-t border-slate-100 text-[11px]">
@@ -28225,9 +28254,17 @@
                                     </div>
                                   `;
         }).join("") : `
-                                <div class="h-14 flex items-center justify-center text-slate-200 text-xs select-none">
-                                  —
-                                </div>
+                                ${isTeacher ? `<button type="button"
+                                             data-action="slot-add-lesson"
+                                             data-date="${day.date}"
+                                             data-time="${slot.time}"
+                                             class="w-full h-14 border border-dashed border-slate-200 hover:border-brand-400 hover:bg-brand-50/40 rounded-xl flex items-center justify-center text-slate-300 hover:text-brand-600 transition-all cursor-pointer group"
+                                             title="Добавить занятие в этот слот">
+                                       <span class="text-xs group-hover:hidden select-none">—</span>
+                                       <span class="hidden group-hover:inline-flex items-center text-xs font-semibold gap-1">
+                                         ${renderIcon("plus", "w-3.5 h-3.5")}
+                                       </span>
+                                     </button>` : `<div class="h-14 flex items-center justify-center text-slate-200 text-xs select-none">—</div>`}
                               `}
                         </td>
                       `;
@@ -28240,12 +28277,356 @@
           </div>
         </div>
       `}
+      ${isTeacher ? `
+        <div id="modal-lesson-form" class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+          <div id="modal-lesson-dialog" class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center border border-brand-100 flex-shrink-0" style="width: 40px; height: 40px; min-width: 40px;">
+                  ${renderIcon("calendar", "w-5 h-5 text-brand-600")}
+                </div>
+                <div>
+                  <h3 id="modal-lesson-title" class="text-sm font-bold text-slate-900">
+                    Добавить занятие
+                  </h3>
+                  <p class="text-[11px] text-slate-500 font-medium">Планирование и редактирование уроков класса</p>
+                </div>
+              </div>
+              <button type="button" id="btn-close-lesson-modal" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-xl transition-colors cursor-pointer">
+                ${renderIcon("close", "w-4 h-4")}
+              </button>
+            </div>
+
+            <div id="lesson-room-conflict-error" class="hidden mb-4 p-3.5 rounded-2xl bg-rose-50 border border-rose-200/90 text-rose-800 text-xs font-medium flex items-start gap-2.5">
+              <div class="w-5 h-5 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 font-bold mt-0.5">!</div>
+              <div id="lesson-conflict-error-text" class="flex-1 leading-relaxed"></div>
+            </div>
+
+            <form id="form-lesson" class="space-y-4">
+              <input type="hidden" id="lesson-id-input" value="" />
+
+              <div>
+                <label for="lesson-subject-select" class="block text-xs font-semibold text-slate-700 mb-1.5">Предмет</label>
+                <div class="relative">
+                  <select id="lesson-subject-select" required
+                          class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                    <option value="Физика">Физика</option>
+                    <option value="История">История</option>
+                    <option value="Математика (Алгебра)">Математика (Алгебра)</option>
+                    <option value="Русский язык">Русский язык</option>
+                    <option value="Физкультура">Физкультура</option>
+                    <option value="Разговоры о важном">Разговоры о важном</option>
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                    ${renderIcon("chevronDown", "w-3.5 h-3.5")}
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label for="lesson-class-select" class="block text-xs font-semibold text-slate-700 mb-1.5">Класс</label>
+                  <div class="relative">
+                    <select id="lesson-class-select" required
+                            class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                      <option value="class-7b" selected>7Б</option>
+                      <option value="class-8a">8А</option>
+                      <option value="class-8b">8Б</option>
+                      <option value="class-9v">9В</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                      ${renderIcon("chevronDown", "w-3.5 h-3.5")}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="lesson-date-select" class="block text-xs font-semibold text-slate-700 mb-1.5">День недели / Дата</label>
+                  <div class="relative">
+                    <select id="lesson-date-select" required
+                            class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                      ${weekDays.map(
+      (d) => `
+                        <option value="${d.date}">${d.name} (${d.displayDate})</option>
+                      `
+    ).join("")}
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                      ${renderIcon("chevronDown", "w-3.5 h-3.5")}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label for="lesson-time-select" class="block text-xs font-semibold text-slate-700 mb-1.5">Время / Урок</label>
+                  <div class="relative">
+                    <select id="lesson-time-select" required
+                            class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                      <option value="08:30 - 09:15">1 урок (08:30 - 09:15)</option>
+                      <option value="09:30 - 10:15">2 урок (09:30 - 10:15)</option>
+                      <option value="10:30 - 11:15">3 урок (10:30 - 11:15)</option>
+                      <option value="11:30 - 12:15" selected>4 урок (11:30 - 12:15)</option>
+                      <option value="12:35 - 13:20">5 урок (12:35 - 13:20)</option>
+                      <option value="13:30 - 14:15">6 урок (13:30 - 14:15)</option>
+                      <option value="14:25 - 15:10">7 урок (14:25 - 15:10)</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                      ${renderIcon("chevronDown", "w-3.5 h-3.5")}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="lesson-room-select" class="block text-xs font-semibold text-slate-700 mb-1.5">Аудитория</label>
+                  <div class="relative">
+                    <select id="lesson-room-select" required
+                            class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                      <option value="Каб. 401">Каб. 401</option>
+                      <option value="Каб. 302">Каб. 302</option>
+                      <option value="Каб. 204">Каб. 204</option>
+                      <option value="Спортзал">Спортзал</option>
+                      <option value="Каб. 210">Каб. 210</option>
+                      <option value="Каб. 405">Каб. 405</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                      ${renderIcon("chevronDown", "w-3.5 h-3.5")}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label for="lesson-teacher-select" class="block text-xs font-semibold text-slate-700 mb-1.5">Учитель</label>
+                <div class="relative">
+                  <select id="lesson-teacher-select" required
+                          class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                    <option value="Дмитриев Д. К.">Дмитриев Д. К. (Физика)</option>
+                    <option value="Морозов В. Д.">Морозов В. Д. (История)</option>
+                    <option value="Козлов А. П.">Козлов А. П. (Математика)</option>
+                    <option value="Смирнова М. В.">Смирнова М. В. (Классрук)</option>
+                    <option value="Иванова Е. С.">Иванова Е. С. (Русский язык)</option>
+                    <option value="Новиков С. А.">Новиков С. А. (Физкультура)</option>
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                    ${renderIcon("chevronDown", "w-3.5 h-3.5")}
+                  </div>
+                </div>
+              </div>
+
+              <div class="pt-3 border-t border-slate-100 flex items-center space-x-2.5">
+                <button type="button" id="btn-cancel-lesson-form"
+                        class="flex-1 py-2.5 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer">
+                  Отмена
+                </button>
+                <button type="submit" id="btn-save-lesson"
+                        class="flex-1 py-2.5 px-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-xs transition-colors cursor-pointer">
+                  Сохранить
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div id="modal-confirm-delete-lesson" class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+          <div id="modal-confirm-delete-lesson-dialog" class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100 flex-shrink-0" style="width: 40px; height: 40px; min-width: 40px;">
+                  ${renderIcon("alertTriangle", "w-5 h-5 text-rose-600")}
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">Отмена занятия</h3>
+                  <p class="text-[11px] text-slate-500 font-medium">Удаление урока из расписания</p>
+                </div>
+              </div>
+              <button type="button" id="btn-close-delete-x" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-xl transition-colors cursor-pointer">
+                ${renderIcon("close", "w-4 h-4")}
+              </button>
+            </div>
+
+            <div class="mb-5 p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-amber-900 text-xs font-medium leading-relaxed">
+              <p id="cancel-lesson-warning">
+                Занятие будет удалено из расписания. Обратите внимание: ранее внесённые записи журнала (оценки и посещаемость) сохраняются.
+              </p>
+            </div>
+
+            <input type="hidden" id="delete-lesson-id-input" value="" />
+
+            <div class="pt-2 flex items-center space-x-2.5">
+              <button type="button" id="btn-cancel-delete-lesson"
+                      class="flex-1 py-2.5 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer">
+                Назад
+              </button>
+              <button type="button" id="btn-confirm-delete-lesson"
+                      class="flex-1 py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs shadow-xs transition-colors cursor-pointer">
+                Подтвердить отмену
+              </button>
+            </div>
+          </div>
+        </div>
+        ` : ""}
     </div>
   `;
   }
 
+  // src/services/schedule-ops.js
+  function normalizeLessonTime(timeStr) {
+    if (!timeStr) return "";
+    const match = String(timeStr).trim().match(/^(\d{1,2}:\d{2})/);
+    return match ? match[1] : String(timeStr).trim();
+  }
+  function resolveLessonSlot(timeStr) {
+    const norm = normalizeLessonTime(timeStr);
+    const found = TIME_SLOTS.find((s) => normalizeLessonTime(s.time) === norm);
+    if (found) {
+      return { lessonNumber: found.number, fullTime: found.time };
+    }
+    return { lessonNumber: 1, fullTime: timeStr || "08:30 - 09:15" };
+  }
+  function checkRoomConflict({ date, time, room, excludeLessonId = null }) {
+    if (!date || !time || !room) {
+      return { hasConflict: false };
+    }
+    const db = getDB();
+    const normRoom = String(room).trim().toLowerCase();
+    const normTime = normalizeLessonTime(time);
+    const conflictingLesson = (db.lessons || []).find((l) => {
+      if (excludeLessonId && l.id === excludeLessonId) {
+        return false;
+      }
+      if (l.date !== date) {
+        return false;
+      }
+      if (normalizeLessonTime(l.time) !== normTime) {
+        return false;
+      }
+      const lessonRoom = String(l.room || "").trim().toLowerCase();
+      return lessonRoom === normRoom;
+    });
+    if (conflictingLesson) {
+      const classLabel = conflictingLesson.classId === "class-7b" ? "7Б" : conflictingLesson.classId === "class-8a" ? "8А" : conflictingLesson.classId === "class-9v" ? "9В" : conflictingLesson.classId || "другой класс";
+      return {
+        hasConflict: true,
+        conflictingLesson,
+        error: `Аудитория ${room} уже занята в это время (${conflictingLesson.subjectName || "занятие"}, класс ${classLabel})`
+      };
+    }
+    return { hasConflict: false };
+  }
+  function addLesson(lessonData) {
+    if (!lessonData || !lessonData.subjectName || !lessonData.date || !lessonData.time || !lessonData.room) {
+      return {
+        success: false,
+        error: "Заполните все обязательные поля: предмет, дату, время и аудиторию"
+      };
+    }
+    const conflict = checkRoomConflict({
+      date: lessonData.date,
+      time: lessonData.time,
+      room: lessonData.room
+    });
+    if (conflict.hasConflict) {
+      return {
+        success: false,
+        error: conflict.error,
+        hasConflict: true,
+        conflictingLesson: conflict.conflictingLesson
+      };
+    }
+    const db = getDB();
+    const slot = resolveLessonSlot(lessonData.time);
+    const newLesson = {
+      id: lessonData.id || `lsn-${Date.now()}-${Math.floor(Math.random() * 1e3)}`,
+      lessonNumber: lessonData.lessonNumber || slot.lessonNumber,
+      date: lessonData.date,
+      time: slot.fullTime,
+      weekIndex: lessonData.weekIndex || 8,
+      dayOfWeek: lessonData.dayOfWeek !== void 0 ? lessonData.dayOfWeek : new Date(lessonData.date).getDay() - 1,
+      subjectId: lessonData.subjectId || "custom",
+      subjectName: lessonData.subjectName.trim(),
+      teacher: (lessonData.teacher || "Смирнова М. В.").trim(),
+      room: lessonData.room.trim(),
+      classId: lessonData.classId || "class-7b",
+      status: lessonData.status || "planned",
+      isMarked: Boolean(lessonData.isMarked),
+      periodId: lessonData.periodId || "q1_2024"
+    };
+    if (!Array.isArray(db.lessons)) {
+      db.lessons = [];
+    }
+    db.lessons.push(newLesson);
+    saveDB(db);
+    return { success: true, lesson: newLesson };
+  }
+  function updateLesson(lessonId, updates = {}) {
+    if (!lessonId) {
+      return { success: false, error: "Не указан идентификатор занятия" };
+    }
+    const db = getDB();
+    const lesson = (db.lessons || []).find((l) => l.id === lessonId);
+    if (!lesson) {
+      return { success: false, error: "Занятие не найдено в расписании" };
+    }
+    const targetDate = updates.date || lesson.date;
+    const targetTime = updates.time || lesson.time;
+    const targetRoom = updates.room || lesson.room;
+    const conflict = checkRoomConflict({
+      date: targetDate,
+      time: targetTime,
+      room: targetRoom,
+      excludeLessonId: lessonId
+    });
+    if (conflict.hasConflict) {
+      return {
+        success: false,
+        error: conflict.error,
+        hasConflict: true,
+        conflictingLesson: conflict.conflictingLesson
+      };
+    }
+    const slot = resolveLessonSlot(targetTime);
+    Object.assign(lesson, updates, {
+      date: targetDate,
+      time: slot.fullTime,
+      lessonNumber: slot.lessonNumber,
+      room: targetRoom.trim()
+    });
+    if (updates.subjectName) lesson.subjectName = updates.subjectName.trim();
+    if (updates.teacher) lesson.teacher = updates.teacher.trim();
+    if (updates.classId) lesson.classId = updates.classId;
+    saveDB(db);
+    return { success: true, lesson };
+  }
+  function cancelLesson(lessonId) {
+    if (!lessonId) {
+      return { success: false, error: "Не указан идентификатор занятия" };
+    }
+    const db = getDB();
+    const initialCount = (db.lessons || []).length;
+    db.lessons = (db.lessons || []).filter((l) => l.id !== lessonId);
+    if (db.lessons.length === initialCount) {
+      return { success: false, error: "Занятие не найдено для отмены" };
+    }
+    saveDB(db);
+    return {
+      success: true,
+      warning: "Занятие отменено. Записи журнала (оценки и посещаемость) сохранены."
+    };
+  }
+
   // src/views/schedule/listeners.js
   function setupScheduleListeners(navigate2) {
+    function refreshView() {
+      if (navigate2) {
+        const url = new URL(window.location.href);
+        const search = url.search.replace(/^\?/, "");
+        navigate2(`schedule${search ? `?${search}` : ""}`);
+      } else {
+        window.dispatchEvent(new Event("popstate"));
+      }
+    }
     const selectWeek = document.getElementById("select-schedule-week");
     if (selectWeek) {
       selectWeek.addEventListener("change", (e) => {
@@ -28320,6 +28701,232 @@
         }
       });
     }
+    function showModal(modalEl, dialogEl) {
+      if (!modalEl) return;
+      modalEl.classList.remove("hidden");
+      requestAnimationFrame(() => {
+        modalEl.classList.remove("opacity-0", "pointer-events-none");
+        modalEl.classList.add("opacity-100", "pointer-events-auto");
+        if (dialogEl) {
+          dialogEl.classList.remove("scale-95");
+          dialogEl.classList.add("scale-100");
+        }
+      });
+    }
+    function hideModal(modalEl, dialogEl) {
+      if (!modalEl) return;
+      modalEl.classList.remove("opacity-100", "pointer-events-auto");
+      modalEl.classList.add("opacity-0", "pointer-events-none");
+      if (dialogEl) {
+        dialogEl.classList.remove("scale-100");
+        dialogEl.classList.add("scale-95");
+      }
+      modalEl.classList.add("hidden");
+    }
+    const modalLesson = document.getElementById("modal-lesson-form");
+    const modalLessonDialog = document.getElementById("modal-lesson-dialog");
+    const modalTitle = document.getElementById("modal-lesson-title");
+    const formLesson = document.getElementById("form-lesson");
+    const lessonIdInput = document.getElementById("lesson-id-input");
+    const conflictErrorBox = document.getElementById("lesson-room-conflict-error");
+    const conflictErrorText = document.getElementById("lesson-conflict-error-text");
+    const selectSubject = document.getElementById("lesson-subject-select");
+    const selectClass = document.getElementById("lesson-class-select");
+    const selectDate = document.getElementById("lesson-date-select");
+    const selectTime = document.getElementById("lesson-time-select");
+    const selectRoom = document.getElementById("lesson-room-select");
+    const selectTeacher = document.getElementById("lesson-teacher-select");
+    function openLessonModal(lessonData = null) {
+      if (!modalLesson) return;
+      if (conflictErrorBox) {
+        conflictErrorBox.classList.add("hidden");
+      }
+      if (lessonData) {
+        if (modalTitle) modalTitle.textContent = "Редактировать занятие";
+        if (lessonIdInput) lessonIdInput.value = lessonData.id || "";
+        setSelectValueOrAdd(selectSubject, lessonData.subjectName);
+        setSelectValueOrAdd(selectClass, lessonData.classId || "class-7b");
+        setSelectValueOrAdd(selectDate, lessonData.date);
+        if (selectTime && lessonData.time) {
+          const norm = normalizeLessonTime(lessonData.time);
+          const match = Array.from(selectTime.options).find(
+            (o) => normalizeLessonTime(o.value) === norm
+          );
+          if (match) {
+            selectTime.value = match.value;
+          } else {
+            setSelectValueOrAdd(selectTime, lessonData.time);
+          }
+        }
+        setSelectValueOrAdd(selectRoom, lessonData.room);
+        setSelectValueOrAdd(selectTeacher, lessonData.teacher);
+      } else {
+        if (modalTitle) modalTitle.textContent = "Добавить занятие";
+        if (lessonIdInput) lessonIdInput.value = "";
+        if (selectSubject) selectSubject.selectedIndex = 0;
+        if (selectClass) selectClass.value = "class-7b";
+        if (selectTime) selectTime.value = "11:30 - 12:15";
+        if (selectRoom) selectRoom.value = "Каб. 401";
+        if (selectTeacher) selectTeacher.selectedIndex = 0;
+      }
+      showModal(modalLesson, modalLessonDialog);
+    }
+    function closeLessonModal() {
+      hideModal(modalLesson, modalLessonDialog);
+      if (conflictErrorBox) conflictErrorBox.classList.add("hidden");
+    }
+    function setSelectValueOrAdd(selectElem, val) {
+      if (!selectElem || !val) return;
+      const exists = Array.from(selectElem.options).some((o) => o.value === val);
+      if (!exists) {
+        const opt = document.createElement("option");
+        opt.value = val;
+        opt.textContent = val;
+        selectElem.appendChild(opt);
+      }
+      selectElem.value = val;
+    }
+    const btnAddLesson = document.getElementById("btn-add-lesson");
+    if (btnAddLesson) {
+      btnAddLesson.addEventListener("click", () => {
+        openLessonModal();
+      });
+    }
+    const btnEmptyAddLesson = document.getElementById("btn-empty-add-lesson");
+    if (btnEmptyAddLesson) {
+      btnEmptyAddLesson.addEventListener("click", () => {
+        openLessonModal();
+      });
+    }
+    const btnCloseModal = document.getElementById("btn-close-lesson-modal");
+    if (btnCloseModal) {
+      btnCloseModal.addEventListener("click", closeLessonModal);
+    }
+    const btnCancelForm = document.getElementById("btn-cancel-lesson-form");
+    if (btnCancelForm) {
+      btnCancelForm.addEventListener("click", closeLessonModal);
+    }
+    if (modalLesson) {
+      modalLesson.addEventListener("click", (e) => {
+        if (e.target === modalLesson) closeLessonModal();
+      });
+    }
+    document.querySelectorAll('button[data-action="slot-add-lesson"]').forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const date = btn.getAttribute("data-date");
+        const time = btn.getAttribute("data-time");
+        openLessonModal();
+        if (date && selectDate) setSelectValueOrAdd(selectDate, date);
+        if (time && selectTime) {
+          const norm = normalizeLessonTime(time);
+          const match = Array.from(selectTime.options).find(
+            (o) => normalizeLessonTime(o.value) === norm
+          );
+          if (match) selectTime.value = match.value;
+        }
+      });
+    });
+    document.querySelectorAll('button[data-action="edit-lesson"]').forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const lessonId = btn.getAttribute("data-lesson-id");
+        const db = getDB();
+        const lesson = (db.lessons || []).find((l) => l.id === lessonId);
+        if (lesson) {
+          openLessonModal(lesson);
+        }
+      });
+    });
+    if (formLesson) {
+      formLesson.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const lessonId = lessonIdInput ? lessonIdInput.value.trim() : "";
+        const subjectName = selectSubject ? selectSubject.value : "";
+        const classId = selectClass ? selectClass.value : "class-7b";
+        const date = selectDate ? selectDate.value : "";
+        const time = selectTime ? selectTime.value : "";
+        const room = selectRoom ? selectRoom.value : "";
+        const teacher = selectTeacher ? selectTeacher.value : "";
+        let res;
+        if (lessonId) {
+          res = updateLesson(lessonId, {
+            subjectName,
+            classId,
+            date,
+            time,
+            room,
+            teacher
+          });
+        } else {
+          res = addLesson({
+            subjectName,
+            classId,
+            date,
+            time,
+            room,
+            teacher
+          });
+        }
+        if (!res.success) {
+          if (conflictErrorBox && conflictErrorText) {
+            conflictErrorText.textContent = res.error || "Аудитория уже занята в это время";
+            conflictErrorBox.classList.remove("hidden");
+          }
+          return;
+        }
+        closeLessonModal();
+        refreshView();
+      });
+    }
+    const modalCancel = document.getElementById("modal-confirm-delete-lesson");
+    const modalCancelDialog = document.getElementById("modal-confirm-delete-lesson-dialog");
+    const deleteIdInput = document.getElementById("delete-lesson-id-input");
+    const btnCloseDeleteX = document.getElementById("btn-close-delete-x");
+    const btnCloseCancelModal = document.getElementById("btn-cancel-delete-lesson");
+    const btnConfirmDelete = document.getElementById("btn-confirm-delete-lesson");
+    function openCancelModal(lessonId) {
+      if (modalCancel && deleteIdInput) {
+        deleteIdInput.value = lessonId || "";
+        showModal(modalCancel, modalCancelDialog);
+      }
+    }
+    function closeCancelModal() {
+      hideModal(modalCancel, modalCancelDialog);
+    }
+    document.querySelectorAll('button[data-action="delete-lesson"]').forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const lessonId = btn.getAttribute("data-lesson-id");
+        openCancelModal(lessonId);
+      });
+    });
+    if (btnCloseDeleteX) btnCloseDeleteX.addEventListener("click", closeCancelModal);
+    if (btnCloseCancelModal) btnCloseCancelModal.addEventListener("click", closeCancelModal);
+    if (modalCancel) {
+      modalCancel.addEventListener("click", (e) => {
+        if (e.target === modalCancel) closeCancelModal();
+      });
+    }
+    if (btnConfirmDelete && modalCancel) {
+      btnConfirmDelete.addEventListener("click", () => {
+        const lessonId = deleteIdInput ? deleteIdInput.value : "";
+        if (lessonId) {
+          cancelLesson(lessonId);
+        }
+        closeCancelModal();
+        refreshView();
+      });
+    }
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (modalLesson && !modalLesson.classList.contains("hidden")) {
+          closeLessonModal();
+        }
+        if (modalCancel && !modalCancel.classList.contains("hidden")) {
+          closeCancelModal();
+        }
+      }
+    });
   }
 
   // src/views/journal/render.js
