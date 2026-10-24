@@ -93,39 +93,37 @@ export function setupAnnouncementsListeners(navigate) {
       const announcement = (currentDB.announcements || []).find((a) => a.id === id);
       if (!announcement) return;
 
-      if (currentUser) {
-        const userKey = currentUser.id || currentUser.email;
-        markAnnouncementRead(id, userKey);
+      const user = getCurrentUser();
+      const isRecipient = user && (user.role === "parent" || user.role === "student");
 
-        const refreshedDB = getDB();
-        const refreshedItem = (refreshedDB.announcements || []).find((a) => a.id === id);
-        if (refreshedItem) {
-          const safeReads = Math.min(refreshedItem.totalCount || 28, refreshedItem.readCount || 0);
-          const card = document.querySelector(`.announcement-card[data-id="${id}"]`);
-          if (card) {
-            const readsEl = card.querySelector(".announcement-reads");
-            if (readsEl) {
-              readsEl.textContent = `прочитали ${safeReads} из ${refreshedItem.totalCount || 28}`;
-            }
-          }
-          if (modalReads) {
-            modalReads.textContent = `прочитали ${safeReads} из ${refreshedItem.totalCount || 28}`;
-          }
+      if (isRecipient) {
+        const userKey = user.id || user.email;
+        markAnnouncementRead(id, userKey);
+      }
+
+      const refreshedDB = getDB();
+      const refreshedItem = (refreshedDB.announcements || []).find((a) => a.id === id) || announcement;
+      const safeReads = Math.min(refreshedItem.totalCount || 28, refreshedItem.readCount || 0);
+
+      const card = document.querySelector(`.announcement-card[data-id="${id}"]`);
+      if (card) {
+        const readsEl = card.querySelector(".announcement-reads");
+        if (readsEl) {
+          readsEl.textContent = `прочитали ${safeReads} из ${refreshedItem.totalCount || 28}`;
         }
       }
 
       if (modalTitle && modalContent) {
-        modalTitle.textContent = announcement.title;
-        modalContent.textContent = announcement.content;
-        if (modalAuthor) modalAuthor.textContent = `Автор: ${announcement.author || "Смирнова М. В."}`;
+        modalTitle.textContent = refreshedItem.title;
+        modalContent.textContent = refreshedItem.content;
+        if (modalAuthor) modalAuthor.textContent = `Автор: ${refreshedItem.author || "Смирнова М. В."}`;
         if (modalDate) {
-          modalDate.textContent = announcement.date.includes("-")
-            ? formatDateRu(announcement.date)
-            : announcement.date;
+          modalDate.textContent = refreshedItem.date.includes("-")
+            ? formatDateRu(refreshedItem.date)
+            : refreshedItem.date;
         }
-        if (modalReads && !currentUser) {
-          const safeReads = Math.min(announcement.totalCount || 28, announcement.readCount || 0);
-          modalReads.textContent = `прочитали ${safeReads} из ${announcement.totalCount || 28}`;
+        if (modalReads) {
+          modalReads.textContent = `прочитали ${safeReads} из ${refreshedItem.totalCount || 28}`;
         }
         openModal("modal-announcement-detail");
       }

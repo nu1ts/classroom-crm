@@ -120,6 +120,10 @@ export function deleteAnnouncement(id) {
 
 export function markAnnouncementRead(id, userIdentifier) {
   if (!userIdentifier) return false;
+  const currentUser = getCurrentUser();
+  if (currentUser && currentUser.role !== "parent" && currentUser.role !== "student") {
+    return false;
+  }
   const db = getDB();
   const item = (db.announcements || []).find((a) => a.id === id);
   if (!item) return false;

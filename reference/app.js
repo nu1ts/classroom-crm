@@ -24102,6 +24102,10 @@
   }
   function markAnnouncementRead(id, userIdentifier) {
     if (!userIdentifier) return false;
+    const currentUser = getCurrentUser();
+    if (currentUser && currentUser.role !== "parent" && currentUser.role !== "student") {
+      return false;
+    }
     const db = getDB();
     const item = (db.announcements || []).find((a) => a.id === id);
     if (!item) return false;
@@ -24118,6 +24122,14 @@
   }
 
   // src/views/announcements/render.js
+  function pluralizeAnnouncements(count) {
+    const mod10 = count % 10;
+    const mod100 = count % 100;
+    if (mod100 >= 11 && mod100 <= 19) return `${count} объявлений`;
+    if (mod10 === 1) return `${count} объявление`;
+    if (mod10 >= 2 && mod10 <= 4) return `${count} объявления`;
+    return `${count} объявлений`;
+  }
   function renderAnnouncementsView() {
     const currentUser = getCurrentUser();
     const isTeacher = currentUser && currentUser.role === "teacher";
@@ -24129,7 +24141,8 @@
     } else if (currentUser && currentUser.classId) {
       targetClassId = currentUser.classId;
     }
-    const className = targetClassId === "class-7b" ? "7Б" : "7Б";
+    const rawClass = currentUser && currentUser.className || "7Б";
+    const className = rawClass.replace(/\s*\([^)]*\)/g, "").replace(/\s*класс/i, "").trim() || "7Б";
     const announcements = getAnnouncements(targetClassId);
     const formattedToday = formatDateRu(DEMO_ANNOUNCEMENT_DATE);
     return `
@@ -24141,7 +24154,7 @@
               Объявления ${className}
             </h1>
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200/70">
-              ${announcements.length} ${announcements.length === 1 ? "объявление" : announcements.length > 1 && announcements.length < 5 ? "объявления" : "объявлений"}
+              ${pluralizeAnnouncements(announcements.length)}
             </span>
           </div>
           <p id="announcements-page-subtitle" class="text-xs font-semibold text-slate-500 mt-1">
@@ -24182,7 +24195,8 @@
           ${announcements.map((item) => {
       const dateStr = item.date.includes("-") ? formatDateRu(item.date) : item.date;
       const userIdentifier = currentUser && (currentUser.id || currentUser.email) || "";
-      const hasRead = currentUser && item.readBy && (item.readBy.includes(userIdentifier) || currentUser.childStudentId && item.readBy.includes(currentUser.childStudentId));
+      const isRecipient = currentUser && (currentUser.role === "parent" || currentUser.role === "student");
+      const hasRead = isRecipient && item.readBy && (item.readBy.includes(userIdentifier) || currentUser.childStudentId && item.readBy.includes(currentUser.childStudentId));
       const currentReads = Math.min(item.totalCount || 28, item.readCount || 0);
       return `
               <article class="announcement-card bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90 transition-all hover:border-slate-300 relative"
@@ -24252,7 +24266,6 @@
       `}
     </div>
 
-    <!-- Модальное окно просмотра объявления -->
     <div id="modal-announcement-detail"
          class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
       <div id="modal-announcement-detail-dialog"
@@ -24291,7 +24304,6 @@
       </div>
     </div>
 
-    <!-- Модальное окно публикации нового объявления -->
     <div id="modal-announcement-create"
          class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
       <div id="modal-announcement-create-dialog"
@@ -24378,7 +24390,6 @@
       </div>
     </div>
 
-    <!-- Модальное окно редактирования объявления -->
     <div id="modal-announcement-edit"
          class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
       <div id="modal-announcement-edit-dialog"
@@ -24512,35 +24523,31 @@
         const currentDB = getDB();
         const announcement = (currentDB.announcements || []).find((a) => a.id === id);
         if (!announcement) return;
-        if (currentUser) {
-          const userKey = currentUser.id || currentUser.email;
+        const user = getCurrentUser();
+        const isRecipient = user && (user.role === "parent" || user.role === "student");
+        if (isRecipient) {
+          const userKey = user.id || user.email;
           markAnnouncementRead(id, userKey);
-          const refreshedDB = getDB();
-          const refreshedItem = (refreshedDB.announcements || []).find((a) => a.id === id);
-          if (refreshedItem) {
-            const safeReads = Math.min(refreshedItem.totalCount || 28, refreshedItem.readCount || 0);
-            const card = document.querySelector(`.announcement-card[data-id="${id}"]`);
-            if (card) {
-              const readsEl = card.querySelector(".announcement-reads");
-              if (readsEl) {
-                readsEl.textContent = `прочитали ${safeReads} из ${refreshedItem.totalCount || 28}`;
-              }
-            }
-            if (modalReads) {
-              modalReads.textContent = `прочитали ${safeReads} из ${refreshedItem.totalCount || 28}`;
-            }
+        }
+        const refreshedDB = getDB();
+        const refreshedItem = (refreshedDB.announcements || []).find((a) => a.id === id) || announcement;
+        const safeReads = Math.min(refreshedItem.totalCount || 28, refreshedItem.readCount || 0);
+        const card = document.querySelector(`.announcement-card[data-id="${id}"]`);
+        if (card) {
+          const readsEl = card.querySelector(".announcement-reads");
+          if (readsEl) {
+            readsEl.textContent = `прочитали ${safeReads} из ${refreshedItem.totalCount || 28}`;
           }
         }
         if (modalTitle && modalContent) {
-          modalTitle.textContent = announcement.title;
-          modalContent.textContent = announcement.content;
-          if (modalAuthor) modalAuthor.textContent = `Автор: ${announcement.author || "Смирнова М. В."}`;
+          modalTitle.textContent = refreshedItem.title;
+          modalContent.textContent = refreshedItem.content;
+          if (modalAuthor) modalAuthor.textContent = `Автор: ${refreshedItem.author || "Смирнова М. В."}`;
           if (modalDate) {
-            modalDate.textContent = announcement.date.includes("-") ? formatDateRu(announcement.date) : announcement.date;
+            modalDate.textContent = refreshedItem.date.includes("-") ? formatDateRu(refreshedItem.date) : refreshedItem.date;
           }
-          if (modalReads && !currentUser) {
-            const safeReads = Math.min(announcement.totalCount || 28, announcement.readCount || 0);
-            modalReads.textContent = `прочитали ${safeReads} из ${announcement.totalCount || 28}`;
+          if (modalReads) {
+            modalReads.textContent = `прочитали ${safeReads} из ${refreshedItem.totalCount || 28}`;
           }
           openModal("modal-announcement-detail");
         }

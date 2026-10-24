@@ -6,6 +6,15 @@ import {
   DEMO_ANNOUNCEMENT_DATE,
 } from "../../services/announcements-ops.js";
 
+function pluralizeAnnouncements(count) {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  if (mod100 >= 11 && mod100 <= 19) return `${count} объявлений`;
+  if (mod10 === 1) return `${count} объявление`;
+  if (mod10 >= 2 && mod10 <= 4) return `${count} объявления`;
+  return `${count} объявлений`;
+}
+
 export function renderAnnouncementsView() {
   const currentUser = getCurrentUser();
 
@@ -20,7 +29,8 @@ export function renderAnnouncementsView() {
     targetClassId = currentUser.classId;
   }
 
-  const className = targetClassId === "class-7b" ? "7Б" : "7Б";
+  const rawClass = (currentUser && currentUser.className) || "7Б";
+  const className = rawClass.replace(/\s*\([^)]*\)/g, "").replace(/\s*класс/i, "").trim() || "7Б";
   const announcements = getAnnouncements(targetClassId);
   const formattedToday = formatDateRu(DEMO_ANNOUNCEMENT_DATE);
 
@@ -33,7 +43,7 @@ export function renderAnnouncementsView() {
               Объявления ${className}
             </h1>
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200/70">
-              ${announcements.length} ${announcements.length === 1 ? "объявление" : announcements.length > 1 && announcements.length < 5 ? "объявления" : "объявлений"}
+              ${pluralizeAnnouncements(announcements.length)}
             </span>
           </div>
           <p id="announcements-page-subtitle" class="text-xs font-semibold text-slate-500 mt-1">
@@ -90,8 +100,9 @@ export function renderAnnouncementsView() {
             .map((item) => {
               const dateStr = item.date.includes("-") ? formatDateRu(item.date) : item.date;
               const userIdentifier = (currentUser && (currentUser.id || currentUser.email)) || "";
+              const isRecipient = currentUser && (currentUser.role === "parent" || currentUser.role === "student");
               const hasRead =
-                currentUser &&
+                isRecipient &&
                 item.readBy &&
                 (item.readBy.includes(userIdentifier) ||
                   (currentUser.childStudentId && item.readBy.includes(currentUser.childStudentId)));
