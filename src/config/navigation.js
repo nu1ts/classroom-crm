@@ -142,7 +142,6 @@ export const ROLE_NAVIGATION = {
         path: "/announcements",
         icon: "megaphone",
       },
-      { id: "nav-profile", title: "Профиль", path: "/profile", icon: "user" },
     ],
     allowedRoutes: ["/schedule", "/grades", "/announcements", "/profile"],
   },
