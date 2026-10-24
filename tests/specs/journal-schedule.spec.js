@@ -575,16 +575,126 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       }
     });
 
-    test.skip('TC-SCH-08: Добавление занятия и проверка занятости аудитории', async () => {
-      // TODO: Раздел «Расписание» (#/schedule) находится в стадии разработки (заглушка)
+    test('TC-SCH-08: Добавление занятия и проверка занятости аудитории', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      await loginPage.goto();
+      await loginPage.login('smirnova@school.ru', 'Test#2024');
+
+      await page.goto('schedule');
+      await expect(page.locator('#schedule-grid')).toBeVisible();
+
+      await page.locator('#btn-add-lesson').click();
+      await expect(page.locator('#modal-lesson-form')).toBeVisible();
+
+      await page.locator('#lesson-subject-select').selectOption('Физика');
+      if (await page.locator('#lesson-class-select').isEnabled()) { await page.locator('#lesson-class-select').selectOption('class-7b'); }
+      await page.locator('#lesson-date-select').selectOption('2024-10-22');
+      await page.locator('#lesson-time-select').selectOption('11:30 - 12:15');
+      await page.locator('#lesson-room-select').selectOption('Каб. 401');
+
+      await page.locator('#btn-save-lesson').click();
+      await expect(page.locator('#modal-lesson-form')).toBeHidden();
+
+      const physicsCard = page.locator('.schedule-card:has-text("Физика"):has-text("Каб. 401")');
+      await expect(physicsCard).toBeVisible();
+
+      await page.locator('#btn-add-lesson').click();
+      await expect(page.locator('#modal-lesson-form')).toBeVisible();
+
+      await expect(page.locator('#lesson-class-select')).toBeDisabled();
+      await page.locator('#lesson-subject-select').selectOption('История');
+      await expect(page.locator('#lesson-teacher-select')).toContainText('Смирнова М. В.');
+      await expect(page.locator('#lesson-teacher-select')).not.toContainText('Козлов А. П.');
+      await page.locator('#lesson-date-select').selectOption('2024-10-22');
+      await page.locator('#lesson-time-select').selectOption('11:30 - 12:15');
+      await page.locator('#lesson-room-select').selectOption('Каб. 401');
+
+      await page.locator('#btn-save-lesson').click();
+
+      await expect(page.locator('#lesson-room-conflict-error')).toBeVisible();
+      await expect(page.locator('#lesson-conflict-error-text')).toContainText('уже занята');
+      await expect(page.locator('#modal-lesson-form')).toBeVisible();
+
+      await page.locator('#btn-close-lesson-modal').click();
+      await expect(page.locator('#modal-lesson-form')).toBeHidden();
+
+      await expect(page.locator('.schedule-card:has-text("История"):has-text("Каб. 401")')).toHaveCount(0);
+      await expect(physicsCard).toBeVisible();
     });
 
-    test.skip('TC-SCH-09: Перенос занятия на другое время и аудиторию', async () => {
-      // TODO: Раздел «Расписание» (#/schedule) находится в стадии разработки (заглушка)
+    test('TC-SCH-09: Перенос занятия на другое время и аудиторию', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      await loginPage.goto();
+      await loginPage.login('smirnova@school.ru', 'Test#2024');
+
+      await page.goto('schedule');
+      await expect(page.locator('#schedule-grid')).toBeVisible();
+
+      let physicsCard = page.locator('.schedule-card:has-text("Физика"):has-text("Каб. 401")');
+      if (await physicsCard.count() === 0) {
+        await page.locator('#btn-add-lesson').click();
+        await page.locator('#lesson-subject-select').selectOption('Физика');
+        if (await page.locator('#lesson-class-select').isEnabled()) { await page.locator('#lesson-class-select').selectOption('class-7b'); }
+        await page.locator('#lesson-date-select').selectOption('2024-10-22');
+        await page.locator('#lesson-time-select').selectOption('11:30 - 12:15');
+        await page.locator('#lesson-room-select').selectOption('Каб. 401');
+        await page.locator('#btn-save-lesson').click();
+        await expect(physicsCard).toBeVisible();
+      }
+
+      await physicsCard.locator('button[data-action="edit-lesson"]').click();
+      await expect(page.locator('#modal-lesson-form')).toBeVisible();
+
+      await page.locator('#lesson-time-select').selectOption('12:35 - 13:20');
+      await page.locator('#lesson-room-select').selectOption('Каб. 302');
+
+      await page.locator('#btn-save-lesson').click();
+      await expect(page.locator('#modal-lesson-form')).toBeHidden();
+
+      await expect(page.locator('.schedule-card:has-text("Физика"):has-text("Каб. 401")')).toHaveCount(0);
+      const movedPhysicsCard = page.locator('.schedule-card:has-text("Физика"):has-text("Каб. 302")');
+      await expect(movedPhysicsCard).toBeVisible();
+
+      await page.goto('journal');
+      await expect(page.locator('#journal-table-container table')).toBeVisible();
+      const cellsWithGrades = page.locator('td.cell-journal-entry');
+      await expect(cellsWithGrades.first()).toBeVisible();
     });
 
-    test.skip('TC-SCH-10: Отмена занятия не удаляет записи журнала', async () => {
-      // TODO: Раздел «Расписание» (#/schedule) находится в стадии разработки (заглушка)
+    test('TC-SCH-10: Отмена занятия не удаляет записи журнала', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      await loginPage.goto();
+      await loginPage.login('smirnova@school.ru', 'Test#2024');
+
+      await page.goto('schedule');
+      await expect(page.locator('#schedule-grid')).toBeVisible();
+
+      let targetCard = page.locator('.schedule-card:has-text("Физика")').first();
+      if (await targetCard.count() === 0) {
+        await page.locator('#btn-add-lesson').click();
+        await page.locator('#lesson-subject-select').selectOption('Физика');
+        if (await page.locator('#lesson-class-select').isEnabled()) { await page.locator('#lesson-class-select').selectOption('class-7b'); }
+        await page.locator('#lesson-date-select').selectOption('2024-10-22');
+        await page.locator('#lesson-time-select').selectOption('12:35 - 13:20');
+        await page.locator('#lesson-room-select').selectOption('Каб. 302');
+        await page.locator('#btn-save-lesson').click();
+        targetCard = page.locator('.schedule-card:has-text("Физика")').first();
+      }
+
+      await targetCard.locator('button[data-action="delete-lesson"]').click();
+      await expect(page.locator('#modal-confirm-delete-lesson')).toBeVisible();
+
+      await expect(page.locator('#cancel-lesson-warning')).toContainText('сохраняются');
+
+      await page.locator('#btn-confirm-delete-lesson').click();
+      await expect(page.locator('#modal-confirm-delete-lesson')).toBeHidden();
+
+      await expect(page.locator('.schedule-card:has-text("Физика")')).toHaveCount(0);
+
+      await page.goto('journal');
+      await expect(page.locator('#journal-table-container table')).toBeVisible();
+      const cellsWithGrades = page.locator('td.cell-journal-entry');
+      await expect(cellsWithGrades.first()).toBeVisible();
     });
 
     test('TC-SCH-11: Пустая неделя: состояние без занятий', async ({ page }) => {
