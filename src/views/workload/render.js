@@ -24,6 +24,8 @@ export function renderWorkloadView(options = {}) {
   const allRows = getWorkloadRows(db);
   const classes = getClassDirectory(db);
   const subjects = db.subjects || [];
+  const activeSubjects = subjects.filter((s) => s.isActive !== false);
+  const activeClasses = classes.filter((c) => c.isActive !== false);
   const teachers = db.teachers || [];
 
   const searchQuery = (options.searchQuery || "").trim();
@@ -153,7 +155,7 @@ export function renderWorkloadView(options = {}) {
                 <select id="select-workload-subject-modal"
                         class="appearance-none w-full px-3.5 py-2.5 pr-9 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors cursor-pointer">
                   <option value="">Выберите предмет</option>
-                  ${subjects.map((s) => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name)}</option>`).join("")}
+                  ${activeSubjects.map((s) => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name)}</option>`).join("")}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
                   ${renderIcon("chevron-down", "w-4 h-4")}
@@ -167,7 +169,7 @@ export function renderWorkloadView(options = {}) {
                 <select id="select-workload-class-modal"
                         class="appearance-none w-full px-3.5 py-2.5 pr-9 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors cursor-pointer">
                   <option value="">Выберите класс</option>
-                  ${classes.map((c) => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join("")}
+                  ${activeClasses.map((c) => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join("")}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
                   ${renderIcon("chevron-down", "w-4 h-4")}

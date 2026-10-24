@@ -33,11 +33,17 @@ export function getTeacherCards(db = getDB()) {
       ? users.find((u) => u.id === teacher.accountUserId)
       : users.find((u) => (u.cardName || u.shortName) === teacher.shortName);
 
-    const workload = (teacher.workload || []).map((w) => ({
-      className: w.className,
-      subjectLabel: w.subjectLabel,
-      hours: w.hours,
-    }));
+    const workload = (teacher.workload || []).map((w) => {
+      const subject = (db.subjects || []).find((s) => s.id === w.subjectId);
+      const schoolClass = (db.classes || []).find((c) => c.id === w.classId);
+      return {
+        className: schoolClass ? schoolClass.name : w.className,
+        subjectLabel: subject
+          ? subject.shortName || subject.name
+          : w.subjectLabel,
+        hours: w.hours,
+      };
+    });
 
     const totalHours = workload.reduce((sum, w) => sum + (w.hours || 0), 0);
     const classNames = [...new Set(workload.map((w) => w.className))];

@@ -132,8 +132,30 @@ export function setupWorkloadListeners() {
       modalTitle.textContent = row ? "Изменить нагрузку" : "Назначить нагрузку";
     }
     if (teacherSelect) teacherSelect.value = row ? row.teacherId : "";
-    if (subjectSelect) subjectSelect.value = row ? row.subjectId : "";
-    if (classSelect) classSelect.value = row ? row.classId : "";
+    if (subjectSelect) {
+      if (
+        row &&
+        ![...subjectSelect.options].some((o) => o.value === row.subjectId)
+      ) {
+        const option = document.createElement("option");
+        option.value = row.subjectId;
+        option.textContent = row.subjectLabel;
+        subjectSelect.appendChild(option);
+      }
+      subjectSelect.value = row ? row.subjectId : "";
+    }
+    if (classSelect) {
+      if (
+        row &&
+        ![...classSelect.options].some((o) => o.value === row.classId)
+      ) {
+        const option = document.createElement("option");
+        option.value = row.classId;
+        option.textContent = row.className;
+        classSelect.appendChild(option);
+      }
+      classSelect.value = row ? row.classId : "";
+    }
     if (hoursInput) hoursInput.value = row ? row.hours : 3;
 
     modal.classList.remove("opacity-0", "pointer-events-none");

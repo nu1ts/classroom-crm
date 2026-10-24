@@ -211,7 +211,9 @@ export function setupTeachersListeners(onNavigate) {
   function fillSubjectOptions(selectedIds) {
     const box = document.getElementById("teacher-subjects");
     if (!box) return;
-    const subjects = getDB().subjects || [];
+    const subjects = (getDB().subjects || []).filter(
+      (s) => s.isActive !== false || (selectedIds || []).includes(s.id),
+    );
     box.innerHTML = subjects
       .map(
         (s) => `
@@ -230,13 +232,15 @@ export function setupTeachersListeners(onNavigate) {
     if (!select) return;
     const db = getDB();
     const classNameById = {};
-    (db.teachers || []).forEach((t) => {
-      (t.workload || []).forEach((w) => {
-        if (w.classId) classNameById[w.classId] = w.className;
-      });
+    (db.classes || []).forEach((c) => {
+      if (c.isActive !== false) classNameById[c.id] = c.name;
     });
-    if (db.meta && db.meta.classId)
-      classNameById[db.meta.classId] = db.meta.className || "7Б";
+    const current = (db.classes || []).find((c) => c.id === selectedId);
+    if (selectedId && !classNameById[selectedId] && current) {
+      classNameById[selectedId] = current.name;
+    }
+    if (!classNameById[selectedId] && db.meta && db.meta.classId === selectedId)
+      classNameById[selectedId] = db.meta.className || "7Б";
 
     select.innerHTML = [
       '<option value="">Не назначен</option>',
