@@ -1,5 +1,6 @@
 import {
   getDB,
+  getCurrentUser,
   confirmAbsenceRecord,
   batchConfirmAbsences,
 } from "../../services/storage.js";
@@ -9,6 +10,8 @@ import { navigate } from "../../services/navigation.js";
 
 export function setupAttendanceListeners(onNavigate) {
   const db = getDB();
+  const currentUser = getCurrentUser();
+  const isSubjectTeacher = currentUser && currentUser.role === "subject_teacher";
   const periodId = "q1_2024";
 
   const modal = document.getElementById("modal-confirm-absence");
@@ -28,6 +31,7 @@ export function setupAttendanceListeners(onNavigate) {
   const blockDocFields = document.getElementById("block-document-fields");
 
   function openConfirmModal(attId) {
+    if (isSubjectTeacher) return;
     if (!modal) return;
     const currentDB = getDB();
     const attRecord = (currentDB.attendance || []).find((a) => a.id === attId);
@@ -159,10 +163,27 @@ export function setupAttendanceListeners(onNavigate) {
     });
   }
 
+  const selectClass = document.getElementById("select-attendance-class");
+  if (selectClass) {
+    selectClass.addEventListener("change", () => {
+      const currentUrl = new URL(window.location.href);
+      const week = currentUrl.searchParams.get("week") || "w8";
+      const targetHash = `/attendance?class=${selectClass.value}&week=${week}`;
+      if (onNavigate) {
+        onNavigate(targetHash);
+      } else {
+        navigate(targetHash);
+      }
+    });
+  }
+
   const selectWeek = document.getElementById("select-attendance-week");
   if (selectWeek) {
     selectWeek.addEventListener("change", () => {
-      const targetHash = `/attendance?week=${selectWeek.value}`;
+      const currentUrl = new URL(window.location.href);
+      const classId = currentUrl.searchParams.get("class");
+      const classQuery = classId ? `&class=${classId}` : "";
+      const targetHash = `/attendance?week=${selectWeek.value}${classQuery}`;
       if (onNavigate) {
         onNavigate(targetHash);
       } else {

@@ -375,8 +375,22 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await journalPage.closeEntryModal();
     });
 
-    test.skip('TC-MED-04: Предметник не может подтвердить справку', async () => {
-      // TODO: Интерактивная панель ведения урока учителем-предметником ещё не реализована в UI
+    test('TC-MED-04: Предметник не может подтвердить справку', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      const journalPage = new JournalPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+      await journalPage.goto('class=class-7b&subject=math');
+      await journalPage.openCell('Сидоров Никита', '2024-10-24');
+      await expect(journalPage.quickConfirmBlock).toBeHidden();
+      await journalPage.closeEntryModal();
+
+      await page.goto('attendance?class=class-7b');
+      await expect(page.locator('#btn-open-batch-confirm')).toHaveCount(0);
+      await expect(page.locator('#btn-banner-confirm')).toHaveCount(0);
+      await expect(page.locator('button[data-action="open-confirm"]')).toHaveCount(0);
     });
 
     test('TC-MED-05: Подтверждение не удаляет пропуск из журнала', async ({ page }) => {

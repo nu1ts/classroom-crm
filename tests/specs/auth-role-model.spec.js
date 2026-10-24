@@ -495,6 +495,17 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
 
     await page.goto('journal?class=class-6v&subject=math');
     await expect(page.locator('h1, h2, h3')).toContainText(/Доступ ограничен/i);
+
+    await page.goto('attendance?class=class-7v');
+    await expect(page.locator('h1, h2, h3')).toContainText(/Доступ ограничен/i);
+
+    await page.goto('attendance?class=class-7b');
+    await expect(page.locator('h2')).toContainText(/Журнал посещаемости 7Б/i);
+    await expect(page.locator('#select-attendance-class option')).toHaveText([
+      /7Б/i,
+      /8А/i,
+      /9В/i,
+    ]);
   });
 
   test.skip('[TC-RM-12] Отказ не раскрывает лишних сведений (Негативный)', async () => {
