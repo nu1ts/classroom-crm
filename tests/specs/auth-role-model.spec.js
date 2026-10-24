@@ -456,8 +456,45 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await expect(page.locator('[data-teacher-card]')).toHaveCount(5);
   });
 
-  test.skip('[TC-RM-11] Предметник видит только свои классы и предметы (Правило)', async () => {
-    // TODO: Будет реализовано после разработки UI страниц «Мои классы», расписания по предметам и журнала по предметам.
+  test('[TC-RM-11] Предметник видит только свои классы и предметы (Правило)', async ({ page, loginPage, navigationPage }) => {
+    await loginPage.goto();
+    await loginPage.login(TEST_USERS.subject_teacher.username, TEST_USERS.subject_teacher.password);
+    await page.waitForURL(/\/classes\/?/, { timeout: 7000 });
+
+    await navigationPage.expectVisibleMenuItems(['nav-classes', 'nav-schedule', 'nav-attendance', 'nav-profile']);
+    await navigationPage.expectHiddenMenuItems(['nav-overview', 'nav-journal', 'nav-students', 'nav-parents', 'nav-analytics']);
+
+    await expect(page.locator('h1')).toContainText('Мои классы');
+    const classCards = page.locator('[data-class-card]');
+    await expect(classCards).toHaveCount(3);
+
+    await expect(page.locator('[data-class-card="7Б"]')).toBeVisible();
+    await expect(page.locator('[data-class-card="7Б"]')).toContainText('5 ч / нед');
+    await expect(page.locator('[data-class-card="7Б"]')).toContainText(/Математика/i);
+
+    await expect(page.locator('[data-class-card="8А"]')).toBeVisible();
+    await expect(page.locator('[data-class-card="8А"]')).toContainText('5 ч / нед');
+    await expect(page.locator('[data-class-card="8А"]')).toContainText(/Математика/i);
+
+    await expect(page.locator('[data-class-card="9В"]')).toBeVisible();
+    await expect(page.locator('[data-class-card="9В"]')).toContainText('3 ч / нед');
+    await expect(page.locator('[data-class-card="9В"]')).toContainText(/Алгебра/i);
+
+    await expect(page.locator('[data-class-card="7В"]')).toHaveCount(0);
+
+    const journalBtn7b = page.locator('[data-class-card="7Б"] [data-action="open-journal"]');
+    await journalBtn7b.click();
+    await page.waitForURL(/\/journal.*class=class-7b.*subject=math/, { timeout: 7000 });
+    await expect(page.locator('h1')).toContainText(/Журнал класса 7Б/);
+
+    await page.goto('journal?class=class-7b&subject=phys');
+    await expect(page.locator('h1, h2, h3')).toContainText(/Доступ ограничен/i);
+
+    await page.goto('journal?class=class-7b&subject=rus');
+    await expect(page.locator('h1, h2, h3')).toContainText(/Доступ ограничен/i);
+
+    await page.goto('journal?class=class-6v&subject=math');
+    await expect(page.locator('h1, h2, h3')).toContainText(/Доступ ограничен/i);
   });
 
   test.skip('[TC-RM-12] Отказ не раскрывает лишних сведений (Негативный)', async () => {
