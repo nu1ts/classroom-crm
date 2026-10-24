@@ -15,6 +15,10 @@ import {
   renderClassesView,
   setupClassesListeners,
 } from "../views/classes/index.js";
+import {
+  renderChildView,
+  setupChildListeners,
+} from "../views/child/index.js";
 import { renderLoginView, setupLoginListeners } from "../views/login/index.js";
 import {
   renderOverviewView,
@@ -336,13 +340,14 @@ export const ROUTE_HANDLERS = {
 
   "/child": {
     title: "Ребёнок",
-    render: () =>
-      renderPlaceholderView(
-        "Ребёнок",
-        "Карточка успеваемости и посещаемости ученика (Петрова Анна)",
-        "/child",
-      ),
-    setup: () => {},
+    render: () => {
+      const params = getRouteParams();
+      return renderChildView({
+        id: params.get("id") || params.get("student") || null,
+        periodId: params.get("period") || params.get("periodId") || "q1_2024",
+      });
+    },
+    setup: (navigate) => setupChildListeners(navigate),
   },
 
   "/grades": {

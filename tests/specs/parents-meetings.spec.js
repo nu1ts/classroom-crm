@@ -544,8 +544,26 @@ test.describe('Родители и Собрания', () => {
     // TODO: Раздел «Собрания» (#/meetings) в интерфейсе не реализован (является заглушкой)
   });
 
-  test.skip('TC-MG-11: Родитель видит собрания класса', async () => {
-    // TODO: Раздел «Собрания» (#/meetings) в интерфейсе не реализован (является заглушкой)
+  test('TC-MG-11: Родитель видит собрания класса', async ({ page, loginPage }) => {
+    await loginPage.goto();
+    await loginPage.loginAs('parent');
+    await page.waitForURL(/\/child\/?/, { timeout: 7000 });
+
+    const meetingsSection = page.locator('#child-meetings-section');
+    await expect(meetingsSection).toBeVisible();
+
+    await expect(meetingsSection.locator('text=Итоги первой четверти 7Б')).toBeVisible();
+    await expect(meetingsSection.locator('text=31 октября 2024 г. в 18:30')).toBeVisible();
+    await expect(meetingsSection.locator('text=Каб. 302').first()).toBeVisible();
+    await expect(meetingsSection.locator('text=Запланировано')).toBeVisible();
+    await expect(meetingsSection.locator('text=Повестка: Успеваемость, предстоящие каникулы, экскурсионная поездка в музей.')).toBeVisible();
+
+    await expect(meetingsSection.locator('text=Организационное собрание начала года')).toBeVisible();
+    await expect(meetingsSection.locator('text=Завершено')).toBeVisible();
+
+    await expect(meetingsSection.locator('button:has-text("Создать собрание")')).toHaveCount(0);
+    await expect(meetingsSection.locator('button:has-text("Редактировать")')).toHaveCount(0);
+    await expect(meetingsSection.locator('input[type="checkbox"]')).toHaveCount(0);
   });
 
   test.skip('TC-MG-12: Права: предметник не ведёт собрания', async () => {
