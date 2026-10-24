@@ -20531,827 +20531,449 @@
         "room": "Каб. 302",
         "status": "scheduled",
         "agenda": "Успеваемость, предстоящие каникулы, экскурсионная поездка в музей.",
+        "agendaItems": [
+          "Результаты первой четверти класса 7Б.",
+          "Проблемы с посещаемостью и успеваемостью.",
+          "Безопасность на осенних каникулах."
+        ],
         "classId": "class-7b"
       },
       {
         "id": "mtg-past-01",
-        "title": "Организационное собрание начала года",
+        "title": "Организационное собрание начала года: Организация учебного года",
         "date": "2024-09-05",
         "time": "18:30",
         "room": "Каб. 302",
         "status": "completed",
-        "agenda": "Организация учебного процесса в 7Б, расписание, внеурочная деятельность.",
+        "agenda": "1) Организация учебного процесса в 7Б. 2) Расписание занятий. 3) Внеурочная деятельность.",
+        "agendaItems": [
+          "Организация учебного процесса в 7Б.",
+          "Расписание занятий.",
+          "Внеурочная деятельность."
+        ],
         "classId": "class-7b"
       }
     ],
     "meetingAttendance": [
       {
         "id": "ma-01",
-        "meetingId": "mtg-01",
+        "meetingId": "mtg-past-01",
         "studentId": "st-01",
         "studentName": "Александров Егор Алексеевич",
         "parentId": "pr-01",
-        "parentName": "Александрова И.",
+        "parentName": "Александрова И. А.",
         "parentRole": "Мать",
         "phone": "+7 999 123-45-60",
         "status": "present",
         "statusLabel": "Пришёл",
-        "note": "-",
+        "note": "",
         "responded": true,
-        "updatedAt": "2024-10-27 12:00"
+        "updatedAt": "2024-09-05 19:30"
       },
       {
         "id": "ma-02",
-        "meetingId": "mtg-01",
+        "meetingId": "mtg-past-01",
         "studentId": "st-02",
         "studentName": "Беляев Матвей Сергеевич",
         "parentId": "pr-02",
-        "parentName": "Беляева А.",
+        "parentName": "Беляева А. С.",
         "parentRole": "Мать",
         "phone": "+7 999 123-45-78",
         "status": "present",
         "statusLabel": "Пришёл",
-        "note": "-",
+        "note": "",
         "responded": true,
-        "updatedAt": "2024-10-27 12:00"
+        "updatedAt": "2024-09-05 19:30"
       },
       {
         "id": "ma-03",
-        "meetingId": "mtg-01",
+        "meetingId": "mtg-past-01",
         "studentId": "st-16",
         "studentName": "Васильева Дарья Константиновна",
         "parentId": "pr-03",
-        "parentName": "Васильев К.",
+        "parentName": "Васильев К. Д.",
         "parentRole": "Отец",
         "phone": "+7 999 123-45-61",
         "status": "present",
         "statusLabel": "Пришёл",
-        "note": "-",
+        "note": "",
         "responded": true,
-        "updatedAt": "2024-10-27 12:00"
+        "updatedAt": "2024-09-05 19:30"
       },
       {
         "id": "ma-04",
-        "meetingId": "mtg-01",
+        "meetingId": "mtg-past-01",
         "studentId": "st-17",
         "studentName": "Волкова София Дмитриевна",
         "parentId": "pr-04",
-        "parentName": "Волков Д.",
+        "parentName": "Волков Д. С.",
         "parentRole": "Отец",
         "phone": "+7 999 123-45-70",
         "status": "absent",
         "statusLabel": "Не пришёл",
         "note": "Семейные обстоятельства",
         "responded": true,
-        "updatedAt": "2024-10-27 12:00"
+        "updatedAt": "2024-09-05 19:30"
       },
       {
         "id": "ma-05",
-        "meetingId": "mtg-01",
+        "meetingId": "mtg-past-01",
         "studentId": "st-03",
         "studentName": "Григорьев Тимофей Павлович",
         "parentId": "pr-05",
-        "parentName": "Григорьев С.",
+        "parentName": "Григорьев С. П.",
         "parentRole": "Отец",
         "phone": "+7 999 123-45-79",
         "status": "present",
         "statusLabel": "Пришёл",
-        "note": "-",
+        "note": "",
         "responded": true,
-        "updatedAt": "2024-10-27 12:00"
+        "updatedAt": "2024-09-05 19:30"
       },
       {
         "id": "ma-06",
-        "meetingId": "mtg-01",
+        "meetingId": "mtg-past-01",
         "studentId": "st-04",
         "studentName": "Дмитриев Артём Юрьевич",
         "parentId": "pr-06",
-        "parentName": "Дмитриева Ю.",
+        "parentName": "Дмитриева Ю. В.",
         "parentRole": "Мать",
         "phone": "+7 999 123-45-80",
         "status": "present",
         "statusLabel": "Пришёл",
-        "note": "-",
+        "note": "",
         "responded": true,
-        "updatedAt": "2024-10-27 12:00"
+        "updatedAt": "2024-09-05 19:30"
       },
       {
         "id": "ma-07",
-        "meetingId": "mtg-01",
+        "meetingId": "mtg-past-01",
         "studentId": "st-05",
         "studentName": "Зайцев Владислав Максимович",
         "parentId": "pr-07",
-        "parentName": "Зайцев М.",
+        "parentName": "Зайцев М. И.",
         "parentRole": "Отец",
         "phone": "+7 999 123-45-81",
         "status": "present",
         "statusLabel": "Пришёл",
-        "note": "-",
+        "note": "",
         "responded": true,
-        "updatedAt": "2024-10-27 12:00"
+        "updatedAt": "2024-09-05 19:30"
       },
       {
         "id": "ma-08",
-        "meetingId": "mtg-01",
+        "meetingId": "mtg-past-01",
         "studentId": "st-18",
         "studentName": "Ильина Варвара Романовна",
         "parentId": "pr-08",
-        "parentName": "Ильин Р.",
+        "parentName": "Ильин Р. Н.",
         "parentRole": "Отец",
         "phone": "+7 999 123-45-83",
         "status": "present",
         "statusLabel": "Пришёл",
-        "note": "-",
+        "note": "",
         "responded": true,
-        "updatedAt": "2024-10-27 12:00"
+        "updatedAt": "2024-09-05 19:30"
       },
       {
         "id": "ma-09",
-        "meetingId": "mtg-01",
+        "meetingId": "mtg-past-01",
         "studentId": "st-19",
         "studentName": "Киселёва Ксения Григорьевна",
         "parentId": "pr-09",
-        "parentName": "Киселёва Н.",
+        "parentName": "Киселёва Н. В.",
         "parentRole": "Мать",
         "phone": "+7 999 123-45-84",
-        "status": "no_answer",
-        "statusLabel": "Нет ответа",
-        "note": "-",
-        "responded": false,
-        "updatedAt": null
+        "status": "present",
+        "statusLabel": "Пришёл",
+        "note": "",
+        "responded": true,
+        "updatedAt": "2024-09-05 19:30"
       },
       {
         "id": "ma-10",
-        "meetingId": "mtg-01",
+        "meetingId": "mtg-past-01",
         "studentId": "st-06",
         "studentName": "Котов Максим Денисович",
         "parentId": "pr-10",
-        "parentName": "Котова Е.",
+        "parentName": "Котова Е. П.",
         "parentRole": "Мать",
         "phone": "+7 999 123-45-62",
         "status": "absent",
         "statusLabel": "Не пришёл",
         "note": "Работает допоздна",
         "responded": true,
-        "updatedAt": "2024-10-27 12:00"
+        "updatedAt": "2024-09-05 19:30"
       },
       {
         "id": "ma-11",
-        "meetingId": "mtg-01",
+        "meetingId": "mtg-past-01",
         "studentId": "st-07",
         "studentName": "Кузнецов Данила Владимирович",
         "parentId": "pr-11",
-        "parentName": "Кузнецова Н.",
+        "parentName": "Кузнецова Н. А.",
         "parentRole": "Мать",
-        "phone": "+7 999 123-45-71",
+        "phone": "+7 999 123-45-85",
         "status": "present",
         "statusLabel": "Пришёл",
-        "note": "-",
+        "note": "",
         "responded": true,
-        "updatedAt": "2024-10-27 12:00"
+        "updatedAt": "2024-09-05 19:30"
       },
       {
         "id": "ma-12",
-        "meetingId": "mtg-01",
+        "meetingId": "mtg-past-01",
         "studentId": "st-08",
         "studentName": "Лебедев Михаил Викторович",
         "parentId": "pr-13",
-        "parentName": "Лебедева О.",
+        "parentName": "Лебедева О. В.",
         "parentRole": "Мать",
-        "phone": "+7 999 123-45-82",
+        "phone": "+7 999 123-45-87",
         "status": "present",
         "statusLabel": "Пришёл",
-        "note": "-",
+        "note": "",
         "responded": true,
-        "updatedAt": "2024-10-27 12:00"
+        "updatedAt": "2024-09-05 19:30"
       },
       {
         "id": "ma-13",
-        "meetingId": "mtg-01",
-        "studentId": "st-24",
+        "meetingId": "mtg-past-01",
+        "studentId": "st-20",
         "studentName": "Лукина Алиса Денисовна",
         "parentId": "pr-25",
-        "parentName": "Лукин Д.",
+        "parentName": "Лукин Д. В.",
         "parentRole": "Отец",
         "phone": "+7 999 123-45-88",
         "status": "present",
         "statusLabel": "Пришёл",
-        "note": "-",
+        "note": "",
         "responded": true,
-        "updatedAt": "2024-10-27 12:00"
+        "updatedAt": "2024-09-05 19:30"
       },
       {
         "id": "ma-14",
-        "meetingId": "mtg-01",
-        "studentId": "st-20",
+        "meetingId": "mtg-past-01",
+        "studentId": "st-21",
         "studentName": "Медведева Мария Андреевна",
         "parentId": "pr-14",
-        "parentName": "Медведев А.",
+        "parentName": "Медведев А. К.",
         "parentRole": "Отец",
-        "phone": "+7 999 123-45-85",
+        "phone": "+7 999 123-45-89",
         "status": "present",
         "statusLabel": "Пришёл",
-        "note": "-",
+        "note": "",
         "responded": true,
-        "updatedAt": "2024-10-27 12:00"
+        "updatedAt": "2024-09-05 19:30"
       },
       {
         "id": "ma-15",
-        "meetingId": "mtg-01",
-        "studentId": "st-21",
+        "meetingId": "mtg-past-01",
+        "studentId": "st-22",
         "studentName": "Мишина Анастасия Сергеевна",
         "parentId": "pr-15",
-        "parentName": "Мишина Е.",
-        "parentRole": "Мать",
-        "phone": "+7 999 123-45-86",
-        "status": "no_answer",
-        "statusLabel": "Нет ответа",
-        "note": "-",
-        "responded": false,
-        "updatedAt": null
-      },
-      {
-        "id": "ma-16",
-        "meetingId": "mtg-01",
-        "studentId": "st-09",
-        "studentName": "Морозов Артём Андреевич",
-        "parentId": "pr-16",
-        "parentName": "Морозова Е.",
-        "parentRole": "Мать",
-        "phone": "+7 999 123-45-72",
-        "status": "absent",
-        "statusLabel": "Не пришёл",
-        "note": "Семейные обстоятельства",
-        "responded": true,
-        "updatedAt": "2024-10-27 12:00"
-      },
-      {
-        "id": "ma-17",
-        "meetingId": "mtg-01",
-        "studentId": "st-10",
-        "studentName": "Никитин Илья Сергеевич",
-        "parentId": "pr-18",
-        "parentName": "Никитина С.",
-        "parentRole": "Мать",
-        "phone": "+7 999 123-45-73",
-        "status": "present",
-        "statusLabel": "Пришёл",
-        "note": "-",
-        "responded": true,
-        "updatedAt": "2024-10-27 12:00"
-      },
-      {
-        "id": "ma-18",
-        "meetingId": "mtg-01",
-        "studentId": "st-22",
-        "studentName": "Николаева Виктория Владимировна",
-        "parentId": "pr-19",
-        "parentName": "Николаев В.",
-        "parentRole": "Отец",
-        "phone": "+7 999 123-45-87",
-        "status": "present",
-        "statusLabel": "Пришёл",
-        "note": "-",
-        "responded": true,
-        "updatedAt": "2024-10-27 12:00"
-      },
-      {
-        "id": "ma-19",
-        "meetingId": "mtg-01",
-        "studentId": "st-11",
-        "studentName": "Орлов Пётр Игоревич",
-        "parentId": "pr-20",
-        "parentName": "Орлов И.",
-        "parentRole": "Отец",
-        "phone": "+7 999 123-45-74",
-        "status": "absent",
-        "statusLabel": "Не пришёл",
-        "note": "Семейные обстоятельства",
-        "responded": true,
-        "updatedAt": "2024-10-27 12:00"
-      },
-      {
-        "id": "ma-20",
-        "meetingId": "mtg-01",
-        "studentId": "st-12",
-        "studentName": "Осипов Кирилл Тарасович",
-        "parentId": "pr-22",
-        "parentName": "Осипова Т.",
-        "parentRole": "Мать",
-        "phone": "+7 999 123-45-75",
-        "status": "present",
-        "statusLabel": "Пришёл",
-        "note": "-",
-        "responded": true,
-        "updatedAt": "2024-10-27 12:00"
-      },
-      {
-        "id": "ma-21",
-        "meetingId": "mtg-01",
-        "studentId": "st-23",
-        "studentName": "Петрова Анна Сергеевна",
-        "parentId": "pr-23",
-        "parentName": "Петров С.",
-        "parentRole": "Отец",
-        "phone": "+7 999 123-45-63",
-        "status": "present",
-        "statusLabel": "Пришёл",
-        "note": "-",
-        "responded": true,
-        "updatedAt": "2024-10-27 12:00"
-      },
-      {
-        "id": "ma-22",
-        "meetingId": "mtg-01",
-        "studentId": "st-13",
-        "studentName": "Романов Илья Евгеньевич",
-        "parentId": "pr-26",
-        "parentName": "Романова М.",
-        "parentRole": "Мать",
-        "phone": "+7 999 123-45-76",
-        "status": "present",
-        "statusLabel": "Пришёл",
-        "note": "-",
-        "responded": true,
-        "updatedAt": "2024-10-27 12:00"
-      },
-      {
-        "id": "ma-23",
-        "meetingId": "mtg-01",
-        "studentId": "st-14",
-        "studentName": "Сидоров Никита Артёмович",
-        "parentId": "pr-27",
-        "parentName": "Сидорова О.",
-        "parentRole": "Мать",
-        "phone": "+7 999 123-45-64",
-        "status": "no_answer",
-        "statusLabel": "Нет ответа",
-        "note": "Не выходит на связь",
-        "responded": false,
-        "updatedAt": null
-      },
-      {
-        "id": "ma-24",
-        "meetingId": "mtg-01",
-        "studentId": "st-15",
-        "studentName": "Смирнов Алексей Валерьевич",
-        "parentId": "pr-28",
-        "parentName": "Смирнов В.",
-        "parentRole": "Отец",
-        "phone": "+7 999 123-45-77",
-        "status": "present",
-        "statusLabel": "Пришёл",
-        "note": "-",
-        "responded": true,
-        "updatedAt": "2024-10-27 12:00"
-      },
-      {
-        "id": "ma-25",
-        "meetingId": "mtg-01",
-        "studentId": "st-25",
-        "studentName": "Соколова Полина Михайловна",
-        "parentId": "pr-29",
-        "parentName": "Соколов М.",
-        "parentRole": "Отец",
-        "phone": "+7 999 123-45-89",
-        "status": "no_answer",
-        "statusLabel": "Нет ответа",
-        "note": "-",
-        "responded": false,
-        "updatedAt": null
-      },
-      {
-        "id": "ma-26",
-        "meetingId": "mtg-01",
-        "studentId": "st-26",
-        "studentName": "Федосеева Елизавета Николаевна",
-        "parentId": "pr-30",
-        "parentName": "Федосеева И.",
+        "parentName": "Мишина Е. В.",
         "parentRole": "Мать",
         "phone": "+7 999 123-45-90",
         "status": "present",
         "statusLabel": "Пришёл",
-        "note": "-",
+        "note": "",
         "responded": true,
-        "updatedAt": "2024-10-27 12:00"
+        "updatedAt": "2024-09-05 19:30"
       },
       {
-        "id": "ma-27",
-        "meetingId": "mtg-01",
-        "studentId": "st-27",
-        "studentName": "Чернышёва Ульяна Викторовна",
-        "parentId": "pr-31",
-        "parentName": "Чернышёв В.",
-        "parentRole": "Отец",
-        "phone": "+7 999 123-45-91",
-        "status": "present",
-        "statusLabel": "Пришёл",
-        "note": "-",
-        "responded": true,
-        "updatedAt": "2024-10-27 12:00"
-      },
-      {
-        "id": "ma-28",
-        "meetingId": "mtg-01",
-        "studentId": "st-28",
-        "studentName": "Якушева Кристина Олеговна",
-        "parentId": "pr-32",
-        "parentName": "Якушева Л.",
-        "parentRole": "Мать",
-        "phone": "+7 999 123-45-92",
-        "status": "no_answer",
-        "statusLabel": "Нет ответа",
-        "note": "-",
-        "responded": false,
-        "updatedAt": null
-      }
-    ],
-    "surveys": [
-      {
-        "id": "srv-01",
-        "title": "Сбор согласий на экскурсию в Музей Космонавтики",
-        "description": "Уважаемые родители, просим подтвердить участие вашего ребёнка в экскурсионной поездке 15 ноября 2024 года.",
-        "targetAudience": "parents",
-        "targetClassId": "class-7b",
-        "deadline": "2024-10-30",
-        "createdAt": "2024-10-24",
-        "status": "active",
-        "options": [
-          {
-            "id": "opt-yes",
-            "text": "Да, согласен(на)"
-          },
-          {
-            "id": "opt-no",
-            "text": "Нет, отказываюсь"
-          }
-        ]
-      }
-    ],
-    "surveyResponses": [
-      {
-        "id": "sr-01",
-        "surveyId": "srv-01",
-        "studentId": "st-01",
-        "studentName": "Александров Егор Алексеевич",
-        "parentId": "pr-01",
-        "parentName": "Александрова И.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
-      },
-      {
-        "id": "sr-02",
-        "surveyId": "srv-01",
-        "studentId": "st-02",
-        "studentName": "Беляев Матвей Сергеевич",
-        "parentId": "pr-02",
-        "parentName": "Беляева А.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
-      },
-      {
-        "id": "sr-03",
-        "surveyId": "srv-01",
-        "studentId": "st-16",
-        "studentName": "Васильева Дарья Константиновна",
-        "parentId": "pr-03",
-        "parentName": "Васильев К.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
-      },
-      {
-        "id": "sr-04",
-        "surveyId": "srv-01",
-        "studentId": "st-17",
-        "studentName": "Волкова София Дмитриевна",
-        "parentId": "pr-04",
-        "parentName": "Волков Д.",
-        "answered": true,
-        "answer": "opt-no",
-        "answerText": "Нет, отказываюсь",
-        "comment": "По состоянию здоровья",
-        "answeredAt": "2024-10-26 15:30"
-      },
-      {
-        "id": "sr-05",
-        "surveyId": "srv-01",
-        "studentId": "st-03",
-        "studentName": "Григорьев Тимофей Павлович",
-        "parentId": "pr-05",
-        "parentName": "Григорьев С.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
-      },
-      {
-        "id": "sr-06",
-        "surveyId": "srv-01",
-        "studentId": "st-04",
-        "studentName": "Дмитриев Артём Юрьевич",
-        "parentId": "pr-06",
-        "parentName": "Дмитриева Ю.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
-      },
-      {
-        "id": "sr-07",
-        "surveyId": "srv-01",
-        "studentId": "st-05",
-        "studentName": "Зайцев Владислав Максимович",
-        "parentId": "pr-07",
-        "parentName": "Зайцев М.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
-      },
-      {
-        "id": "sr-08",
-        "surveyId": "srv-01",
-        "studentId": "st-18",
-        "studentName": "Ильина Варвара Романовна",
-        "parentId": "pr-08",
-        "parentName": "Ильин Р.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
-      },
-      {
-        "id": "sr-09",
-        "surveyId": "srv-01",
-        "studentId": "st-19",
-        "studentName": "Киселёва Ксения Григорьевна",
-        "parentId": "pr-09",
-        "parentName": "Киселёва Н.",
-        "answered": false,
-        "answer": null,
-        "answerText": "Нет ответа",
-        "comment": null,
-        "answeredAt": null
-      },
-      {
-        "id": "sr-10",
-        "surveyId": "srv-01",
-        "studentId": "st-06",
-        "studentName": "Котов Максим Денисович",
-        "parentId": "pr-10",
-        "parentName": "Котова Е.",
-        "answered": true,
-        "answer": "opt-no",
-        "answerText": "Нет, отказываюсь",
-        "comment": "По состоянию здоровья",
-        "answeredAt": "2024-10-26 15:30"
-      },
-      {
-        "id": "sr-11",
-        "surveyId": "srv-01",
-        "studentId": "st-07",
-        "studentName": "Кузнецов Данила Владимирович",
-        "parentId": "pr-11",
-        "parentName": "Кузнецова Н.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
-      },
-      {
-        "id": "sr-12",
-        "surveyId": "srv-01",
-        "studentId": "st-08",
-        "studentName": "Лебедев Михаил Викторович",
-        "parentId": "pr-13",
-        "parentName": "Лебедева О.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
-      },
-      {
-        "id": "sr-13",
-        "surveyId": "srv-01",
-        "studentId": "st-24",
-        "studentName": "Лукина Алиса Денисовна",
-        "parentId": "pr-25",
-        "parentName": "Лукин Д.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
-      },
-      {
-        "id": "sr-14",
-        "surveyId": "srv-01",
-        "studentId": "st-20",
-        "studentName": "Медведева Мария Андреевна",
-        "parentId": "pr-14",
-        "parentName": "Медведев А.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
-      },
-      {
-        "id": "sr-15",
-        "surveyId": "srv-01",
-        "studentId": "st-21",
-        "studentName": "Мишина Анастасия Сергеевна",
-        "parentId": "pr-15",
-        "parentName": "Мишина Е.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
-      },
-      {
-        "id": "sr-16",
-        "surveyId": "srv-01",
+        "id": "ma-16",
+        "meetingId": "mtg-past-01",
         "studentId": "st-09",
         "studentName": "Морозов Артём Андреевич",
         "parentId": "pr-16",
-        "parentName": "Морозова Е.",
-        "answered": true,
-        "answer": "opt-no",
-        "answerText": "Нет, отказываюсь",
-        "comment": "По состоянию здоровья",
-        "answeredAt": "2024-10-26 15:30"
+        "parentName": "Морозова Е. В.",
+        "parentRole": "Мать",
+        "phone": "+7 999 123-45-91",
+        "status": "absent",
+        "statusLabel": "Не пришёл",
+        "note": "Семейные обстоятельства",
+        "responded": true,
+        "updatedAt": "2024-09-05 19:30"
       },
       {
-        "id": "sr-17",
-        "surveyId": "srv-01",
+        "id": "ma-17",
+        "meetingId": "mtg-past-01",
         "studentId": "st-10",
         "studentName": "Никитин Илья Сергеевич",
         "parentId": "pr-18",
-        "parentName": "Никитина С.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
+        "parentName": "Никитина С. А.",
+        "parentRole": "Мать",
+        "phone": "+7 999 123-45-93",
+        "status": "present",
+        "statusLabel": "Пришёл",
+        "note": "",
+        "responded": true,
+        "updatedAt": "2024-09-05 19:30"
       },
       {
-        "id": "sr-18",
-        "surveyId": "srv-01",
-        "studentId": "st-22",
+        "id": "ma-18",
+        "meetingId": "mtg-past-01",
+        "studentId": "st-23",
         "studentName": "Николаева Виктория Владимировна",
         "parentId": "pr-19",
-        "parentName": "Николаев В.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
+        "parentName": "Николаев В. Д.",
+        "parentRole": "Отец",
+        "phone": "+7 999 123-45-94",
+        "status": "present",
+        "statusLabel": "Пришёл",
+        "note": "",
+        "responded": true,
+        "updatedAt": "2024-09-05 19:30"
       },
       {
-        "id": "sr-19",
-        "surveyId": "srv-01",
+        "id": "ma-19",
+        "meetingId": "mtg-past-01",
         "studentId": "st-11",
         "studentName": "Орлов Пётр Игоревич",
         "parentId": "pr-20",
-        "parentName": "Орлов И.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
+        "parentName": "Орлов И. С.",
+        "parentRole": "Отец",
+        "phone": "+7 999 123-45-95",
+        "status": "present",
+        "statusLabel": "Пришёл",
+        "note": "",
+        "responded": true,
+        "updatedAt": "2024-09-05 19:30"
       },
       {
-        "id": "sr-20",
-        "surveyId": "srv-01",
+        "id": "ma-20",
+        "meetingId": "mtg-past-01",
         "studentId": "st-12",
         "studentName": "Осипов Кирилл Тарасович",
         "parentId": "pr-22",
-        "parentName": "Осипова Т.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
+        "parentName": "Осипова Т. Н.",
+        "parentRole": "Мать",
+        "phone": "+7 999 123-45-97",
+        "status": "present",
+        "statusLabel": "Пришёл",
+        "note": "",
+        "responded": true,
+        "updatedAt": "2024-09-05 19:30"
       },
       {
-        "id": "sr-21",
-        "surveyId": "srv-01",
-        "studentId": "st-23",
+        "id": "ma-21",
+        "meetingId": "mtg-past-01",
+        "studentId": "st-24",
         "studentName": "Петрова Анна Сергеевна",
         "parentId": "pr-23",
-        "parentName": "Петров С.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
+        "parentName": "Петров С. В.",
+        "parentRole": "Отец",
+        "phone": "+7 999 123-45-63",
+        "status": "present",
+        "statusLabel": "Пришёл",
+        "note": "",
+        "responded": true,
+        "updatedAt": "2024-09-05 19:30"
       },
       {
-        "id": "sr-22",
-        "surveyId": "srv-01",
+        "id": "ma-22",
+        "meetingId": "mtg-past-01",
         "studentId": "st-13",
         "studentName": "Романов Илья Евгеньевич",
         "parentId": "pr-26",
-        "parentName": "Романова М.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
+        "parentName": "Романова М. Л.",
+        "parentRole": "Мать",
+        "phone": "+7 999 123-45-98",
+        "status": "present",
+        "statusLabel": "Пришёл",
+        "note": "",
+        "responded": true,
+        "updatedAt": "2024-09-05 19:30"
       },
       {
-        "id": "sr-23",
-        "surveyId": "srv-01",
+        "id": "ma-23",
+        "meetingId": "mtg-past-01",
         "studentId": "st-14",
         "studentName": "Сидоров Никита Артёмович",
         "parentId": "pr-27",
-        "parentName": "Сидорова О.",
-        "answered": false,
-        "answer": null,
-        "answerText": "Нет ответа",
-        "comment": null,
-        "answeredAt": null
+        "parentName": "Сидорова О. Н.",
+        "parentRole": "Мать",
+        "phone": "+7 999 123-45-64",
+        "status": "excused",
+        "statusLabel": "Уважительная причина",
+        "note": "Не выходит на связь",
+        "responded": true,
+        "updatedAt": "2024-09-05 19:30"
       },
       {
-        "id": "sr-24",
-        "surveyId": "srv-01",
+        "id": "ma-24",
+        "meetingId": "mtg-past-01",
         "studentId": "st-15",
         "studentName": "Смирнов Алексей Валерьевич",
         "parentId": "pr-28",
-        "parentName": "Смирнов В.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
+        "parentName": "Смирнов В. А.",
+        "parentRole": "Отец",
+        "phone": "+7 999 123-45-99",
+        "status": "present",
+        "statusLabel": "Пришёл",
+        "note": "",
+        "responded": true,
+        "updatedAt": "2024-09-05 19:30"
       },
       {
-        "id": "sr-25",
-        "surveyId": "srv-01",
+        "id": "ma-25",
+        "meetingId": "mtg-past-01",
         "studentId": "st-25",
         "studentName": "Соколова Полина Михайловна",
         "parentId": "pr-29",
-        "parentName": "Соколов М.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
+        "parentName": "Соколов М. Ю.",
+        "parentRole": "Отец",
+        "phone": "+7 999 123-45-01",
+        "status": "present",
+        "statusLabel": "Пришёл",
+        "note": "",
+        "responded": true,
+        "updatedAt": "2024-09-05 19:30"
       },
       {
-        "id": "sr-26",
-        "surveyId": "srv-01",
+        "id": "ma-26",
+        "meetingId": "mtg-past-01",
         "studentId": "st-26",
         "studentName": "Федосеева Елизавета Николаевна",
         "parentId": "pr-30",
-        "parentName": "Федосеева И.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
+        "parentName": "Федосеева И. П.",
+        "parentRole": "Мать",
+        "phone": "+7 999 123-45-02",
+        "status": "present",
+        "statusLabel": "Пришёл",
+        "note": "",
+        "responded": true,
+        "updatedAt": "2024-09-05 19:30"
       },
       {
-        "id": "sr-27",
-        "surveyId": "srv-01",
+        "id": "ma-27",
+        "meetingId": "mtg-past-01",
         "studentId": "st-27",
         "studentName": "Чернышёва Ульяна Викторовна",
         "parentId": "pr-31",
-        "parentName": "Чернышёв В.",
-        "answered": true,
-        "answer": "opt-yes",
-        "answerText": "Да, согласен(на)",
-        "comment": null,
-        "answeredAt": "2024-10-26 15:30"
+        "parentName": "Чернышёв В. К.",
+        "parentRole": "Отец",
+        "phone": "+7 999 123-45-03",
+        "status": "present",
+        "statusLabel": "Пришёл",
+        "note": "",
+        "responded": true,
+        "updatedAt": "2024-09-05 19:30"
       },
       {
-        "id": "sr-28",
-        "surveyId": "srv-01",
+        "id": "ma-28",
+        "meetingId": "mtg-past-01",
         "studentId": "st-28",
         "studentName": "Якушева Кристина Олеговна",
         "parentId": "pr-32",
-        "parentName": "Якушева Л.",
-        "answered": false,
-        "answer": null,
-        "answerText": "Нет ответа",
-        "comment": null,
-        "answeredAt": null
+        "parentName": "Якушева Л. С.",
+        "parentRole": "Мать",
+        "phone": "+7 999 123-45-04",
+        "status": "present",
+        "statusLabel": "Пришёл",
+        "note": "",
+        "responded": true,
+        "updatedAt": "2024-09-05 19:30"
       }
     ],
     "announcements": [
@@ -22932,6 +22554,254 @@
     return { success: errors.length === 0, errors };
   }
 
+  // src/services/meetings-ops.js
+  var DEMO_TODAY = "2024-10-28";
+  var ATTENDANCE_STATUSES = {
+    PRESENT: "present",
+    ABSENT: "absent",
+    EXCUSED: "excused"
+  };
+  var ATTENDANCE_LABELS = {
+    present: "Пришёл",
+    absent: "Не пришёл",
+    excused: "Уважительная причина"
+  };
+  function getMeetings(classId = "class-7b") {
+    const db = getDB();
+    const meetings = (db.meetings || []).filter(
+      (m) => (!m.classId || m.classId === classId) && m.status !== "cancelled"
+    );
+    const sorted = [...meetings].sort((a, b) => {
+      const da = `${a.date || ""} ${a.time || ""}`;
+      const dbTime = `${b.date || ""} ${b.time || ""}`;
+      return da.localeCompare(dbTime);
+    });
+    const upcoming = [];
+    const past = [];
+    for (const m of sorted) {
+      if (m.status === "completed" || m.date < DEMO_TODAY) {
+        past.push(m);
+      } else {
+        upcoming.push(m);
+      }
+    }
+    past.sort((a, b) => `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`));
+    const nextMeeting = upcoming.length > 0 ? upcoming[0] : null;
+    const otherUpcoming = upcoming.slice(1);
+    return {
+      nextMeeting,
+      otherUpcoming,
+      pastMeetings: past,
+      allMeetings: sorted
+    };
+  }
+  function getMeetingById(meetingId) {
+    const db = getDB();
+    return (db.meetings || []).find((m) => m.id === meetingId) || null;
+  }
+  function validateMeetingData(data) {
+    const errors = {};
+    if (!data.title || !String(data.title).trim()) {
+      errors.title = "Тема собрания обязательна для заполнения";
+    }
+    if (!data.date || !String(data.date).trim()) {
+      errors.date = "Дата проведения обязательна для заполнения";
+    }
+    if (!data.time || !String(data.time).trim()) {
+      errors.time = "Время проведения обязательно для заполнения";
+    }
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors
+    };
+  }
+  function createMeeting(data) {
+    const validation = validateMeetingData(data);
+    if (!validation.isValid) {
+      return { success: false, errors: validation.errors };
+    }
+    const db = getDB();
+    db.meetings = db.meetings || [];
+    const agendaItems = Array.isArray(data.agendaItems) ? data.agendaItems.map((item) => String(item).trim()).filter(Boolean) : [];
+    const agendaString = agendaItems.length > 0 ? agendaItems.map((item, idx) => `${idx + 1}) ${item}`).join(" ") : data.agenda || "";
+    const newMeeting = {
+      id: `mtg-${Date.now()}`,
+      title: String(data.title).trim(),
+      date: String(data.date).trim(),
+      time: String(data.time).trim(),
+      room: String(data.room || "Каб. 302").trim(),
+      status: "scheduled",
+      agenda: agendaString,
+      agendaItems,
+      classId: data.classId || "class-7b",
+      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    db.meetings.push(newMeeting);
+    saveDB(db);
+    return { success: true, meeting: newMeeting };
+  }
+  function updateMeeting(meetingId, data) {
+    const validation = validateMeetingData(data);
+    if (!validation.isValid) {
+      return { success: false, errors: validation.errors };
+    }
+    const db = getDB();
+    db.meetings = db.meetings || [];
+    const index = db.meetings.findIndex((m) => m.id === meetingId);
+    if (index === -1) {
+      return { success: false, errors: { general: "Собрание не найдено" } };
+    }
+    const existing = db.meetings[index];
+    let agendaItems = existing.agendaItems || [];
+    if (Array.isArray(data.agendaItems)) {
+      agendaItems = data.agendaItems.map((item) => String(item).trim()).filter(Boolean);
+    }
+    let agendaString = existing.agenda || "";
+    if (agendaItems.length > 0) {
+      agendaString = agendaItems.map((item, idx) => `${idx + 1}) ${item}`).join(" ");
+    } else if (data.agenda !== void 0) {
+      agendaString = String(data.agenda).trim();
+    }
+    const updated = {
+      ...existing,
+      title: String(data.title).trim(),
+      date: String(data.date).trim(),
+      time: String(data.time).trim(),
+      room: String(data.room || existing.room || "Каб. 302").trim(),
+      agenda: agendaString,
+      agendaItems,
+      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    db.meetings[index] = updated;
+    saveDB(db);
+    return { success: true, meeting: updated };
+  }
+  function cancelMeeting(meetingId) {
+    const db = getDB();
+    const meeting = (db.meetings || []).find((m) => m.id === meetingId);
+    if (!meeting) {
+      return { success: false, error: "Собрание не найдено" };
+    }
+    meeting.status = "cancelled";
+    meeting.cancelledAt = (/* @__PURE__ */ new Date()).toISOString();
+    saveDB(db);
+    return { success: true };
+  }
+  function canMarkAttendance(meeting) {
+    if (!meeting) return false;
+    if (meeting.status === "completed") return true;
+    return meeting.date <= DEMO_TODAY;
+  }
+  function getMeetingAttendance(meetingId) {
+    const db = getDB();
+    let list = (db.meetingAttendance || []).filter((a) => a.meetingId === meetingId);
+    if (list.length > 0) {
+      return list;
+    }
+    const students = (db.students || []).filter((s) => s.classId === "class-7b");
+    const parents = db.parents || [];
+    list = students.map((st, idx) => {
+      const parent = parents.find((p) => (p.children || []).some((c) => c.studentId === st.id)) || null;
+      return {
+        id: `ma-${meetingId}-${st.id}`,
+        meetingId,
+        studentId: st.id,
+        studentName: st.name,
+        parentId: parent ? parent.id : `pr-gen-${idx + 1}`,
+        parentName: parent ? parent.name : "Родитель не указан",
+        parentRole: parent ? parent.gender === "female" ? "Мать" : "Отец" : "Законный представитель",
+        phone: parent ? parent.phone : "",
+        status: ATTENDANCE_STATUSES.PRESENT,
+        statusLabel: ATTENDANCE_LABELS.present,
+        note: "",
+        responded: true,
+        updatedAt: null
+      };
+    });
+    return list;
+  }
+  function saveMeetingAttendance(meetingId, items) {
+    const meeting = getMeetingById(meetingId);
+    if (!meeting) {
+      return { success: false, message: "Собрание не найдено" };
+    }
+    if (!canMarkAttendance(meeting)) {
+      return {
+        success: false,
+        message: "Отметить явку до проведения собрания нельзя. Собрание ещё не состоялось."
+      };
+    }
+    const errors = {};
+    for (const item of items) {
+      const status = item.status;
+      const note = (item.note || "").trim();
+      if ((status === ATTENDANCE_STATUSES.ABSENT || status === ATTENDANCE_STATUSES.EXCUSED) && !note) {
+        errors[item.studentId || item.id] = "Укажите причину неявки (для значений «Не пришёл» и «Уважительная причина» примечание обязательно)";
+      }
+    }
+    if (Object.keys(errors).length > 0) {
+      return { success: false, errors };
+    }
+    const db = getDB();
+    db.meetingAttendance = db.meetingAttendance || [];
+    const existingMap = /* @__PURE__ */ new Map();
+    for (const a of db.meetingAttendance) {
+      if (a.meetingId === meetingId) {
+        existingMap.set(a.studentId || a.id, a);
+      }
+    }
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    const updatedList = items.map((item) => {
+      const prev = existingMap.get(item.studentId || item.id) || {};
+      return {
+        ...prev,
+        ...item,
+        meetingId,
+        status: item.status,
+        statusLabel: ATTENDANCE_LABELS[item.status] || "Пришёл",
+        note: (item.note || "").trim(),
+        updatedAt: now
+      };
+    });
+    db.meetingAttendance = [
+      ...db.meetingAttendance.filter((a) => a.meetingId !== meetingId),
+      ...updatedList
+    ];
+    if (meeting.status === "scheduled") {
+      meeting.status = "completed";
+    }
+    saveDB(db);
+    return { success: true };
+  }
+  function getMeetingSummary(meetingId) {
+    const attendance = getMeetingAttendance(meetingId);
+    const total = attendance.length;
+    let presentCount = 0;
+    let absentCount = 0;
+    let excusedCount = 0;
+    const absentList = [];
+    for (const item of attendance) {
+      if (item.status === ATTENDANCE_STATUSES.PRESENT) {
+        presentCount++;
+      } else {
+        if (item.status === ATTENDANCE_STATUSES.EXCUSED) {
+          excusedCount++;
+        } else {
+          absentCount++;
+        }
+        absentList.push(item);
+      }
+    }
+    return {
+      total,
+      presentCount,
+      absentCount,
+      excusedCount,
+      ratioText: `${presentCount} из ${total}`,
+      absentList
+    };
+  }
+
   // src/services/storage.js
   var STORAGE_KEYS = {
     DB: "classroom_crm_db",
@@ -23779,6 +23649,11 @@
         return `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="6 9 12 15 18 9"></polyline>
       </svg>`;
+      case "chevron-up":
+      case "chevronUp":
+        return `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>`;
       case "send":
         return `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -24320,23 +24195,23 @@
     const modalAuthor = document.getElementById("modal-announcement-author");
     const modalDate = document.getElementById("modal-announcement-date");
     const modalReads = document.getElementById("modal-announcement-reads");
-    const closeModal2 = () => {
+    const closeModal3 = () => {
       if (modal) {
         modal.classList.add("hidden");
       }
     };
     const btnClose = document.getElementById("btn-close-announcement-modal");
     if (btnClose) {
-      btnClose.addEventListener("click", closeModal2);
+      btnClose.addEventListener("click", closeModal3);
     }
     const btnDismiss = document.getElementById("btn-modal-dismiss");
     if (btnDismiss) {
-      btnDismiss.addEventListener("click", closeModal2);
+      btnDismiss.addEventListener("click", closeModal3);
     }
     if (modal) {
       modal.addEventListener("click", (e) => {
         if (e.target === modal) {
-          closeModal2();
+          closeModal3();
         }
       });
     }
@@ -25689,7 +25564,7 @@
     const modalDialog = document.getElementById("modal-forgot-dialog");
     const closeForgotBtn = document.getElementById("btn-close-modal-forgot");
     const closeForgotX = document.getElementById("btn-close-modal-forgot-x");
-    function openModal2() {
+    function openModal3() {
       if (!modalForgot) return;
       modalForgot.classList.remove("opacity-0", "pointer-events-none");
       modalForgot.classList.add("opacity-100", "pointer-events-auto");
@@ -25698,7 +25573,7 @@
         modalDialog.classList.add("scale-100");
       }
     }
-    function closeModal2() {
+    function closeModal3() {
       if (!modalForgot) return;
       modalForgot.classList.remove("opacity-100", "pointer-events-auto");
       modalForgot.classList.add("opacity-0", "pointer-events-none");
@@ -25707,17 +25582,17 @@
         modalDialog.classList.add("scale-95");
       }
     }
-    if (forgotBtn) forgotBtn.addEventListener("click", openModal2);
-    if (closeForgotBtn) closeForgotBtn.addEventListener("click", closeModal2);
-    if (closeForgotX) closeForgotX.addEventListener("click", closeModal2);
+    if (forgotBtn) forgotBtn.addEventListener("click", openModal3);
+    if (closeForgotBtn) closeForgotBtn.addEventListener("click", closeModal3);
+    if (closeForgotX) closeForgotX.addEventListener("click", closeModal3);
     if (modalForgot) {
       modalForgot.addEventListener("click", (e) => {
-        if (e.target === modalForgot) closeModal2();
+        if (e.target === modalForgot) closeModal3();
       });
     }
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && modalForgot && !modalForgot.classList.contains("pointer-events-none")) {
-        closeModal2();
+        closeModal3();
       }
     });
   }
@@ -27159,54 +27034,6 @@
         }
       });
     }
-  }
-
-  // src/views/placeholder.js
-  function renderPlaceholderView(title, description, path) {
-    const db = getDB();
-    const user = getCurrentUser();
-    const meta = db.meta || {};
-    return `
-    <div class="space-y-6 animate-fadeIn">
-      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 sm:p-7">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center space-x-2.5">
-              <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200">
-                ${user ? user.roleLabel : "Раздел"}
-              </span>
-              <span class="text-xs text-slate-400">Маршрут: ${path}</span>
-            </div>
-            <h2 class="text-xl font-bold text-slate-900 mt-2">${title}</h2>
-            <p class="text-xs text-slate-500 mt-1">${description}</p>
-          </div>
-          <div class="flex items-center space-x-2">
-            <span class="text-xs px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">
-              Класс 7Б · ${meta.studentsCount || 28} учеников
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
-        <div class="text-sm font-bold text-slate-800 mb-3">Состояние модуля в БП</div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-            <div class="text-slate-500">Учебный период</div>
-            <div class="font-bold text-slate-800 mt-1">${meta.period?.name || "I четверть"}</div>
-          </div>
-          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-            <div class="text-slate-500">Классный руководитель</div>
-            <div class="font-bold text-slate-800 mt-1">${meta.teacher || "Смирнова М. В."}</div>
-          </div>
-          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-            <div class="text-slate-500">Средний балл / Посещаемость</div>
-            <div class="font-bold text-slate-800 mt-1">${meta.classAverageGrade || "4.2"} / ${meta.attendancePercentage || "93.6"}%</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
   }
 
   // src/views/attendance/helpers.js
@@ -29030,6 +28857,1158 @@
     });
   }
 
+  // src/views/meetings/render.js
+  function formatDateRu4(dateStr) {
+    if (!dateStr) return "";
+    const parts = String(dateStr).split("-");
+    if (parts.length === 3) {
+      return `${parts[2]}.${parts[1]}.${parts[0]}`;
+    }
+    return dateStr;
+  }
+  function renderMeetingsView(options = {}) {
+    const { nextMeeting, otherUpcoming, pastMeetings } = getMeetings("class-7b");
+    return `
+    <div id="meetings-view" class="max-w-6xl mx-auto space-y-6 pb-12 animate-fadeIn">
+      <!-- Шапка страницы -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90">
+        <div>
+          <div class="flex items-center space-x-3">
+            <h1 id="meetings-page-title" class="text-2xl font-black text-slate-900 tracking-tight">
+              Родительские собрания 7Б
+            </h1>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-200/70">
+              ${(nextMeeting ? 1 : 0) + otherUpcoming.length + pastMeetings.length} в учебном году
+            </span>
+          </div>
+          <p id="meetings-page-subtitle" class="text-xs font-semibold text-slate-500 mt-1">
+            Планирование встреч, повестка, протоколы и фиксация явки родителей
+          </p>
+        </div>
+
+        <div>
+          <button
+            id="btn-create-meeting"
+            class="inline-flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer"
+          >
+            ${renderIcon("plus", "w-4 h-4 text-white")}
+            <span>Создать собрание</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Блок ближайшего собрания (TC-MG-01) -->
+      ${renderNextMeetingSection(nextMeeting)}
+
+      <!-- Другие запланированные собрания (TC-MG-02, TC-MG-06) -->
+      ${otherUpcoming.length > 0 ? renderOtherUpcomingSection(otherUpcoming) : ""}
+
+      <!-- Блок прошедших собраний (TC-MG-01, TC-MG-07, TC-MG-10) -->
+      ${renderPastMeetingsSection(pastMeetings)}
+
+      <!-- Модальные окна проекта -->
+      ${renderMeetingFormModal()}
+      ${renderCancelMeetingModal()}
+      ${renderAttendanceModal()}
+      ${renderSummaryModal()}
+    </div>
+  `;
+  }
+  function renderNextMeetingSection(meeting) {
+    if (!meeting) {
+      return `
+      <div id="section-next-meeting" class="bg-white rounded-3xl p-10 border border-slate-200/90 shadow-xs text-center space-y-3">
+        <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
+          ${renderIcon("calendar", "w-7 h-7")}
+        </div>
+        <h3 class="text-base font-bold text-slate-900">Нет запланированных собраний</h3>
+        <p class="text-xs font-medium text-slate-500 max-w-sm mx-auto">
+          Нажмите кнопку «Создать собрание», чтобы назначить дату, время и сформировать повестку встречи.
+        </p>
+      </div>
+    `;
+    }
+    const agendaList = Array.isArray(meeting.agendaItems) && meeting.agendaItems.length > 0 ? meeting.agendaItems : meeting.agenda ? [meeting.agenda] : [];
+    const dateRu = formatDateRu4(meeting.date);
+    return `
+    <div id="section-next-meeting" class="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-xs relative overflow-hidden">
+      <!-- Декоративная полоса акцента -->
+      <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-500 to-brand-300"></div>
+
+      <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 pt-1">
+        <div class="space-y-4 flex-1">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-200/70">
+              Ближайшее собрание
+            </span>
+            <span class="text-xs text-slate-400 font-semibold">Класс 7Б · 28 учеников</span>
+          </div>
+
+          <div>
+            <h2 id="next-meeting-title" class="text-xl font-black text-slate-900 tracking-tight">
+              ${meeting.title}
+            </h2>
+            <div class="flex flex-wrap items-center gap-3.5 mt-2.5 text-xs text-slate-600 font-medium">
+              <span class="flex items-center gap-1.5 font-bold text-slate-900">
+                ${renderIcon("calendar", "w-4 h-4 text-brand-600")}
+                <span id="next-meeting-datetime">${dateRu}, ${meeting.time}</span>
+              </span>
+              <span class="text-slate-300">&bull;</span>
+              <span class="flex items-center gap-1.5 font-semibold text-slate-700">
+                ${renderIcon("mapPin", "w-4 h-4 text-brand-600")}
+                <span id="next-meeting-room">${meeting.room || "Каб. 302"}</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Повестка дня (TC-MG-01, TC-MG-04) -->
+          <div class="pt-3 border-t border-slate-100 space-y-2">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">
+                Повестка собрания
+              </h4>
+              <span class="text-2xs font-semibold text-slate-400">
+                ${agendaList.length} ${agendaList.length === 1 ? "пункт" : agendaList.length > 1 && agendaList.length < 5 ? "пункта" : "пунктов"}
+              </span>
+            </div>
+            <ol id="next-meeting-agenda-list" class="space-y-2 text-xs text-slate-700 list-decimal list-inside pl-1 font-medium">
+              ${agendaList.map((item) => `
+                <li class="agenda-item leading-relaxed p-2.5 rounded-xl bg-slate-50/80 border border-slate-100">
+                  <span class="font-semibold text-slate-800">${item}</span>
+                </li>
+              `).join("")}
+            </ol>
+          </div>
+        </div>
+
+        <!-- Кнопки действий -->
+        <div class="flex items-center gap-2 lg:self-start shrink-0 pt-1">
+          <button
+            class="btn-edit-meeting inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+            data-meeting-id="${meeting.id}"
+            title="Редактировать параметры и повестку"
+          >
+            ${renderIcon("edit", "w-3.5 h-3.5 text-slate-600")}
+            <span>Изменить</span>
+          </button>
+
+          <a
+            href="announcements"
+            class="btn-publish-announcement inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200/60 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+          >
+            ${renderIcon("megaphone", "w-3.5 h-3.5 text-brand-600")}
+            <span>Опубликовать объявление</span>
+          </a>
+
+          <!-- Меню действий с отменой собрания (TC-MG-01, TC-MG-06) -->
+          <div class="relative inline-block text-left meeting-menu-container">
+            <button
+              class="btn-meeting-menu p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
+              title="Дополнительные действия"
+              data-meeting-id="${meeting.id}"
+            >
+              ${renderIcon("more-vertical", "w-4 h-4")}
+            </button>
+            <div
+              class="meeting-menu-dropdown hidden absolute right-0 mt-1 w-48 rounded-2xl bg-white shadow-xl border border-slate-100 py-1.5 z-20"
+            >
+              <button
+                class="btn-cancel-meeting w-full text-left px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2 cursor-pointer transition-colors"
+                data-meeting-id="${meeting.id}"
+              >
+                ${renderIcon("trash", "w-3.5 h-3.5 text-rose-500")}
+                <span>Отменить собрание</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  }
+  function renderOtherUpcomingSection(meetings) {
+    return `
+    <div id="section-other-upcoming" class="space-y-3">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">
+        Запланированные собрания (${meetings.length})
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        ${meetings.map((m) => `
+          <div class="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-xs flex items-start justify-between gap-4">
+            <div class="space-y-1.5">
+              <span class="text-2xs font-bold uppercase tracking-wider text-brand-700 bg-brand-50 border border-brand-200/60 px-2 py-0.5 rounded-md">
+                ${formatDateRu4(m.date)} · ${m.time}
+              </span>
+              <h4 class="text-sm font-bold text-slate-900">${m.title}</h4>
+              <p class="text-xs font-medium text-slate-500">${m.room || "Каб. 302"}</p>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button
+                class="btn-edit-meeting p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
+                data-meeting-id="${m.id}"
+                title="Редактировать"
+              >
+                ${renderIcon("edit", "w-4 h-4")}
+              </button>
+              <button
+                class="btn-cancel-meeting p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer"
+                data-meeting-id="${m.id}"
+                title="Отменить"
+              >
+                ${renderIcon("trash", "w-4 h-4")}
+              </button>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+  }
+  function renderPastMeetingsSection(meetings) {
+    return `
+    <div id="section-past-meetings" class="space-y-3 pt-2">
+      <div class="flex items-center justify-between px-1">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">
+          Прошедшие собрания
+        </h3>
+        <span class="text-xs text-slate-400 font-semibold">История протоколов и явки</span>
+      </div>
+
+      ${meetings.length === 0 ? `
+        <div class="bg-white rounded-3xl p-8 border border-slate-200/90 shadow-xs text-center text-xs text-slate-400 font-medium">
+          Прошедших собраний пока нет
+        </div>
+      ` : `
+        <div class="space-y-3">
+          ${meetings.map((m) => {
+      const dateRu = formatDateRu4(m.date);
+      return `
+              <div
+                class="past-meeting-row bg-white rounded-3xl p-5 border border-slate-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs transition-all hover:border-slate-300"
+                data-meeting-id="${m.id}"
+              >
+                <div class="flex items-center gap-3.5">
+                  <div class="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                    ${renderIcon("check", "w-5 h-5")}
+                  </div>
+                  <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="font-bold text-slate-900">${dateRu}</span>
+                      <span class="text-slate-300">&bull;</span>
+                      <span class="font-bold text-slate-800">${m.title}</span>
+                      <span class="text-slate-300">&bull;</span>
+                      <span class="meeting-attendance-badge font-bold text-brand-700 bg-brand-50 border border-brand-200/60 px-2.5 py-0.5 rounded-full text-xs">
+                        24 из 28
+                      </span>
+                    </div>
+                    <p class="text-2xs font-semibold text-slate-400 mt-1">${m.room || "Каб. 302"} · Завершено</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                  <button
+                    class="btn-meeting-summary inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all cursor-pointer shadow-2xs"
+                    data-meeting-id="${m.id}"
+                  >
+                    ${renderIcon("chart-bar", "w-3.5 h-3.5 text-slate-600")}
+                    <span>Итоги</span>
+                  </button>
+
+                  <button
+                    class="btn-mark-attendance inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200/60 font-bold text-xs transition-all cursor-pointer shadow-2xs"
+                    data-meeting-id="${m.id}"
+                  >
+                    ${renderIcon("users", "w-3.5 h-3.5 text-brand-600")}
+                    <span>Отметить явку</span>
+                  </button>
+                </div>
+              </div>
+            `;
+    }).join("")}
+        </div>
+      `}
+    </div>
+  `;
+  }
+  function renderMeetingFormModal() {
+    return `
+    <div
+      id="modal-meeting-form"
+      class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none"
+    >
+      <div
+        id="modal-meeting-form-dialog"
+        class="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 max-h-[92vh] flex flex-col overflow-hidden"
+      >
+        <!-- Шапка модалки в едином формате Classroom CRM -->
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
+          <div>
+            <h3 id="modal-meeting-form-title" class="text-base font-bold text-slate-900">
+              Создать собрание
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">Планирование встречи и формирование повестки</p>
+          </div>
+          <button
+            type="button"
+            class="btn-close-modal p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Закрыть"
+          >
+            ${renderIcon("x", "w-5 h-5")}
+          </button>
+        </div>
+
+        <!-- Тело формы со скроллом -->
+        <div class="space-y-4 overflow-y-auto flex-1 pr-1 text-xs py-3">
+          <input type="hidden" id="meeting-id-input" value="" />
+
+          <!-- Тема (обязательное) -->
+          <div>
+            <label for="meeting-title-input" class="block font-semibold text-slate-700 mb-1.5">
+              Тема собрания <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="meeting-title-input"
+              class="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 placeholder:text-slate-400 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
+              placeholder="Например, Подготовка к новогодним мероприятиям"
+            />
+            <p id="error-meeting-title" class="hidden text-[11px] font-semibold text-rose-600 mt-1"></p>
+          </div>
+
+          <!-- Дата и Время (обязательные) -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="meeting-date-input" class="block font-semibold text-slate-700 mb-1.5">
+                Дата проведения <span class="text-rose-500">*</span>
+              </label>
+              <input
+                type="date"
+                id="meeting-date-input"
+                class="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer"
+              />
+              <p id="error-meeting-date" class="hidden text-[11px] font-semibold text-rose-600 mt-1"></p>
+            </div>
+            <div>
+              <label for="meeting-time-input" class="block font-semibold text-slate-700 mb-1.5">
+                Время проведения <span class="text-rose-500">*</span>
+              </label>
+              <input
+                type="time"
+                id="meeting-time-input"
+                class="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer"
+              />
+              <p id="error-meeting-time" class="hidden text-[11px] font-semibold text-rose-600 mt-1"></p>
+            </div>
+          </div>
+
+          <!-- Место (Кабинет) -->
+          <div>
+            <label for="meeting-room-input" class="block font-semibold text-slate-700 mb-1.5">
+              Место проведения (кабинет)
+            </label>
+            <input
+              type="text"
+              id="meeting-room-input"
+              class="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 placeholder:text-slate-400 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
+              placeholder="Каб. 302"
+              value="Каб. 302"
+            />
+          </div>
+
+          <!-- Повестка дня (TC-MG-04) -->
+          <div class="pt-3 border-t border-slate-100 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <label class="block font-semibold text-slate-700 text-xs">
+                Повестка собрания (пункты)
+              </label>
+              <span class="text-2xs font-medium text-slate-400">Необязательно</span>
+            </div>
+
+            <!-- Список добавленных пунктов -->
+            <div id="modal-agenda-items-container" class="space-y-2"></div>
+
+            <!-- Добавление нового пункта -->
+            <div class="flex items-center gap-2 pt-1">
+              <input
+                type="text"
+                id="input-new-agenda-item"
+                class="flex-1 h-10 px-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 placeholder:text-slate-400 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
+                placeholder="Новый пункт повестки..."
+              />
+              <button
+                type="button"
+                id="btn-add-agenda-item"
+                class="h-10 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+              >
+                Добавить пункт
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Футер с кнопками в фирменном стиле (flex-1 h-10) -->
+        <div class="pt-4 border-t border-slate-100 flex items-center space-x-3 shrink-0">
+          <button
+            type="button"
+            class="btn-close-modal flex-1 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
+          >
+            Отмена
+          </button>
+          <button
+            type="button"
+            id="btn-save-meeting"
+            class="flex-1 h-10 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-2xs transition-colors cursor-pointer"
+          >
+            Сохранить
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  }
+  function renderCancelMeetingModal() {
+    return `
+    <div
+      id="modal-cancel-meeting"
+      class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none"
+    >
+      <div
+        id="modal-cancel-meeting-dialog"
+        class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95"
+      >
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Отмена собрания</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Снятие встречи с плана класса 7Б</p>
+          </div>
+          <button
+            type="button"
+            class="btn-close-modal p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Закрыть"
+          >
+            ${renderIcon("x", "w-5 h-5")}
+          </button>
+        </div>
+
+        <div class="my-4 p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-amber-900 text-xs font-medium leading-relaxed">
+          <p>
+            Собрание будет снято из плана и уйдёт из ближайших. Опубликованное ранее объявление останется в списке объявлений без изменений.
+          </p>
+        </div>
+
+        <input type="hidden" id="cancel-meeting-id" value="" />
+
+        <div class="pt-2 flex items-center space-x-2.5">
+          <button
+            type="button"
+            class="btn-close-modal flex-1 h-10 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
+          >
+            Не отменять
+          </button>
+          <button
+            type="button"
+            id="btn-confirm-cancel-meeting"
+            class="flex-1 h-10 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs shadow-2xs transition-colors cursor-pointer"
+          >
+            Отменить собрание
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  }
+  function renderAttendanceModal() {
+    return `
+    <div
+      id="modal-meeting-attendance"
+      class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none"
+    >
+      <div
+        id="modal-meeting-attendance-dialog"
+        class="bg-white rounded-3xl max-w-4xl w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 max-h-[92vh] flex flex-col overflow-hidden"
+      >
+        <!-- Шапка -->
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
+          <div>
+            <h3 id="modal-attendance-title" class="text-base font-bold text-slate-900">
+              Отметка явки на собрание
+            </h3>
+            <p id="modal-attendance-subtitle" class="text-xs text-slate-500 mt-0.5">
+              05.09.2024 · Организация учебного года
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <span
+              id="attendance-counter-badge"
+              class="px-3 py-1 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-200/70"
+            >
+              Всего пришли: <span id="attendance-present-count">24</span> из 28
+            </span>
+            <button
+              type="button"
+              class="btn-close-modal p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              title="Закрыть"
+            >
+              ${renderIcon("x", "w-5 h-5")}
+            </button>
+          </div>
+        </div>
+
+        <!-- Таблица явки на 28 родителей -->
+        <div class="overflow-y-auto flex-1 my-3 border border-slate-200/80 rounded-2xl">
+          <input type="hidden" id="attendance-meeting-id" value="" />
+          <p id="attendance-general-error" class="hidden m-3 text-xs text-rose-500 font-bold p-3 bg-rose-50 rounded-xl"></p>
+
+          <table id="meeting-attendance-table" class="w-full text-left text-xs">
+            <thead class="bg-slate-50/80 border-b border-slate-200/80 text-slate-500 font-bold uppercase tracking-wider text-[11px] sticky top-0 z-10">
+              <tr>
+                <th scope="col" class="py-3 px-4">Родитель</th>
+                <th scope="col" class="py-3 px-4">Ученик (7Б)</th>
+                <th scope="col" class="py-3 px-4 w-52">Явка</th>
+                <th scope="col" class="py-3 px-4">Причина (при неявке)</th>
+              </tr>
+            </thead>
+            <tbody id="attendance-table-body" class="divide-y divide-slate-100 font-medium text-slate-700 bg-white"></tbody>
+          </table>
+        </div>
+
+        <!-- Футер -->
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3 shrink-0">
+          <button
+            type="button"
+            class="btn-close-modal h-10 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
+          >
+            Закрыть
+          </button>
+          <button
+            type="button"
+            id="btn-save-attendance"
+            class="h-10 px-5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-2xs transition-colors cursor-pointer"
+          >
+            Сохранить явку
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  }
+  function renderSummaryModal() {
+    return `
+    <div
+      id="modal-meeting-summary"
+      class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none"
+    >
+      <div
+        id="modal-meeting-summary-dialog"
+        class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 space-y-4"
+      >
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div>
+            <h3 id="modal-summary-title" class="text-base font-bold text-slate-900">
+              Итоги собрания
+            </h3>
+            <p id="modal-summary-subtitle" class="text-xs text-slate-500 mt-0.5">
+              05.09.2024 · Организация учебного года
+            </p>
+          </div>
+          <button
+            type="button"
+            class="btn-close-modal p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Закрыть"
+          >
+            ${renderIcon("x", "w-5 h-5")}
+          </button>
+        </div>
+
+        <!-- Виджет счётчика явки (TC-MG-10) в фирменных цветах проекта -->
+        <div class="p-4 rounded-2xl bg-gradient-to-br from-brand-50/70 to-white border border-brand-100 space-y-1.5">
+          <span class="text-2xs font-bold uppercase tracking-wider text-slate-400">Общая явка</span>
+          <div class="flex items-baseline gap-2.5">
+            <span id="summary-ratio-text" class="text-3xl font-black text-slate-900 tracking-tight">24 из 28</span>
+            <span id="summary-percentage-text" class="text-xs font-bold text-emerald-700 bg-emerald-100/70 border border-emerald-200/60 px-2 py-0.5 rounded-md">86%</span>
+          </div>
+          <p class="text-2xs font-medium text-slate-500">Счётчик рассчитывается по фактическим отметкам родителей класса 7Б</p>
+        </div>
+
+        <!-- Список отсутствовавших -->
+        <div class="space-y-2">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Отсутствовали на собрании
+          </h4>
+          <div id="summary-absent-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-2.5">
+          <button
+            type="button"
+            id="btn-summary-open-attendance"
+            class="h-10 px-4 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200/60 text-xs font-semibold transition-colors cursor-pointer"
+          >
+            Перейти к явке
+          </button>
+          <button
+            type="button"
+            class="btn-close-modal h-10 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+          >
+            Закрыть
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  }
+
+  // src/views/meetings/listeners.js
+  function escapeHtml(str) {
+    if (!str) return "";
+    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
+  var currentAgendaItems = [];
+  function getInitials(fullName) {
+    if (!fullName) return "РД";
+    const parts = fullName.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return fullName.slice(0, 2).toUpperCase();
+  }
+  function setupMeetingsListeners(navigate2) {
+    const container = document.getElementById("meetings-view");
+    if (!container) return;
+    setupModalCloseHandlers();
+    setupCreateMeetingHandler();
+    setupEditMeetingHandlers();
+    setupMeetingMenuHandlers();
+    setupCancelMeetingHandlers();
+    setupAgendaItemHandlers();
+    setupSaveMeetingHandler(navigate2);
+    setupAttendanceHandlers();
+    setupSummaryHandlers();
+  }
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.remove("opacity-100", "pointer-events-auto");
+    modal.classList.add("opacity-0", "pointer-events-none");
+    const dialog = document.getElementById(`${modalId}-dialog`);
+    if (dialog) {
+      dialog.classList.remove("scale-100");
+      dialog.classList.add("scale-95");
+    }
+    modal.classList.add("hidden");
+  }
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.remove("hidden");
+    requestAnimationFrame(() => {
+      modal.classList.remove("opacity-0", "pointer-events-none");
+      modal.classList.add("opacity-100", "pointer-events-auto");
+      const dialog = document.getElementById(`${modalId}-dialog`);
+      if (dialog) {
+        dialog.classList.remove("scale-95");
+        dialog.classList.add("scale-100");
+      }
+    });
+  }
+  function setupModalCloseHandlers() {
+    document.querySelectorAll(".btn-close-modal").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const modal = btn.closest(".fixed");
+        if (modal && modal.id) {
+          closeModal(modal.id);
+        }
+      });
+    });
+    [
+      "modal-meeting-form",
+      "modal-cancel-meeting",
+      "modal-meeting-attendance",
+      "modal-meeting-summary"
+    ].forEach((id) => {
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.addEventListener("click", (e) => {
+          if (e.target === modal) {
+            closeModal(id);
+          }
+        });
+      }
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        [
+          "modal-meeting-form",
+          "modal-cancel-meeting",
+          "modal-meeting-attendance",
+          "modal-meeting-summary"
+        ].forEach((id) => closeModal(id));
+        closeAllDropdowns();
+      }
+    });
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".meeting-menu-container")) {
+        closeAllDropdowns();
+      }
+    });
+  }
+  function closeAllDropdowns() {
+    document.querySelectorAll(".meeting-menu-dropdown").forEach((el) => {
+      el.classList.add("hidden");
+    });
+  }
+  function setupCreateMeetingHandler() {
+    const btn = document.getElementById("btn-create-meeting");
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      document.getElementById("modal-meeting-form-title").textContent = "Создать собрание";
+      document.getElementById("meeting-id-input").value = "";
+      document.getElementById("meeting-title-input").value = "";
+      document.getElementById("meeting-date-input").value = "";
+      document.getElementById("meeting-time-input").value = "";
+      document.getElementById("meeting-room-input").value = "Каб. 302";
+      currentAgendaItems = [];
+      renderModalAgendaList();
+      clearMeetingFormErrors();
+      openModal("modal-meeting-form");
+    });
+  }
+  function setupEditMeetingHandlers() {
+    document.querySelectorAll(".btn-edit-meeting").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const meetingId = btn.getAttribute("data-meeting-id");
+        const meeting = getMeetingById(meetingId);
+        if (!meeting) return;
+        document.getElementById("modal-meeting-form-title").textContent = "Редактировать собрание";
+        document.getElementById("meeting-id-input").value = meeting.id;
+        document.getElementById("meeting-title-input").value = meeting.title || "";
+        document.getElementById("meeting-date-input").value = meeting.date || "";
+        document.getElementById("meeting-time-input").value = meeting.time || "";
+        document.getElementById("meeting-room-input").value = meeting.room || "Каб. 302";
+        currentAgendaItems = Array.isArray(meeting.agendaItems) ? [...meeting.agendaItems] : meeting.agenda ? [meeting.agenda] : [];
+        renderModalAgendaList();
+        clearMeetingFormErrors();
+        openModal("modal-meeting-form");
+      });
+    });
+  }
+  function setupMeetingMenuHandlers() {
+    document.querySelectorAll(".btn-meeting-menu").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const container = btn.closest(".meeting-menu-container");
+        const dropdown = container ? container.querySelector(".meeting-menu-dropdown") : null;
+        if (dropdown) {
+          const isHidden = dropdown.classList.contains("hidden");
+          closeAllDropdowns();
+          if (isHidden) {
+            dropdown.classList.remove("hidden");
+          }
+        }
+      });
+    });
+  }
+  function setupCancelMeetingHandlers() {
+    document.querySelectorAll(".btn-cancel-meeting").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        closeAllDropdowns();
+        const meetingId = btn.getAttribute("data-meeting-id");
+        document.getElementById("cancel-meeting-id").value = meetingId;
+        openModal("modal-cancel-meeting");
+      });
+    });
+    const confirmBtn = document.getElementById("btn-confirm-cancel-meeting");
+    if (confirmBtn) {
+      confirmBtn.addEventListener("click", () => {
+        const meetingId = document.getElementById("cancel-meeting-id").value;
+        if (meetingId) {
+          cancelMeeting(meetingId);
+          closeModal("modal-cancel-meeting");
+          window.location.reload();
+        }
+      });
+    }
+  }
+  function setupAgendaItemHandlers() {
+    const addBtn = document.getElementById("btn-add-agenda-item");
+    const input = document.getElementById("input-new-agenda-item");
+    const addItem = () => {
+      if (!input) return;
+      const val = input.value.trim();
+      if (!val) return;
+      currentAgendaItems.push(val);
+      input.value = "";
+      renderModalAgendaList();
+    };
+    if (addBtn) {
+      addBtn.addEventListener("click", addItem);
+    }
+    if (input) {
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          addItem();
+        }
+      });
+    }
+    const listContainer = document.getElementById("modal-agenda-items-container");
+    if (listContainer) {
+      listContainer.addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        const action = btn.getAttribute("data-action");
+        const index = parseInt(btn.getAttribute("data-index"), 10);
+        if (isNaN(index)) return;
+        if (action === "up" && index > 0) {
+          const temp = currentAgendaItems[index - 1];
+          currentAgendaItems[index - 1] = currentAgendaItems[index];
+          currentAgendaItems[index] = temp;
+          renderModalAgendaList();
+        } else if (action === "down" && index < currentAgendaItems.length - 1) {
+          const temp = currentAgendaItems[index + 1];
+          currentAgendaItems[index + 1] = currentAgendaItems[index];
+          currentAgendaItems[index] = temp;
+          renderModalAgendaList();
+        } else if (action === "remove") {
+          currentAgendaItems.splice(index, 1);
+          renderModalAgendaList();
+        }
+      });
+    }
+  }
+  function renderModalAgendaList() {
+    const container = document.getElementById("modal-agenda-items-container");
+    if (!container) return;
+    if (currentAgendaItems.length === 0) {
+      container.innerHTML = `
+      <p class="text-xs text-slate-400 italic py-2 text-center bg-slate-50/60 rounded-xl border border-dashed border-slate-200">
+        Повестка пока пуста. Добавьте первый пункт ниже.
+      </p>
+    `;
+      return;
+    }
+    container.innerHTML = currentAgendaItems.map((item, idx) => `
+      <div class="agenda-item-row flex items-center justify-between gap-2.5 p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/60 text-xs">
+        <div class="flex items-center gap-2 flex-1 min-w-0">
+          <span class="font-bold text-slate-400 w-5 shrink-0 text-right">${idx + 1}.</span>
+          <span class="text-slate-800 truncate font-semibold">${item}</span>
+        </div>
+        <div class="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            class="btn-agenda-up p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors ${idx === 0 ? "opacity-30 pointer-events-none" : "cursor-pointer"}"
+            data-action="up"
+            data-index="${idx}"
+            title="Переместить выше"
+          >
+            ${renderIcon("chevron-up", "w-4 h-4")}
+          </button>
+          <button
+            type="button"
+            class="btn-agenda-down p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors ${idx === currentAgendaItems.length - 1 ? "opacity-30 pointer-events-none" : "cursor-pointer"}"
+            data-action="down"
+            data-index="${idx}"
+            title="Переместить ниже"
+          >
+            ${renderIcon("chevron-down", "w-4 h-4")}
+          </button>
+          <button
+            type="button"
+            class="btn-agenda-remove p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+            data-action="remove"
+            data-index="${idx}"
+            title="Удалить"
+          >
+            ${renderIcon("trash", "w-4 h-4")}
+          </button>
+        </div>
+      </div>
+    `).join("");
+  }
+  function clearMeetingFormErrors() {
+    ["error-meeting-title", "error-meeting-date", "error-meeting-time"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = "";
+        el.classList.add("hidden");
+      }
+    });
+    ["meeting-title-input", "meeting-date-input", "meeting-time-input"].forEach((id) => {
+      const input = document.getElementById(id);
+      if (input) {
+        input.classList.remove("border-rose-400", "focus:ring-rose-500/20", "focus:border-rose-500");
+      }
+    });
+  }
+  function showMeetingFormError(field, message) {
+    const errEl = document.getElementById(`error-meeting-${field}`);
+    const inputEl = document.getElementById(`meeting-${field}-input`);
+    if (errEl) {
+      errEl.textContent = message;
+      errEl.classList.remove("hidden");
+    }
+    if (inputEl) {
+      inputEl.classList.add("border-rose-400", "focus:ring-rose-500/20", "focus:border-rose-500");
+    }
+  }
+  function setupSaveMeetingHandler(navigate2) {
+    const saveBtn = document.getElementById("btn-save-meeting");
+    if (!saveBtn) return;
+    saveBtn.addEventListener("click", () => {
+      clearMeetingFormErrors();
+      const meetingId = document.getElementById("meeting-id-input").value;
+      const title = document.getElementById("meeting-title-input").value;
+      const date = document.getElementById("meeting-date-input").value;
+      const time = document.getElementById("meeting-time-input").value;
+      const room = document.getElementById("meeting-room-input").value;
+      const payload = {
+        title,
+        date,
+        time,
+        room,
+        agendaItems: currentAgendaItems
+      };
+      let result;
+      if (meetingId) {
+        result = updateMeeting(meetingId, payload);
+      } else {
+        result = createMeeting(payload);
+      }
+      if (!result.success) {
+        if (result.errors) {
+          if (result.errors.title) showMeetingFormError("title", result.errors.title);
+          if (result.errors.date) showMeetingFormError("date", result.errors.date);
+          if (result.errors.time) showMeetingFormError("time", result.errors.time);
+        }
+        return;
+      }
+      closeModal("modal-meeting-form");
+      window.location.reload();
+    });
+  }
+  function setupAttendanceHandlers() {
+    document.querySelectorAll(".btn-mark-attendance").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const meetingId = btn.getAttribute("data-meeting-id");
+        openAttendanceModal(meetingId);
+      });
+    });
+    const saveBtn = document.getElementById("btn-save-attendance");
+    if (saveBtn) {
+      saveBtn.addEventListener("click", () => {
+        const meetingId = document.getElementById("attendance-meeting-id").value;
+        if (!meetingId) return;
+        const rows = document.querySelectorAll("#attendance-table-body tr");
+        const items = [];
+        let hasClientErrors = false;
+        rows.forEach((row) => {
+          const studentId = row.getAttribute("data-student-id");
+          const select = row.querySelector(".attendance-status-select");
+          const noteInput = row.querySelector(".attendance-note-input");
+          const noteErr = row.querySelector(".attendance-note-error");
+          const status = select ? select.value : ATTENDANCE_STATUSES.PRESENT;
+          const note = noteInput ? noteInput.value.trim() : "";
+          if (noteInput) noteInput.classList.remove("border-rose-400");
+          if (noteErr) noteErr.classList.add("hidden");
+          if ((status === ATTENDANCE_STATUSES.ABSENT || status === ATTENDANCE_STATUSES.EXCUSED) && !note) {
+            hasClientErrors = true;
+            if (noteInput) noteInput.classList.add("border-rose-400");
+            if (noteErr) {
+              noteErr.textContent = "Причина неявки обязательна";
+              noteErr.classList.remove("hidden");
+            }
+          }
+          items.push({
+            studentId,
+            status,
+            note
+          });
+        });
+        if (hasClientErrors) return;
+        const res = saveMeetingAttendance(meetingId, items);
+        if (!res.success) {
+          const errEl = document.getElementById("attendance-general-error");
+          if (errEl) {
+            errEl.textContent = res.message || "Ошибка сохранения явки";
+            errEl.classList.remove("hidden");
+          }
+          return;
+        }
+        closeModal("modal-meeting-attendance");
+        window.location.reload();
+      });
+    }
+  }
+  function openAttendanceModal(meetingId) {
+    const meeting = getMeetingById(meetingId);
+    if (!meeting) return;
+    if (!canMarkAttendance(meeting)) {
+      alert("Отметить явку до собрания нельзя: собрание ещё не состоялось.");
+      return;
+    }
+    document.getElementById("attendance-meeting-id").value = meeting.id;
+    document.getElementById("modal-attendance-title").textContent = "Отметка явки на собрание";
+    document.getElementById("modal-attendance-subtitle").textContent = `${formatDateRu4(meeting.date)} · ${meeting.title}`;
+    const errEl = document.getElementById("attendance-general-error");
+    if (errEl) errEl.classList.add("hidden");
+    const attendance = getMeetingAttendance(meeting.id);
+    const tbody = document.getElementById("attendance-table-body");
+    if (!tbody) return;
+    tbody.innerHTML = attendance.map((item) => {
+      const isPresent = item.status === ATTENDANCE_STATUSES.PRESENT;
+      const isAbsent = item.status === ATTENDANCE_STATUSES.ABSENT;
+      const isExcused = item.status === ATTENDANCE_STATUSES.EXCUSED;
+      const initials = getInitials(item.parentName);
+      return `
+        <tr class="hover:bg-slate-50/80 transition-colors" data-student-id="${item.studentId}">
+          <td class="py-3 px-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 rounded-full bg-brand-50 text-brand-700 border border-brand-200 flex items-center justify-center font-bold text-2xs shrink-0 select-none">
+                ${initials}
+              </div>
+              <div>
+                <span class="font-bold text-slate-900 block">${item.parentName}</span>
+                <span class="text-2xs text-slate-400 font-medium">${item.parentRole || "Родитель"} · ${item.phone || ""}</span>
+              </div>
+            </div>
+          </td>
+          <td class="py-3 px-4 font-semibold text-slate-800">
+            ${item.studentName}
+          </td>
+          <td class="py-3 px-4">
+            <div class="relative">
+              <select
+                class="attendance-status-select w-full h-9 pl-3 pr-8 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 bg-white shadow-2xs cursor-pointer appearance-none"
+              >
+                <option value="${ATTENDANCE_STATUSES.PRESENT}" ${isPresent ? "selected" : ""}>Пришёл</option>
+                <option value="${ATTENDANCE_STATUSES.ABSENT}" ${isAbsent ? "selected" : ""}>Не пришёл</option>
+                <option value="${ATTENDANCE_STATUSES.EXCUSED}" ${isExcused ? "selected" : ""}>Уважительная причина</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
+                ${renderIcon("chevron-down", "w-3.5 h-3.5")}
+              </div>
+            </div>
+          </td>
+          <td class="py-3 px-4">
+            <input
+              type="text"
+              placeholder="Укажите причину неявки..."
+              class="attendance-note-input w-full h-9 px-3 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all shadow-2xs ${isPresent ? "bg-slate-50 text-slate-400 cursor-not-allowed" : "bg-white"}"
+              value="${escapeHtml(item.note || "")}"
+              ${isPresent ? "disabled" : ""}
+            />
+            <p class="attendance-note-error hidden text-[11px] font-semibold text-rose-600 mt-1"></p>
+          </td>
+        </tr>
+      `;
+    }).join("");
+    const updateCounter = () => {
+      let presentCount = 0;
+      const selects = tbody.querySelectorAll(".attendance-status-select");
+      selects.forEach((sel) => {
+        if (sel.value === ATTENDANCE_STATUSES.PRESENT) {
+          presentCount++;
+        }
+      });
+      const counterEl = document.getElementById("attendance-present-count");
+      if (counterEl) {
+        counterEl.textContent = String(presentCount);
+      }
+    };
+    tbody.querySelectorAll(".attendance-status-select").forEach((sel) => {
+      sel.addEventListener("change", (e) => {
+        const row = e.target.closest("tr");
+        const noteInput = row ? row.querySelector(".attendance-note-input") : null;
+        if (noteInput) {
+          if (e.target.value === ATTENDANCE_STATUSES.PRESENT) {
+            noteInput.placeholder = "Не требуется";
+            noteInput.disabled = true;
+            noteInput.classList.add("bg-slate-50", "text-slate-400", "cursor-not-allowed");
+            noteInput.classList.remove("bg-white");
+          } else {
+            noteInput.placeholder = "Укажите причину (обязательно)";
+            noteInput.disabled = false;
+            noteInput.classList.remove("bg-slate-50", "text-slate-400", "cursor-not-allowed");
+            noteInput.classList.add("bg-white");
+          }
+        }
+        updateCounter();
+      });
+    });
+    updateCounter();
+    openModal("modal-meeting-attendance");
+  }
+  function setupSummaryHandlers() {
+    document.querySelectorAll(".btn-meeting-summary").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const meetingId = btn.getAttribute("data-meeting-id");
+        openSummaryModal(meetingId);
+      });
+    });
+    const btnOpenAttendance = document.getElementById("btn-summary-open-attendance");
+    if (btnOpenAttendance) {
+      btnOpenAttendance.addEventListener("click", () => {
+        const meetingId = btnOpenAttendance.getAttribute("data-meeting-id");
+        closeModal("modal-meeting-summary");
+        if (meetingId) {
+          openAttendanceModal(meetingId);
+        }
+      });
+    }
+  }
+  function openSummaryModal(meetingId) {
+    const meeting = getMeetingById(meetingId);
+    if (!meeting) return;
+    const summary = getMeetingSummary(meeting.id);
+    document.getElementById("modal-summary-subtitle").textContent = `${formatDateRu4(meeting.date)} · ${meeting.title}`;
+    document.getElementById("summary-ratio-text").textContent = summary.ratioText;
+    const percent = summary.total > 0 ? Math.round(summary.presentCount / summary.total * 100) : 0;
+    document.getElementById("summary-percentage-text").textContent = `${percent}%`;
+    const btnOpenAttendance = document.getElementById("btn-summary-open-attendance");
+    if (btnOpenAttendance) {
+      btnOpenAttendance.setAttribute("data-meeting-id", meeting.id);
+    }
+    const listContainer = document.getElementById("summary-absent-list");
+    if (listContainer) {
+      if (summary.absentList.length === 0) {
+        listContainer.innerHTML = `
+        <div class="p-3 rounded-2xl bg-emerald-50 border border-emerald-100 text-xs text-emerald-800 font-bold text-center">
+          Все 28 родителей присутствовали на собрании
+        </div>
+      `;
+      } else {
+        listContainer.innerHTML = summary.absentList.map((a) => {
+          const initials = getInitials(a.parentName);
+          const isExcused = a.status === ATTENDANCE_STATUSES.EXCUSED;
+          return `
+            <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50/90 border border-slate-100 text-xs">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-7 h-7 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-3xs shrink-0">
+                  ${initials}
+                </div>
+                <div>
+                  <span class="font-bold text-slate-900 block">${a.parentName}</span>
+                  <span class="text-2xs text-slate-400 font-medium">${a.studentName} (7Б)</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="inline-block px-2.5 py-0.5 rounded-full text-2xs font-bold ${isExcused ? "bg-amber-50 text-amber-800 border border-amber-200/70" : "bg-rose-50 text-rose-800 border border-rose-200/70"}">
+                  ${a.statusLabel || "Не пришёл"}
+                </span>
+                <span class="text-2xs text-slate-500 block mt-0.5 font-medium italic">
+                  ${a.note ? `«${a.note}»` : "Причина не указана"}
+                </span>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+    }
+    openModal("modal-meeting-summary");
+  }
+
   // src/views/journal/render.js
   function renderJournalView(options = {}) {
     const db = getDB();
@@ -30124,7 +31103,7 @@
     let activeLessonId = null;
     let activeStudentId = null;
     let activeAttendanceRecord = null;
-    function closeModal2() {
+    function closeModal3() {
       if (!modal) return;
       modal.classList.remove("opacity-100", "pointer-events-auto");
       modal.classList.add("opacity-0", "pointer-events-none");
@@ -30174,11 +31153,11 @@
       }
       if (formConfirmAbsence) formConfirmAbsence.reset();
     }
-    if (btnCloseX) btnCloseX.onclick = closeModal2;
-    if (btnCloseFooter) btnCloseFooter.onclick = closeModal2;
+    if (btnCloseX) btnCloseX.onclick = closeModal3;
+    if (btnCloseFooter) btnCloseFooter.onclick = closeModal3;
     if (modal) {
       modal.addEventListener("click", (e) => {
-        if (e.target === modal) closeModal2();
+        if (e.target === modal) closeModal3();
       });
     }
     if (btnCloseConfirmX) btnCloseConfirmX.onclick = closeJournalConfirmModal;
@@ -30202,7 +31181,7 @@
         if (modalConfirm && !modalConfirm.classList.contains("pointer-events-none")) {
           closeJournalConfirmModal();
         } else if (modal && !modal.classList.contains("pointer-events-none")) {
-          closeModal2();
+          closeModal3();
         }
       }
     });
@@ -30443,7 +31422,7 @@
           confirmedBy: "Смирнова М. В."
         });
         closeJournalConfirmModal();
-        closeModal2();
+        closeModal3();
         const currentHash = "/journal" + (window.location.search || "");
         if (onNavigate) {
           onNavigate(currentHash);
@@ -32032,7 +33011,7 @@
   }
 
   // src/views/student-summary/helpers.js
-  function formatDateRu4(isoDate) {
+  function formatDateRu5(isoDate) {
     if (!isoDate) return "";
     const parts = isoDate.split("-");
     if (parts.length === 3) {
@@ -32292,7 +33271,7 @@
 
             <h1 class="text-lg font-bold text-slate-900 leading-snug">${student.fullName}</h1>
             <p class="text-xs text-slate-500 mt-1">
-              Дата рождения: ${formatDateRu4(student.birthDate)} (${calculateAge(student.birthDate)} лет)
+              Дата рождения: ${formatDateRu5(student.birthDate)} (${calculateAge(student.birthDate)} лет)
             </p>
 
             <div class="flex items-center justify-center gap-2 mt-3 flex-wrap">
@@ -32348,7 +33327,7 @@
                   <span>Напоминание о повторном контакте</span>
                 </div>
                 <div class="text-xs text-amber-900">
-                  Дата: <strong class="font-semibold">${formatDateRu4(pendingContact.nextContactDate)}</strong>
+                  Дата: <strong class="font-semibold">${formatDateRu5(pendingContact.nextContactDate)}</strong>
                 </div>
                 <div class="text-[11px] text-amber-700">
                   Договорённость ранее не была достигнута. Требуется контрольная беседа.
@@ -32437,7 +33416,7 @@
       const valClass = g.value >= 4 ? "text-emerald-600 font-bold" : g.value <= 2 ? "text-rose-600 font-bold" : "text-slate-800 font-bold";
       return `
                           <tr class="hover:bg-slate-50">
-                            <td class="py-2 text-slate-500">${formatDateRu4(g.date)}</td>
+                            <td class="py-2 text-slate-500">${formatDateRu5(g.date)}</td>
                             <td class="py-2 font-semibold text-slate-800">${subj ? subj.name : "—"}</td>
                             <td class="py-2 ${valClass} text-sm">${g.value}</td>
                             <td class="py-2 text-slate-500">${g.comment || g.topic || "Ответ на уроке"}</td>
@@ -32477,7 +33456,7 @@
       return `
                     <div class="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div class="flex items-center space-x-4">
-                        <div class="text-xs font-bold text-slate-900 min-w-[75px]">${formatDateRu4(date)}</div>
+                        <div class="text-xs font-bold text-slate-900 min-w-[75px]">${formatDateRu5(date)}</div>
                         <div class="text-xs text-slate-500 min-w-[100px]">${lessonText}</div>
                         <div class="text-xs text-slate-700">
                           ${displayText}
@@ -32546,7 +33525,7 @@
                     <div class="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/80 space-y-2">
                       <div class="flex items-center justify-between flex-wrap gap-2">
                         <div class="flex items-center space-x-2">
-                          <span class="text-xs font-bold text-slate-900">${formatDateRu4(c.date)}</span>
+                          <span class="text-xs font-bold text-slate-900">${formatDateRu5(c.date)}</span>
                           <span class="text-slate-400 text-xs">·</span>
                           <span class="text-xs text-slate-500">Автор: <strong class="text-slate-700 font-semibold">${c.author || "Смирнова М. В."}</strong></span>
                         </div>
@@ -32570,7 +33549,7 @@
                           </span>
                         ` : c.nextContactDate ? `
                           <span class="inline-flex items-center text-[10px] font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                            ${renderIcon("calendar", "w-3 h-3 mr-1 text-amber-600")} Повторный контакт: ${formatDateRu4(c.nextContactDate)}
+                            ${renderIcon("calendar", "w-3 h-3 mr-1 text-amber-600")} Повторный контакт: ${formatDateRu5(c.nextContactDate)}
                           </span>
                         ` : `
                           <span class="inline-flex items-center text-[10px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
@@ -35312,7 +36291,7 @@
     const [y, m, d] = dateStr.split("-");
     return `${d}.${m}.${y}${timeStr ? `, ${timeStr}` : ""}`;
   }
-  function escapeHtml(text) {
+  function escapeHtml2(text) {
     return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
   function statusBadgeHtml(isActive) {
@@ -35320,7 +36299,7 @@
   }
   function roleBadgeHtml(user) {
     const label = ACCOUNT_ROLE_LABELS[user.role] || user.roleLabel || user.role;
-    return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${ROLE_BADGE_CLASSES[user.role] || "bg-slate-100 text-slate-600"}">${escapeHtml(label)}</span>`;
+    return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${ROLE_BADGE_CLASSES[user.role] || "bg-slate-100 text-slate-600"}">${escapeHtml2(label)}</span>`;
   }
   function toggleStatusButtonHtml(user, isSelf) {
     const isActive = user.status === "active";
@@ -35381,7 +36360,7 @@
           <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
             ${renderIcon("search", "w-4 h-4")}
           </div>
-          <input type="text" id="input-accounts-search" value="${escapeHtml(searchQuery)}"
+          <input type="text" id="input-accounts-search" value="${escapeHtml2(searchQuery)}"
                  placeholder="Поиск по ФИО или логину..."
                  autocomplete="off"
                  style="padding-left: 2.75rem; padding-right: 2.25rem;"
@@ -35637,12 +36616,12 @@
         const isActive = user.status === "active";
         return `
         <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50/70 transition-colors" data-account-row="${user.id}">
-          <td class="py-3.5 pl-6 pr-4 text-sm font-semibold text-slate-800">${escapeHtml(user.personName)}</td>
-          <td class="px-4 py-3.5 text-xs text-slate-500 font-mono">${escapeHtml(user.username)}</td>
+          <td class="py-3.5 pl-6 pr-4 text-sm font-semibold text-slate-800">${escapeHtml2(user.personName)}</td>
+          <td class="px-4 py-3.5 text-xs text-slate-500 font-mono">${escapeHtml2(user.username)}</td>
           <td class="px-4 py-3.5">${roleBadgeHtml(user)}</td>
           <td class="px-4 py-3.5">${statusBadgeHtml(isActive)}</td>
-          <td class="px-4 py-3.5 text-xs text-slate-600">${escapeHtml(binding)}</td>
-          <td class="px-4 py-3.5 text-xs text-slate-500 whitespace-nowrap">${escapeHtml(formatLastLogin(user.lastLoginAt, demoToday))}</td>
+          <td class="px-4 py-3.5 text-xs text-slate-600">${escapeHtml2(binding)}</td>
+          <td class="px-4 py-3.5 text-xs text-slate-500 whitespace-nowrap">${escapeHtml2(formatLastLogin(user.lastLoginAt, demoToday))}</td>
           <td class="py-3.5 pl-4 pr-6">${actionsCellHtml(user, isSelf)}</td>
         </tr>
       `;
@@ -35898,7 +36877,7 @@
       bindingSelect.innerHTML = [
         '<option value="">— без карточки —</option>',
         ...options.map(
-          (o) => `<option value="${escapeHtml(o.id)}">${escapeHtml(o.label)}</option>`
+          (o) => `<option value="${escapeHtml2(o.id)}">${escapeHtml2(o.label)}</option>`
         )
       ].join("");
       const currentValue = currentRef ? String(currentRef.id) : "";
@@ -36132,10 +37111,10 @@
   }
 
   // src/views/teachers/helpers.js
-  function escapeHtml2(text) {
+  function escapeHtml3(text) {
     return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
-  function getInitials(fullName) {
+  function getInitials2(fullName) {
     const parts = String(fullName || "").trim().split(/\s+/);
     if (parts.length < 2) return (fullName || "УЧ").slice(0, 2).toUpperCase();
     return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
@@ -36211,7 +37190,7 @@
           <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
             ${renderIcon("search", "w-4 h-4")}
           </div>
-          <input type="text" id="input-teachers-search" value="${escapeHtml2(searchQuery)}"
+          <input type="text" id="input-teachers-search" value="${escapeHtml3(searchQuery)}"
                  placeholder="Поиск по ФИО или предмету..."
                  autocomplete="off"
                  style="padding-left: 2.75rem; padding-right: 2.25rem;"
@@ -36227,7 +37206,7 @@
                   style="padding-left: 0.875rem; padding-right: 2.25rem;"
                   class="appearance-none py-2.5 rounded-xl border border-slate-200/90 bg-white hover:border-slate-300 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all cursor-pointer md:w-52">
             <option value="all" ${filterSubject === "all" ? "selected" : ""}>Все предметы</option>
-            ${subjectOptions.map((s) => `<option value="${escapeHtml2(s)}" ${filterSubject === s ? "selected" : ""}>${escapeHtml2(s)}</option>`).join("")}
+            ${subjectOptions.map((s) => `<option value="${escapeHtml3(s)}" ${filterSubject === s ? "selected" : ""}>${escapeHtml3(s)}</option>`).join("")}
           </select>
           <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
             ${renderIcon("chevron-down", "w-4 h-4")}
@@ -36334,11 +37313,11 @@
   function teacherCardHtml(card) {
     const { teacher, account, workload, totalHours, classNames } = card;
     const statusBadge2 = teacher.status === "active" ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700">Работает</span>` : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-200 text-slate-600">В архиве</span>`;
-    const accountBlock = account ? `<a href="/accounts?search=${encodeURIComponent(account.username)}" data-action="open-account" data-login="${escapeHtml2(account.username)}"
+    const accountBlock = account ? `<a href="/accounts?search=${encodeURIComponent(account.username)}" data-action="open-account" data-login="${escapeHtml3(account.username)}"
           class="group flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-brand-50/70 border border-brand-200/70 hover:bg-brand-50 hover:border-brand-300 transition-colors">
         <span class="min-w-0">
           <span class="block text-[11px] font-semibold text-slate-500">Учётная запись</span>
-          <span class="block text-xs font-medium text-brand-700 truncate">${escapeHtml2(account.username)}</span>
+          <span class="block text-xs font-medium text-brand-700 truncate">${escapeHtml3(account.username)}</span>
         </span>
         <span class="flex-shrink-0 text-brand-400 group-hover:text-brand-600 transition-colors">
           ${renderIcon("external-link", "w-4 h-4")}
@@ -36353,8 +37332,8 @@
     const workloadRows = workload.map(
       (w) => `
     <tr class="border-b border-slate-100 last:border-0">
-      <td class="py-2 pl-3 pr-2 text-xs font-semibold text-slate-700">${escapeHtml2(w.className)}</td>
-      <td class="px-2 py-2 text-xs text-slate-600">${escapeHtml2(w.subjectLabel)}</td>
+      <td class="py-2 pl-3 pr-2 text-xs font-semibold text-slate-700">${escapeHtml3(w.className)}</td>
+      <td class="px-2 py-2 text-xs text-slate-600">${escapeHtml3(w.subjectLabel)}</td>
       <td class="py-2 pl-2 pr-3 text-right text-xs font-semibold text-slate-800">${w.hours}</td>
     </tr>
   `
@@ -36363,16 +37342,16 @@
     <article class="bg-white rounded-2xl shadow-2xs border border-slate-200/80 overflow-hidden flex flex-col" data-teacher-card="${teacher.id}">
       <div class="p-5 flex items-start gap-3.5">
         <div class="w-11 h-11 flex-shrink-0 rounded-xl bg-brand-50 border border-brand-200 text-brand-600 flex items-center justify-center text-sm font-bold">
-          ${escapeHtml2(getInitials(teacher.fullName))}
+          ${escapeHtml3(getInitials2(teacher.fullName))}
         </div>
         <div class="min-w-0 flex-1">
           <div class="flex items-start justify-between gap-2">
-            <h2 class="text-sm font-bold text-slate-900 leading-tight">${escapeHtml2(teacher.fullName)}</h2>
+            <h2 class="text-sm font-bold text-slate-900 leading-tight">${escapeHtml3(teacher.fullName)}</h2>
             ${statusBadge2}
           </div>
-          <p class="text-[11px] text-slate-400 mt-0.5">${escapeHtml2(teacher.shortName)}</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">${escapeHtml3(teacher.shortName)}</p>
           <div class="flex flex-wrap gap-1.5 mt-2">
-            ${card.subjectLabels.map((s) => `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600">${escapeHtml2(s)}</span>`).join("")}
+            ${card.subjectLabels.map((s) => `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600">${escapeHtml3(s)}</span>`).join("")}
             ${teacher.homeroomClassId ? `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-brand-50 text-brand-700 border border-brand-200/70">Классный руководитель</span>` : ""}
           </div>
         </div>
@@ -36386,7 +37365,7 @@
           </div>
           <div class="px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
             <div class="text-[11px] font-semibold text-slate-500">Классы</div>
-            <div class="text-sm font-bold text-slate-800 mt-0.5">${escapeHtml2(classNames.join(", ") || "—")}</div>
+            <div class="text-sm font-bold text-slate-800 mt-0.5">${escapeHtml3(classNames.join(", ") || "—")}</div>
           </div>
         </div>
         ${accountBlock}
@@ -36603,9 +37582,9 @@
       box.innerHTML = subjects.map(
         (s) => `
       <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 cursor-pointer transition-colors">
-        <input type="checkbox" value="${escapeHtml2(s.id)}" ${selectedIds.includes(s.id) ? "checked" : ""}
+        <input type="checkbox" value="${escapeHtml3(s.id)}" ${selectedIds.includes(s.id) ? "checked" : ""}
                class="w-3.5 h-3.5 rounded border-slate-300 text-brand-500 focus:ring-brand-500/30 cursor-pointer" />
-        <span class="text-[11px] font-medium text-slate-700">${escapeHtml2(s.shortName || s.name)}</span>
+        <span class="text-[11px] font-medium text-slate-700">${escapeHtml3(s.shortName || s.name)}</span>
       </label>
     `
       ).join("");
@@ -36627,7 +37606,7 @@
       select.innerHTML = [
         '<option value="">Не назначен</option>',
         ...Object.entries(classNameById).map(
-          ([id, name]) => `<option value="${escapeHtml2(id)}" ${selectedId === id ? "selected" : ""}>${escapeHtml2(name)}</option>`
+          ([id, name]) => `<option value="${escapeHtml3(id)}" ${selectedId === id ? "selected" : ""}>${escapeHtml3(name)}</option>`
         )
       ].join("");
       select.value = selectedId || "";
@@ -36642,7 +37621,7 @@
       select.innerHTML = [
         '<option value="">Без учётной записи</option>',
         ...teacherAccounts.map(
-          (u) => `<option value="${escapeHtml2(u.id)}" ${selectedId === u.id ? "selected" : ""}>${escapeHtml2(u.username)}</option>`
+          (u) => `<option value="${escapeHtml3(u.id)}" ${selectedId === u.id ? "selected" : ""}>${escapeHtml3(u.username)}</option>`
         )
       ].join("");
       select.value = selectedId || "";
@@ -36757,7 +37736,7 @@
   }
 
   // src/views/directories/helpers.js
-  function escapeHtml3(text) {
+  function escapeHtml4(text) {
     return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
   function getDirectoriesData(db = getDB()) {
@@ -36796,7 +37775,7 @@
     <thead>
       <tr class="border-b border-slate-200/80">
         ${cols.map(
-      (c, i) => `<th class="${i === cols.length - 1 ? "text-right" : "text-left"} text-[11px] font-bold uppercase tracking-wider text-slate-400 px-4 py-3 whitespace-nowrap">${escapeHtml3(c)}</th>`
+      (c, i) => `<th class="${i === cols.length - 1 ? "text-right" : "text-left"} text-[11px] font-bold uppercase tracking-wider text-slate-400 px-4 py-3 whitespace-nowrap">${escapeHtml4(c)}</th>`
     ).join("")}
       </tr>
     </thead>`;
@@ -36809,23 +37788,23 @@
   }
   function directoryRow(item, tab) {
     const dimmed = item.isActive ? "" : " text-slate-400";
-    const shortCell = tab === "subjects" ? `<td class="px-4 py-3 text-xs text-slate-600${dimmed}">${escapeHtml3(item.shortName || "—")}</td>` : "";
+    const shortCell = tab === "subjects" ? `<td class="px-4 py-3 text-xs text-slate-600${dimmed}">${escapeHtml4(item.shortName || "—")}</td>` : "";
     const toggleLabel = item.isActive ? "Деактивировать" : "Вернуть";
     const toggleIcon = item.isActive ? "archive" : "rotate-ccw";
     return `
-    <tr class="border-b border-slate-100 hover:bg-slate-50/60 transition-colors" data-row-id="${escapeHtml3(item.id)}">
-      <td class="px-4 py-3 text-xs font-semibold text-slate-800${dimmed}">${escapeHtml3(item.name)}</td>
+    <tr class="border-b border-slate-100 hover:bg-slate-50/60 transition-colors" data-row-id="${escapeHtml4(item.id)}">
+      <td class="px-4 py-3 text-xs font-semibold text-slate-800${dimmed}">${escapeHtml4(item.name)}</td>
       ${shortCell}
       <td class="px-4 py-3">${usageBadge(item.inUse)}</td>
       <td class="px-4 py-3">${statusBadge(item.isActive)}</td>
       <td class="px-4 py-3">
         <div class="flex items-center justify-end gap-2">
-          <button type="button" data-action="edit-entry" data-tab="${tab}" data-id="${escapeHtml3(item.id)}"
+          <button type="button" data-action="edit-entry" data-tab="${tab}" data-id="${escapeHtml4(item.id)}"
                   class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-brand-400 hover:text-brand-600 text-[11px] font-semibold text-slate-600 transition-colors cursor-pointer">
             ${renderIcon("edit", "w-3.5 h-3.5")}
             <span>Изменить</span>
           </button>
-          <button type="button" data-action="toggle-entry" data-tab="${tab}" data-id="${escapeHtml3(item.id)}" data-active="${item.isActive ? "1" : "0"}"
+          <button type="button" data-action="toggle-entry" data-tab="${tab}" data-id="${escapeHtml4(item.id)}" data-active="${item.isActive ? "1" : "0"}"
                   class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-slate-300 text-[11px] font-semibold text-slate-600 transition-colors cursor-pointer">
             ${renderIcon(toggleIcon, "w-3.5 h-3.5")}
             <span>${toggleLabel}</span>
@@ -36838,8 +37817,8 @@
     return `
     <div class="bg-white rounded-2xl shadow-2xs border border-slate-200/80 overflow-hidden" data-tab-panel="${tab}">
       <div class="px-5 pt-4 pb-3 border-b border-slate-100">
-        <h3 class="text-sm font-bold text-slate-900">${escapeHtml3(title)}</h3>
-        <p class="text-xs text-slate-500 mt-0.5">${escapeHtml3(subtitle)}</p>
+        <h3 class="text-sm font-bold text-slate-900">${escapeHtml4(title)}</h3>
+        <p class="text-xs text-slate-500 mt-0.5">${escapeHtml4(subtitle)}</p>
       </div>
       ${rows.length ? `<table class="w-full">${tableHead([...cols, "Статус", "Действия"])}
         <tbody>${rows.join("")}</tbody>
@@ -36858,7 +37837,7 @@
       (t) => `
         <button type="button" role="tab" data-action="switch-tab" data-tab="${t.key}"
                 class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${activeTab === t.key ? "bg-brand-500 text-white shadow-2xs" : "bg-white text-slate-600 border border-slate-200/80 hover:border-brand-300 hover:text-brand-600"}">
-          <span>${escapeHtml3(t.label)}</span>
+          <span>${escapeHtml4(t.label)}</span>
           <span class="${activeTab === t.key ? "text-white/80" : "text-slate-400"}">${counts[t.key]}</span>
         </button>`
     ).join("")}
@@ -36965,14 +37944,14 @@
         <div>
           <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Справочники</h1>
           <p class="text-sm font-medium text-slate-500 mt-1" id="directories-total-subtitle">
-            ${totalAll} ${escapeHtml3(pluralWord(totalAll))} · ${totalActive} активных
+            ${totalAll} ${escapeHtml4(pluralWord(totalAll))} · ${totalActive} активных
           </p>
         </div>
         <div>
           <button type="button" id="btn-open-create-entry"
                   class="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-semibold text-xs transition-colors shadow-2xs cursor-pointer">
             ${renderIcon("plus", "w-4 h-4")}
-            <span>${escapeHtml3(addLabels[tab])}</span>
+            <span>${escapeHtml4(addLabels[tab])}</span>
           </button>
         </div>
       </div>
@@ -36984,7 +37963,7 @@
           <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
             ${renderIcon("search", "w-4 h-4")}
           </div>
-          <input type="text" id="input-directories-search" value="${escapeHtml3(options.search || "")}"
+          <input type="text" id="input-directories-search" value="${escapeHtml4(options.search || "")}"
                  placeholder="Поиск по названию..."
                  autocomplete="off"
                  style="padding-left: 2.75rem; padding-right: 2.25rem;"
@@ -37299,7 +38278,7 @@
   }
 
   // src/views/workload/helpers.js
-  function escapeHtml4(text) {
+  function escapeHtml5(text) {
     return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
   function pluralizeRows(count) {
@@ -37386,7 +38365,7 @@
         <div class="flex items-center space-x-2.5">
           <span class="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-slate-100/90 text-slate-700 text-xs font-semibold border border-slate-200/80" id="badge-workload-academic-year">
             ${renderIcon("calendar", "w-3.5 h-3.5 text-slate-500")}
-            <span>${escapeHtml4(activeYear ? activeYear.name : "2024/2025")}</span>
+            <span>${escapeHtml5(activeYear ? activeYear.name : "2024/2025")}</span>
           </span>
           <button type="button" id="btn-open-add-workload"
                   class="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-semibold text-xs transition-colors shadow-2xs cursor-pointer">
@@ -37416,7 +38395,7 @@
           <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
             ${renderIcon("search", "w-4 h-4")}
           </div>
-          <input type="text" id="input-workload-search" value="${escapeHtml4(searchQuery)}"
+          <input type="text" id="input-workload-search" value="${escapeHtml5(searchQuery)}"
                  placeholder="Поиск по учителю или предмету..."
                  autocomplete="off"
                  style="padding-left: 2.75rem; padding-right: 2.25rem;"
@@ -37432,7 +38411,7 @@
                   style="padding-left: 0.875rem; padding-right: 2.25rem;"
                   class="appearance-none py-2.5 rounded-xl border border-slate-200/90 bg-white hover:border-slate-300 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all cursor-pointer md:w-52">
             <option value="all" ${filterSubject === "all" ? "selected" : ""}>Все предметы</option>
-            ${subjects.map((s) => `<option value="${escapeHtml4(s.id)}" ${filterSubject === s.id ? "selected" : ""}>${escapeHtml4(s.shortName || s.name)}</option>`).join("")}
+            ${subjects.map((s) => `<option value="${escapeHtml5(s.id)}" ${filterSubject === s.id ? "selected" : ""}>${escapeHtml5(s.shortName || s.name)}</option>`).join("")}
           </select>
           <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
             ${renderIcon("chevron-down", "w-4 h-4")}
@@ -37444,7 +38423,7 @@
                   style="padding-left: 0.875rem; padding-right: 2.25rem;"
                   class="appearance-none py-2.5 rounded-xl border border-slate-200/90 bg-white hover:border-slate-300 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all cursor-pointer md:w-40">
             <option value="all" ${filterClass === "all" ? "selected" : ""}>Все классы</option>
-            ${classes.map((c) => `<option value="${escapeHtml4(c.id)}" ${filterClass === c.id ? "selected" : ""}>${escapeHtml4(c.name)}</option>`).join("")}
+            ${classes.map((c) => `<option value="${escapeHtml5(c.id)}" ${filterClass === c.id ? "selected" : ""}>${escapeHtml5(c.name)}</option>`).join("")}
           </select>
           <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
             ${renderIcon("chevron-down", "w-4 h-4")}
@@ -37472,7 +38451,7 @@
                 <select id="select-workload-teacher"
                         class="appearance-none w-full px-3.5 py-2.5 pr-9 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors cursor-pointer">
                   <option value="">Выберите учителя</option>
-                  ${teachers.map((t) => `<option value="${escapeHtml4(t.id)}">${escapeHtml4(t.fullName)}</option>`).join("")}
+                  ${teachers.map((t) => `<option value="${escapeHtml5(t.id)}">${escapeHtml5(t.fullName)}</option>`).join("")}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
                   ${renderIcon("chevron-down", "w-4 h-4")}
@@ -37486,7 +38465,7 @@
                 <select id="select-workload-subject-modal"
                         class="appearance-none w-full px-3.5 py-2.5 pr-9 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors cursor-pointer">
                   <option value="">Выберите предмет</option>
-                  ${activeSubjects.map((s) => `<option value="${escapeHtml4(s.id)}">${escapeHtml4(s.name)}</option>`).join("")}
+                  ${activeSubjects.map((s) => `<option value="${escapeHtml5(s.id)}">${escapeHtml5(s.name)}</option>`).join("")}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
                   ${renderIcon("chevron-down", "w-4 h-4")}
@@ -37500,7 +38479,7 @@
                 <select id="select-workload-class-modal"
                         class="appearance-none w-full px-3.5 py-2.5 pr-9 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors cursor-pointer">
                   <option value="">Выберите класс</option>
-                  ${activeClasses.map((c) => `<option value="${escapeHtml4(c.id)}">${escapeHtml4(c.name)}</option>`).join("")}
+                  ${activeClasses.map((c) => `<option value="${escapeHtml5(c.id)}">${escapeHtml5(c.name)}</option>`).join("")}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
                   ${renderIcon("chevron-down", "w-4 h-4")}
@@ -37547,19 +38526,19 @@
     }
     const bodyRows = rows.map(
       (row) => `
-    <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50/60 transition-colors" data-workload-row="${escapeHtml4(row.id)}">
+    <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50/60 transition-colors" data-workload-row="${escapeHtml5(row.id)}">
       <td class="py-3 pl-4 pr-3">
-        <div class="text-xs font-bold text-slate-900">${escapeHtml4(row.teacherName)}</div>
-        <div class="text-[11px] text-slate-400 mt-0.5">${escapeHtml4(row.teacherShortName)}</div>
+        <div class="text-xs font-bold text-slate-900">${escapeHtml5(row.teacherName)}</div>
+        <div class="text-[11px] text-slate-400 mt-0.5">${escapeHtml5(row.teacherShortName)}</div>
       </td>
       <td class="px-3 py-3">
         <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-200/70">
-          ${escapeHtml4(row.subjectLabel)}
+          ${escapeHtml5(row.subjectLabel)}
         </span>
       </td>
       <td class="px-3 py-3">
         <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700">
-          ${escapeHtml4(row.className)}
+          ${escapeHtml5(row.className)}
         </span>
       </td>
       <td class="px-3 py-3 text-right">
@@ -37567,9 +38546,9 @@
         <span class="text-[11px] text-slate-400 ml-1">ч</span>
       </td>
       <td class="py-3 pl-3 pr-4 text-right whitespace-nowrap">
-        <button type="button" data-action="edit-workload" data-row-id="${escapeHtml4(row.id)}"
+        <button type="button" data-action="edit-workload" data-row-id="${escapeHtml5(row.id)}"
                 class="px-3 py-1.5 rounded-lg text-[11px] font-semibold border border-brand-200 text-brand-600 bg-brand-50 hover:bg-brand-100 transition-colors cursor-pointer">Изменить</button>
-        <button type="button" data-action="remove-workload" data-row-id="${escapeHtml4(row.id)}"
+        <button type="button" data-action="remove-workload" data-row-id="${escapeHtml5(row.id)}"
                 class="ml-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors cursor-pointer">Снять</button>
       </td>
     </tr>
@@ -37683,7 +38662,7 @@
         errorBox.classList.add("hidden");
       }
     }
-    function openModal2(rowId) {
+    function openModal3(rowId) {
       if (!modal) return;
       editingRowId = rowId || null;
       showError("");
@@ -37718,7 +38697,7 @@
         modalDialog.classList.add("scale-100");
       }
     }
-    function closeModal2() {
+    function closeModal3() {
       if (!modal) return;
       editingRowId = null;
       modal.classList.remove("opacity-100", "pointer-events-auto");
@@ -37762,7 +38741,7 @@
       });
     }
     if (addBtn) {
-      addBtn.addEventListener("click", () => openModal2(null));
+      addBtn.addEventListener("click", () => openModal3(null));
     }
     if (submitBtn) {
       submitBtn.addEventListener("click", () => {
@@ -37781,7 +38760,7 @@
           showError(res.error);
           return;
         }
-        closeModal2();
+        closeModal3();
         renderTable();
         showToast2(res.message);
       });
@@ -37793,7 +38772,7 @@
         const action = btn.getAttribute("data-action");
         const rowId = btn.getAttribute("data-row-id");
         if (action === "edit-workload") {
-          openModal2(rowId);
+          openModal3(rowId);
         }
         if (action === "remove-workload") {
           const res = removeWorkloadRow(rowId);
@@ -37808,25 +38787,25 @@
     }
     document.addEventListener("click", (e) => {
       const btn = e.target.closest('[data-action="close-workload-modal"]');
-      if (btn) closeModal2();
+      if (btn) closeModal3();
     });
     if (modal) {
       modal.addEventListener("click", (e) => {
-        if (e.target === modal) closeModal2();
+        if (e.target === modal) closeModal3();
       });
     }
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && modal && !modal.classList.contains("pointer-events-none")) {
-        closeModal2();
+        closeModal3();
       }
     });
   }
 
   // src/views/school-year/helpers.js
-  function escapeHtml5(text) {
+  function escapeHtml6(text) {
     return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
-  function formatDateRu5(dateStr) {
+  function formatDateRu6(dateStr) {
     if (!dateStr || typeof dateStr !== "string") return "";
     const parts = dateStr.split("-");
     if (parts.length !== 3) return dateStr;
@@ -37855,9 +38834,9 @@
       const isSelected = y.id === selectedYearId;
       const isActive = y.isActive;
       return `
-      <button type="button" data-year-tab="${escapeHtml5(y.id)}"
+      <button type="button" data-year-tab="${escapeHtml6(y.id)}"
               class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center space-x-1.5 ${isSelected ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"}">
-        <span>${escapeHtml5(y.name)}</span>
+        <span>${escapeHtml6(y.name)}</span>
         ${isActive ? `
           <span class="inline-block w-2 h-2 rounded-full bg-emerald-500" title="Текущий учебный год"></span>
         ` : ""}
@@ -37876,13 +38855,13 @@
     return quarters.map((q, idx) => {
       const isQActive = !!q.isActive;
       return `
-      <tr class="hover:bg-slate-50/60 transition-colors ${isQActive ? "bg-emerald-50/20" : ""}" data-quarter-row="${escapeHtml5(q.id)}">
+      <tr class="hover:bg-slate-50/60 transition-colors ${isQActive ? "bg-emerald-50/20" : ""}" data-quarter-row="${escapeHtml6(q.id)}">
         <td class="py-3.5 px-4 font-semibold text-slate-900 flex items-center space-x-2.5">
           <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">${idx + 1}</span>
-          <span class="quarter-name">${escapeHtml5(q.name)}</span>
+          <span class="quarter-name">${escapeHtml6(q.name)}</span>
         </td>
         <td class="py-3.5 px-4 font-medium text-slate-800 quarter-dates">
-          ${formatDateRu5(q.startDate)} – ${formatDateRu5(q.endDate)}
+          ${formatDateRu6(q.startDate)} – ${formatDateRu6(q.endDate)}
         </td>
         <td class="py-3.5 px-4 text-slate-500">
           ${getDurationText(q.startDate, q.endDate)}
@@ -37901,13 +38880,13 @@
         </td>
         <td class="py-3.5 px-4 text-right space-x-1">
           ${!isQActive ? `
-            <button type="button" data-action="set-active-quarter" data-quarter-id="${escapeHtml5(q.id)}"
+            <button type="button" data-action="set-active-quarter" data-quarter-id="${escapeHtml6(q.id)}"
                     class="px-2.5 py-1.5 rounded-lg border border-emerald-300 hover:bg-emerald-50 text-emerald-700 font-semibold text-xs transition-colors cursor-pointer">
               Сделать текущей
             </button>
           ` : ""}
-          <button type="button" data-action="edit-quarter" data-quarter-id="${escapeHtml5(q.id)}"
-                  data-quarter-name="${escapeHtml5(q.name)}" data-start-date="${escapeHtml5(q.startDate)}" data-end-date="${escapeHtml5(q.endDate)}"
+          <button type="button" data-action="edit-quarter" data-quarter-id="${escapeHtml6(q.id)}"
+                  data-quarter-name="${escapeHtml6(q.name)}" data-start-date="${escapeHtml6(q.startDate)}" data-end-date="${escapeHtml6(q.endDate)}"
                   class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-colors cursor-pointer inline-flex items-center space-x-1">
             ${renderIcon("edit", "w-3.5 h-3.5")}
             <span>Изменить даты</span>
@@ -37923,25 +38902,25 @@
     }
     return vacations.map(
       (v) => `
-    <div class="p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 hover:bg-slate-50 transition-colors flex flex-col justify-between" data-vacation-card="${escapeHtml5(v.id)}">
+    <div class="p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 hover:bg-slate-50 transition-colors flex flex-col justify-between" data-vacation-card="${escapeHtml6(v.id)}">
       <div>
         <div class="flex items-center justify-between">
-          <span class="font-bold text-slate-900 text-xs">${escapeHtml5(v.name)}</span>
-          <button type="button" data-action="delete-vacation" data-vacation-id="${escapeHtml5(v.id)}" data-vacation-name="${escapeHtml5(v.name)}"
+          <span class="font-bold text-slate-900 text-xs">${escapeHtml6(v.name)}</span>
+          <button type="button" data-action="delete-vacation" data-vacation-id="${escapeHtml6(v.id)}" data-vacation-name="${escapeHtml6(v.name)}"
                   class="text-slate-400 hover:text-rose-600 transition-colors p-1 cursor-pointer" title="Удалить">
             ${renderIcon("x", "w-3.5 h-3.5")}
           </button>
         </div>
         <div class="text-xs font-semibold text-slate-700 mt-1.5">
-          ${formatDateRu5(v.startDate)} – ${formatDateRu5(v.endDate)}
+          ${formatDateRu6(v.startDate)} – ${formatDateRu6(v.endDate)}
         </div>
         <div class="text-[11px] text-slate-500 mt-0.5">
           ${getDurationText(v.startDate, v.endDate)}
         </div>
       </div>
       <div class="mt-3 text-right">
-        <button type="button" data-action="edit-vacation" data-vacation-id="${escapeHtml5(v.id)}"
-                data-vacation-name="${escapeHtml5(v.name)}" data-start-date="${escapeHtml5(v.startDate)}" data-end-date="${escapeHtml5(v.endDate)}"
+        <button type="button" data-action="edit-vacation" data-vacation-id="${escapeHtml6(v.id)}"
+                data-vacation-name="${escapeHtml6(v.name)}" data-start-date="${escapeHtml6(v.startDate)}" data-end-date="${escapeHtml6(v.endDate)}"
                 class="text-xs font-semibold text-brand-600 hover:text-brand-700 cursor-pointer">
           Редактировать
         </button>
@@ -37967,7 +38946,7 @@
       meta.demoToday || "2024-10-28"
     );
     return `
-    <div id="school-year-view" class="space-y-6 animate-fadeIn pb-12 max-w-7xl mx-auto" data-selected-year-id="${escapeHtml5(currentYear ? currentYear.id : "")}">
+    <div id="school-year-view" class="space-y-6 animate-fadeIn pb-12 max-w-7xl mx-auto" data-selected-year-id="${escapeHtml6(currentYear ? currentYear.id : "")}">
       
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -37996,10 +38975,10 @@
           </div>
           <div class="mt-2.5">
             <div class="text-xl font-bold text-slate-900 tracking-tight" id="kpi-active-year-name">
-              ${escapeHtml5(activeYear ? activeYear.name : "Не выбран")}
+              ${escapeHtml6(activeYear ? activeYear.name : "Не выбран")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-active-year-dates">
-              ${activeYear ? `${formatDateRu5(activeYear.startDate)} – ${formatDateRu5(activeYear.endDate)}` : "—"}
+              ${activeYear ? `${formatDateRu6(activeYear.startDate)} – ${formatDateRu6(activeYear.endDate)}` : "—"}
             </div>
           </div>
         </div>
@@ -38013,10 +38992,10 @@
           </div>
           <div class="mt-2.5">
             <div class="text-xl font-bold text-slate-900 tracking-tight" id="kpi-active-quarter-name">
-              ${escapeHtml5(activePeriod.name || "I четверть")}
+              ${escapeHtml6(activePeriod.name || "I четверть")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-active-quarter-dates">
-              ${formatDateRu5(activePeriod.startDate)} – ${formatDateRu5(activePeriod.endDate)}
+              ${formatDateRu6(activePeriod.startDate)} – ${formatDateRu6(activePeriod.endDate)}
             </div>
           </div>
         </div>
@@ -38028,10 +39007,10 @@
           </div>
           <div class="mt-2.5">
             <div class="text-xl font-bold text-slate-900 tracking-tight" id="kpi-upcoming-vacation-name">
-              ${escapeHtml5(upcomingVacation ? upcomingVacation.name : "Каникулы не запланированы")}
+              ${escapeHtml6(upcomingVacation ? upcomingVacation.name : "Каникулы не запланированы")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-upcoming-vacation-dates">
-              ${upcomingVacation ? `${formatDateRu5(upcomingVacation.startDate)} – ${formatDateRu5(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—"}
+              ${upcomingVacation ? `${formatDateRu6(upcomingVacation.startDate)} – ${formatDateRu6(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—"}
             </div>
           </div>
         </div>
@@ -38048,7 +39027,7 @@
 
           <div class="flex items-center space-x-2" id="year-actions-container">
             ${currentYear ? `
-              <button type="button" id="btn-open-edit-year" data-year-id="${escapeHtml5(currentYear.id)}" data-year-name="${escapeHtml5(currentYear.name)}" data-year-start="${escapeHtml5(currentYear.startDate)}" data-year-end="${escapeHtml5(currentYear.endDate)}"
+              <button type="button" id="btn-open-edit-year" data-year-id="${escapeHtml6(currentYear.id)}" data-year-name="${escapeHtml6(currentYear.name)}" data-year-start="${escapeHtml6(currentYear.startDate)}" data-year-end="${escapeHtml6(currentYear.endDate)}"
                       class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center space-x-1"
                       title="Редактировать параметры года">
                 ${renderIcon("edit", "w-3.5 h-3.5")}
@@ -38056,12 +39035,12 @@
               </button>
             ` : ""}
             ${currentYear && !currentYear.isActive ? `
-              <button type="button" id="btn-set-active-year" data-year-id="${escapeHtml5(currentYear.id)}"
+              <button type="button" id="btn-set-active-year" data-year-id="${escapeHtml6(currentYear.id)}"
                       class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer inline-flex items-center space-x-1">
                 ${renderIcon("check", "w-3.5 h-3.5")}
                 <span>Сделать текущим годом</span>
               </button>
-              <button type="button" id="btn-delete-year" data-year-id="${escapeHtml5(currentYear.id)}" data-year-name="${escapeHtml5(currentYear.name)}"
+              <button type="button" id="btn-delete-year" data-year-id="${escapeHtml6(currentYear.id)}" data-year-name="${escapeHtml6(currentYear.name)}"
                       class="px-2.5 py-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center space-x-1"
                       title="Удалить учебный год">
                 ${renderIcon("trash", "w-3.5 h-3.5")}
@@ -38345,7 +39324,7 @@
       toast.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
     }, 3200);
   }
-  function openModal(modalId) {
+  function openModal2(modalId) {
     const modal = document.getElementById(modalId);
     const dialog = document.getElementById(`${modalId}-dialog`);
     if (!modal) return;
@@ -38356,7 +39335,7 @@
       dialog.classList.add("scale-100");
     }
   }
-  function closeModal(modalId) {
+  function closeModal2(modalId) {
     const modal = document.getElementById(modalId);
     const dialog = document.getElementById(`${modalId}-dialog`);
     if (!modal) return;
@@ -38373,7 +39352,7 @@
       "modal-edit-year",
       "modal-edit-quarter",
       "modal-edit-vacation"
-    ].forEach((id) => closeModal(id));
+    ].forEach((id) => closeModal2(id));
   }
 
   // src/views/school-year/listeners.js
@@ -38408,19 +39387,19 @@
         kpiActiveYear.textContent = activeYear ? activeYear.name : "Не выбран";
       const kpiActiveYearDates = document.getElementById("kpi-active-year-dates");
       if (kpiActiveYearDates)
-        kpiActiveYearDates.textContent = activeYear ? `${formatDateRu5(activeYear.startDate)} – ${formatDateRu5(activeYear.endDate)}` : "—";
+        kpiActiveYearDates.textContent = activeYear ? `${formatDateRu6(activeYear.startDate)} – ${formatDateRu6(activeYear.endDate)}` : "—";
       const kpiQuarterName = document.getElementById("kpi-active-quarter-name");
       if (kpiQuarterName)
         kpiQuarterName.textContent = activePeriod.name || "I четверть";
       const kpiQuarterDates = document.getElementById("kpi-active-quarter-dates");
       if (kpiQuarterDates)
-        kpiQuarterDates.textContent = `${formatDateRu5(activePeriod.startDate)} – ${formatDateRu5(activePeriod.endDate)}`;
+        kpiQuarterDates.textContent = `${formatDateRu6(activePeriod.startDate)} – ${formatDateRu6(activePeriod.endDate)}`;
       const kpiVacName = document.getElementById("kpi-upcoming-vacation-name");
       if (kpiVacName)
         kpiVacName.textContent = upcomingVacation ? upcomingVacation.name : "Каникулы не запланированы";
       const kpiVacDates = document.getElementById("kpi-upcoming-vacation-dates");
       if (kpiVacDates)
-        kpiVacDates.textContent = upcomingVacation ? `${formatDateRu5(upcomingVacation.startDate)} – ${formatDateRu5(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—";
+        kpiVacDates.textContent = upcomingVacation ? `${formatDateRu6(upcomingVacation.startDate)} – ${formatDateRu6(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—";
       const tabsContainer = document.getElementById("academic-years-tabs");
       if (tabsContainer)
         tabsContainer.innerHTML = renderYearTabsHtml(
@@ -38430,7 +39409,7 @@
       const actionsContainer = document.getElementById("year-actions-container");
       if (actionsContainer && currentYear) {
         const editBtnHtml = `
-        <button type="button" id="btn-open-edit-year" data-year-id="${escapeHtml5(currentYear.id)}" data-year-name="${escapeHtml5(currentYear.name)}" data-year-start="${escapeHtml5(currentYear.startDate)}" data-year-end="${escapeHtml5(currentYear.endDate)}"
+        <button type="button" id="btn-open-edit-year" data-year-id="${escapeHtml6(currentYear.id)}" data-year-name="${escapeHtml6(currentYear.name)}" data-year-start="${escapeHtml6(currentYear.startDate)}" data-year-end="${escapeHtml6(currentYear.endDate)}"
                 class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center space-x-1"
                 title="Редактировать параметры года">
           ${renderIcon("edit", "w-3.5 h-3.5")}
@@ -38440,12 +39419,12 @@
         if (!currentYear.isActive) {
           actionsContainer.innerHTML = `
           ${editBtnHtml}
-          <button type="button" id="btn-set-active-year" data-year-id="${escapeHtml5(currentYear.id)}"
+          <button type="button" id="btn-set-active-year" data-year-id="${escapeHtml6(currentYear.id)}"
                   class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer inline-flex items-center space-x-1">
             ${renderIcon("check", "w-3.5 h-3.5")}
             <span>Сделать текущим годом</span>
           </button>
-          <button type="button" id="btn-delete-year" data-year-id="${escapeHtml5(currentYear.id)}" data-year-name="${escapeHtml5(currentYear.name)}"
+          <button type="button" id="btn-delete-year" data-year-id="${escapeHtml6(currentYear.id)}" data-year-name="${escapeHtml6(currentYear.name)}"
                   class="px-2.5 py-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center space-x-1"
                   title="Удалить учебный год">
             ${renderIcon("trash", "w-3.5 h-3.5")}
@@ -38482,7 +39461,7 @@
         if (modalEl) {
           modalEl.addEventListener("click", (e) => {
             if (e.target === modalEl) {
-              closeModal(modalId);
+              closeModal2(modalId);
             }
           });
         }
@@ -38492,7 +39471,7 @@
       const closeBtn = e.target.closest('[data-action="close-modal"]');
       if (closeBtn) {
         const parentModal = closeBtn.closest(".fixed.inset-0");
-        if (parentModal) closeModal(parentModal.id);
+        if (parentModal) closeModal2(parentModal.id);
         return;
       }
       const tabBtn = e.target.closest("[data-year-tab]");
@@ -38536,7 +39515,7 @@
         if (errEl) errEl.classList.add("hidden");
         const form = document.getElementById("form-add-year");
         if (form) form.reset();
-        openModal("modal-add-year");
+        openModal2("modal-add-year");
         return;
       }
       const openEditYearBtn = e.target.closest("#btn-open-edit-year");
@@ -38555,7 +39534,7 @@
         if (startEl) startEl.value = yearStart;
         if (endEl) endEl.value = yearEnd;
         if (errEl) errEl.classList.add("hidden");
-        openModal("modal-edit-year");
+        openModal2("modal-edit-year");
         return;
       }
       const setQuarterBtn = e.target.closest(
@@ -38589,7 +39568,7 @@
         if (startEl) startEl.value = startDate;
         if (endEl) endEl.value = endDate;
         if (errEl) errEl.classList.add("hidden");
-        openModal("modal-edit-quarter");
+        openModal2("modal-edit-quarter");
         return;
       }
       const addVacBtn = e.target.closest("#btn-add-vacation");
@@ -38602,7 +39581,7 @@
         if (titleEl) titleEl.textContent = "Добавление каникул";
         if (form) form.reset();
         if (errEl) errEl.classList.add("hidden");
-        openModal("modal-edit-vacation");
+        openModal2("modal-edit-vacation");
         return;
       }
       const editVacBtn = e.target.closest('[data-action="edit-vacation"]');
@@ -38623,7 +39602,7 @@
         if (startEl) startEl.value = start;
         if (endEl) endEl.value = end;
         if (errEl) errEl.classList.add("hidden");
-        openModal("modal-edit-vacation");
+        openModal2("modal-edit-vacation");
         return;
       }
       const delVacBtn = e.target.closest('[data-action="delete-vacation"]');
@@ -38656,7 +39635,7 @@
           }
           return;
         }
-        closeModal("modal-add-year");
+        closeModal2("modal-add-year");
         updateViewData(res.year.id);
         showToast(`Учебный год «${res.year.name}» успешно создан`);
       });
@@ -38678,7 +39657,7 @@
           }
           return;
         }
-        closeModal("modal-edit-year");
+        closeModal2("modal-edit-year");
         updateViewData(res.year.id);
         showToast(`Учебный год «${res.year.name}» успешно обновлен`);
       });
@@ -38705,7 +39684,7 @@
           }
           return;
         }
-        closeModal("modal-edit-quarter");
+        closeModal2("modal-edit-quarter");
         updateViewData(curYearId);
         showToast(`Даты четверти «${res.quarter.name}» обновлены`);
       });
@@ -38733,7 +39712,7 @@
           }
           return;
         }
-        closeModal("modal-edit-vacation");
+        closeModal2("modal-edit-vacation");
         updateViewData(curYearId);
         showToast(`Каникулы «${name}» сохранены`);
       });
@@ -38917,13 +39896,14 @@
     },
     "/meetings": {
       title: "Собрания",
-      render: () => renderPlaceholderView(
-        "Собрания",
-        "Родительские собрания, повестка, протоколы и опросы",
-        "/meetings"
-      ),
-      setup: () => {
-      }
+      render: () => {
+        const user = getCurrentUser();
+        if (user && user.role !== "teacher" && user.role !== "admin") {
+          return renderForbiddenView();
+        }
+        return renderMeetingsView();
+      },
+      setup: (navigate2) => setupMeetingsListeners(navigate2)
     },
     "/announcements": {
       title: "Объявления",

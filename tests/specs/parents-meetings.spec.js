@@ -504,44 +504,270 @@ test.describe('Родители и Собрания', () => {
     await expect(page.locator('text=Заметки классрука')).toHaveCount(0);
   });
 
-  test.skip('TC-MG-01: Список собраний: ближайшее и прошедшие', async () => {
-    // TODO: Раздел «Собрания» (#/meetings) в интерфейсе не реализован (является заглушкой)
+  test('TC-MG-01: Список собраний: ближайшее и прошедшие', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.loginAs('teacher');
+
+    await page.goto('meetings');
+    await expect(page.locator('#meetings-page-title')).toContainText('Родительские собрания 7Б');
+
+    const nextSection = page.locator('#section-next-meeting');
+    await expect(nextSection).toBeVisible();
+    await expect(nextSection.locator('text=Ближайшее собрание')).toBeVisible();
+    await expect(nextSection.locator('#next-meeting-title')).toContainText('Итоги первой четверти 7Б');
+    await expect(nextSection.locator('#next-meeting-datetime')).toContainText('31.10.2024, 18:30');
+    await expect(nextSection.locator('#next-meeting-room')).toContainText('Каб. 302');
+
+    const agendaItems = nextSection.locator('#next-meeting-agenda-list .agenda-item');
+    await expect(agendaItems).toHaveCount(3);
+    await expect(agendaItems.nth(0)).toContainText('Результаты первой четверти класса 7Б');
+    await expect(agendaItems.nth(1)).toContainText('Проблемы с посещаемостью и успеваемостью');
+    await expect(agendaItems.nth(2)).toContainText('Безопасность на осенних каникулах');
+
+    await expect(nextSection.locator('.btn-edit-meeting')).toBeVisible();
+    await expect(nextSection.locator('.btn-publish-announcement')).toBeVisible();
+
+    const menuBtn = nextSection.locator('.btn-meeting-menu');
+    await expect(menuBtn).toBeVisible();
+    await menuBtn.click();
+    await expect(nextSection.locator('.btn-cancel-meeting')).toBeVisible();
+
+    const pastSection = page.locator('#section-past-meetings');
+    await expect(pastSection).toBeVisible();
+    await expect(pastSection).toContainText('05.09.2024');
+    await expect(pastSection).toContainText('Организация учебного года');
+    await expect(pastSection).toContainText('24 из 28');
+    await expect(pastSection.locator('.btn-meeting-summary').first()).toBeVisible();
   });
 
-  test.skip('TC-MG-02: Создание собрания', async () => {
-    // TODO: Раздел «Собрания» (#/meetings) в интерфейсе не реализован (является заглушкой)
+  test('TC-MG-02: Создание собрания', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.loginAs('teacher');
+
+    await page.goto('meetings');
+    await page.locator('#btn-create-meeting').click();
+
+    const modal = page.locator('#modal-meeting-form');
+    await expect(modal).toBeVisible();
+
+    await page.locator('#meeting-title-input').fill('Подготовка к новогодним мероприятиям');
+    await page.locator('#meeting-date-input').fill('2024-12-20');
+    await page.locator('#meeting-time-input').fill('18:30');
+    await page.locator('#meeting-room-input').fill('Каб. 302');
+
+    await page.locator('#input-new-agenda-item').fill('Новогодний утренник и сценарий');
+    await page.locator('#btn-add-agenda-item').click();
+    await page.locator('#input-new-agenda-item').fill('Подарки и праздничный бюджет');
+    await page.locator('#btn-add-agenda-item').click();
+
+    await page.locator('#btn-save-meeting').click();
+    await expect(modal).not.toBeVisible();
+
+    await expect(page.locator('#next-meeting-title')).toContainText('Итоги первой четверти 7Б');
+
+    const otherSection = page.locator('#section-other-upcoming');
+    await expect(otherSection).toBeVisible();
+    await expect(otherSection).toContainText('Подготовка к новогодним мероприятиям');
+    await expect(otherSection).toContainText('20.12.2024');
   });
 
-  test.skip('TC-MG-03: Создание собрания без обязательных полей', async () => {
-    // TODO: Раздел «Собрания» (#/meetings) в интерфейсе не реализован (является заглушкой)
+  test('TC-MG-03: Создание собрания без обязательных полей', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.loginAs('teacher');
+
+    await page.goto('meetings');
+    await page.locator('#btn-create-meeting').click();
+
+    await page.locator('#meeting-title-input').fill('Собрание без даты и времени');
+    await page.locator('#btn-save-meeting').click();
+
+    await expect(page.locator('#error-meeting-date')).toBeVisible();
+    await expect(page.locator('#error-meeting-time')).toBeVisible();
+
+    await page.locator('#meeting-date-input').fill('2024-11-20');
+    await page.locator('#btn-save-meeting').click();
+
+    await expect(page.locator('#error-meeting-time')).toBeVisible();
+
+    await page.locator('#modal-meeting-form .btn-close-modal').first().click();
+    await expect(page.locator('text=Собрание без даты и времени')).toHaveCount(0);
   });
 
-  test.skip('TC-MG-04: Повестка собрания: состав и порядок пунктов', async () => {
-    // TODO: Раздел «Собрания» (#/meetings) в интерфейсе не реализован (является заглушкой)
+  test('TC-MG-04: Повестка собрания: состав и порядок пунктов', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.loginAs('teacher');
+
+    await page.goto('meetings');
+    await page.locator('#section-next-meeting .btn-edit-meeting').click();
+
+    const modal = page.locator('#modal-meeting-form');
+    await expect(modal).toBeVisible();
+
+    const removeBtns = page.locator('.btn-agenda-remove');
+    await removeBtns.nth(2).click();
+
+    await page.locator('#input-new-agenda-item').fill('Организация дежурства');
+    await page.locator('#btn-add-agenda-item').click();
+
+    const upBtns = page.locator('.btn-agenda-up');
+    await upBtns.last().click();
+
+    await page.locator('#btn-save-meeting').click();
+    await expect(modal).not.toBeVisible();
+
+    await page.reload();
+
+    const items = page.locator('#next-meeting-agenda-list .agenda-item');
+    await expect(items).toHaveCount(3);
+    await expect(items.nth(0)).toContainText('Результаты первой четверти класса 7Б');
+    await expect(items.nth(1)).toContainText('Организация дежурства');
+    await expect(items.nth(2)).toContainText('Проблемы с посещаемостью и успеваемостью');
   });
 
-  test.skip('TC-MG-05: Перенос собрания', async () => {
-    // TODO: Раздел «Собрания» (#/meetings) в интерфейсе не реализован (является заглушкой)
+  test('TC-MG-05: Перенос собрания', async ({ page, loginPage }) => {
+    const navPage = new NavigationPage(page);
+    await loginPage.goto();
+    await loginPage.loginAs('teacher');
+
+    await page.goto('meetings');
+    await page.locator('#section-next-meeting .btn-edit-meeting').click();
+
+    await page.locator('#meeting-date-input').fill('2024-11-07');
+    await page.locator('#meeting-time-input').fill('18:00');
+    await page.locator('#meeting-room-input').fill('Каб. 204');
+
+    await page.locator('#btn-save-meeting').click();
+
+    await expect(page.locator('#next-meeting-datetime')).toContainText('07.11.2024, 18:00');
+    await expect(page.locator('#next-meeting-room')).toContainText('Каб. 204');
+
+    await navPage.logout();
+    await loginPage.loginAs('parent');
+    await page.waitForURL(/\/child\/?/, { timeout: 7000 });
+
+    const parentSection = page.locator('#child-meetings-section');
+    await expect(parentSection.locator('text=7 ноября 2024 г. в 18:00')).toBeVisible();
+    await expect(parentSection.locator('text=Каб. 204')).toBeVisible();
   });
 
-  test.skip('TC-MG-06: Отмена собрания не удаляет объявление', async () => {
-    // TODO: Раздел «Собрания» (#/meetings) в интерфейсе не реализован (является заглушкой)
+  test('TC-MG-06: Отмена собрания не удаляет объявление', async ({ page, loginPage }) => {
+    await loginPage.goto();
+    await loginPage.loginAs('teacher');
+
+    await page.goto('meetings');
+
+    await page.locator('#btn-create-meeting').click();
+    await page.locator('#meeting-title-input').fill('Подготовка к новогодним мероприятиям');
+    await page.locator('#meeting-date-input').fill('2024-12-20');
+    await page.locator('#meeting-time-input').fill('18:30');
+    await page.locator('#btn-save-meeting').click();
+
+    await page.locator('#section-next-meeting .btn-meeting-menu').click();
+    await page.locator('#section-next-meeting .btn-cancel-meeting').click();
+
+    const cancelModal = page.locator('#modal-cancel-meeting');
+    await expect(cancelModal).toBeVisible();
+    await page.locator('#btn-confirm-cancel-meeting').click();
+
+    await expect(page.locator('#next-meeting-title')).toContainText('Подготовка к новогодним мероприятиям');
+
+    await page.goto('announcements');
+    await expect(page.locator('.announcement-card', { hasText: 'Родительское собрание 31 октября' })).toBeVisible();
   });
 
-  test.skip('TC-MG-07: Отметка явки: значения и сохранение', async () => {
-    // TODO: Раздел «Собрания» (#/meetings) в интерфейсе не реализован (является заглушкой)
+  test('TC-MG-07: Отметка явки: значения и сохранение', async ({ page, loginPage }) => {
+    await loginPage.goto();
+    await loginPage.loginAs('teacher');
+
+    await page.goto('meetings');
+    const pastSection = page.locator('#section-past-meetings');
+    await pastSection.locator('.btn-mark-attendance').first().click();
+
+    const modal = page.locator('#modal-meeting-attendance');
+    await expect(modal).toBeVisible();
+
+    const thead = modal.locator('thead');
+    await expect(thead).toContainText('Явка');
+
+    const rows = modal.locator('#attendance-table-body tr');
+    await expect(rows).toHaveCount(28);
+
+    const firstSelect = rows.first().locator('.attendance-status-select');
+    const options = await firstSelect.locator('option').allInnerTexts();
+    expect(options).toEqual(['Пришёл', 'Не пришёл', 'Уважительная причина']);
+
+    await expect(modal.locator('#attendance-counter-badge')).toContainText('Всего пришли: 24 из 28');
+
+    await page.locator('#btn-save-attendance').click();
+    await expect(modal).not.toBeVisible();
   });
 
-  test.skip('TC-MG-08: Явка: причина обязательна при неявке', async () => {
-    // TODO: Раздел «Собрания» (#/meetings) в интерфейсе не реализован (является заглушкой)
+  test('TC-MG-08: Явка: причина обязательна при неявке', async ({ page, loginPage }) => {
+    await loginPage.goto();
+    await loginPage.loginAs('teacher');
+
+    await page.goto('meetings');
+    await page.locator('#section-past-meetings .btn-mark-attendance').first().click();
+
+    const modal = page.locator('#modal-meeting-attendance');
+    await expect(modal).toBeVisible();
+
+    const petrovRow = modal.locator('#attendance-table-body tr', { hasText: 'Петров С. В.' });
+    await expect(petrovRow).toBeVisible();
+
+    await petrovRow.locator('.attendance-status-select').selectOption('excused');
+    await petrovRow.locator('.attendance-note-input').fill('');
+
+    await page.locator('#btn-save-attendance').click();
+    await expect(petrovRow.locator('.attendance-note-error')).toBeVisible();
+
+    await petrovRow.locator('.attendance-note-input').fill('Болезнь ребёнка');
+
+    await page.locator('#btn-save-attendance').click();
+    await expect(modal).not.toBeVisible();
   });
 
-  test.skip('TC-MG-09: Отметить явку до собрания нельзя', async () => {
-    // TODO: Раздел «Собрания» (#/meetings) в интерфейсе не реализован (является заглушкой)
+  test('TC-MG-09: Отметить явку до собрания нельзя', async ({ page, loginPage }) => {
+    await loginPage.goto();
+    await loginPage.loginAs('teacher');
+
+    await page.goto('meetings');
+    const nextSection = page.locator('#section-next-meeting');
+
+    await expect(nextSection.locator('.btn-mark-attendance')).toHaveCount(0);
   });
 
-  test.skip('TC-MG-10: Итоги собрания: счётчик считается по явке', async () => {
-    // TODO: Раздел «Собрания» (#/meetings) в интерфейсе не реализован (является заглушкой)
+  test('TC-MG-10: Итоги собрания: счётчик считается по явке', async ({ page, loginPage }) => {
+    await loginPage.goto();
+    await loginPage.loginAs('teacher');
+
+    await page.goto('meetings');
+
+    await page.locator('#section-past-meetings .btn-meeting-summary').first().click();
+    const summaryModal = page.locator('#modal-meeting-summary');
+    await expect(summaryModal).toBeVisible();
+    await expect(page.locator('#summary-ratio-text')).toHaveText('24 из 28');
+
+    await page.locator('#btn-summary-open-attendance').click();
+    await expect(summaryModal).not.toBeVisible();
+
+    const attendanceModal = page.locator('#modal-meeting-attendance');
+    await expect(attendanceModal).toBeVisible();
+
+    const petrovRow = attendanceModal.locator('#attendance-table-body tr', { hasText: 'Петров С. В.' });
+    await petrovRow.locator('.attendance-status-select').selectOption('absent');
+    await petrovRow.locator('.attendance-note-input').fill('Семейные обстоятельства');
+    await page.locator('#btn-save-attendance').click();
+    await expect(attendanceModal).not.toBeVisible();
+
+    await page.locator('#section-past-meetings .btn-meeting-summary').first().click();
+    await expect(summaryModal).toBeVisible();
+    await expect(page.locator('#summary-ratio-text')).toHaveText('23 из 28');
+    await expect(page.locator('#summary-absent-list')).toContainText('Петров С. В.');
   });
 
   test('TC-MG-11: Родитель видит собрания класса', async ({ page, loginPage }) => {
@@ -566,8 +792,17 @@ test.describe('Родители и Собрания', () => {
     await expect(meetingsSection.locator('input[type="checkbox"]')).toHaveCount(0);
   });
 
-  test.skip('TC-MG-12: Права: предметник не ведёт собрания', async () => {
-    // TODO: Раздел «Собрания» (#/meetings) в интерфейсе не реализован (является заглушкой)
+  test('TC-MG-12: Права: предметник не ведёт собрания', async ({ page, loginPage }) => {
+    await loginPage.goto();
+    await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+    await expect(page.locator('#nav-meetings')).toHaveCount(0);
+    await expect(page.locator('a[href="#/meetings"]')).toHaveCount(0);
+
+    await page.goto('meetings');
+
+    await expect(page.locator('text=Доступ ограничен')).toBeVisible();
+    await expect(page.locator('text=Родительские собрания 7Б')).toHaveCount(0);
   });
 
   test('TC-AN-01: Список объявлений класса', async ({ page }) => {

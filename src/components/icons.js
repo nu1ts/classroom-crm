@@ -163,7 +163,13 @@ export function renderIcon(name, className = "w-5 h-5") {
         <polyline points="6 9 12 15 18 9"></polyline>
       </svg>`;
 
-    case "send":
+        case "chevron-up":
+    case "chevronUp":
+      return `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>`;
+
+case "send":
       return `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="22" y1="2" x2="11" y2="13"></line>
         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
