@@ -23487,8 +23487,7 @@
           title: "Объявления",
           path: "/announcements",
           icon: "megaphone"
-        },
-        { id: "nav-profile", title: "Профиль", path: "/profile", icon: "user" }
+        }
       ],
       allowedRoutes: ["/child", "/schedule", "/announcements", "/profile"]
     },
@@ -23989,8 +23988,8 @@
 
       <div class="p-3 border-t border-slate-800/80 bg-slate-900/40">
         <div class="flex items-center justify-between p-2 rounded-xl hover:bg-brand-sidebarHover/80 transition-colors">
-          <a href="/profile" id="sidebar-profile-link" data-profile-card class="flex items-center space-x-3 overflow-hidden flex-1 group ${currentUser.role === "subject_teacher" ? "nav-profile-alias" : ""}">
-            ${currentUser.role === "subject_teacher" ? '<span id="nav-profile" class="sr-only">Профиль</span>' : ""}
+          <a href="/profile" id="sidebar-profile-link" data-profile-card class="flex items-center space-x-3 overflow-hidden flex-1 group ${currentUser.role === "subject_teacher" || currentUser.role === "parent" ? "nav-profile-alias" : ""}">
+            ${currentUser.role === "subject_teacher" || currentUser.role === "parent" ? '<span id="nav-profile" class="sr-only">Профиль</span>' : ""}
             <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-600 to-sky-500 flex items-center justify-center text-white font-semibold text-xs shadow-inner flex-shrink-0">
               ${initials}
             </div>
@@ -24152,7 +24151,6 @@
     );
     return `
     <div class="space-y-6 max-w-5xl mx-auto">
-      <!-- Заголовок и подпись -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90">
         <div>
           <div class="flex items-center space-x-3">
@@ -24177,7 +24175,6 @@
         ` : ""}
       </div>
 
-      <!-- Список объявлений или пустое состояние -->
       ${announcements.length === 0 ? `
         <div id="announcements-empty-state" class="bg-white rounded-3xl p-12 text-center border border-slate-200/90 shadow-xs">
           <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
@@ -24217,7 +24214,7 @@
 
                   <div class="text-right shrink-0">
                     <span class="announcement-reads text-xs font-semibold text-slate-500 block">
-                      прочитали ${item.readCount || 0} из ${item.totalCount || 28}
+                      прочитали ${Math.min(item.totalCount || 28, item.readCount || 0)} из ${item.totalCount || 28}
                     </span>
                     <span class="announcement-date text-[11px] text-slate-400 font-medium block mt-0.5">
                       ${dateStr}
@@ -24265,7 +24262,6 @@
       `}
     </div>
 
-    <!-- Модальное окно просмотра объявления полностью -->
     <div id="modal-announcement-detail" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-slate-200/90 space-y-4 animate-in fade-in zoom-in-95 duration-150">
         <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
@@ -24355,7 +24351,8 @@
             if (card) {
               const readsEl = card.querySelector(".announcement-reads");
               if (readsEl) {
-                readsEl.textContent = `прочитали ${announcement.readCount} из ${announcement.totalCount || 28}`;
+                const safeReads = Math.min(announcement.totalCount || 28, announcement.readCount);
+                readsEl.textContent = `прочитали ${safeReads} из ${announcement.totalCount || 28}`;
               }
             }
           }
@@ -24368,7 +24365,8 @@
             modalDate.textContent = announcement.date.includes("-") ? formatDateRu2(announcement.date) : announcement.date;
           }
           if (modalReads) {
-            modalReads.textContent = `прочитали ${announcement.readCount || 0} из ${announcement.totalCount || 28}`;
+            const safeReads = Math.min(announcement.totalCount || 28, announcement.readCount || 0);
+            modalReads.textContent = `прочитали ${safeReads} из ${announcement.totalCount || 28}`;
           }
           modal.classList.remove("hidden");
         }

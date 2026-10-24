@@ -119,7 +119,7 @@ export function renderAnnouncementsView() {
 
                   <div class="text-right shrink-0">
                     <span class="announcement-reads text-xs font-semibold text-slate-500 block">
-                      прочитали ${item.readCount || 0} из ${item.totalCount || 28}
+                      прочитали ${Math.min(item.totalCount || 28, item.readCount || 0)} из ${item.totalCount || 28}
                     </span>
                     <span class="announcement-date text-[11px] text-slate-400 font-medium block mt-0.5">
                       ${dateStr}

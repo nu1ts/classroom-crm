@@ -63,7 +63,8 @@ export function setupAnnouncementsListeners(navigate) {
           if (card) {
             const readsEl = card.querySelector(".announcement-reads");
             if (readsEl) {
-              readsEl.textContent = `прочитали ${announcement.readCount} из ${announcement.totalCount || 28}`;
+              const safeReads = Math.min(announcement.totalCount || 28, announcement.readCount);
+readsEl.textContent = `прочитали ${safeReads} из ${announcement.totalCount || 28}`;
             }
           }
         }
@@ -79,7 +80,8 @@ export function setupAnnouncementsListeners(navigate) {
             : announcement.date;
         }
         if (modalReads) {
-          modalReads.textContent = `прочитали ${announcement.readCount || 0} из ${announcement.totalCount || 28}`;
+          const safeReads = Math.min(announcement.totalCount || 28, announcement.readCount || 0);
+modalReads.textContent = `прочитали ${safeReads} из ${announcement.totalCount || 28}`;
         }
         modal.classList.remove("hidden");
       }
