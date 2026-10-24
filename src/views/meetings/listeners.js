@@ -629,6 +629,8 @@ function openAttendanceModal(meetingId) {
   if (errEl) errEl.classList.add("hidden");
 
   const attendance = getMeetingAttendance(meeting.id);
+  const totalCountEl = document.getElementById("attendance-total-count");
+  if (totalCountEl) totalCountEl.textContent = String(attendance.length);
   const tbody = document.getElementById("attendance-table-body");
   if (!tbody) return;
 

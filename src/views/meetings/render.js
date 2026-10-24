@@ -1,3 +1,5 @@
+import { getCurrentUser, getDB } from "../../services/storage.js";
+import { getMeetingSummary } from "../../services/meetings-ops.js";
 import { renderIcon } from "../../components/icons.js";
 import {
   getMeetings,
@@ -26,7 +28,17 @@ export function formatDateRu(dateStr) {
  * @returns {string}
  */
 export function renderMeetingsView(options = {}) {
-  const { nextMeeting, otherUpcoming, pastMeetings } = getMeetings("class-7b");
+  const currentUser = getCurrentUser();
+  const classId = (currentUser && currentUser.classId) || "class-7b";
+  const rawClassName = (currentUser && currentUser.className) || (classId.includes("8a") ? "8А" : "7Б");
+  const className = rawClassName.replace(/\s*\([^)]*\)/g, "").replace(/\s*класс/i, "").trim() || "7Б";
+  const db = getDB();
+  const classStudents = (db.students || []).filter(
+    (s) => (!s.classId || s.classId === classId) && !s.archived
+  );
+  const totalStudents = classStudents.length || 28;
+
+  const { nextMeeting, otherUpcoming, pastMeetings } = getMeetings(classId);
 
   return `
     <div id="meetings-view" class="max-w-6xl mx-auto space-y-6 pb-12 animate-fadeIn">
@@ -34,7 +46,7 @@ export function renderMeetingsView(options = {}) {
         <div>
           <div class="flex items-center space-x-3">
             <h1 id="meetings-page-title" class="text-2xl font-black text-slate-900 tracking-tight">
-              Родительские собрания 7Б
+              Родительские собрания ${className}
             </h1>
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-200/70">
               ${(nextMeeting ? 1 : 0) + otherUpcoming.length + pastMeetings.length} в учебном году
@@ -106,7 +118,7 @@ function renderNextMeetingSection(meeting) {
             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-200/70">
               Ближайшее собрание
             </span>
-            <span class="text-xs text-slate-400 font-semibold">Класс 7Б · 28 учеников</span>
+            <span class="text-xs text-slate-400 font-semibold">Класс ${meeting.className ? meeting.className.replace(/\s*\([^)]*\)/g, "").replace(/\s*класс/i, "").trim() : "7Б"}</span>
           </div>
 
           <div>
@@ -272,7 +284,7 @@ function renderPastMeetingsSection(meetings) {
                       <span class="font-bold text-slate-800">${m.title}</span>
                       <span class="text-slate-300">&bull;</span>
                       <span class="meeting-attendance-badge font-bold text-brand-700 bg-brand-50 border border-brand-200/60 px-2.5 py-0.5 rounded-full text-xs">
-                        24 из 28
+                        ${(() => { const s = getMeetingSummary(m.id); return s ? s.ratioText : "—"; })()}
                       </span>
                     </div>
                     <p class="text-2xs font-semibold text-slate-400 mt-1">${m.room || "Каб. 302"} · Завершено</p>
@@ -501,7 +513,7 @@ function renderAttendanceModal() {
   return `
     <div
       id="modal-meeting-attendance"
-      class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none"
+      class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none"
     >
       <div
         id="modal-meeting-attendance-dialog"
@@ -522,7 +534,7 @@ function renderAttendanceModal() {
               id="attendance-counter-badge"
               class="px-3 py-1 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-200/70"
             >
-              Всего пришли: <span id="attendance-present-count">24</span> из 28
+              Всего пришли: <span id="attendance-present-count">0</span> из <span id="attendance-total-count">28</span>
             </span>
             <button
               type="button"
@@ -539,12 +551,12 @@ function renderAttendanceModal() {
           <p id="attendance-general-error" class="hidden m-3 text-xs text-rose-500 font-bold p-3 bg-rose-50 rounded-xl"></p>
 
           <table id="meeting-attendance-table" class="w-full text-left text-xs">
-            <thead class="bg-slate-50/80 border-b border-slate-200/80 text-slate-500 font-bold uppercase tracking-wider text-[11px] sticky top-0 z-10">
-              <tr>
-                <th scope="col" class="py-3 px-4">Родитель</th>
-                <th scope="col" class="py-3 px-4">Ученик (7Б)</th>
-                <th scope="col" class="py-3 px-4 w-52">Явка</th>
-                <th scope="col" class="py-2.5 px-3.5 text-2xs uppercase tracking-wider font-semibold text-slate-500">Причина неявки</th>
+            <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-2xs sticky top-0 z-20 shadow-xs">
+              <tr class="bg-slate-100">
+                <th scope="col" class="py-2.5 px-3.5 bg-slate-100">Родитель</th>
+                <th scope="col" class="py-2.5 px-3.5 bg-slate-100">Ученик (7Б)</th>
+                <th scope="col" class="py-2.5 px-3.5 bg-slate-100 w-48">Явка</th>
+                <th scope="col" class="py-2.5 px-3.5 bg-slate-100">Причина неявки</th>
               </tr>
             </thead>
             <tbody id="attendance-table-body" class="divide-y divide-slate-100 font-medium text-slate-700 bg-white"></tbody>
