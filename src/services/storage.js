@@ -684,3 +684,19 @@ export {
   setLessonAttendance,
   batchSaveLessonJournal,
 } from './grades-ops.js';
+
+export {
+  DEMO_TODAY as MEETINGS_DEMO_TODAY,
+  ATTENDANCE_STATUSES as MEETING_ATTENDANCE_STATUSES,
+  ATTENDANCE_LABELS as MEETING_ATTENDANCE_LABELS,
+  getMeetings,
+  getMeetingById,
+  validateMeetingData,
+  createMeeting,
+  updateMeeting,
+  cancelMeeting,
+  canMarkAttendance,
+  getMeetingAttendance,
+  saveMeetingAttendance,
+  getMeetingSummary,
+} from "./meetings-ops.js";

@@ -47,6 +47,10 @@ import {
   setupScheduleListeners,
 } from "../views/schedule/index.js";
 import {
+  renderMeetingsView,
+  setupMeetingsListeners,
+} from "../views/meetings/index.js";
+import {
   renderJournalView,
   setupJournalListeners,
 } from "../views/journal/index.js";
@@ -300,13 +304,14 @@ export const ROUTE_HANDLERS = {
   },
   "/meetings": {
     title: "Собрания",
-    render: () =>
-      renderPlaceholderView(
-        "Собрания",
-        "Родительские собрания, повестка, протоколы и опросы",
-        "/meetings",
-      ),
-    setup: () => {},
+    render: () => {
+      const user = getCurrentUser();
+      if (user && user.role !== "teacher" && user.role !== "admin") {
+        return renderForbiddenView();
+      }
+      return renderMeetingsView();
+    },
+    setup: (navigate) => setupMeetingsListeners(navigate),
   },
   "/announcements": {
     title: "Объявления",
