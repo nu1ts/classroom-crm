@@ -31,6 +31,10 @@ import {
   setupAttendanceListeners,
 } from "../views/attendance/index.js";
 import {
+  renderScheduleView,
+  setupScheduleListeners,
+} from "../views/schedule/index.js";
+import {
   renderJournalView,
   setupJournalListeners,
 } from "../views/journal/index.js";
@@ -242,13 +246,13 @@ export const ROUTE_HANDLERS = {
   },
   "/schedule": {
     title: "Расписание",
-    render: () =>
-      renderPlaceholderView(
-        "Расписание",
-        "Расписание уроков и звонков на учебную неделю",
-        "/schedule",
-      ),
-    setup: () => {},
+    render: () => {
+      const params = getRouteParams();
+      return renderScheduleView({
+        weekId: params.get("week") || "w8",
+      });
+    },
+    setup: (navigate) => setupScheduleListeners(navigate),
   },
   "/parents": {
     title: "Родители",

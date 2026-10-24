@@ -38,6 +38,7 @@ export function setupJournalListeners(onNavigate) {
       params.get("status") ||
       (unconfirmed ? "unconfirmed" : absences ? "absences" : "all");
     return {
+      classId: params.get("class") || "class-7b",
       subjectId: params.get("subject") || "all",
       weekId: params.get("week") || "all",
       filterStatus: statusParam,
@@ -54,6 +55,9 @@ export function setupJournalListeners(onNavigate) {
     const merged = { ...current, ...newParams };
     const params = new URLSearchParams();
 
+    if (merged.classId) {
+      params.set("class", merged.classId);
+    }
     if (merged.subjectId && merged.subjectId !== "all")
       params.set("subject", merged.subjectId);
     if (merged.weekId && merged.weekId !== "all")
@@ -79,6 +83,20 @@ export function setupJournalListeners(onNavigate) {
     } else {
       navigate(newHash);
     }
+  }
+
+  const selectClass = document.getElementById("select-journal-class");
+  if (selectClass) {
+    selectClass.addEventListener("change", () => {
+      const selectedOption = selectClass.selectedOptions[0];
+      const targetSubjectId = selectedOption
+        ? selectedOption.getAttribute("data-subject-id")
+        : null;
+      updateRoute({
+        classId: selectClass.value,
+        subjectId: targetSubjectId || "math",
+      });
+    });
   }
 
   if (selectSubject) {
