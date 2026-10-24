@@ -1900,7 +1900,7 @@
         "id": "lsn-42",
         "lessonNumber": 42,
         "date": "2024-10-25",
-        "time": "13:30 - 14:15",
+        "time": "10:30 - 11:15",
         "weekIndex": 8,
         "dayOfWeek": 4,
         "subjectId": "pe",
@@ -27964,9 +27964,7 @@
     { number: 2, time: "09:30 - 10:15" },
     { number: 3, time: "10:30 - 11:15" },
     { number: 4, time: "11:30 - 12:15" },
-    { number: 5, time: "12:35 - 13:20" },
-    { number: 6, time: "13:30 - 14:15" },
-    { number: 7, time: "14:25 - 15:10" }
+    { number: 5, time: "12:35 - 13:20" }
   ];
   var DAY_NAMES = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница"];
   var SHORT_DAY_NAMES = ["Пн", "Вт", "Ср", "Чт", "Пт"];
@@ -28052,7 +28050,7 @@
     const totalLessonsCount = scheduleLessons.length;
     const isVacationOrEmpty = selectedWeek.isVacation || totalLessonsCount === 0;
     const todayIso = "2024-10-24";
-    const displaySlots = TIME_SLOTS.slice(0, 5);
+    const displaySlots = TIME_SLOTS;
     return `
     <div class="space-y-5">
       ${isAccessDenied ? `
@@ -28371,13 +28369,9 @@
                   <div class="relative">
                     <select id="lesson-time-select" required
                             class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
-                      <option value="08:30 - 09:15">1 урок (08:30 - 09:15)</option>
-                      <option value="09:30 - 10:15">2 урок (09:30 - 10:15)</option>
-                      <option value="10:30 - 11:15">3 урок (10:30 - 11:15)</option>
-                      <option value="11:30 - 12:15" selected>4 урок (11:30 - 12:15)</option>
-                      <option value="12:35 - 13:20">5 урок (12:35 - 13:20)</option>
-                      <option value="13:30 - 14:15">6 урок (13:30 - 14:15)</option>
-                      <option value="14:25 - 15:10">7 урок (14:25 - 15:10)</option>
+                      ${TIME_SLOTS.map(
+      (s) => `<option value="${s.time}" ${s.number === 4 ? "selected" : ""}>${s.number} урок (${s.time})</option>`
+    ).join("")}
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                       ${renderIcon("chevronDown", "w-3.5 h-3.5")}

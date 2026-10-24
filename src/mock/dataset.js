@@ -1898,7 +1898,7 @@ export const INITIAL_DATASET = {
       "id": "lsn-42",
       "lessonNumber": 42,
       "date": "2024-10-25",
-      "time": "13:30 - 14:15",
+      "time": "10:30 - 11:15",
       "weekIndex": 8,
       "dayOfWeek": 4,
       "subjectId": "pe",

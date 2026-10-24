@@ -15,9 +15,7 @@ export const TIME_SLOTS = [
   { number: 2, time: "09:30 - 10:15" },
   { number: 3, time: "10:30 - 11:15" },
   { number: 4, time: "11:30 - 12:15" },
-  { number: 5, time: "12:35 - 13:20" },
-  { number: 6, time: "13:30 - 14:15" },
-  { number: 7, time: "14:25 - 15:10" }
+  { number: 5, time: "12:35 - 13:20" }
 ];
 
 const DAY_NAMES = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница"];
