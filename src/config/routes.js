@@ -12,6 +12,10 @@
 import { getCurrentUser, getDB } from "../services/storage.js";
 import { getRouteParams } from "../services/navigation.js";
 import {
+  renderAnnouncementsView,
+  setupAnnouncementsListeners,
+} from "../views/announcements/index.js";
+import {
   renderClassesView,
   setupClassesListeners,
 } from "../views/classes/index.js";
@@ -302,13 +306,8 @@ export const ROUTE_HANDLERS = {
   },
   "/announcements": {
     title: "Объявления",
-    render: () =>
-      renderPlaceholderView(
-        "Объявления",
-        "Информационные сообщения и объявления для родителей",
-        "/announcements",
-      ),
-    setup: () => {},
+    render: () => renderAnnouncementsView(),
+    setup: (navigate) => setupAnnouncementsListeners(navigate),
   },
   "/analytics": {
     title: "Аналитика",
