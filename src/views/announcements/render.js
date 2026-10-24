@@ -55,7 +55,12 @@ export function renderAnnouncementsView() {
             <span>Новое объявление</span>
           </button>
         `
-            : ""
+            : `
+          <span id="badge-readonly" class="badge-read-only inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+            ${renderIcon("eye", "w-3.5 h-3.5 text-slate-500")}
+            Только для просмотра
+          </span>
+        `
         }
       </div>
 

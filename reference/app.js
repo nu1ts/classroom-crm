@@ -23508,8 +23508,7 @@
           title: "Объявления",
           path: "/announcements",
           icon: "megaphone"
-        },
-        { id: "nav-profile", title: "Профиль", path: "/profile", icon: "user" }
+        }
       ],
       allowedRoutes: ["/schedule", "/grades", "/announcements", "/profile"]
     },
@@ -23988,8 +23987,8 @@
 
       <div class="p-3 border-t border-slate-800/80 bg-slate-900/40">
         <div class="flex items-center justify-between p-2 rounded-xl hover:bg-brand-sidebarHover/80 transition-colors">
-          <a href="/profile" id="sidebar-profile-link" data-profile-card class="flex items-center space-x-3 overflow-hidden flex-1 group ${currentUser.role === "subject_teacher" || currentUser.role === "parent" ? "nav-profile-alias" : ""}">
-            ${currentUser.role === "subject_teacher" || currentUser.role === "parent" ? '<span id="nav-profile" class="sr-only">Профиль</span>' : ""}
+          <a href="/profile" id="sidebar-profile-link" data-profile-card class="flex items-center space-x-3 overflow-hidden flex-1 group ${currentUser.role === "subject_teacher" || currentUser.role === "parent" || currentUser.role === "student" ? "nav-profile-alias" : ""}">
+            ${currentUser.role === "subject_teacher" || currentUser.role === "parent" || currentUser.role === "student" ? '<span id="nav-profile" class="sr-only">Профиль</span>' : ""}
             <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-600 to-sky-500 flex items-center justify-center text-white font-semibold text-xs shadow-inner flex-shrink-0">
               ${initials}
             </div>
@@ -24172,7 +24171,12 @@
             ${renderIcon("plus", "w-4 h-4")}
             <span>Новое объявление</span>
           </button>
-        ` : ""}
+        ` : `
+          <span id="badge-readonly" class="badge-read-only inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+            ${renderIcon("eye", "w-3.5 h-3.5 text-slate-500")}
+            Только для просмотра
+          </span>
+        `}
       </div>
 
       ${announcements.length === 0 ? `
