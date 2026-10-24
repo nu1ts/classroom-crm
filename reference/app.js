@@ -1912,6 +1912,102 @@
         "periodId": "q1_2024"
       },
       {
+        "id": "lsn-8a-w8-01",
+        "lessonNumber": 3,
+        "date": "2024-10-22",
+        "time": "10:30 - 11:15",
+        "weekIndex": 8,
+        "dayOfWeek": 1,
+        "subjectId": "math",
+        "subjectName": "Математика (Алгебра)",
+        "teacher": "Козлов А. П.",
+        "room": "Каб. 204",
+        "classId": "class-8a",
+        "status": "closed",
+        "isMarked": true,
+        "periodId": "q1_2024"
+      },
+      {
+        "id": "lsn-8a-w8-02",
+        "lessonNumber": 3,
+        "date": "2024-10-23",
+        "time": "10:30 - 11:15",
+        "weekIndex": 8,
+        "dayOfWeek": 2,
+        "subjectId": "math",
+        "subjectName": "Математика (Алгебра)",
+        "teacher": "Козлов А. П.",
+        "room": "Каб. 204",
+        "classId": "class-8a",
+        "status": "closed",
+        "isMarked": true,
+        "periodId": "q1_2024"
+      },
+      {
+        "id": "lsn-8a-w8-03",
+        "lessonNumber": 3,
+        "date": "2024-10-25",
+        "time": "10:30 - 11:15",
+        "weekIndex": 8,
+        "dayOfWeek": 4,
+        "subjectId": "math",
+        "subjectName": "Математика (Алгебра)",
+        "teacher": "Козлов А. П.",
+        "room": "Каб. 204",
+        "classId": "class-8a",
+        "status": "planned",
+        "isMarked": false,
+        "periodId": "q1_2024"
+      },
+      {
+        "id": "lsn-9v-w8-01",
+        "lessonNumber": 4,
+        "date": "2024-10-22",
+        "time": "11:30 - 12:15",
+        "weekIndex": 8,
+        "dayOfWeek": 1,
+        "subjectId": "math",
+        "subjectName": "Алгебра",
+        "teacher": "Козлов А. П.",
+        "room": "Каб. 204",
+        "classId": "class-9v",
+        "status": "closed",
+        "isMarked": true,
+        "periodId": "q1_2024"
+      },
+      {
+        "id": "lsn-9v-w8-02",
+        "lessonNumber": 4,
+        "date": "2024-10-24",
+        "time": "11:30 - 12:15",
+        "weekIndex": 8,
+        "dayOfWeek": 3,
+        "subjectId": "math",
+        "subjectName": "Алгебра",
+        "teacher": "Козлов А. П.",
+        "room": "Каб. 204",
+        "classId": "class-9v",
+        "status": "closed",
+        "isMarked": true,
+        "periodId": "q1_2024"
+      },
+      {
+        "id": "lsn-9v-w8-03",
+        "lessonNumber": 4,
+        "date": "2024-10-25",
+        "time": "11:30 - 12:15",
+        "weekIndex": 8,
+        "dayOfWeek": 4,
+        "subjectId": "math",
+        "subjectName": "Алгебра",
+        "teacher": "Козлов А. П.",
+        "room": "Каб. 204",
+        "classId": "class-9v",
+        "status": "planned",
+        "isMarked": false,
+        "periodId": "q1_2024"
+      },
+      {
         "id": "lsn-today-01",
         "lessonNumber": 1,
         "date": "2024-10-28",
@@ -26912,6 +27008,352 @@
     }
   }
 
+  // src/views/schedule/helpers.js
+  var SCHEDULE_WEEKS = [
+    { id: "w1", label: "02.09.2024 – 06.09.2024", from: "2024-09-02", to: "2024-09-06" },
+    { id: "w2", label: "09.09.2024 – 13.09.2024", from: "2024-09-09", to: "2024-09-13" },
+    { id: "w3", label: "16.09.2024 – 20.09.2024", from: "2024-09-16", to: "2024-09-20" },
+    { id: "w4", label: "23.09.2024 – 27.09.2024", from: "2024-09-23", to: "2024-09-27" },
+    { id: "w5", label: "30.09.2024 – 04.10.2024", from: "2024-09-30", to: "2024-10-04" },
+    { id: "w6", label: "07.10.2024 – 11.10.2024", from: "2024-10-07", to: "2024-10-11" },
+    { id: "w7", label: "14.10.2024 – 18.10.2024", from: "2024-10-14", to: "2024-10-18" },
+    { id: "w8", label: "21.10.2024 – 25.10.2024 (Текущая неделя)", from: "2024-10-21", to: "2024-10-25" },
+    { id: "w9", label: "28.10.2024 – 01.11.2024 (Каникулы)", from: "2024-10-28", to: "2024-11-01", isVacation: true }
+  ];
+  var TIME_SLOTS = [
+    { number: 1, time: "08:30 - 09:15" },
+    { number: 2, time: "09:30 - 10:15" },
+    { number: 3, time: "10:30 - 11:15" },
+    { number: 4, time: "11:30 - 12:15" },
+    { number: 5, time: "12:35 - 13:20" },
+    { number: 6, time: "13:30 - 14:15" },
+    { number: 7, time: "14:25 - 15:10" }
+  ];
+  var DAY_NAMES = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница"];
+  var SHORT_DAY_NAMES = ["Пн", "Вт", "Ср", "Чт", "Пт"];
+  function getWeekDays(fromIsoDate) {
+    const [year, month, day] = fromIsoDate.split("-").map(Number);
+    const start = new Date(year, month - 1, day);
+    return DAY_NAMES.map((name, index) => {
+      const d = new Date(start);
+      d.setDate(start.getDate() + index);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      const isoDate = `${yyyy}-${mm}-${dd}`;
+      return {
+        dayOfWeek: index,
+        name,
+        shortName: SHORT_DAY_NAMES[index],
+        date: isoDate,
+        displayDate: `${dd}.${mm}`
+      };
+    });
+  }
+
+  // src/views/schedule/render.js
+  function getClassBadgeStyle(className) {
+    if (className.includes("7Б")) {
+      return "bg-blue-50 text-blue-700 border border-blue-200/80";
+    }
+    if (className.includes("8А")) {
+      return "bg-indigo-50 text-indigo-700 border border-indigo-200/80";
+    }
+    if (className.includes("9В")) {
+      return "bg-purple-50 text-purple-700 border border-purple-200/80";
+    }
+    return "bg-slate-100 text-slate-700 border border-slate-200";
+  }
+  function renderScheduleView(options = {}) {
+    const currentUser = getCurrentUser();
+    const db = getDB();
+    const isSubjectTeacher = currentUser && currentUser.role === "subject_teacher";
+    const queryString = window.location.search || "";
+    const urlParams = new URLSearchParams(queryString);
+    const activeWeekId = options.weekId || urlParams.get("week") || "w8";
+    const activeWeekIndex = SCHEDULE_WEEKS.findIndex((w) => w.id === activeWeekId);
+    const selectedWeek = activeWeekIndex !== -1 ? SCHEDULE_WEEKS[activeWeekIndex] : SCHEDULE_WEEKS[7];
+    const prevWeek = activeWeekIndex > 0 ? SCHEDULE_WEEKS[activeWeekIndex - 1] : null;
+    const nextWeek = activeWeekIndex < SCHEDULE_WEEKS.length - 1 ? SCHEDULE_WEEKS[activeWeekIndex + 1] : null;
+    const weekDays = getWeekDays(selectedWeek.from);
+    const weekDateSet = new Set(weekDays.map((d) => d.date));
+    const classesMap = new Map((db.classes || []).map((c) => [c.id, c.name]));
+    let scheduleLessons = (db.lessons || []).filter((l) => weekDateSet.has(l.date));
+    if (isSubjectTeacher) {
+      scheduleLessons = scheduleLessons.filter(
+        (l) => l.teacher === currentUser.personName || l.teacher === currentUser.shortName || l.teacher === "Козлов А. П."
+      );
+    }
+    const lessonsByDateAndTime = /* @__PURE__ */ new Map();
+    scheduleLessons.forEach((l) => {
+      const key = `${l.date}_${l.time}`;
+      if (!lessonsByDateAndTime.has(key)) {
+        lessonsByDateAndTime.set(key, []);
+      }
+      lessonsByDateAndTime.get(key).push(l);
+    });
+    const totalLessonsCount = scheduleLessons.length;
+    const isVacationOrEmpty = selectedWeek.isVacation || totalLessonsCount === 0;
+    const todayIso = "2024-10-24";
+    const displaySlots = TIME_SLOTS.slice(0, 5);
+    return `
+    <div class="space-y-5">
+      <!-- Верхняя панель по макету Figma -->
+      <div class="bg-white rounded-2xl border border-slate-200/90 px-5 py-4 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <!-- Левая часть: Иконка календаря и заголовок недели -->
+        <div class="flex items-center space-x-3.5">
+          <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h2 id="schedule-week-title" class="text-base font-extrabold text-slate-900 tracking-tight">
+                Неделя: ${selectedWeek.label.replace(" (Текущая неделя)", "").replace(" (Каникулы)", "")}
+              </h2>
+              ${selectedWeek.id === "w8" ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#EDE9FE] text-[#6D28D9]">Текущая</span>` : selectedWeek.isVacation ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700">Каникулы</span>` : ""}
+            </div>
+            <p class="text-xs font-medium text-slate-500 mt-0.5">
+              Уроков в расписании: ${totalLessonsCount}
+            </p>
+          </div>
+        </div>
+
+        <!-- Правая часть: Селектор и кнопки в стиле макета Figma -->
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="relative">
+            <select id="select-schedule-week"
+                    class="appearance-none pl-3 pr-8 py-2 rounded-lg border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-700 shadow-2xs focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all cursor-pointer">
+              ${SCHEDULE_WEEKS.map(
+      (w) => `
+                <option value="${w.id}" ${w.id === selectedWeek.id ? "selected" : ""}>
+                  ${w.label}
+                </option>
+              `
+    ).join("")}
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <button id="btn-prev-week"
+                    data-week-id="${prevWeek ? prevWeek.id : ""}"
+                    ${!prevWeek ? "disabled" : ""}
+                    class="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    title="Предыдущая неделя">
+              Предыдущая
+            </button>
+
+            <button id="btn-current-week"
+                    data-week-id="w8"
+                    class="px-4 py-2 rounded-lg text-xs ${selectedWeek.id === "w8" ? "bg-[#EDE9FE] text-[#6D28D9] font-bold" : "bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold"} transition-colors cursor-pointer"
+                    title="Текущая неделя">
+              Текущая
+            </button>
+
+            <button id="btn-next-week"
+                    data-week-id="${nextWeek ? nextWeek.id : ""}"
+                    ${!nextWeek ? "disabled" : ""}
+                    class="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    title="Следующая неделя">
+              Следующая
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Основная область: Пустая неделя ИЛИ табличная сетка по макету -->
+      ${isVacationOrEmpty ? `
+        <div id="schedule-empty-state" class="bg-white rounded-2xl border border-slate-200/90 p-12 text-center shadow-xs">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-500">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h3 class="text-base font-bold text-slate-900 mb-1">
+            ${selectedWeek.isVacation ? "Школьные каникулы" : "Нет занятий на выбранную неделю"}
+          </h3>
+          <p class="text-xs font-medium text-slate-500 max-w-md mx-auto">
+            ${selectedWeek.isVacation ? "На эту неделю занятия не запланированы (каникулы). Учебный процесс возобновится со следующей недели." : "В расписании на указанный период уроки отсутствуют."}
+          </p>
+          <div class="mt-5">
+            <button id="btn-empty-return-current"
+                    data-week-id="w8"
+                    class="inline-flex items-center px-4 py-2 rounded-lg text-xs font-semibold bg-[#EDE9FE] hover:bg-[#E0E7FE] text-[#6D28D9] transition-colors cursor-pointer">
+              Вернуться на текущую неделю
+            </button>
+          </div>
+        </div>
+      ` : `
+        <!-- Табличная сетка расписания (docs/Classroom CRM/Классрук/Расписание.png) -->
+        <div id="schedule-grid" class="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[840px]">
+              <thead>
+                <tr class="border-b border-slate-200/90 bg-slate-50/50">
+                  <th class="py-3 px-4 w-32 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
+                    Время
+                  </th>
+                  ${weekDays.map((day) => {
+      const isToday = day.date === todayIso;
+      return `
+                    <th class="py-3 px-4 text-[11px] font-extrabold ${isToday ? "text-brand-700 bg-brand-50/30" : "text-slate-600"} uppercase tracking-wider border-l border-slate-100">
+                      <div class="flex items-center justify-between">
+                        <span>${day.name}</span>
+                        <span class="text-[10px] font-bold ${isToday ? "text-brand-600" : "text-slate-400"}">${day.displayDate}</span>
+                      </div>
+                    </th>
+                  `;
+    }).join("")}
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                ${displaySlots.map((slot) => {
+      return `
+                  <tr class="hover:bg-slate-50/30 transition-colors">
+                    <!-- Колонка слота времени -->
+                    <td class="py-4 px-4 align-top w-32 bg-slate-50/30">
+                      <div class="text-xs font-extrabold text-slate-800">${slot.number} урок</div>
+                      <div class="text-[11px] font-semibold text-slate-400 mt-0.5">${slot.time}</div>
+                    </td>
+
+                    <!-- Ячейки по дням недели -->
+                    ${weekDays.map((day) => {
+        const lessonsInSlot = lessonsByDateAndTime.get(`${day.date}_${slot.time}`) || [];
+        const isToday = day.date === todayIso;
+        return `
+                        <td class="py-3 px-3 align-top border-l border-slate-100 ${isToday ? "bg-brand-50/10" : ""}">
+                          ${lessonsInSlot.length > 0 ? lessonsInSlot.map((lesson) => {
+          const className = lesson.classId && classesMap.get(lesson.classId) || (lesson.classId === "class-7b" ? "7Б" : lesson.classId === "class-8a" ? "8А" : lesson.classId === "class-9v" ? "9В" : "7Б");
+          const badgeStyle = getClassBadgeStyle(className);
+          return `
+                                    <div class="schedule-card bg-white border border-slate-200/90 hover:border-brand-300 rounded-xl p-3.5 shadow-2xs hover:shadow-xs transition-all"
+                                         data-lesson-id="${lesson.id}"
+                                         data-class-id="${lesson.classId || "class-7b"}"
+                                         data-date="${lesson.date}">
+                                      
+                                      <!-- Верх: Название предмета и класс -->
+                                      <div class="flex items-start justify-between gap-2.5">
+                                        <div class="text-xs font-bold text-slate-900 leading-snug">
+                                          ${lesson.subjectName}
+                                        </div>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black shrink-0 ${badgeStyle}">
+                                          ${className}
+                                        </span>
+                                      </div>
+
+                                      <!-- Низ: Аудитория (синим по макету) и статус с достаточным верхним и нижним отступом от линии -->
+                                      <div class="flex items-center justify-between mt-3 pt-2.5 border-t border-slate-100 text-[11px]">
+                                        <span class="font-bold text-brand-600">
+                                          ${lesson.room || "Каб. 204"}
+                                        </span>
+                                        ${lesson.status === "closed" ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-500">Проведено</span>` : `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700">Запланировано</span>`}
+                                      </div>
+                                    </div>
+                                  `;
+        }).join("") : `
+                                <div class="h-14 flex items-center justify-center text-slate-200 text-xs select-none">
+                                  —
+                                </div>
+                              `}
+                        </td>
+                      `;
+      }).join("")}
+                  </tr>
+                `;
+    }).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `}
+    </div>
+  `;
+  }
+
+  // src/views/schedule/listeners.js
+  function setupScheduleListeners(navigate2) {
+    const selectWeek = document.getElementById("select-schedule-week");
+    if (selectWeek) {
+      selectWeek.addEventListener("change", (e) => {
+        const weekId = e.target.value;
+        if (navigate2) {
+          navigate2(`schedule?week=${weekId}`);
+        } else {
+          const url = new URL(window.location.href);
+          url.searchParams.set("week", weekId);
+          window.history.pushState({}, "", url.toString());
+          window.dispatchEvent(new Event("popstate"));
+        }
+      });
+    }
+    const btnPrev = document.getElementById("btn-prev-week");
+    if (btnPrev) {
+      btnPrev.addEventListener("click", () => {
+        const targetWeek = btnPrev.getAttribute("data-week-id");
+        if (targetWeek) {
+          if (navigate2) {
+            navigate2(`schedule?week=${targetWeek}`);
+          } else {
+            const url = new URL(window.location.href);
+            url.searchParams.set("week", targetWeek);
+            window.history.pushState({}, "", url.toString());
+            window.dispatchEvent(new Event("popstate"));
+          }
+        }
+      });
+    }
+    const btnNext = document.getElementById("btn-next-week");
+    if (btnNext) {
+      btnNext.addEventListener("click", () => {
+        const targetWeek = btnNext.getAttribute("data-week-id");
+        if (targetWeek) {
+          if (navigate2) {
+            navigate2(`schedule?week=${targetWeek}`);
+          } else {
+            const url = new URL(window.location.href);
+            url.searchParams.set("week", targetWeek);
+            window.history.pushState({}, "", url.toString());
+            window.dispatchEvent(new Event("popstate"));
+          }
+        }
+      });
+    }
+    const btnCurrent = document.getElementById("btn-current-week");
+    if (btnCurrent) {
+      btnCurrent.addEventListener("click", () => {
+        const targetWeek = btnCurrent.getAttribute("data-week-id") || "w8";
+        if (navigate2) {
+          navigate2(`schedule?week=${targetWeek}`);
+        } else {
+          const url = new URL(window.location.href);
+          url.searchParams.set("week", targetWeek);
+          window.history.pushState({}, "", url.toString());
+          window.dispatchEvent(new Event("popstate"));
+        }
+      });
+    }
+    const btnEmptyReturn = document.getElementById("btn-empty-return-current");
+    if (btnEmptyReturn) {
+      btnEmptyReturn.addEventListener("click", () => {
+        const targetWeek = btnEmptyReturn.getAttribute("data-week-id") || "w8";
+        if (navigate2) {
+          navigate2(`schedule?week=${targetWeek}`);
+        } else {
+          const url = new URL(window.location.href);
+          url.searchParams.set("week", targetWeek);
+          window.history.pushState({}, "", url.toString());
+          window.dispatchEvent(new Event("popstate"));
+        }
+      });
+    }
+  }
+
   // src/views/journal/render.js
   function renderJournalView(options = {}) {
     const db = getDB();
@@ -36708,13 +37150,13 @@
     },
     "/schedule": {
       title: "Расписание",
-      render: () => renderPlaceholderView(
-        "Расписание",
-        "Расписание уроков и звонков на учебную неделю",
-        "/schedule"
-      ),
-      setup: () => {
-      }
+      render: () => {
+        const params = getRouteParams();
+        return renderScheduleView({
+          weekId: params.get("week") || "w8"
+        });
+      },
+      setup: (navigate2) => setupScheduleListeners(navigate2)
     },
     "/parents": {
       title: "Родители",

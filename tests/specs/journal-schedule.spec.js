@@ -425,8 +425,27 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       // TODO: Раздел «Расписание» (#/schedule) находится в стадии разработки (заглушка)
     });
 
-    test.skip('TC-SCH-02: Переключение недель', async () => {
-      // TODO: Раздел «Расписание» (#/schedule) находится в стадии разработки (заглушка)
+    test('TC-SCH-02: Переключение недель', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+      await page.goto('schedule');
+      await expect(page.locator('#schedule-week-title')).toContainText('21.10.2024');
+
+      await page.locator('#btn-prev-week').click();
+      await expect(page.locator('#schedule-week-title')).toContainText('14.10.2024');
+
+      await page.locator('#btn-next-week').click();
+      await expect(page.locator('#schedule-week-title')).toContainText('21.10.2024');
+
+      await page.locator('#btn-prev-week').click();
+      await page.locator('#btn-prev-week').click();
+      await expect(page.locator('#schedule-week-title')).toContainText('07.10.2024');
+
+      await page.locator('#btn-current-week').click();
+      await expect(page.locator('#schedule-week-title')).toContainText('21.10.2024');
     });
 
     test.skip('TC-SCH-03: Расписание ребёнка в роли родителя', async () => {
@@ -445,8 +464,30 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       // TODO: Раздел «Расписание» (#/schedule) находится в стадии разработки (заглушка)
     });
 
-    test.skip('TC-SCH-07: Своё расписание учителя-предметника по всем классам', async () => {
-      // TODO: Раздел «Расписание» (#/schedule) находится в стадии разработки (заглушка)
+    test('TC-SCH-07: Своё расписание учителя-предметника по всем классам', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+      await page.goto('schedule');
+      await expect(page.locator('#schedule-grid')).toBeVisible();
+
+      await expect(page.locator('.schedule-card[data-class-id="class-7b"]').first()).toBeVisible();
+      await expect(page.locator('.schedule-card[data-class-id="class-8a"]').first()).toBeVisible();
+      await expect(page.locator('.schedule-card[data-class-id="class-9v"]').first()).toBeVisible();
+
+      await expect(page.locator('#btn-add-lesson')).toHaveCount(0);
+      await expect(page.locator('button[data-action="edit-lesson"]')).toHaveCount(0);
+      await expect(page.locator('button[data-action="delete-lesson"]')).toHaveCount(0);
+
+      const cardTexts = await page.locator('.schedule-card').allInnerTexts();
+      for (const text of cardTexts) {
+        expect(text).not.toContain('Русский язык');
+        expect(text).not.toContain('Физика');
+        expect(text).not.toContain('Физкультура');
+        expect(text).not.toContain('Разговоры о важном');
+      }
     });
 
     test.skip('TC-SCH-08: Добавление занятия и проверка занятости аудитории', async () => {
@@ -461,8 +502,21 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       // TODO: Раздел «Расписание» (#/schedule) находится в стадии разработки (заглушка)
     });
 
-    test.skip('TC-SCH-11: Пустая неделя: состояние без занятий', async () => {
-      // TODO: Раздел «Расписание» (#/schedule) находится в стадии разработки (заглушка)
+    test('TC-SCH-11: Пустая неделя: состояние без занятий', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+      await page.goto('schedule?week=w9');
+
+      await expect(page.locator('#schedule-empty-state')).toBeVisible();
+      await expect(page.locator('#schedule-empty-state')).toContainText('каникулы');
+      await expect(page.locator('#schedule-grid')).toHaveCount(0);
+
+      await page.locator('#btn-empty-return-current').click();
+      await expect(page.locator('#schedule-grid')).toBeVisible();
+      await expect(page.locator('.schedule-card')).not.toHaveCount(0);
     });
 
   });
