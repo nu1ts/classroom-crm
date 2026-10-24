@@ -28870,7 +28870,6 @@
     const { nextMeeting, otherUpcoming, pastMeetings } = getMeetings("class-7b");
     return `
     <div id="meetings-view" class="max-w-6xl mx-auto space-y-6 pb-12 animate-fadeIn">
-      <!-- Шапка страницы -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90">
         <div>
           <div class="flex items-center space-x-3">
@@ -28897,16 +28896,12 @@
         </div>
       </div>
 
-      <!-- Блок ближайшего собрания (TC-MG-01) -->
       ${renderNextMeetingSection(nextMeeting)}
 
-      <!-- Другие запланированные собрания (TC-MG-02, TC-MG-06) -->
       ${otherUpcoming.length > 0 ? renderOtherUpcomingSection(otherUpcoming) : ""}
 
-      <!-- Блок прошедших собраний (TC-MG-01, TC-MG-07, TC-MG-10) -->
       ${renderPastMeetingsSection(pastMeetings)}
 
-      <!-- Модальные окна проекта -->
       ${renderMeetingFormModal()}
       ${renderCancelMeetingModal()}
       ${renderAttendanceModal()}
@@ -28935,8 +28930,9 @@
       <!-- Декоративная полоса акцента -->
       <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-500 to-brand-300"></div>
 
-      <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 pt-1">
-        <div class="space-y-4 flex-1">
+      <!-- Верхняя часть: заголовки слева, кнопки действий справа -->
+      <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pt-1">
+        <div class="space-y-3 flex-1 min-w-0">
           <div class="flex flex-wrap items-center gap-2.5">
             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-200/70">
               Ближайшее собрание
@@ -28945,7 +28941,7 @@
           </div>
 
           <div>
-            <h2 id="next-meeting-title" class="text-xl font-black text-slate-900 tracking-tight">
+            <h2 id="next-meeting-title" class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
               ${meeting.title}
             </h2>
             <div class="flex flex-wrap items-center gap-3.5 mt-2.5 text-xs text-slate-600 font-medium">
@@ -28960,29 +28956,10 @@
               </span>
             </div>
           </div>
-
-          <!-- Повестка дня (TC-MG-01, TC-MG-04) -->
-          <div class="pt-3 border-t border-slate-100 space-y-2">
-            <div class="flex items-center justify-between">
-              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Повестка собрания
-              </h4>
-              <span class="text-2xs font-semibold text-slate-400">
-                ${agendaList.length} ${agendaList.length === 1 ? "пункт" : agendaList.length > 1 && agendaList.length < 5 ? "пункта" : "пунктов"}
-              </span>
-            </div>
-            <ol id="next-meeting-agenda-list" class="space-y-2 text-xs text-slate-700 list-decimal list-inside pl-1 font-medium">
-              ${agendaList.map((item) => `
-                <li class="agenda-item leading-relaxed p-2.5 rounded-xl bg-slate-50/80 border border-slate-100">
-                  <span class="font-semibold text-slate-800">${item}</span>
-                </li>
-              `).join("")}
-            </ol>
-          </div>
         </div>
 
-        <!-- Кнопки действий -->
-        <div class="flex items-center gap-2 lg:self-start shrink-0 pt-1">
+        <!-- Кнопки действий справа -->
+        <div class="flex items-center gap-2 shrink-0 pt-0.5">
           <button
             class="btn-edit-meeting inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
             data-meeting-id="${meeting.id}"
@@ -29000,7 +28977,6 @@
             <span>Опубликовать объявление</span>
           </a>
 
-          <!-- Меню действий с отменой собрания (TC-MG-01, TC-MG-06) -->
           <div class="relative inline-block text-left meeting-menu-container">
             <button
               class="btn-meeting-menu p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
@@ -29022,6 +28998,25 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Повестка собрания на всю ширину карточки до конца баннера -->
+      <div class="mt-5 pt-4 border-t border-slate-100 space-y-2.5 w-full">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Повестка собрания
+          </h4>
+          <span class="text-2xs font-semibold text-slate-400">
+            ${agendaList.length} ${agendaList.length === 1 ? "пункт" : agendaList.length > 1 && agendaList.length < 5 ? "пункта" : "пунктов"}
+          </span>
+        </div>
+        <ol id="next-meeting-agenda-list" class="space-y-2 text-xs text-slate-700 list-decimal list-inside pl-1 font-medium w-full">
+          ${agendaList.map((item) => `
+            <li class="agenda-item leading-relaxed p-2.5 sm:p-3 rounded-xl bg-slate-50/80 border border-slate-100 w-full block">
+              <span class="font-semibold text-slate-800">${item}</span>
+            </li>
+          `).join("")}
+        </ol>
       </div>
     </div>
   `;
@@ -29140,7 +29135,6 @@
         id="modal-meeting-form-dialog"
         class="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 max-h-[92vh] flex flex-col overflow-hidden"
       >
-        <!-- Шапка модалки в едином формате Classroom CRM -->
         <div class="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
           <div>
             <h3 id="modal-meeting-form-title" class="text-base font-bold text-slate-900">
@@ -29157,11 +29151,9 @@
           </button>
         </div>
 
-        <!-- Тело формы со скроллом -->
         <div class="space-y-4 overflow-y-auto flex-1 pr-1 text-xs py-3">
           <input type="hidden" id="meeting-id-input" value="" />
 
-          <!-- Тема (обязательное) -->
           <div>
             <label for="meeting-title-input" class="block font-semibold text-slate-700 mb-1.5">
               Тема собрания <span class="text-rose-500">*</span>
@@ -29169,13 +29161,12 @@
             <input
               type="text"
               id="meeting-title-input"
-              class="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 placeholder:text-slate-400 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
+              class="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 placeholder:text-slate-400 shadow-2xs outline-none focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
               placeholder="Например, Подготовка к новогодним мероприятиям"
             />
             <p id="error-meeting-title" class="hidden text-[11px] font-semibold text-rose-600 mt-1"></p>
           </div>
 
-          <!-- Дата и Время (обязательные) -->
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label for="meeting-date-input" class="block font-semibold text-slate-700 mb-1.5">
@@ -29201,7 +29192,6 @@
             </div>
           </div>
 
-          <!-- Место (Кабинет) -->
           <div>
             <label for="meeting-room-input" class="block font-semibold text-slate-700 mb-1.5">
               Место проведения (кабинет)
@@ -29215,7 +29205,6 @@
             />
           </div>
 
-          <!-- Повестка дня (TC-MG-04) -->
           <div class="pt-3 border-t border-slate-100 space-y-2.5">
             <div class="flex items-center justify-between">
               <label class="block font-semibold text-slate-700 text-xs">
@@ -29224,10 +29213,8 @@
               <span class="text-2xs font-medium text-slate-400">Необязательно</span>
             </div>
 
-            <!-- Список добавленных пунктов -->
             <div id="modal-agenda-items-container" class="space-y-2"></div>
 
-            <!-- Добавление нового пункта -->
             <div class="flex items-center gap-2 pt-1">
               <input
                 type="text"
@@ -29246,7 +29233,6 @@
           </div>
         </div>
 
-        <!-- Футер с кнопками в фирменном стиле (flex-1 h-10) -->
         <div class="pt-4 border-t border-slate-100 flex items-center space-x-3 shrink-0">
           <button
             type="button"
@@ -29327,7 +29313,6 @@
         id="modal-meeting-attendance-dialog"
         class="bg-white rounded-3xl max-w-4xl w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 max-h-[92vh] flex flex-col overflow-hidden"
       >
-        <!-- Шапка -->
         <div class="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
           <div>
             <h3 id="modal-attendance-title" class="text-base font-bold text-slate-900">
@@ -29355,7 +29340,6 @@
           </div>
         </div>
 
-        <!-- Таблица явки на 28 родителей -->
         <div class="overflow-y-auto flex-1 my-3 border border-slate-200/80 rounded-2xl">
           <input type="hidden" id="attendance-meeting-id" value="" />
           <p id="attendance-general-error" class="hidden m-3 text-xs text-rose-500 font-bold p-3 bg-rose-50 rounded-xl"></p>
@@ -29366,14 +29350,13 @@
                 <th scope="col" class="py-3 px-4">Родитель</th>
                 <th scope="col" class="py-3 px-4">Ученик (7Б)</th>
                 <th scope="col" class="py-3 px-4 w-52">Явка</th>
-                <th scope="col" class="py-3 px-4">Причина (при неявке)</th>
+                <th scope="col" class="py-2.5 px-3.5 text-2xs uppercase tracking-wider font-semibold text-slate-500">Причина неявки</th>
               </tr>
             </thead>
             <tbody id="attendance-table-body" class="divide-y divide-slate-100 font-medium text-slate-700 bg-white"></tbody>
           </table>
         </div>
 
-        <!-- Футер -->
         <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3 shrink-0">
           <button
             type="button"
@@ -29401,9 +29384,10 @@
     >
       <div
         id="modal-meeting-summary-dialog"
-        class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 space-y-4"
+        class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 space-y-4"
       >
-        <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <!-- Шапка -->
+        <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
           <div>
             <h3 id="modal-summary-title" class="text-base font-bold text-slate-900">
               Итоги собрания
@@ -29422,36 +29406,40 @@
         </div>
 
         <!-- Виджет счётчика явки (TC-MG-10) в фирменных цветах проекта -->
-        <div class="p-4 rounded-2xl bg-gradient-to-br from-brand-50/70 to-white border border-brand-100 space-y-1.5">
-          <span class="text-2xs font-bold uppercase tracking-wider text-slate-400">Общая явка</span>
-          <div class="flex items-baseline gap-2.5">
-            <span id="summary-ratio-text" class="text-3xl font-black text-slate-900 tracking-tight">24 из 28</span>
-            <span id="summary-percentage-text" class="text-xs font-bold text-emerald-700 bg-emerald-100/70 border border-emerald-200/60 px-2 py-0.5 rounded-md">86%</span>
+        <div class="p-3.5 rounded-2xl bg-gradient-to-br from-brand-50/70 via-white to-brand-50/30 border border-brand-100 shadow-2xs space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Общая явка</span>
+            <span id="summary-percentage-text" class="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">86%</span>
           </div>
-          <p class="text-2xs font-medium text-slate-500">Счётчик рассчитывается по фактическим отметкам родителей класса 7Б</p>
+          <div class="flex items-baseline gap-2">
+            <span id="summary-ratio-text" class="text-sm font-bold text-slate-800">24 из 28</span>
+            <span class="text-[11px] font-medium text-slate-500">родителей присутствовали</span>
+          </div>
+          <p class="text-[10px] text-slate-400 pt-1 border-t border-brand-100/50">Счётчик рассчитывается по фактическим отметкам родителей класса 7Б</p>
         </div>
 
         <!-- Список отсутствовавших -->
-        <div class="space-y-2">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">
+        <div class="space-y-1.5">
+          <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400">
             Отсутствовали на собрании
           </h4>
-          <div id="summary-absent-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
+          <div id="summary-absent-list" class="space-y-1.5 max-h-52 overflow-y-auto pr-1"></div>
         </div>
 
-        <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-2.5">
+        <!-- Футер с кнопками: Закрыть (второстепенная), Перейти к явке (основная) -->
+        <div class="pt-3.5 border-t border-slate-100 flex items-center justify-end space-x-2.5">
           <button
             type="button"
-            id="btn-summary-open-attendance"
-            class="h-10 px-4 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200/60 text-xs font-semibold transition-colors cursor-pointer"
+            class="btn-close-modal h-9 px-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
           >
-            Перейти к явке
+            Закрыть
           </button>
           <button
             type="button"
-            class="btn-close-modal h-10 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+            id="btn-summary-open-attendance"
+            class="h-9 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-2xs transition-colors cursor-pointer inline-flex items-center gap-1.5"
           >
-            Закрыть
+            <span>Перейти к явке</span>
           </button>
         </div>
       </div>
@@ -29973,9 +29961,10 @@
     const listContainer = document.getElementById("summary-absent-list");
     if (listContainer) {
       if (summary.absentList.length === 0) {
+        const allText = summary.total === 1 ? "Родитель присутствовал на собрании" : `Все ${summary.total || 28} родителей присутствовали на собрании`;
         listContainer.innerHTML = `
-        <div class="p-3 rounded-2xl bg-emerald-50 border border-emerald-100 text-xs text-emerald-800 font-bold text-center">
-          Все 28 родителей присутствовали на собрании
+        <div class="p-2.5 rounded-2xl bg-emerald-50/80 border border-emerald-100 text-xs text-emerald-800 font-medium text-center">
+          ${allText}
         </div>
       `;
       } else {
@@ -29983,21 +29972,21 @@
           const initials = getInitials(a.parentName);
           const isExcused = a.status === ATTENDANCE_STATUSES.EXCUSED;
           return `
-            <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50/90 border border-slate-100 text-xs">
-              <div class="flex items-center space-x-2.5">
-                <div class="w-7 h-7 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-3xs shrink-0">
+            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/70 text-xs hover:bg-slate-100/70 transition-colors">
+              <div class="flex items-center space-x-2.5 min-w-0">
+                <div class="w-7 h-7 rounded-full bg-slate-200/80 text-slate-700 flex items-center justify-center font-bold text-3xs shrink-0 select-none border border-slate-300/60">
                   ${initials}
                 </div>
-                <div>
-                  <span class="font-bold text-slate-900 block">${a.parentName}</span>
-                  <span class="text-2xs text-slate-400 font-medium">${a.studentName} (7Б)</span>
+                <div class="min-w-0">
+                  <span class="font-bold text-slate-900 block truncate text-xs">${a.parentName}</span>
+                  <span class="text-2xs text-slate-400 font-medium block truncate">${a.studentName} (7Б)</span>
                 </div>
               </div>
-              <div class="text-right">
-                <span class="inline-block px-2.5 py-0.5 rounded-full text-2xs font-bold ${isExcused ? "bg-amber-50 text-amber-800 border border-amber-200/70" : "bg-rose-50 text-rose-800 border border-rose-200/70"}">
+              <div class="text-right shrink-0 pl-2">
+                <span class="inline-block px-2 py-0.5 rounded-full text-2xs font-bold ${isExcused ? "bg-amber-50 text-amber-800 border border-amber-200/70" : "bg-rose-50 text-rose-800 border border-rose-200/70"}">
                   ${a.statusLabel || "Не пришёл"}
                 </span>
-                <span class="text-2xs text-slate-500 block mt-0.5 font-medium italic">
+                <span class="text-[10px] text-slate-500 block mt-0.5 font-medium italic max-w-[150px] truncate" title="${a.note || ""}">
                   ${a.note ? `«${a.note}»` : "Причина не указана"}
                 </span>
               </div>

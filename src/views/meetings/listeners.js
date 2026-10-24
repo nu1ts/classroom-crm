@@ -659,9 +659,12 @@ function openSummaryModal(meetingId) {
   const listContainer = document.getElementById("summary-absent-list");
   if (listContainer) {
     if (summary.absentList.length === 0) {
+      const allText = summary.total === 1
+        ? "Родитель присутствовал на собрании"
+        : `Все ${summary.total || 28} родителей присутствовали на собрании`;
       listContainer.innerHTML = `
-        <div class="p-3 rounded-2xl bg-emerald-50 border border-emerald-100 text-xs text-emerald-800 font-bold text-center">
-          Все 28 родителей присутствовали на собрании
+        <div class="p-2.5 rounded-2xl bg-emerald-50/80 border border-emerald-100 text-xs text-emerald-800 font-medium text-center">
+          ${allText}
         </div>
       `;
     } else {
@@ -670,25 +673,25 @@ function openSummaryModal(meetingId) {
           const initials = getInitials(a.parentName);
           const isExcused = a.status === ATTENDANCE_STATUSES.EXCUSED;
           return `
-            <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50/90 border border-slate-100 text-xs">
-              <div class="flex items-center space-x-2.5">
-                <div class="w-7 h-7 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-3xs shrink-0">
+            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/70 text-xs hover:bg-slate-100/70 transition-colors">
+              <div class="flex items-center space-x-2.5 min-w-0">
+                <div class="w-7 h-7 rounded-full bg-slate-200/80 text-slate-700 flex items-center justify-center font-bold text-3xs shrink-0 select-none border border-slate-300/60">
                   ${initials}
                 </div>
-                <div>
-                  <span class="font-bold text-slate-900 block">${a.parentName}</span>
-                  <span class="text-2xs text-slate-400 font-medium">${a.studentName} (7Б)</span>
+                <div class="min-w-0">
+                  <span class="font-bold text-slate-900 block truncate text-xs">${a.parentName}</span>
+                  <span class="text-2xs text-slate-400 font-medium block truncate">${a.studentName} (7Б)</span>
                 </div>
               </div>
-              <div class="text-right">
-                <span class="inline-block px-2.5 py-0.5 rounded-full text-2xs font-bold ${
+              <div class="text-right shrink-0 pl-2">
+                <span class="inline-block px-2 py-0.5 rounded-full text-2xs font-bold ${
                   isExcused
                     ? "bg-amber-50 text-amber-800 border border-amber-200/70"
                     : "bg-rose-50 text-rose-800 border border-rose-200/70"
                 }">
                   ${a.statusLabel || "Не пришёл"}
                 </span>
-                <span class="text-2xs text-slate-500 block mt-0.5 font-medium italic">
+                <span class="text-[10px] text-slate-500 block mt-0.5 font-medium italic max-w-[150px] truncate" title="${a.note || ""}">
                   ${a.note ? `«${a.note}»` : "Причина не указана"}
                 </span>
               </div>

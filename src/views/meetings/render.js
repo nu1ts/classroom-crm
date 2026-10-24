@@ -100,8 +100,8 @@ function renderNextMeetingSection(meeting) {
     <div id="section-next-meeting" class="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-xs relative overflow-hidden">
       <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-500 to-brand-300"></div>
 
-      <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 pt-1">
-        <div class="space-y-4 flex-1">
+      <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pt-1">
+        <div class="space-y-3 flex-1 min-w-0">
           <div class="flex flex-wrap items-center gap-2.5">
             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-200/70">
               Ближайшее собрание
@@ -110,7 +110,7 @@ function renderNextMeetingSection(meeting) {
           </div>
 
           <div>
-            <h2 id="next-meeting-title" class="text-xl font-black text-slate-900 tracking-tight">
+            <h2 id="next-meeting-title" class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
               ${meeting.title}
             </h2>
             <div class="flex flex-wrap items-center gap-3.5 mt-2.5 text-xs text-slate-600 font-medium">
@@ -125,27 +125,9 @@ function renderNextMeetingSection(meeting) {
               </span>
             </div>
           </div>
-
-          <div class="pt-3 border-t border-slate-100 space-y-2">
-            <div class="flex items-center justify-between">
-              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Повестка собрания
-              </h4>
-              <span class="text-2xs font-semibold text-slate-400">
-                ${agendaList.length} ${agendaList.length === 1 ? "пункт" : agendaList.length > 1 && agendaList.length < 5 ? "пункта" : "пунктов"}
-              </span>
-            </div>
-            <ol id="next-meeting-agenda-list" class="space-y-2 text-xs text-slate-700 list-decimal list-inside pl-1 font-medium">
-              ${agendaList.map((item) => `
-                <li class="agenda-item leading-relaxed p-2.5 rounded-xl bg-slate-50/80 border border-slate-100">
-                  <span class="font-semibold text-slate-800">${item}</span>
-                </li>
-              `).join("")}
-            </ol>
-          </div>
         </div>
 
-        <div class="flex items-center gap-2 lg:self-start shrink-0 pt-1">
+        <div class="flex items-center gap-2 shrink-0 pt-0.5">
           <button
             class="btn-edit-meeting inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
             data-meeting-id="${meeting.id}"
@@ -184,6 +166,24 @@ function renderNextMeetingSection(meeting) {
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="mt-5 pt-4 border-t border-slate-100 space-y-2.5 w-full">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Повестка собрания
+          </h4>
+          <span class="text-2xs font-semibold text-slate-400">
+            ${agendaList.length} ${agendaList.length === 1 ? "пункт" : agendaList.length > 1 && agendaList.length < 5 ? "пункта" : "пунктов"}
+          </span>
+        </div>
+        <ol id="next-meeting-agenda-list" class="space-y-2 text-xs text-slate-700 list-decimal list-inside pl-1 font-medium w-full">
+          ${agendaList.map((item) => `
+            <li class="agenda-item leading-relaxed p-2.5 sm:p-3 rounded-xl bg-slate-50/80 border border-slate-100 w-full block">
+              <span class="font-semibold text-slate-800">${item}</span>
+            </li>
+          `).join("")}
+        </ol>
       </div>
     </div>
   `;
@@ -345,7 +345,7 @@ function renderMeetingFormModal() {
             <input
               type="text"
               id="meeting-title-input"
-              class="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 placeholder:text-slate-400 shadow-2xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
+              class="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 placeholder:text-slate-400 shadow-2xs outline-none focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
               placeholder="Например, Подготовка к новогодним мероприятиям"
             />
             <p id="error-meeting-title" class="hidden text-[11px] font-semibold text-rose-600 mt-1"></p>
@@ -544,7 +544,7 @@ function renderAttendanceModal() {
                 <th scope="col" class="py-3 px-4">Родитель</th>
                 <th scope="col" class="py-3 px-4">Ученик (7Б)</th>
                 <th scope="col" class="py-3 px-4 w-52">Явка</th>
-                <th scope="col" class="py-3 px-4">Причина (при неявке)</th>
+                <th scope="col" class="py-2.5 px-3.5 text-2xs uppercase tracking-wider font-semibold text-slate-500">Причина неявки</th>
               </tr>
             </thead>
             <tbody id="attendance-table-body" class="divide-y divide-slate-100 font-medium text-slate-700 bg-white"></tbody>
@@ -583,9 +583,10 @@ function renderSummaryModal() {
     >
       <div
         id="modal-meeting-summary-dialog"
-        class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 space-y-4"
+        class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 space-y-4"
       >
-        <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <!-- Шапка -->
+        <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
           <div>
             <h3 id="modal-summary-title" class="text-base font-bold text-slate-900">
               Итоги собрания
@@ -603,35 +604,39 @@ function renderSummaryModal() {
           </button>
         </div>
 
-        <div class="p-4 rounded-2xl bg-gradient-to-br from-brand-50/70 to-white border border-brand-100 space-y-1.5">
-          <span class="text-2xs font-bold uppercase tracking-wider text-slate-400">Общая явка</span>
-          <div class="flex items-baseline gap-2.5">
-            <span id="summary-ratio-text" class="text-3xl font-black text-slate-900 tracking-tight">24 из 28</span>
-            <span id="summary-percentage-text" class="text-xs font-bold text-emerald-700 bg-emerald-100/70 border border-emerald-200/60 px-2 py-0.5 rounded-md">86%</span>
+        <div class="p-3.5 rounded-2xl bg-gradient-to-br from-brand-50/70 via-white to-brand-50/30 border border-brand-100 shadow-2xs space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Общая явка</span>
+            <span id="summary-percentage-text" class="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">86%</span>
           </div>
-          <p class="text-2xs font-medium text-slate-500">Счётчик рассчитывается по фактическим отметкам родителей класса 7Б</p>
+          <div class="flex items-baseline gap-2">
+            <span id="summary-ratio-text" class="text-sm font-bold text-slate-800">24 из 28</span>
+            <span class="text-[11px] font-medium text-slate-500">родителей присутствовали</span>
+          </div>
+          <p class="text-[10px] text-slate-400 pt-1 border-t border-brand-100/50">Счётчик рассчитывается по фактическим отметкам родителей класса 7Б</p>
         </div>
 
-        <div class="space-y-2">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">
+        <div class="space-y-1.5">
+          <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400">
             Отсутствовали на собрании
           </h4>
-          <div id="summary-absent-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
+          <div id="summary-absent-list" class="space-y-1.5 max-h-52 overflow-y-auto pr-1"></div>
         </div>
 
-        <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-2.5">
+        <!-- Футер с кнопками: Закрыть (второстепенная), Перейти к явке (основная) -->
+        <div class="pt-3.5 border-t border-slate-100 flex items-center justify-end space-x-2.5">
           <button
             type="button"
-            id="btn-summary-open-attendance"
-            class="h-10 px-4 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200/60 text-xs font-semibold transition-colors cursor-pointer"
+            class="btn-close-modal h-9 px-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
           >
-            Перейти к явке
+            Закрыть
           </button>
           <button
             type="button"
-            class="btn-close-modal h-10 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+            id="btn-summary-open-attendance"
+            class="h-9 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-2xs transition-colors cursor-pointer inline-flex items-center gap-1.5"
           >
-            Закрыть
+            <span>Перейти к явке</span>
           </button>
         </div>
       </div>
