@@ -9,8 +9,12 @@
  * в src/router.js (класс Router).
  */
 
-import { getCurrentUser } from "../services/storage.js";
+import { getCurrentUser, getDB } from "../services/storage.js";
 import { getRouteParams } from "../services/navigation.js";
+import {
+  renderClassesView,
+  setupClassesListeners,
+} from "../views/classes/index.js";
 import { renderLoginView, setupLoginListeners } from "../views/login/index.js";
 import {
   renderOverviewView,
@@ -126,14 +130,61 @@ export const ROUTE_HANDLERS = {
   "/journal": {
     title: "Журнал класса",
     render: () => {
+      const user = getCurrentUser();
       const params = getRouteParams();
+      const rawClassParam = params.get("class") || params.get("classId");
+      const rawSubjectParam = params.get("subject") || params.get("subjectId");
+
+      if (user && user.role === "subject_teacher") {
+        if (!rawSubjectParam || rawSubjectParam === "all") {
+          return renderForbiddenView();
+        }
+        const db = getDB();
+        const teacher = (db.teachers || []).find(
+          (t) =>
+            t.accountUserId === user.id ||
+            (user.personName && t.fullName === user.personName) ||
+            (user.shortName && t.shortName === user.shortName),
+        );
+        const workload =
+          teacher && Array.isArray(teacher.workload) ? teacher.workload : [];
+
+        const isAllowed = workload.some((w) => {
+          const matchSubject =
+            w.subjectId === rawSubjectParam ||
+            (w.subjectLabel &&
+              w.subjectLabel.toLowerCase().includes(rawSubjectParam.toLowerCase()));
+          if (!matchSubject) return false;
+
+          if (rawClassParam) {
+            const classObj = (db.classes || []).find(
+              (c) =>
+                c.id === rawClassParam ||
+                c.name.toLowerCase() === rawClassParam.toLowerCase(),
+            );
+            const targetClassId = classObj ? classObj.id : rawClassParam;
+            const targetClassName = classObj ? classObj.name : rawClassParam;
+            return (
+              w.classId === targetClassId ||
+              w.className.toLowerCase() === targetClassName.toLowerCase()
+            );
+          }
+          return true;
+        });
+
+        if (!isAllowed) {
+          return renderForbiddenView();
+        }
+      }
+
       const unconfirmed = params.get("unconfirmed") === "true";
       const absences = params.get("absences") === "true";
       const statusParam =
         params.get("status") ||
         (unconfirmed ? "unconfirmed" : absences ? "absences" : "all");
       return renderJournalView({
-        subjectId: params.get("subject") || "all",
+        classId: rawClassParam || "class-7b",
+        subjectId: rawSubjectParam || "all",
         weekId: params.get("week") || "all",
         filterStatus: statusParam,
         filterOnlyAbsences: statusParam === "absences" || unconfirmed,
@@ -235,13 +286,8 @@ export const ROUTE_HANDLERS = {
 
   "/classes": {
     title: "Мои классы",
-    render: () =>
-      renderPlaceholderView(
-        "Мои классы",
-        "Классы с учебной нагрузкой учителя (7Б, 8А, 9В)",
-        "/classes",
-      ),
-    setup: () => {},
+    render: () => renderClassesView(),
+    setup: (navigate) => setupClassesListeners(navigate),
   },
 
   "/child": {

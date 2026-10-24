@@ -16,6 +16,12 @@ export function renderJournalView(options = {}) {
     shortName: "Смирнова М. В.",
   };
 
+  const selectedClassId = options.classId || "class-7b";
+  const classObj = (db.classes || []).find(
+    (c) => c.id === selectedClassId || c.name === selectedClassId,
+  );
+  const classDisplayName = classObj ? classObj.name : "7Б";
+
   const students = (db.students || [])
     .slice()
     .sort((a, b) => a.fullName.localeCompare(b.fullName, "ru"));
@@ -341,7 +347,7 @@ export function renderJournalView(options = {}) {
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div class="flex items-center space-x-2.5 mb-1">
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Журнал класса 7Б</h1>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Журнал класса ${classDisplayName}</h1>
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-200">
               ${subjects.find((s) => s.id === selectedSubjectId)?.name || "Все предметы"}
             </span>

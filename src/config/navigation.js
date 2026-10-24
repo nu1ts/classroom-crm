@@ -95,7 +95,13 @@ export const ROLE_NAVIGATION = {
       },
       { id: "nav-profile", title: "Профиль", path: "/profile", icon: "user" },
     ],
-    allowedRoutes: ["/classes", "/schedule", "/attendance", "/profile"],
+    allowedRoutes: [
+      "/classes",
+      "/journal",
+      "/schedule",
+      "/attendance",
+      "/profile",
+    ],
   },
 
   parent: {
