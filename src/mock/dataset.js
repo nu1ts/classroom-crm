@@ -1860,7 +1860,7 @@ export const INITIAL_DATASET = {
       "subjectName": "Математика (Алгебра)",
       "teacher": "Козлов А. П.",
       "room": "Каб. 204",
-      "status": "closed",
+      "status": "open",
       "isMarked": true,
       "periodId": "q1_2024"
     },

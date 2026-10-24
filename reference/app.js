@@ -1862,7 +1862,7 @@
         "subjectName": "Математика (Алгебра)",
         "teacher": "Козлов А. П.",
         "room": "Каб. 204",
-        "status": "closed",
+        "status": "open",
         "isMarked": true,
         "periodId": "q1_2024"
       },
@@ -22650,6 +22650,194 @@
     return { success: true };
   }
 
+  // src/services/grades-ops.js
+  function validateGradeValue(val) {
+    if (val === null || val === void 0 || val === "") return null;
+    const num = typeof val === "number" ? val : parseInt(String(val).trim(), 10);
+    if (!Number.isInteger(num)) return null;
+    if (num >= 2 && num <= 5) return num;
+    return null;
+  }
+  function saveGradeRecord({ lessonId, studentId, value, teacher }) {
+    if (!lessonId || !studentId) {
+      return { success: false, error: "Не указан урок или ученик" };
+    }
+    const db = getDB();
+    const lesson = (db.lessons || []).find((l) => l.id === lessonId);
+    if (!lesson) {
+      return { success: false, error: "Урок не найден" };
+    }
+    if (lesson.status === "closed") {
+      return {
+        success: false,
+        error: "Урок закрыт. Изменение и удаление оценок недоступно.",
+        isClosed: true
+      };
+    }
+    const att = (db.attendance || []).find(
+      (a) => a.lessonId === lessonId && a.studentId === studentId
+    );
+    if (att && att.value === "absent") {
+      return {
+        success: false,
+        error: "Ученик отсутствовал",
+        isAbsent: true
+      };
+    }
+    if (value === "" || value === null || value === void 0) {
+      return deleteGradeRecord({ lessonId, studentId, teacher });
+    }
+    const validValue = validateGradeValue(value);
+    if (validValue === null) {
+      return {
+        success: false,
+        error: "Недопустимое значение оценки. Разрешены только 2, 3, 4, 5."
+      };
+    }
+    if (!db.grades) db.grades = [];
+    const currentUser = getCurrentUser();
+    const teacherName = teacher || currentUser && (currentUser.shortName || currentUser.personName) || lesson.teacher || "Учитель";
+    const existingGradeIndex = db.grades.findIndex(
+      (g) => g.lessonId === lessonId && g.studentId === studentId
+    );
+    const timestamp = (/* @__PURE__ */ new Date()).toISOString();
+    if (existingGradeIndex >= 0) {
+      db.grades[existingGradeIndex].value = validValue;
+      db.grades[existingGradeIndex].teacher = teacherName;
+      db.grades[existingGradeIndex].updatedAt = timestamp;
+    } else {
+      const newGrade = {
+        id: `grd-${Date.now()}-${Math.floor(Math.random() * 1e3)}`,
+        lessonId,
+        studentId,
+        subjectId: lesson.subjectId,
+        date: lesson.date,
+        teacher: teacherName,
+        value: validValue,
+        periodId: lesson.periodId || "q1_2024",
+        createdAt: timestamp,
+        updatedAt: timestamp
+      };
+      db.grades.push(newGrade);
+    }
+    saveDB(db);
+    return { success: true };
+  }
+  function deleteGradeRecord({ lessonId, studentId, teacher }) {
+    if (!lessonId || !studentId) {
+      return { success: false, error: "Не указан урок или ученик" };
+    }
+    const db = getDB();
+    const lesson = (db.lessons || []).find((l) => l.id === lessonId);
+    if (lesson && lesson.status === "closed") {
+      return {
+        success: false,
+        error: "Урок закрыт. Удаление оценки недоступно.",
+        isClosed: true
+      };
+    }
+    if (!db.grades) return { success: true };
+    const initialCount = db.grades.length;
+    db.grades = db.grades.filter(
+      (g) => !(g.lessonId === lessonId && g.studentId === studentId)
+    );
+    if (db.grades.length !== initialCount) {
+      saveDB(db);
+    }
+    return { success: true };
+  }
+  function setLessonAttendance({ lessonId, studentId, isAbsent }) {
+    if (!lessonId || !studentId) {
+      return { success: false, error: "Не указан урок или ученик" };
+    }
+    const db = getDB();
+    const lesson = (db.lessons || []).find((l) => l.id === lessonId);
+    if (!lesson) {
+      return { success: false, error: "Урок не найден" };
+    }
+    if (!db.attendance) db.attendance = [];
+    const existing = db.attendance.find(
+      (a) => a.lessonId === lessonId && a.studentId === studentId
+    );
+    if (existing && existing.value === "absent" && (existing.status === "confirmed" || existing.status === "excused" || existing.code === "УП" || existing.code === "Б")) {
+      return {
+        success: false,
+        error: "Причина подтверждена классным руководителем. Изменение отметки заблокировано.",
+        isLockedByHomeroom: true
+      };
+    }
+    if (isAbsent) {
+      if (db.grades) {
+        db.grades = db.grades.filter(
+          (g) => !(g.lessonId === lessonId && g.studentId === studentId)
+        );
+      }
+      if (existing) {
+        existing.value = "absent";
+        existing.status = "unconfirmed";
+        existing.code = "Н";
+        existing.reason = null;
+      } else {
+        db.attendance.push({
+          id: `att-${Date.now()}-${Math.floor(Math.random() * 1e3)}`,
+          lessonId,
+          studentId,
+          date: lesson.date,
+          value: "absent",
+          status: "unconfirmed",
+          code: "Н",
+          reason: null
+        });
+      }
+    } else {
+      if (existing) {
+        existing.value = "present";
+        existing.status = "present";
+        existing.code = "Был";
+        existing.reason = null;
+      }
+    }
+    if (db.meta) {
+      const q1LessonIds = new Set(
+        (db.lessons || []).filter((l) => l.periodId === "q1_2024").map((l) => l.id)
+      );
+      db.meta.unconfirmedAbsencesCount = db.attendance.filter(
+        (a) => a.status === "unconfirmed" && a.value === "absent" && q1LessonIds.has(a.lessonId)
+      ).length;
+    }
+    saveDB(db);
+    return { success: true };
+  }
+  function batchSaveLessonJournal({ lessonId, entries }) {
+    if (!lessonId || !Array.isArray(entries)) {
+      return { success: false, error: "Некорректные параметры" };
+    }
+    const errors = [];
+    entries.forEach((item) => {
+      if (item.isAbsent !== void 0) {
+        const attRes = setLessonAttendance({
+          lessonId,
+          studentId: item.studentId,
+          isAbsent: Boolean(item.isAbsent)
+        });
+        if (!attRes.success && attRes.error) {
+          errors.push(`${item.studentId}: ${attRes.error}`);
+        }
+      }
+      if (!item.isAbsent) {
+        const gradeRes = saveGradeRecord({
+          lessonId,
+          studentId: item.studentId,
+          value: item.grade
+        });
+        if (!gradeRes.success && gradeRes.error) {
+          errors.push(`${item.studentId}: ${gradeRes.error}`);
+        }
+      }
+    });
+    return { success: errors.length === 0, errors };
+  }
+
   // src/services/storage.js
   var STORAGE_KEYS = {
     DB: "classroom_crm_db",
@@ -26646,6 +26834,7 @@
       role: "teacher",
       shortName: "Смирнова М. В."
     };
+    const isSubjectTeacher = currentUser && currentUser.role === "subject_teacher";
     const selectedClassId = options.classId || "class-7b";
     const classObj = (db.classes || []).find(
       (c) => c.id === selectedClassId || c.name === selectedClassId
@@ -26653,6 +26842,25 @@
     const classDisplayName = classObj ? classObj.name : "7Б";
     const students = (db.students || []).slice().sort((a, b) => a.fullName.localeCompare(b.fullName, "ru"));
     const subjects = db.subjects || [];
+    const teacherObj = isSubjectTeacher ? (db.teachers || []).find(
+      (t) => t.accountUserId === currentUser.id || t.id === currentUser.teacherId || currentUser.personName && t.fullName === currentUser.personName || currentUser.shortName && t.shortName === currentUser.shortName
+    ) : null;
+    const teacherWorkload = teacherObj && Array.isArray(teacherObj.workload) ? teacherObj.workload.filter(
+      (w) => w.classId === selectedClassId || w.className === classDisplayName
+    ) : [];
+    const teacherSubjectIds = new Set(teacherWorkload.map((w) => w.subjectId));
+    const availableSubjectsForUser = isSubjectTeacher ? subjects.filter((s) => teacherSubjectIds.has(s.id) || teacherObj && s.teacher === teacherObj.shortName) : subjects;
+    let selectedSubjectId = options.subjectId;
+    if (isSubjectTeacher) {
+      const hasValidSubject = availableSubjectsForUser.some(
+        (s) => s.id === selectedSubjectId
+      );
+      if (!hasValidSubject) {
+        selectedSubjectId = availableSubjectsForUser[0] ? availableSubjectsForUser[0].id : "math";
+      }
+    } else {
+      selectedSubjectId = selectedSubjectId || "all";
+    }
     const allLessons = (db.lessons || []).slice().sort((a, b) => {
       if (a.date !== b.date) return a.date.localeCompare(b.date);
       return (a.lessonNumber || 0) - (b.lessonNumber || 0);
@@ -26660,7 +26868,6 @@
     const allGrades = db.grades || [];
     const allAttendance = db.attendance || [];
     const allComments = db.journalComments || [];
-    const selectedSubjectId = options.subjectId || "all";
     const selectedPeriodId = options.periodId || "q1_2024";
     const selectedWeek = options.weekId || "all";
     const filterStatus = options.filterStatus || (options.filterUnconfirmedOnly ? "unconfirmed" : options.filterOnlyAbsences ? "absences" : "all");
@@ -26793,78 +27000,144 @@
         const att = attendanceMap.get(`${l.id}_${s.id}`);
         const comments = commentsMap.get(`${l.id}_${s.id}`) || [];
         const hasComments = comments.length > 0;
-        let cellContent = '<span class="text-slate-300 font-light select-none">·</span>';
+        const isClosed = l.status === "closed";
+        let cellContent = "";
         let cellBg = "hover:bg-slate-50/80";
         let tooltip = `${s.fullName} · ${l.date} (${l.subjectName || ""})`;
-        if (att && att.value === "absent") {
-          const isExcused = att.status === "excused" || att.code === "УП" || att.code === "Б";
-          if (isExcused) {
-            cellContent = `
-            <span class="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200/80 shadow-2xs"
-                  title="Уважительная причина: ${att.reason || "Болезнь / справка"}">
-              Б
-            </span>
-          `;
-            tooltip += ` · Пропуск: уважительная причина (${att.reason || "Справка"})`;
-            cellBg = "bg-indigo-50/20 hover:bg-indigo-50/50";
-          } else {
-            cellContent = `
-            <span class="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-lg bg-rose-50 text-rose-700 border border-rose-300 shadow-2xs"
-                  title="Отсутствовал (причина не подтверждена, требуется справка)">
-              Н
-            </span>
-          `;
-            tooltip += ` · Пропуск: Не подтверждён (требуется справка)`;
-            cellBg = "bg-rose-50/30 hover:bg-rose-50/60";
-          }
+        const isAbsent = att && att.value === "absent";
+        const isExcused = isAbsent && (att.status === "excused" || att.status === "confirmed" || att.code === "УП" || att.code === "Б");
+        const isUnconfirmed = isAbsent && (att.status === "unconfirmed" || att.status === "unexcused" || att.code === "Н");
+        if (isExcused) {
+          tooltip += ` · Пропуск: уважительная причина (${att.reason || "Справка"})`;
+          cellBg = "bg-indigo-50/20 hover:bg-indigo-50/50";
+        } else if (isUnconfirmed) {
+          tooltip += ` · Пропуск: Не подтверждён (требуется справка)`;
+          cellBg = "bg-rose-50/30 hover:bg-rose-50/60";
         } else if (grade) {
-          let badgeClass = "bg-slate-100 text-slate-700 border-slate-200";
-          if (grade.value === 5)
-            badgeClass = "bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs";
-          else if (grade.value === 4)
-            badgeClass = "bg-blue-50 text-blue-800 border-blue-300 shadow-2xs";
-          else if (grade.value === 3)
-            badgeClass = "bg-amber-50 text-amber-800 border-amber-300 shadow-2xs";
-          else if (grade.value === 2)
-            badgeClass = "bg-rose-50 text-rose-800 border-rose-300 shadow-2xs";
-          cellContent = `
-          <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold rounded-lg border ${badgeClass}">
-            ${grade.value}
-          </span>
-        `;
           tooltip += ` · Оценка: ${grade.value} (Учитель: ${grade.teacher || "Предметник"})`;
         } else if (att && (att.value === "present" || att.code === "Был")) {
           tooltip += " · Присутствовал на уроке";
         }
-        const commentIndicator = hasComments ? `<span class="indicator-comment absolute top-1 right-1 w-2 h-2 rounded-full bg-brand-500 ring-2 ring-white" title="Комментарии: ${comments.length}"></span>` : "";
-        const isUnconfirmed = att && att.value === "absent" && (att.status === "unconfirmed" || att.status === "unexcused" || att.code === "Н");
+        if (isSubjectTeacher) {
+          if (isClosed) {
+            const badgeColor = isAbsent ? isExcused ? "bg-indigo-50 text-indigo-700 border-indigo-200" : "bg-rose-50 text-rose-700 border-rose-300" : grade ? "bg-slate-100 text-slate-800 border-slate-300" : "bg-slate-50 text-slate-400 border-slate-200";
+            cellContent = `
+                <div class="flex items-center justify-center space-x-1" title="Урок завершён. Изменение и удаление недоступно">
+                  <input type="text"
+                         class="grade-input w-7 h-7 text-center text-xs font-bold rounded-lg border border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed select-none pointer-events-none"
+                         value="${grade ? grade.value : ""}"
+                         disabled
+                         data-lesson-id="${l.id}"
+                         data-student-id="${s.id}"
+                         title="Урок завершён. Изменение и удаление оценок недоступно" />
+                  ${isAbsent ? `<span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1 text-[10px] font-bold rounded ${badgeColor}">${isExcused ? "Б" : "Н"}</span>` : ""}
+                </div>
+              `;
+          } else {
+            if (isAbsent) {
+              cellContent = `
+                  <div class="flex items-center justify-center space-x-1">
+                    <input type="text"
+                           class="grade-input w-7 h-7 text-center text-xs font-bold rounded-lg border border-slate-200 bg-slate-100 text-slate-500 hover:bg-slate-200/70 hover:border-slate-300 transition-colors cursor-pointer select-none"
+                           value=""
+                           disabled
+                           data-lesson-id="${l.id}"
+                           data-student-id="${s.id}"
+                           placeholder="—"
+                           title="Ученик отсутствовал. Кликните для открытия карточки записи" />
+                    <button type="button"
+                            class="btn-toggle-absence inline-flex items-center justify-center min-w-[22px] h-6 px-1 text-xs font-bold rounded-lg border shadow-2xs transition-all ${isExcused ? "bg-indigo-50 text-indigo-700 border-indigo-200 cursor-not-allowed" : "bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100 cursor-pointer"}"
+                            data-lesson-id="${l.id}"
+                            data-student-id="${s.id}"
+                            data-status="${isExcused ? "confirmed" : "unconfirmed"}"
+                            title="${isExcused ? "Причина подтверждена классным руководителем" : "Отсутствовал (нажмите, чтобы снять отметку)"}">
+                      ${isExcused ? "Б" : "Н"}
+                    </button>
+                  </div>
+                `;
+            } else {
+              cellContent = `
+                  <div class="flex items-center justify-center space-x-1">
+                    <input type="text"
+                           class="grade-input w-7 h-7 text-center text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-900 hover:border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none transition-all"
+                           value="${grade ? grade.value : ""}"
+                           maxlength="1"
+                           data-lesson-id="${l.id}"
+                           data-student-id="${s.id}"
+                           placeholder="—"
+                           title="Оценка (2, 3, 4, 5)" />
+                    <button type="button"
+                            class="btn-toggle-absence inline-flex items-center justify-center w-5 h-6 text-[10px] font-bold text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
+                            data-lesson-id="${l.id}"
+                            data-student-id="${s.id}"
+                            data-status="present"
+                            title="Отметить отсутствие ('Н')">
+                      Н
+                    </button>
+                  </div>
+                `;
+            }
+          }
+        } else {
+          if (isExcused) {
+            cellContent = `
+                <span class="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200/80 shadow-2xs"
+                      title="Уважительная причина: ${att.reason || "Болезнь / справка"}">
+                  Б
+                </span>
+              `;
+          } else if (isUnconfirmed) {
+            cellContent = `
+                <span class="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-lg bg-rose-50 text-rose-700 border border-rose-300 shadow-2xs"
+                      title="Отсутствовал (причина не подтверждена, требуется справка)">
+                  Н
+                </span>
+              `;
+          } else if (grade) {
+            let badgeClass = "bg-slate-100 text-slate-700 border-slate-200";
+            if (grade.value === 5)
+              badgeClass = "bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs";
+            else if (grade.value === 4)
+              badgeClass = "bg-blue-50 text-blue-800 border-blue-300 shadow-2xs";
+            else if (grade.value === 3)
+              badgeClass = "bg-amber-50 text-amber-800 border-amber-300 shadow-2xs";
+            else if (grade.value === 2)
+              badgeClass = "bg-rose-50 text-rose-800 border-rose-300 shadow-2xs";
+            cellContent = `
+                <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold rounded-lg border ${badgeClass}">
+                  ${grade.value}
+                </span>
+              `;
+          } else {
+            cellContent = '<span class="text-slate-300 font-light select-none">·</span>';
+          }
+        }
+        const commentIndicator = hasComments ? `<span class="indicator-comment absolute top-1 right-1 w-2 h-2 rounded-full bg-brand-500 ring-2 ring-white pointer-events-none" title="Комментарии: ${comments.length}"></span>` : "";
         const cellStatusClass = isUnconfirmed ? "journal-cell-unconfirmed" : "journal-cell-normal";
         return `
-        <td class="p-1 text-center border-b border-slate-200 border-r border-slate-100 relative cursor-pointer ${cellBg} transition-all cell-journal-entry ${cellStatusClass}"
-            data-lesson-id="${l.id}"
-            data-student-id="${s.id}"
-            title="${tooltip}">
-          <div class="flex items-center justify-center min-h-[30px] w-full">
-            ${cellContent}
-            ${commentIndicator}
-          </div>
-        </td>
-      `;
+            <td class="p-1 text-center border-b border-slate-200 border-r border-slate-100 relative cursor-pointer ${cellBg} transition-all cell-journal-entry ${cellStatusClass}"
+                data-lesson-id="${l.id}"
+                data-student-id="${s.id}"
+                title="${tooltip}">
+              <div class="flex items-center justify-center min-h-[30px] w-full">
+                ${cellContent}
+                ${commentIndicator}
+              </div>
+            </td>
+          `;
       }).join("");
       return `
       <tr class="hover:bg-slate-50/70 transition-colors group student-row" data-student-name="${s.fullName}">
         <td class="px-3.5 py-2.5 text-xs font-semibold text-slate-900 border-b border-slate-200 border-r border-slate-200 sticky left-0 bg-white group-hover:bg-slate-50 z-10 min-w-[210px] whitespace-nowrap shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
           <div class="flex items-center space-x-2.5">
             <span class="w-6 text-center text-slate-400 font-semibold flex-shrink-0">${idx + 1}</span>
-            <a href="/overview?student=${s.id}" class="hover:text-brand-600 transition-colors truncate font-semibold text-slate-900">
-              ${s.fullName}
-            </a>
+            ${isSubjectTeacher ? `<span class="truncate font-semibold text-slate-900">${s.fullName}</span>` : `<a href="/overview?student=${s.id}" class="hover:text-brand-600 transition-colors truncate font-semibold text-slate-900">${s.fullName}</a>`}
           </div>
         </td>
-        <td class="px-2.5 py-2.5 text-xs text-center border-b border-slate-200 border-r border-slate-200 bg-slate-50/50 font-bold whitespace-nowrap ${studentAvg !== "—" && parseFloat(studentAvg) < 3.5 ? "text-amber-700 bg-amber-50/30" : "text-slate-800"}">
+        <td class="student-avg-cell px-2.5 py-2.5 text-xs text-center border-b border-slate-200 border-r border-slate-200 bg-slate-50/50 font-bold whitespace-nowrap ${studentAvg !== "—" && parseFloat(studentAvg) < 3.5 ? "text-amber-700 bg-amber-50/30" : "text-slate-800"}" data-student-id="${s.id}">
           ${studentAvg}
         </td>
-        <td class="px-2 py-2.5 text-xs text-center border-b border-slate-200 border-r border-slate-200 bg-slate-50/30 whitespace-nowrap">
+        <td class="student-absences-cell px-2 py-2.5 text-xs text-center border-b border-slate-200 border-r border-slate-200 bg-slate-50/30 whitespace-nowrap" data-student-id="${s.id}">
           ${studentAbsences.length > 0 ? `<span class="inline-flex items-center space-x-1 text-[11px] font-semibold text-slate-700">
                  <span>${studentAbsences.length}</span>
                  ${studentUnconfirmed.length > 0 ? `<span class="text-rose-600 font-bold" title="Неподтверждённых: ${studentUnconfirmed.length}">(${studentUnconfirmed.length}Н)</span>` : ""}
@@ -26887,11 +27160,19 @@
         </div>
 
         <div class="flex items-center space-x-2.5">
-          <a href="/attendance"
-             class="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors shadow-xs">
-            ${renderIcon("check-square", "w-4 h-4 text-brand-500")}
-            <span>Подтверждение пропусков</span>
-          </a>
+          ${isSubjectTeacher ? `
+            <button type="button" id="btn-save-journal"
+                    class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer">
+              ${renderIcon("check-square", "w-4 h-4 text-white")}
+              <span>Сохранить</span>
+            </button>
+          ` : `
+            <a href="/attendance"
+               class="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors shadow-xs">
+              ${renderIcon("check-square", "w-4 h-4 text-brand-500")}
+              <span>Подтверждение пропусков</span>
+            </a>
+          `}
         </div>
       </div>
 
@@ -26907,15 +27188,15 @@
         <div class="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Выставлено оценок</div>
           <div class="flex items-baseline space-x-2">
-            <span class="text-2xl font-bold text-slate-900">${periodGrades.length}</span>
-            <span class="text-xs text-slate-500">${periodGrades.length % 10 === 1 && periodGrades.length % 100 !== 11 ? "оценка" : periodGrades.length % 10 >= 2 && periodGrades.length % 10 <= 4 && (periodGrades.length % 100 < 10 || periodGrades.length % 100 >= 20) ? "оценки" : "оценок"}</span>
+            <span id="stat-total-grades" class="text-2xl font-bold text-slate-900">${periodGrades.length}</span>
+            <span id="stat-total-grades-label" class="text-xs text-slate-500">${periodGrades.length % 10 === 1 && periodGrades.length % 100 !== 11 ? "оценка" : periodGrades.length % 10 >= 2 && periodGrades.length % 10 <= 4 && (periodGrades.length % 100 < 10 || periodGrades.length % 100 >= 20) ? "оценки" : "оценок"}</span>
           </div>
         </div>
 
         <div class="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Средний балл</div>
           <div class="flex items-baseline space-x-2">
-            <span class="text-2xl font-bold text-slate-900">${avgGrade}</span>
+            <span id="stat-avg-grade" class="text-2xl font-bold text-slate-900">${avgGrade}</span>
             <span class="text-xs text-emerald-600 font-medium">класс 7Б</span>
           </div>
         </div>
@@ -26923,8 +27204,10 @@
         <div class="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Пропуски за период</div>
           <div class="flex items-baseline space-x-2">
-            <span class="text-2xl font-bold text-slate-900">${periodAbsences.length}</span>
-            ${periodUnconfirmed.length > 0 ? `<span class="text-xs font-semibold text-rose-600" title="Требуют справку">${periodUnconfirmed.length} не подтверждено</span>` : `<span class="text-xs font-semibold text-emerald-600">Все подтверждены</span>`}
+            <span id="stat-total-absences" class="text-2xl font-bold text-slate-900">${periodAbsences.length}</span>
+            <span id="stat-unconfirmed-absences" class="text-xs font-semibold ${periodUnconfirmed.length > 0 ? "text-rose-600" : "text-emerald-600"}" title="Требуют справку">
+              ${periodUnconfirmed.length > 0 ? `${periodUnconfirmed.length} не подтверждено` : "Все подтверждены"}
+            </span>
           </div>
         </div>
       </div>
@@ -26934,17 +27217,31 @@
           <div>
             <label for="select-journal-subject" class="block text-xs font-semibold text-slate-700 mb-1.5">Предмет</label>
             <div class="relative">
-              <select id="select-journal-subject"
-                      class="w-full appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
-                <option value="all" ${selectedSubjectId === "all" ? "selected" : ""}>Все предметы (сводный журнал)</option>
-                ${subjects.map(
+              ${isSubjectTeacher ? `
+                <select id="select-journal-subject"
+                        ${availableSubjectsForUser.length <= 1 ? "disabled" : ""}
+                        class="w-full appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-slate-200 ${availableSubjectsForUser.length <= 1 ? "bg-slate-100 text-slate-600 cursor-not-allowed select-none" : "bg-white hover:border-slate-300 cursor-pointer text-slate-800"} text-xs font-medium focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all">
+                  ${availableSubjectsForUser.map(
       (sub) => `
-                  <option value="${sub.id}" ${selectedSubjectId === sub.id ? "selected" : ""}>
-                    ${sub.name} (${sub.teacher || "Учитель"})
-                  </option>
-                `
+                    <option value="${sub.id}" ${selectedSubjectId === sub.id || availableSubjectsForUser.length === 1 ? "selected" : ""}>
+                      ${sub.name} (${sub.teacher || "Учитель"})
+                    </option>
+                  `
     ).join("")}
-              </select>
+                </select>
+                ` : `
+                <select id="select-journal-subject"
+                        class="w-full appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                  <option value="all" ${selectedSubjectId === "all" ? "selected" : ""}>Все предметы (сводный журнал)</option>
+                  ${subjects.map(
+      (sub) => `
+                    <option value="${sub.id}" ${selectedSubjectId === sub.id ? "selected" : ""}>
+                      ${sub.name} (${sub.teacher || "Учитель"})
+                    </option>
+                  `
+    ).join("")}
+                </select>
+                `}
               <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                 ${renderIcon("chevron-down", "w-4 h-4")}
               </div>
@@ -27015,7 +27312,7 @@
                     class="inline-flex items-center h-9 space-x-2 px-3.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap shadow-2xs ${highlightUnconfirmed ? "bg-rose-50 text-rose-700 border-rose-300 ring-2 ring-rose-500/20" : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300"}">
               <span class="w-2 h-2 rounded-full ${highlightUnconfirmed ? "bg-rose-600 animate-pulse" : "bg-rose-400"}"></span>
               <span>Подсветить неподтверждённые («Н»)</span>
-              <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold ${highlightUnconfirmed ? "bg-rose-600 text-white" : "bg-rose-100 text-rose-700"}">
+              <span class="badge-unconfirmed-count px-1.5 py-0.5 rounded-full text-[10px] font-bold ${highlightUnconfirmed ? "bg-rose-600 text-white" : "bg-rose-100 text-rose-700"}">
                 ${periodUnconfirmed.length}
               </span>
             </button>
@@ -27179,7 +27476,7 @@
                 <p class="text-[11px] text-slate-500 mt-0.5">Ученик класса · Полная сводка успеваемости</p>
               </div>
             </div>
-            <a id="entry-modal-student-link" href="/overview" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-brand-50 text-brand-600 border border-slate-200 text-xs font-semibold transition-colors flex items-center space-x-1 flex-shrink-0 shadow-sm">
+            <a id="entry-modal-student-link" href="/overview" class="${isSubjectTeacher ? "hidden " : ""}px-2.5 py-1.5 rounded-xl bg-white hover:bg-brand-50 text-brand-600 border border-slate-200 text-xs font-semibold transition-colors flex items-center space-x-1 flex-shrink-0 shadow-sm">
               <span>Профиль</span>
               ${renderIcon("external-link", "w-3.5 h-3.5")}
             </a>
@@ -27350,6 +27647,7 @@
 
   // src/views/journal/listeners.js
   function setupJournalListeners(onNavigate) {
+    const currentUser = getCurrentUser();
     const selectSubject = document.getElementById("select-journal-subject");
     const selectWeek = document.getElementById("select-journal-week");
     const selectStatus = document.getElementById("select-journal-status");
@@ -27585,6 +27883,8 @@
       if (formComment) formComment.reset();
     }
     function openJournalConfirmModal() {
+      const isSubjTeacher = currentUser && currentUser.role === "subject_teacher";
+      if (isSubjTeacher) return;
       if (!modalConfirm || !activeAttendanceRecord) return;
       const currentDB = getDB();
       const student = (currentDB.students || []).find(
@@ -27699,8 +27999,14 @@
         const initials = parts.length >= 2 ? `${parts[0][0]}${parts[1][0]}` : student.fullName ? student.fullName.slice(0, 2) : "УЧ";
         elStudentAvatar.textContent = initials.toUpperCase();
       }
-      if (elStudentLink && student) {
-        elStudentLink.href = hrefFor(`/overview?student=${student.id}`);
+      if (elStudentLink) {
+        const isSubj = currentUser && currentUser.role === "subject_teacher";
+        if (isSubj) {
+          elStudentLink.classList.add("hidden");
+        } else if (student) {
+          elStudentLink.classList.remove("hidden");
+          elStudentLink.href = hrefFor(`/overview?student=${student.id}`);
+        }
       }
       if (elGrade) {
         if (grade) {
@@ -27776,7 +28082,14 @@
               elAbsenceDetails.classList.add("hidden");
               elAbsenceDetails.innerHTML = "";
             }
-            if (elConfirmBlock) elConfirmBlock.classList.remove("hidden");
+            if (elConfirmBlock) {
+              const isSubjTeacher = currentUser && currentUser.role === "subject_teacher";
+              if (isSubjTeacher) {
+                elConfirmBlock.classList.add("hidden");
+              } else {
+                elConfirmBlock.classList.remove("hidden");
+              }
+            }
           }
         } else {
           elAtt.innerHTML = `
@@ -27841,7 +28154,10 @@
       elList.scrollTop = elList.scrollHeight;
     }
     document.querySelectorAll(".cell-journal-entry").forEach((cell) => {
-      cell.addEventListener("click", () => {
+      cell.addEventListener("click", (e) => {
+        if (e.target.closest(".grade-input:not([disabled])") || e.target.closest(".btn-toggle-absence")) {
+          return;
+        }
         const lessonId = cell.getAttribute("data-lesson-id");
         const studentId = cell.getAttribute("data-student-id");
         if (lessonId && studentId) {
@@ -27890,12 +28206,15 @@
         if (!activeLessonId || !activeStudentId || !inputCommentText) return;
         const text = inputCommentText.value.trim();
         if (!text) return;
+        const currentUser2 = getCurrentUser();
+        const authorName = currentUser2 && (currentUser2.shortName || currentUser2.personName) ? currentUser2.shortName || currentUser2.personName : "Смирнова М. В.";
+        const authorRole = currentUser2 ? currentUser2.role : "teacher";
         const res = addJournalComment({
           lessonId: activeLessonId,
           studentId: activeStudentId,
           text,
-          author: "Смирнова М. В.",
-          role: "teacher"
+          author: authorName,
+          role: authorRole
         });
         if (res.success) {
           inputCommentText.value = "";
@@ -27921,6 +28240,278 @@
             indicator.title = `Комментарии: ${allCommentsForCell.length}`;
           }
         }
+      });
+    }
+    const localChanges = /* @__PURE__ */ new Map();
+    function recalculateJournalStats() {
+      let totalGradesSum = 0;
+      let totalGradesCount = 0;
+      let totalAbsencesCount = 0;
+      let totalUnconfirmedCount = 0;
+      const rows = document.querySelectorAll("tr.student-row");
+      rows.forEach((row) => {
+        let studentSum = 0;
+        let studentGradesCount = 0;
+        let studentAbsences = 0;
+        let studentUnconfirmed = 0;
+        row.querySelectorAll(".grade-input").forEach((input) => {
+          const valStr = input.value.trim();
+          if (valStr !== "") {
+            const val = parseInt(valStr, 10);
+            if (Number.isInteger(val) && val >= 2 && val <= 5 && !input.disabled) {
+              studentSum += val;
+              studentGradesCount++;
+            } else if (Number.isInteger(val) && val >= 2 && val <= 5 && input.disabled && !input.classList.contains("cursor-pointer")) {
+              studentSum += val;
+              studentGradesCount++;
+            }
+          }
+        });
+        row.querySelectorAll(".cell-journal-entry > div > span").forEach((span) => {
+          const text = span.textContent.trim();
+          const num = parseInt(text, 10);
+          if (Number.isInteger(num) && num >= 2 && num <= 5 && text.length === 1) {
+            studentSum += num;
+            studentGradesCount++;
+          }
+        });
+        row.querySelectorAll(".btn-toggle-absence").forEach((btn) => {
+          const status = btn.getAttribute("data-status");
+          if (status === "unconfirmed") {
+            studentAbsences++;
+            studentUnconfirmed++;
+          } else if (status === "confirmed") {
+            studentAbsences++;
+          }
+        });
+        row.querySelectorAll(".cell-journal-entry > div > span").forEach((span) => {
+          const text = span.textContent.trim();
+          if (text === "Н") {
+            studentAbsences++;
+            studentUnconfirmed++;
+          } else if (text === "Б" || text === "УП") {
+            studentAbsences++;
+          }
+        });
+        const avgCell = row.querySelector(".student-avg-cell");
+        if (avgCell) {
+          if (studentGradesCount > 0) {
+            const avg = (studentSum / studentGradesCount).toFixed(1);
+            avgCell.textContent = avg;
+            if (parseFloat(avg) < 3.5) {
+              avgCell.classList.add("text-amber-700", "bg-amber-50/30");
+              avgCell.classList.remove("text-slate-800");
+            } else {
+              avgCell.classList.remove("text-amber-700", "bg-amber-50/30");
+              avgCell.classList.add("text-slate-800");
+            }
+          } else {
+            avgCell.textContent = "—";
+            avgCell.classList.remove("text-amber-700", "bg-amber-50/30");
+            avgCell.classList.add("text-slate-800");
+          }
+        }
+        const absCell = row.querySelector(".student-absences-cell");
+        if (absCell) {
+          if (studentAbsences > 0) {
+            absCell.innerHTML = `
+            <span class="inline-flex items-center space-x-1 text-[11px] font-semibold text-slate-700">
+              <span>${studentAbsences}</span>
+              ${studentUnconfirmed > 0 ? `<span class="text-rose-600 font-bold" title="Неподтверждённых: ${studentUnconfirmed}">(${studentUnconfirmed}Н)</span>` : ""}
+            </span>
+          `;
+          } else {
+            absCell.innerHTML = '<span class="text-slate-300">0</span>';
+          }
+        }
+        totalGradesSum += studentSum;
+        totalGradesCount += studentGradesCount;
+        totalAbsencesCount += studentAbsences;
+        totalUnconfirmedCount += studentUnconfirmed;
+      });
+      const elTotalGrades = document.getElementById("stat-total-grades");
+      if (elTotalGrades) elTotalGrades.textContent = totalGradesCount;
+      const elTotalGradesLabel = document.getElementById("stat-total-grades-label");
+      if (elTotalGradesLabel) {
+        elTotalGradesLabel.textContent = totalGradesCount % 10 === 1 && totalGradesCount % 100 !== 11 ? "оценка" : totalGradesCount % 10 >= 2 && totalGradesCount % 10 <= 4 && (totalGradesCount % 100 < 10 || totalGradesCount % 100 >= 20) ? "оценки" : "оценок";
+      }
+      const elAvgGrade = document.getElementById("stat-avg-grade");
+      if (elAvgGrade) {
+        elAvgGrade.textContent = totalGradesCount > 0 ? (totalGradesSum / totalGradesCount).toFixed(1) : "—";
+      }
+      const elTotalAbsences = document.getElementById("stat-total-absences");
+      if (elTotalAbsences) elTotalAbsences.textContent = totalAbsencesCount;
+      const elUnconfirmedAbsences = document.getElementById("stat-unconfirmed-absences");
+      if (elUnconfirmedAbsences) {
+        if (totalUnconfirmedCount > 0) {
+          elUnconfirmedAbsences.textContent = `${totalUnconfirmedCount} не подтверждено`;
+          elUnconfirmedAbsences.className = "text-xs font-semibold text-rose-600";
+        } else {
+          elUnconfirmedAbsences.textContent = "Все подтверждены";
+          elUnconfirmedAbsences.className = "text-xs font-semibold text-emerald-600";
+        }
+      }
+      const elHighlightBadge = document.querySelector("#btn-toggle-highlight-unconfirmed .badge-unconfirmed-count");
+      if (elHighlightBadge) {
+        elHighlightBadge.textContent = totalUnconfirmedCount;
+      }
+    }
+    document.querySelectorAll(".grade-input").forEach((input) => {
+      input.addEventListener("click", (e) => {
+        if (input.disabled) return;
+        e.stopPropagation();
+      });
+      input.addEventListener("mousedown", (e) => {
+        if (input.disabled) return;
+        e.stopPropagation();
+      });
+      input.addEventListener("input", (e) => {
+        const lessonId = input.getAttribute("data-lesson-id");
+        const studentId = input.getAttribute("data-student-id");
+        const rawVal = input.value.trim();
+        if (input.disabled) return;
+        const key = `${lessonId}_${studentId}`;
+        const change = localChanges.get(key) || { lessonId, studentId };
+        if (rawVal === "") {
+          input.classList.remove("border-rose-400", "bg-rose-50", "text-rose-700");
+          input.classList.add("border-amber-300", "bg-amber-50/40");
+          change.grade = "";
+          localChanges.set(key, change);
+        } else {
+          const val = parseInt(rawVal, 10);
+          if (Number.isInteger(val) && val >= 2 && val <= 5 && rawVal.length === 1) {
+            input.classList.remove("border-rose-400", "bg-rose-50", "text-rose-700");
+            input.classList.add("border-emerald-400", "bg-emerald-50/40");
+            change.grade = val;
+            localChanges.set(key, change);
+          } else {
+            input.classList.remove("border-emerald-400", "bg-emerald-50/40");
+            input.classList.add("border-rose-400", "bg-rose-50", "text-rose-700");
+            change.grade = "invalid";
+            localChanges.set(key, change);
+          }
+        }
+        recalculateJournalStats();
+      });
+      input.addEventListener("blur", () => {
+        const rawVal = input.value.trim();
+        if (rawVal !== "") {
+          const val = parseInt(rawVal, 10);
+          if (!Number.isInteger(val) || val < 2 || val > 5) {
+            input.classList.add("ring-2", "ring-rose-500/20");
+          } else {
+            input.classList.remove("ring-2", "ring-rose-500/20");
+          }
+        }
+      });
+    });
+    document.querySelectorAll(".btn-toggle-absence").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const lessonId = btn.getAttribute("data-lesson-id");
+        const studentId = btn.getAttribute("data-student-id");
+        const currentStatus = btn.getAttribute("data-status");
+        const key = `${lessonId}_${studentId}`;
+        const input = document.querySelector(`.grade-input[data-lesson-id="${lessonId}"][data-student-id="${studentId}"]`);
+        if (currentStatus === "confirmed") {
+          alert("Причина подтверждена классным руководителем. Изменение отметки заблокировано.");
+          return;
+        }
+        const change = localChanges.get(key) || { lessonId, studentId };
+        if (currentStatus === "unconfirmed") {
+          btn.setAttribute("data-status", "present");
+          btn.className = "btn-toggle-absence inline-flex items-center justify-center w-5 h-6 text-[10px] font-bold text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer";
+          btn.title = "Отметить отсутствие ('Н')";
+          if (input) {
+            input.disabled = false;
+            input.placeholder = "—";
+            input.title = "Оценка (2, 3, 4, 5)";
+            input.classList.remove("bg-slate-100", "cursor-not-allowed", "pointer-events-none");
+            input.classList.add("bg-white", "text-slate-900");
+            input.focus();
+          }
+          change.isAbsent = false;
+          localChanges.set(key, change);
+        } else {
+          btn.setAttribute("data-status", "unconfirmed");
+          btn.className = "btn-toggle-absence inline-flex items-center justify-center min-w-[22px] h-6 px-1 text-xs font-bold rounded-lg border shadow-2xs transition-all bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100 cursor-pointer";
+          btn.title = "Отсутствовал (нажмите, чтобы снять отметку)";
+          if (input) {
+            input.value = "";
+            input.disabled = true;
+            input.placeholder = "—";
+            input.title = "Ученик отсутствовал";
+            input.classList.remove("bg-white", "text-slate-900", "border-emerald-400", "bg-emerald-50/40");
+            input.classList.add("bg-slate-100", "cursor-not-allowed");
+          }
+          change.isAbsent = true;
+          change.grade = "";
+          localChanges.set(key, change);
+        }
+        recalculateJournalStats();
+      });
+    });
+    const btnSaveJournal = document.getElementById("btn-save-journal");
+    if (btnSaveJournal) {
+      btnSaveJournal.addEventListener("click", () => {
+        let hasInvalidValues = false;
+        document.querySelectorAll(".grade-input:not([disabled])").forEach((input) => {
+          const val = input.value.trim();
+          if (val !== "") {
+            const num = parseInt(val, 10);
+            if (!Number.isInteger(num) || num < 2 || num > 5 || val.length !== 1) {
+              hasInvalidValues = true;
+              input.classList.add("border-rose-500", "ring-2", "ring-rose-500/30");
+            }
+          }
+        });
+        if (hasInvalidValues) {
+          alert("Недопустимое значение оценки! Разрешены только оценки от 2 до 5.");
+          return;
+        }
+        const db = getDB();
+        const currentUser2 = getCurrentUser();
+        const teacherName = currentUser2 && (currentUser2.shortName || currentUser2.personName) ? currentUser2.shortName || currentUser2.personName : "Козлов А. П.";
+        const lessonEntries = /* @__PURE__ */ new Map();
+        document.querySelectorAll(".grade-input").forEach((input) => {
+          const lessonId = input.getAttribute("data-lesson-id");
+          const studentId = input.getAttribute("data-student-id");
+          if (!lessonId || !studentId) return;
+          const lesson = (db.lessons || []).find((l) => l.id === lessonId);
+          if (lesson && lesson.status === "closed") return;
+          if (!lessonEntries.has(lessonId)) {
+            lessonEntries.set(lessonId, []);
+          }
+          const btnAbsence = document.querySelector(`.btn-toggle-absence[data-lesson-id="${lessonId}"][data-student-id="${studentId}"]`);
+          const isAbsent = btnAbsence && (btnAbsence.getAttribute("data-status") === "unconfirmed" || btnAbsence.getAttribute("data-status") === "confirmed");
+          const gradeVal = input.disabled ? "" : input.value.trim();
+          lessonEntries.get(lessonId).push({
+            studentId,
+            grade: gradeVal,
+            isAbsent: Boolean(isAbsent)
+          });
+        });
+        lessonEntries.forEach((entries, lessonId) => {
+          batchSaveLessonJournal({ lessonId, entries });
+        });
+        const prevHtml = btnSaveJournal.innerHTML;
+        btnSaveJournal.innerHTML = `
+        <span class="inline-flex items-center space-x-1.5 text-white font-bold">
+          <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+          </svg>
+          <span>Сохранено!</span>
+        </span>
+      `;
+        btnSaveJournal.classList.remove("bg-brand-500", "hover:bg-brand-600");
+        btnSaveJournal.classList.add("bg-emerald-600");
+        setTimeout(() => {
+          btnSaveJournal.innerHTML = prevHtml;
+          btnSaveJournal.classList.remove("bg-emerald-600");
+          btnSaveJournal.classList.add("bg-brand-500", "hover:bg-brand-600");
+        }, 2e3);
+        localChanges.clear();
+        recalculateJournalStats();
       });
     }
   }
