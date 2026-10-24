@@ -23648,11 +23648,6 @@
         <rect x="14" y="14" width="7" height="7"></rect>
         <rect x="3" y="14" width="7" height="7"></rect>
       </svg>`;
-      case "user":
-        return `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-        <circle cx="12" cy="7" r="4"></circle>
-      </svg>`;
       case "users":
         return `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -23735,6 +23730,13 @@
         <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
         <line x1="1" y1="1" x2="23" y2="23"></line>
       </svg>`;
+      case "alert-triangle":
+      case "alertTriangle":
+        return `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>`;
       case "alert":
         return `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon>
@@ -23754,6 +23756,7 @@
         <polyline points="20 6 9 17 4 12"></polyline>
       </svg>`;
       case "x":
+      case "close":
         return `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="18" y1="6" x2="6" y2="18"></line>
         <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -23772,6 +23775,7 @@
         <polyline points="10 9 9 9 8 9"></polyline>
       </svg>`;
       case "chevron-down":
+      case "chevronDown":
         return `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="6 9 12 15 18 9"></polyline>
       </svg>`;
@@ -28328,11 +28332,14 @@
                   <label for="lesson-class-select" class="block text-xs font-semibold text-slate-700 mb-1.5">Класс</label>
                   <div class="relative">
                     <select id="lesson-class-select" required
-                            class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
-                      <option value="class-7b" selected>7Б</option>
-                      <option value="class-8a">8А</option>
-                      <option value="class-8b">8Б</option>
-                      <option value="class-9v">9В</option>
+                            ${!currentUser || currentUser.role !== "admin" ? "disabled" : ""}
+                            class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all ${!currentUser || currentUser.role !== "admin" ? "bg-slate-100/90 text-slate-600 cursor-not-allowed" : "bg-white hover:border-slate-300 cursor-pointer"}">
+                      <option value="${allowedClassId}" selected>${classesMap.get(allowedClassId) || "7Б"}</option>
+                      ${currentUser && currentUser.role === "admin" ? `
+                        <option value="class-8a">8А</option>
+                        <option value="class-8b">8Б</option>
+                        <option value="class-9v">9В</option>
+                      ` : ""}
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                       ${renderIcon("chevronDown", "w-3.5 h-3.5")}
@@ -28485,33 +28492,80 @@
     }
     return { lessonNumber: 1, fullTime: timeStr || "08:30 - 09:15" };
   }
-  function checkRoomConflict({ date, time, room, excludeLessonId = null }) {
-    if (!date || !time || !room) {
+  function checkRoomConflict({
+    date,
+    time,
+    room,
+    classId = null,
+    teacher = null,
+    excludeLessonId = null
+  }) {
+    if (!date || !time) {
       return { hasConflict: false };
     }
     const db = getDB();
-    const normRoom = String(room).trim().toLowerCase();
+    const normRoom = room ? String(room).trim().toLowerCase() : "";
     const normTime = normalizeLessonTime(time);
-    const conflictingLesson = (db.lessons || []).find((l) => {
-      if (excludeLessonId && l.id === excludeLessonId) {
-        return false;
+    const targetClassId = classId || "class-7b";
+    const normTeacher = teacher ? String(teacher).trim().toLowerCase() : "";
+    function getClassLabel(rawClassId) {
+      const cid = rawClassId || "class-7b";
+      const foundClass = (db.classes || []).find(
+        (c) => c.id === cid || c.name === cid
+      );
+      return foundClass && foundClass.name || (cid === "class-7b" ? "7Б" : cid === "class-8a" ? "8А" : cid === "class-9v" ? "9В" : cid === "class-6v" ? "6В" : cid === "class-7v" ? "7В" : cid.replace(/^class-/, "").toUpperCase());
+    }
+    if (normRoom) {
+      const roomConflict = (db.lessons || []).find((l) => {
+        if (excludeLessonId && l.id === excludeLessonId) return false;
+        if (l.date !== date) return false;
+        if (normalizeLessonTime(l.time) !== normTime) return false;
+        const lessonRoom = String(l.room || "").trim().toLowerCase();
+        return lessonRoom === normRoom;
+      });
+      if (roomConflict) {
+        const classLabel = getClassLabel(roomConflict.classId);
+        return {
+          hasConflict: true,
+          conflictingLesson: roomConflict,
+          error: `Аудитория ${room} уже занята в это время (${roomConflict.subjectName || "занятие"}, класс ${classLabel})`
+        };
       }
-      if (l.date !== date) {
-        return false;
+    }
+    if (targetClassId) {
+      const classConflict = (db.lessons || []).find((l) => {
+        if (excludeLessonId && l.id === excludeLessonId) return false;
+        if (l.date !== date) return false;
+        if (normalizeLessonTime(l.time) !== normTime) return false;
+        const lClassId = l.classId || "class-7b";
+        return lClassId === targetClassId;
+      });
+      if (classConflict) {
+        const classLabel = getClassLabel(targetClassId);
+        return {
+          hasConflict: true,
+          conflictingLesson: classConflict,
+          error: `У класса ${classLabel} в это время уже запланирован урок: ${classConflict.subjectName || "занятие"} (${classConflict.room || ""})`
+        };
       }
-      if (normalizeLessonTime(l.time) !== normTime) {
-        return false;
+    }
+    if (normTeacher) {
+      const teacherConflict = (db.lessons || []).find((l) => {
+        if (excludeLessonId && l.id === excludeLessonId) return false;
+        if (l.date !== date) return false;
+        if (normalizeLessonTime(l.time) !== normTime) return false;
+        const lTeacher = String(l.teacher || "").trim().toLowerCase();
+        if (!lTeacher) return false;
+        return lTeacher === normTeacher || normTeacher.includes(lTeacher) || lTeacher.includes(normTeacher);
+      });
+      if (teacherConflict) {
+        const classLabel = getClassLabel(teacherConflict.classId);
+        return {
+          hasConflict: true,
+          conflictingLesson: teacherConflict,
+          error: `Преподаватель ${teacher} уже ведёт урок в это время (класс ${classLabel}, ${teacherConflict.subjectName || "занятие"})`
+        };
       }
-      const lessonRoom = String(l.room || "").trim().toLowerCase();
-      return lessonRoom === normRoom;
-    });
-    if (conflictingLesson) {
-      const classLabel = conflictingLesson.classId === "class-7b" ? "7Б" : conflictingLesson.classId === "class-8a" ? "8А" : conflictingLesson.classId === "class-9v" ? "9В" : conflictingLesson.classId || "другой класс";
-      return {
-        hasConflict: true,
-        conflictingLesson,
-        error: `Аудитория ${room} уже занята в это время (${conflictingLesson.subjectName || "занятие"}, класс ${classLabel})`
-      };
     }
     return { hasConflict: false };
   }
@@ -28572,10 +28626,14 @@
     const targetDate = updates.date || lesson.date;
     const targetTime = updates.time || lesson.time;
     const targetRoom = updates.room || lesson.room;
+    const targetClassId = updates.classId || lesson.classId;
+    const targetTeacher = updates.teacher || lesson.teacher;
     const conflict = checkRoomConflict({
       date: targetDate,
       time: targetTime,
       room: targetRoom,
+      classId: targetClassId,
+      teacher: targetTeacher,
       excludeLessonId: lessonId
     });
     if (conflict.hasConflict) {
@@ -28736,6 +28794,48 @@
     const selectTime = document.getElementById("lesson-time-select");
     const selectRoom = document.getElementById("lesson-room-select");
     const selectTeacher = document.getElementById("lesson-teacher-select");
+    function updateTeachersAndRoomForSubject(subjectName, preselectedTeacher = null, preselectedRoom = null) {
+      if (!selectTeacher) return;
+      const db = getDB();
+      const subjects = db.subjects || [];
+      const teachers = db.teachers || [];
+      const subj = subjects.find(
+        (s) => (s.name || s.title || "").toLowerCase() === (subjectName || "").toLowerCase() || (s.shortName || "").toLowerCase() === (subjectName || "").toLowerCase()
+      );
+      let allowedTeachers = [];
+      if (subj) {
+        allowedTeachers = teachers.filter((t) => {
+          if (Array.isArray(t.subjectIds) && t.subjectIds.includes(subj.id)) return true;
+          if (t.shortName && subj.teacher && t.shortName.trim() === subj.teacher.trim()) return true;
+          if (t.fullName && subj.teacher && t.fullName.includes(subj.teacher.split(" ")[0])) return true;
+          return false;
+        });
+      }
+      if (allowedTeachers.length === 0) {
+        if (subj && subj.teacher) {
+          allowedTeachers = [{ shortName: subj.teacher, fullName: subj.teacher }];
+        } else {
+          allowedTeachers = teachers;
+        }
+      }
+      selectTeacher.innerHTML = allowedTeachers.map(
+        (t) => `<option value="${t.shortName || t.fullName}">${t.shortName || t.fullName} (${subjectName})</option>`
+      ).join("");
+      if (preselectedTeacher && allowedTeachers.some((t) => (t.shortName || t.fullName) === preselectedTeacher)) {
+        selectTeacher.value = preselectedTeacher;
+      } else if (subj && subj.teacher) {
+        selectTeacher.value = subj.teacher;
+      } else if (allowedTeachers[0]) {
+        selectTeacher.value = allowedTeachers[0].shortName || allowedTeachers[0].fullName;
+      }
+      if (selectRoom) {
+        if (preselectedRoom) {
+          setSelectValueOrAdd(selectRoom, preselectedRoom);
+        } else if (subj && subj.room) {
+          setSelectValueOrAdd(selectRoom, subj.room);
+        }
+      }
+    }
     function openLessonModal(lessonData = null) {
       if (!modalLesson) return;
       if (conflictErrorBox) {
@@ -28745,6 +28845,7 @@
         if (modalTitle) modalTitle.textContent = "Редактировать занятие";
         if (lessonIdInput) lessonIdInput.value = lessonData.id || "";
         setSelectValueOrAdd(selectSubject, lessonData.subjectName);
+        updateTeachersAndRoomForSubject(lessonData.subjectName, lessonData.teacher, lessonData.room);
         setSelectValueOrAdd(selectClass, lessonData.classId || "class-7b");
         setSelectValueOrAdd(selectDate, lessonData.date);
         if (selectTime && lessonData.time) {
@@ -28764,6 +28865,7 @@
         if (modalTitle) modalTitle.textContent = "Добавить занятие";
         if (lessonIdInput) lessonIdInput.value = "";
         if (selectSubject) selectSubject.selectedIndex = 0;
+        updateTeachersAndRoomForSubject(selectSubject ? selectSubject.value : "");
         if (selectClass) selectClass.value = "class-7b";
         if (selectTime) selectTime.value = "11:30 - 12:15";
         if (selectRoom) selectRoom.value = "Каб. 401";
@@ -28785,6 +28887,11 @@
         selectElem.appendChild(opt);
       }
       selectElem.value = val;
+    }
+    if (selectSubject) {
+      selectSubject.addEventListener("change", (e) => {
+        updateTeachersAndRoomForSubject(e.target.value);
+      });
     }
     const btnAddLesson = document.getElementById("btn-add-lesson");
     if (btnAddLesson) {

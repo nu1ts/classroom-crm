@@ -135,6 +135,59 @@ export function setupScheduleListeners(navigate) {
   const selectRoom = document.getElementById("lesson-room-select");
   const selectTeacher = document.getElementById("lesson-teacher-select");
 
+  function updateTeachersAndRoomForSubject(subjectName, preselectedTeacher = null, preselectedRoom = null) {
+    if (!selectTeacher) return;
+    const db = getDB();
+    const subjects = db.subjects || [];
+    const teachers = db.teachers || [];
+
+    const subj = subjects.find(
+      (s) =>
+        (s.name || s.title || "").toLowerCase() === (subjectName || "").toLowerCase() ||
+        (s.shortName || "").toLowerCase() === (subjectName || "").toLowerCase()
+    );
+
+    let allowedTeachers = [];
+    if (subj) {
+      allowedTeachers = teachers.filter((t) => {
+        if (Array.isArray(t.subjectIds) && t.subjectIds.includes(subj.id)) return true;
+        if (t.shortName && subj.teacher && t.shortName.trim() === subj.teacher.trim()) return true;
+        if (t.fullName && subj.teacher && t.fullName.includes(subj.teacher.split(" ")[0])) return true;
+        return false;
+      });
+    }
+
+    if (allowedTeachers.length === 0) {
+      if (subj && subj.teacher) {
+        allowedTeachers = [{ shortName: subj.teacher, fullName: subj.teacher }];
+      } else {
+        allowedTeachers = teachers;
+      }
+    }
+
+    selectTeacher.innerHTML = allowedTeachers
+      .map(
+        (t) => `<option value="${t.shortName || t.fullName}">${t.shortName || t.fullName} (${subjectName})</option>`
+      )
+      .join("");
+
+    if (preselectedTeacher && allowedTeachers.some((t) => (t.shortName || t.fullName) === preselectedTeacher)) {
+      selectTeacher.value = preselectedTeacher;
+    } else if (subj && subj.teacher) {
+      selectTeacher.value = subj.teacher;
+    } else if (allowedTeachers[0]) {
+      selectTeacher.value = allowedTeachers[0].shortName || allowedTeachers[0].fullName;
+    }
+
+    if (selectRoom) {
+      if (preselectedRoom) {
+        setSelectValueOrAdd(selectRoom, preselectedRoom);
+      } else if (subj && subj.room) {
+        setSelectValueOrAdd(selectRoom, subj.room);
+      }
+    }
+  }
+
   function openLessonModal(lessonData = null) {
     if (!modalLesson) return;
 
@@ -147,6 +200,7 @@ export function setupScheduleListeners(navigate) {
       if (lessonIdInput) lessonIdInput.value = lessonData.id || "";
 
       setSelectValueOrAdd(selectSubject, lessonData.subjectName);
+      updateTeachersAndRoomForSubject(lessonData.subjectName, lessonData.teacher, lessonData.room);
       setSelectValueOrAdd(selectClass, lessonData.classId || "class-7b");
       setSelectValueOrAdd(selectDate, lessonData.date);
 
@@ -168,6 +222,7 @@ export function setupScheduleListeners(navigate) {
       if (modalTitle) modalTitle.textContent = "Добавить занятие";
       if (lessonIdInput) lessonIdInput.value = "";
       if (selectSubject) selectSubject.selectedIndex = 0;
+      updateTeachersAndRoomForSubject(selectSubject ? selectSubject.value : "");
       if (selectClass) selectClass.value = "class-7b";
       if (selectTime) selectTime.value = "11:30 - 12:15";
       if (selectRoom) selectRoom.value = "Каб. 401";
@@ -192,6 +247,12 @@ export function setupScheduleListeners(navigate) {
       selectElem.appendChild(opt);
     }
     selectElem.value = val;
+  }
+
+  if (selectSubject) {
+    selectSubject.addEventListener("change", (e) => {
+      updateTeachersAndRoomForSubject(e.target.value);
+    });
   }
 
   const btnAddLesson = document.getElementById("btn-add-lesson");

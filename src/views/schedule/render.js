@@ -437,11 +437,18 @@ export function renderScheduleView(options = {}) {
                   <label for="lesson-class-select" class="block text-xs font-semibold text-slate-700 mb-1.5">Класс</label>
                   <div class="relative">
                     <select id="lesson-class-select" required
-                            class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
-                      <option value="class-7b" selected>7Б</option>
-                      <option value="class-8a">8А</option>
-                      <option value="class-8b">8Б</option>
-                      <option value="class-9v">9В</option>
+                            ${!currentUser || currentUser.role !== "admin" ? "disabled" : ""}
+                            class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all ${!currentUser || currentUser.role !== "admin" ? "bg-slate-100/90 text-slate-600 cursor-not-allowed" : "bg-white hover:border-slate-300 cursor-pointer"}">
+                      <option value="${allowedClassId}" selected>${classesMap.get(allowedClassId) || "7Б"}</option>
+                      ${
+                        currentUser && currentUser.role === "admin"
+                          ? `
+                        <option value="class-8a">8А</option>
+                        <option value="class-8b">8Б</option>
+                        <option value="class-9v">9В</option>
+                      `
+                          : ""
+                      }
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
                       ${renderIcon("chevronDown", "w-3.5 h-3.5")}

@@ -587,7 +587,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(page.locator('#modal-lesson-form')).toBeVisible();
 
       await page.locator('#lesson-subject-select').selectOption('Физика');
-      await page.locator('#lesson-class-select').selectOption('class-7b');
+      if (await page.locator('#lesson-class-select').isEnabled()) { await page.locator('#lesson-class-select').selectOption('class-7b'); }
       await page.locator('#lesson-date-select').selectOption('2024-10-22');
       await page.locator('#lesson-time-select').selectOption('11:30 - 12:15');
       await page.locator('#lesson-room-select').selectOption('Каб. 401');
@@ -601,8 +601,10 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await page.locator('#btn-add-lesson').click();
       await expect(page.locator('#modal-lesson-form')).toBeVisible();
 
+      await expect(page.locator('#lesson-class-select')).toBeDisabled();
       await page.locator('#lesson-subject-select').selectOption('История');
-      await page.locator('#lesson-class-select').selectOption('class-8b');
+      await expect(page.locator('#lesson-teacher-select')).toContainText('Смирнова М. В.');
+      await expect(page.locator('#lesson-teacher-select')).not.toContainText('Козлов А. П.');
       await page.locator('#lesson-date-select').selectOption('2024-10-22');
       await page.locator('#lesson-time-select').selectOption('11:30 - 12:15');
       await page.locator('#lesson-room-select').selectOption('Каб. 401');
@@ -632,7 +634,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       if (await physicsCard.count() === 0) {
         await page.locator('#btn-add-lesson').click();
         await page.locator('#lesson-subject-select').selectOption('Физика');
-        await page.locator('#lesson-class-select').selectOption('class-7b');
+        if (await page.locator('#lesson-class-select').isEnabled()) { await page.locator('#lesson-class-select').selectOption('class-7b'); }
         await page.locator('#lesson-date-select').selectOption('2024-10-22');
         await page.locator('#lesson-time-select').selectOption('11:30 - 12:15');
         await page.locator('#lesson-room-select').selectOption('Каб. 401');
@@ -671,7 +673,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       if (await targetCard.count() === 0) {
         await page.locator('#btn-add-lesson').click();
         await page.locator('#lesson-subject-select').selectOption('Физика');
-        await page.locator('#lesson-class-select').selectOption('class-7b');
+        if (await page.locator('#lesson-class-select').isEnabled()) { await page.locator('#lesson-class-select').selectOption('class-7b'); }
         await page.locator('#lesson-date-select').selectOption('2024-10-22');
         await page.locator('#lesson-time-select').selectOption('12:35 - 13:20');
         await page.locator('#lesson-room-select').selectOption('Каб. 302');

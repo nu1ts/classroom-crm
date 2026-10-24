@@ -37,44 +37,105 @@ export function resolveLessonSlot(timeStr) {
  * @param {string} [params.excludeLessonId] ID урока, исключаемого из проверки (при редактировании)
  * @returns {{ hasConflict: boolean, conflictingLesson?: object, error?: string }}
  */
-export function checkRoomConflict({ date, time, room, excludeLessonId = null }) {
-  if (!date || !time || !room) {
+export function checkRoomConflict({
+  date,
+  time,
+  room,
+  classId = null,
+  teacher = null,
+  excludeLessonId = null,
+}) {
+  if (!date || !time) {
     return { hasConflict: false };
   }
 
   const db = getDB();
-  const normRoom = String(room).trim().toLowerCase();
+  const normRoom = room ? String(room).trim().toLowerCase() : "";
   const normTime = normalizeLessonTime(time);
+  const targetClassId = classId || "class-7b";
+  const normTeacher = teacher ? String(teacher).trim().toLowerCase() : "";
 
-  const conflictingLesson = (db.lessons || []).find((l) => {
-    if (excludeLessonId && l.id === excludeLessonId) {
-      return false;
-    }
-    if (l.date !== date) {
-      return false;
-    }
-    if (normalizeLessonTime(l.time) !== normTime) {
-      return false;
-    }
-    const lessonRoom = String(l.room || "").trim().toLowerCase();
-    return lessonRoom === normRoom;
-  });
-
-  if (conflictingLesson) {
-    const classLabel =
-      conflictingLesson.classId === "class-7b"
+  function getClassLabel(rawClassId) {
+    const cid = rawClassId || "class-7b";
+    const foundClass = (db.classes || []).find(
+      (c) => c.id === cid || c.name === cid
+    );
+    return (
+      (foundClass && foundClass.name) ||
+      (cid === "class-7b"
         ? "7Б"
-        : conflictingLesson.classId === "class-8a"
+        : cid === "class-8a"
         ? "8А"
-        : conflictingLesson.classId === "class-9v"
+        : cid === "class-9v"
         ? "9В"
-        : conflictingLesson.classId || "другой класс";
+        : cid === "class-6v"
+        ? "6В"
+        : cid === "class-7v"
+        ? "7В"
+        : cid.replace(/^class-/, "").toUpperCase())
+    );
+  }
 
-    return {
-      hasConflict: true,
-      conflictingLesson,
-      error: `Аудитория ${room} уже занята в это время (${conflictingLesson.subjectName || "занятие"}, класс ${classLabel})`,
-    };
+  if (normRoom) {
+    const roomConflict = (db.lessons || []).find((l) => {
+      if (excludeLessonId && l.id === excludeLessonId) return false;
+      if (l.date !== date) return false;
+      if (normalizeLessonTime(l.time) !== normTime) return false;
+      const lessonRoom = String(l.room || "").trim().toLowerCase();
+      return lessonRoom === normRoom;
+    });
+
+    if (roomConflict) {
+      const classLabel = getClassLabel(roomConflict.classId);
+      return {
+        hasConflict: true,
+        conflictingLesson: roomConflict,
+        error: `Аудитория ${room} уже занята в это время (${roomConflict.subjectName || "занятие"}, класс ${classLabel})`,
+      };
+    }
+  }
+
+  if (targetClassId) {
+    const classConflict = (db.lessons || []).find((l) => {
+      if (excludeLessonId && l.id === excludeLessonId) return false;
+      if (l.date !== date) return false;
+      if (normalizeLessonTime(l.time) !== normTime) return false;
+      const lClassId = l.classId || "class-7b";
+      return lClassId === targetClassId;
+    });
+
+    if (classConflict) {
+      const classLabel = getClassLabel(targetClassId);
+      return {
+        hasConflict: true,
+        conflictingLesson: classConflict,
+        error: `У класса ${classLabel} в это время уже запланирован урок: ${classConflict.subjectName || "занятие"} (${classConflict.room || ""})`,
+      };
+    }
+  }
+
+  if (normTeacher) {
+    const teacherConflict = (db.lessons || []).find((l) => {
+      if (excludeLessonId && l.id === excludeLessonId) return false;
+      if (l.date !== date) return false;
+      if (normalizeLessonTime(l.time) !== normTime) return false;
+      const lTeacher = String(l.teacher || "").trim().toLowerCase();
+      if (!lTeacher) return false;
+      return (
+        lTeacher === normTeacher ||
+        normTeacher.includes(lTeacher) ||
+        lTeacher.includes(normTeacher)
+      );
+    });
+
+    if (teacherConflict) {
+      const classLabel = getClassLabel(teacherConflict.classId);
+      return {
+        hasConflict: true,
+        conflictingLesson: teacherConflict,
+        error: `Преподаватель ${teacher} уже ведёт урок в это время (класс ${classLabel}, ${teacherConflict.subjectName || "занятие"})`,
+      };
+    }
   }
 
   return { hasConflict: false };
@@ -160,12 +221,15 @@ export function updateLesson(lessonId, updates = {}) {
   const targetDate = updates.date || lesson.date;
   const targetTime = updates.time || lesson.time;
   const targetRoom = updates.room || lesson.room;
+  const targetClassId = updates.classId || lesson.classId;
+  const targetTeacher = updates.teacher || lesson.teacher;
 
-  // Проверка конфликта аудитории, если меняется время, дата или аудитория
   const conflict = checkRoomConflict({
     date: targetDate,
     time: targetTime,
     room: targetRoom,
+    classId: targetClassId,
+    teacher: targetTeacher,
     excludeLessonId: lessonId,
   });
 
