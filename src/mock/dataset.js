@@ -113,11 +113,17 @@ export const INITIAL_DATASET = {
     }
   ],
   "classes": [
-    {"id": "class-6v", "name": "6В"},
-    {"id": "class-7b", "name": "7Б"},
-    {"id": "class-7v", "name": "7В"},
-    {"id": "class-8a", "name": "8А"},
-    {"id": "class-9v", "name": "9В"}
+    {"id": "class-6v", "name": "6В", "isActive": true},
+    {"id": "class-7b", "name": "7Б", "isActive": true},
+    {"id": "class-7v", "name": "7В", "isActive": true},
+    {"id": "class-8a", "name": "8А", "isActive": true},
+    {"id": "class-9v", "name": "9В", "isActive": true}
+  ],
+  "rooms": [
+    {"id": "room-204", "name": "Каб. 204", "isActive": true},
+    {"id": "room-302", "name": "Каб. 302", "isActive": true},
+    {"id": "room-401", "name": "Каб. 401", "isActive": true},
+    {"id": "room-gym", "name": "Спортзал", "isActive": true}
   ],
   "teachers": [
     {
@@ -282,7 +288,8 @@ export const INITIAL_DATASET = {
       "shortName": "Математика",
       "teacher": "Козлов А. П.",
       "room": "Каб. 204",
-      "targetAvg": 3.9
+      "targetAvg": 3.9,
+      "isActive": true
     },
     {
       "id": "rus",
@@ -290,7 +297,8 @@ export const INITIAL_DATASET = {
       "shortName": "Русский язык",
       "teacher": "Иванова Е. С.",
       "room": "Каб. 302",
-      "targetAvg": 4.3
+      "targetAvg": 4.3,
+      "isActive": true
     },
     {
       "id": "phys",
@@ -298,7 +306,8 @@ export const INITIAL_DATASET = {
       "shortName": "Физика",
       "teacher": "Дмитриев Д. К.",
       "room": "Каб. 401",
-      "targetAvg": 4.0
+      "targetAvg": 4.0,
+      "isActive": true
     },
     {
       "id": "hist",
@@ -306,7 +315,8 @@ export const INITIAL_DATASET = {
       "shortName": "История",
       "teacher": "Смирнова М. В.",
       "room": "Каб. 302",
-      "targetAvg": 4.4
+      "targetAvg": 4.4,
+      "isActive": true
     },
     {
       "id": "pe",
@@ -314,7 +324,8 @@ export const INITIAL_DATASET = {
       "shortName": "Физкультура",
       "teacher": "Новиков С. А.",
       "room": "Спортзал",
-      "targetAvg": 4.8
+      "targetAvg": 4.8,
+      "isActive": true
     },
     {
       "id": "talks",
@@ -322,7 +333,8 @@ export const INITIAL_DATASET = {
       "shortName": "Классный час",
       "teacher": "Смирнова М. В.",
       "room": "Каб. 302",
-      "targetAvg": null
+      "targetAvg": null,
+      "isActive": true
     }
   ],
   "students": [

@@ -232,6 +232,34 @@ export function getDB() {
         migrated = true;
       }
     });
+
+    if (!Array.isArray(parsed.rooms)) {
+      const roomNames = [
+        ...new Set(
+          (parsed.lessons || [])
+            .map((l) => l.room)
+            .filter((r) => r && String(r).trim()),
+        ),
+      ];
+      parsed.rooms = roomNames.map((name, index) => ({
+        id: `room-${index + 1}`,
+        name,
+        isActive: true,
+      }));
+      migrated = true;
+    }
+    (parsed.subjects || []).forEach((s) => {
+      if (typeof s.isActive !== "boolean") {
+        s.isActive = true;
+        migrated = true;
+      }
+    });
+    (parsed.classes || []).forEach((c) => {
+      if (typeof c.isActive !== "boolean") {
+        c.isActive = true;
+        migrated = true;
+      }
+    });
     if (migrated) {
       storage.setItem(STORAGE_KEYS.DB, JSON.stringify(parsed));
     }
@@ -594,7 +622,24 @@ export {
   updateTeacherCard,
   deleteTeacherCard,
 } from "./teachers.js";
-export { getKnownClassIds, getClassDirectory } from "./directories.js";
+export {
+  getKnownClassIds,
+  getClassDirectory,
+  getSubjectDirectory,
+  getRoomDirectory,
+  isSubjectInUse,
+  isClassInUse,
+  isRoomInUse,
+  addSubject,
+  updateSubject,
+  setSubjectActive,
+  addRoom,
+  updateRoom,
+  setRoomActive,
+  addSchoolClass,
+  updateSchoolClass,
+  setClassActive,
+} from "./directories.js";
 export {
   getWorkloadRows,
   addWorkloadRow,

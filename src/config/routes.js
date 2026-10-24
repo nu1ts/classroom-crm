@@ -61,6 +61,10 @@ import {
   setupTeachersListeners,
 } from "../views/teachers/index.js";
 import {
+  renderDirectoriesView,
+  setupDirectoriesListeners,
+} from "../views/directories/index.js";
+import {
   renderWorkloadView,
   setupWorkloadListeners,
 } from "../views/workload/index.js";
@@ -296,13 +300,14 @@ export const ROUTE_HANDLERS = {
   },
   "/directories": {
     title: "Справочники",
-    render: () =>
-      renderPlaceholderView(
-        "Справочники",
-        "Справочники предметов, кабинетов и причин отсутствия",
-        "/directories",
-      ),
-    setup: () => {},
+    render: () => {
+      const params = getRouteParams();
+      return renderDirectoriesView({
+        tab: params.get("tab") || "subjects",
+        search: params.get("search") || "",
+      });
+    },
+    setup: () => setupDirectoriesListeners(),
   },
   "/workload": {
     title: "Нагрузка",

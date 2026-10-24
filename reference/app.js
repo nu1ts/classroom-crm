@@ -115,11 +115,17 @@
       }
     ],
     "classes": [
-      { "id": "class-6v", "name": "6В" },
-      { "id": "class-7b", "name": "7Б" },
-      { "id": "class-7v", "name": "7В" },
-      { "id": "class-8a", "name": "8А" },
-      { "id": "class-9v", "name": "9В" }
+      { "id": "class-6v", "name": "6В", "isActive": true },
+      { "id": "class-7b", "name": "7Б", "isActive": true },
+      { "id": "class-7v", "name": "7В", "isActive": true },
+      { "id": "class-8a", "name": "8А", "isActive": true },
+      { "id": "class-9v", "name": "9В", "isActive": true }
+    ],
+    "rooms": [
+      { "id": "room-204", "name": "Каб. 204", "isActive": true },
+      { "id": "room-302", "name": "Каб. 302", "isActive": true },
+      { "id": "room-401", "name": "Каб. 401", "isActive": true },
+      { "id": "room-gym", "name": "Спортзал", "isActive": true }
     ],
     "teachers": [
       {
@@ -284,7 +290,8 @@
         "shortName": "Математика",
         "teacher": "Козлов А. П.",
         "room": "Каб. 204",
-        "targetAvg": 3.9
+        "targetAvg": 3.9,
+        "isActive": true
       },
       {
         "id": "rus",
@@ -292,7 +299,8 @@
         "shortName": "Русский язык",
         "teacher": "Иванова Е. С.",
         "room": "Каб. 302",
-        "targetAvg": 4.3
+        "targetAvg": 4.3,
+        "isActive": true
       },
       {
         "id": "phys",
@@ -300,7 +308,8 @@
         "shortName": "Физика",
         "teacher": "Дмитриев Д. К.",
         "room": "Каб. 401",
-        "targetAvg": 4
+        "targetAvg": 4,
+        "isActive": true
       },
       {
         "id": "hist",
@@ -308,7 +317,8 @@
         "shortName": "История",
         "teacher": "Смирнова М. В.",
         "room": "Каб. 302",
-        "targetAvg": 4.4
+        "targetAvg": 4.4,
+        "isActive": true
       },
       {
         "id": "pe",
@@ -316,7 +326,8 @@
         "shortName": "Физкультура",
         "teacher": "Новиков С. А.",
         "room": "Спортзал",
-        "targetAvg": 4.8
+        "targetAvg": 4.8,
+        "isActive": true
       },
       {
         "id": "talks",
@@ -324,7 +335,8 @@
         "shortName": "Классный час",
         "teacher": "Смирнова М. В.",
         "room": "Каб. 302",
-        "targetAvg": null
+        "targetAvg": null,
+        "isActive": true
       }
     ],
     "students": [
@@ -21512,6 +21524,182 @@
     const subject = (db.subjects || []).find((s) => s.id === subjectId);
     return subject ? subject.shortName || subject.name : subjectId;
   }
+  function getSubjectDirectory(db = getDB()) {
+    return (db.subjects || []).map((s) => ({
+      id: s.id,
+      name: s.name,
+      shortName: s.shortName || s.name,
+      room: s.room || "",
+      isActive: s.isActive !== false
+    }));
+  }
+  function getRoomDirectory(db = getDB()) {
+    return (db.rooms || []).map((r) => ({
+      id: r.id,
+      name: r.name,
+      isActive: r.isActive !== false
+    }));
+  }
+  function isSubjectInUse(subjectId, db = getDB()) {
+    const inLessons = (db.lessons || []).some((l) => l.subjectId === subjectId);
+    const inWorkload = (db.teachers || []).some(
+      (t) => (t.workload || []).some((w) => w.subjectId === subjectId)
+    );
+    const inCards = (db.teachers || []).some(
+      (t) => (t.subjectIds || []).includes(subjectId)
+    );
+    return inLessons || inWorkload || inCards;
+  }
+  function isClassInUse(classId, db = getDB()) {
+    const inStudents = (db.students || []).some((s) => s.classId === classId);
+    const inLessons = (db.lessons || []).some((l) => l.classId === classId);
+    const inWorkload = (db.teachers || []).some(
+      (t) => (t.workload || []).some((w) => w.classId === classId)
+    );
+    return inStudents || inLessons || inWorkload;
+  }
+  function isRoomInUse(roomName, db = getDB()) {
+    return (db.lessons || []).some((l) => l.room === roomName);
+  }
+  function nextDirectoryId(prefix, items) {
+    const used = new Set((items || []).map((i) => i.id));
+    let index = 1;
+    while (used.has(`${prefix}-new-${index}`)) index += 1;
+    return `${prefix}-new-${index}`;
+  }
+  function addSubject(data = {}) {
+    const name = (data.name || "").trim();
+    const shortName = (data.shortName || "").trim() || name;
+    if (!name) return { success: false, error: "Укажите название предмета" };
+    const db = getDB();
+    db.subjects = db.subjects || [];
+    const duplicate = db.subjects.some(
+      (s) => s.name.trim().toLowerCase() === name.toLowerCase()
+    );
+    if (duplicate)
+      return { success: false, error: "Предмет с таким названием уже есть" };
+    const subject = {
+      id: nextDirectoryId("subj", db.subjects),
+      name,
+      shortName,
+      teacher: "",
+      room: "",
+      targetAvg: null,
+      isActive: true
+    };
+    db.subjects.push(subject);
+    saveDB(db);
+    return { success: true, subject };
+  }
+  function updateSubject(subjectId, data = {}) {
+    const name = (data.name || "").trim();
+    const shortName = (data.shortName || "").trim() || name;
+    if (!name) return { success: false, error: "Укажите название предмета" };
+    const db = getDB();
+    const subject = (db.subjects || []).find((s) => s.id === subjectId);
+    if (!subject) return { success: false, error: "Предмет не найден" };
+    const duplicate = (db.subjects || []).some(
+      (s) => s.id !== subjectId && s.name.trim().toLowerCase() === name.toLowerCase()
+    );
+    if (duplicate)
+      return { success: false, error: "Предмет с таким названием уже есть" };
+    subject.name = name;
+    subject.shortName = shortName;
+    saveDB(db);
+    return { success: true, subject };
+  }
+  function setSubjectActive(subjectId, isActive) {
+    const db = getDB();
+    const subject = (db.subjects || []).find((s) => s.id === subjectId);
+    if (!subject) return { success: false, error: "Предмет не найден" };
+    subject.isActive = Boolean(isActive);
+    saveDB(db);
+    return { success: true, subject };
+  }
+  function addRoom(data = {}) {
+    const name = (data.name || "").trim();
+    if (!name) return { success: false, error: "Укажите название аудитории" };
+    const db = getDB();
+    db.rooms = db.rooms || [];
+    const duplicate = db.rooms.some(
+      (r) => r.name.trim().toLowerCase() === name.toLowerCase()
+    );
+    if (duplicate)
+      return { success: false, error: "Аудитория с таким названием уже есть" };
+    const room = {
+      id: nextDirectoryId("room", db.rooms),
+      name,
+      isActive: true
+    };
+    db.rooms.push(room);
+    saveDB(db);
+    return { success: true, room };
+  }
+  function updateRoom(roomId, data = {}) {
+    const name = (data.name || "").trim();
+    if (!name) return { success: false, error: "Укажите название аудитории" };
+    const db = getDB();
+    const room = (db.rooms || []).find((r) => r.id === roomId);
+    if (!room) return { success: false, error: "Аудитория не найдена" };
+    const duplicate = (db.rooms || []).some(
+      (r) => r.id !== roomId && r.name.trim().toLowerCase() === name.toLowerCase()
+    );
+    if (duplicate)
+      return { success: false, error: "Аудитория с таким названием уже есть" };
+    room.name = name;
+    saveDB(db);
+    return { success: true, room };
+  }
+  function setRoomActive(roomId, isActive) {
+    const db = getDB();
+    const room = (db.rooms || []).find((r) => r.id === roomId);
+    if (!room) return { success: false, error: "Аудитория не найдена" };
+    room.isActive = Boolean(isActive);
+    saveDB(db);
+    return { success: true, room };
+  }
+  function addSchoolClass(data = {}) {
+    const name = (data.name || "").trim();
+    if (!name) return { success: false, error: "Укажите название класса" };
+    const db = getDB();
+    db.classes = db.classes || [];
+    const duplicate = db.classes.some(
+      (c) => c.name.trim().toLowerCase() === name.toLowerCase()
+    );
+    if (duplicate)
+      return { success: false, error: "Класс с таким названием уже есть" };
+    const schoolClass = {
+      id: nextDirectoryId("class", db.classes),
+      name,
+      isActive: true
+    };
+    db.classes.push(schoolClass);
+    saveDB(db);
+    return { success: true, schoolClass };
+  }
+  function updateSchoolClass(classId, data = {}) {
+    const name = (data.name || "").trim();
+    if (!name) return { success: false, error: "Укажите название класса" };
+    const db = getDB();
+    const schoolClass = (db.classes || []).find((c) => c.id === classId);
+    if (!schoolClass) return { success: false, error: "Класс не найден" };
+    const duplicate = (db.classes || []).some(
+      (c) => c.id !== classId && c.name.trim().toLowerCase() === name.toLowerCase()
+    );
+    if (duplicate)
+      return { success: false, error: "Класс с таким названием уже есть" };
+    schoolClass.name = name;
+    saveDB(db);
+    return { success: true, schoolClass };
+  }
+  function setClassActive(classId, isActive) {
+    const db = getDB();
+    const schoolClass = (db.classes || []).find((c) => c.id === classId);
+    if (!schoolClass) return { success: false, error: "Класс не найден" };
+    schoolClass.isActive = Boolean(isActive);
+    saveDB(db);
+    return { success: true, schoolClass };
+  }
 
   // src/services/teachers.js
   function createTeacherCard(data = {}) {
@@ -22644,6 +22832,31 @@
       (parsed.users || []).forEach((u) => {
         if (!u.cardName && (u.role === "teacher" || u.role === "subject_teacher")) {
           u.cardName = u.shortName;
+          migrated = true;
+        }
+      });
+      if (!Array.isArray(parsed.rooms)) {
+        const roomNames = [
+          ...new Set(
+            (parsed.lessons || []).map((l) => l.room).filter((r) => r && String(r).trim())
+          )
+        ];
+        parsed.rooms = roomNames.map((name, index) => ({
+          id: `room-${index + 1}`,
+          name,
+          isActive: true
+        }));
+        migrated = true;
+      }
+      (parsed.subjects || []).forEach((s) => {
+        if (typeof s.isActive !== "boolean") {
+          s.isActive = true;
+          migrated = true;
+        }
+      });
+      (parsed.classes || []).forEach((c) => {
+        if (typeof c.isActive !== "boolean") {
+          c.isActive = true;
           migrated = true;
         }
       });
@@ -33117,7 +33330,7 @@
   }
   function teacherCardHtml(card) {
     const { teacher, account, workload, totalHours, classNames } = card;
-    const statusBadge = teacher.status === "active" ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700">Работает</span>` : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-200 text-slate-600">В архиве</span>`;
+    const statusBadge2 = teacher.status === "active" ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700">Работает</span>` : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-200 text-slate-600">В архиве</span>`;
     const accountBlock = account ? `<a href="/accounts?search=${encodeURIComponent(account.username)}" data-action="open-account" data-login="${escapeHtml2(account.username)}"
           class="group flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-brand-50/70 border border-brand-200/70 hover:bg-brand-50 hover:border-brand-300 transition-colors">
         <span class="min-w-0">
@@ -33152,7 +33365,7 @@
         <div class="min-w-0 flex-1">
           <div class="flex items-start justify-between gap-2">
             <h2 class="text-sm font-bold text-slate-900 leading-tight">${escapeHtml2(teacher.fullName)}</h2>
-            ${statusBadge}
+            ${statusBadge2}
           </div>
           <p class="text-[11px] text-slate-400 mt-0.5">${escapeHtml2(teacher.shortName)}</p>
           <div class="flex flex-wrap gap-1.5 mt-2">
@@ -33536,8 +33749,550 @@
     updateSubtitle();
   }
 
-  // src/views/workload/helpers.js
+  // src/views/directories/helpers.js
   function escapeHtml3(text) {
+    return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+  }
+  function getDirectoriesData(db = getDB()) {
+    const subjects = getSubjectDirectory(db).map((s) => ({
+      ...s,
+      inUse: isSubjectInUse(s.id, db)
+    }));
+    const rooms = getRoomDirectory(db).map((r) => ({
+      ...r,
+      inUse: isRoomInUse(r.name, db)
+    }));
+    const classes = (db.classes || []).map((c) => ({
+      id: c.id,
+      name: c.name,
+      isActive: c.isActive !== false
+    })).map((c) => ({
+      ...c,
+      inUse: isClassInUse(c.id, db)
+    })).sort((a, b) => a.name.localeCompare(b.name, "ru"));
+    return { subjects, rooms, classes };
+  }
+  function getDirectoryCounts(db = getDB()) {
+    return {
+      subjects: (db.subjects || []).length,
+      rooms: (db.rooms || []).length,
+      classes: (db.classes || []).length
+    };
+  }
+  function normalizeTab(tab) {
+    return ["subjects", "rooms", "classes"].includes(tab) ? tab : "subjects";
+  }
+
+  // src/views/directories/render.js
+  function tableHead(cols) {
+    return `
+    <thead>
+      <tr class="border-b border-slate-200/80">
+        ${cols.map(
+      (c, i) => `<th class="${i === cols.length - 1 ? "text-right" : "text-left"} text-[11px] font-bold uppercase tracking-wider text-slate-400 px-4 py-3 whitespace-nowrap">${escapeHtml3(c)}</th>`
+    ).join("")}
+      </tr>
+    </thead>`;
+  }
+  function statusBadge(isActive) {
+    return isActive ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700">Активна</span>` : `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-500">Деактивирована</span>`;
+  }
+  function usageBadge(inUse) {
+    return inUse ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-sky-50 text-sky-700">Есть связанные данные</span>` : `<span class="text-[11px] text-slate-400">—</span>`;
+  }
+  function directoryRow(item, tab) {
+    const dimmed = item.isActive ? "" : " text-slate-400";
+    const shortCell = tab === "subjects" ? `<td class="px-4 py-3 text-xs text-slate-600${dimmed}">${escapeHtml3(item.shortName || "—")}</td>` : "";
+    const toggleLabel = item.isActive ? "Деактивировать" : "Вернуть";
+    const toggleIcon = item.isActive ? "archive" : "rotate-ccw";
+    return `
+    <tr class="border-b border-slate-100 hover:bg-slate-50/60 transition-colors" data-row-id="${escapeHtml3(item.id)}">
+      <td class="px-4 py-3 text-xs font-semibold text-slate-800${dimmed}">${escapeHtml3(item.name)}</td>
+      ${shortCell}
+      <td class="px-4 py-3">${usageBadge(item.inUse)}</td>
+      <td class="px-4 py-3">${statusBadge(item.isActive)}</td>
+      <td class="px-4 py-3">
+        <div class="flex items-center justify-end gap-2">
+          <button type="button" data-action="edit-entry" data-tab="${tab}" data-id="${escapeHtml3(item.id)}"
+                  class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-brand-400 hover:text-brand-600 text-[11px] font-semibold text-slate-600 transition-colors cursor-pointer">
+            ${renderIcon("edit", "w-3.5 h-3.5")}
+            <span>Изменить</span>
+          </button>
+          <button type="button" data-action="toggle-entry" data-tab="${tab}" data-id="${escapeHtml3(item.id)}" data-active="${item.isActive ? "1" : "0"}"
+                  class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-slate-300 text-[11px] font-semibold text-slate-600 transition-colors cursor-pointer">
+            ${renderIcon(toggleIcon, "w-3.5 h-3.5")}
+            <span>${toggleLabel}</span>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }
+  function directoryTable({ tab, title, subtitle, cols, rows }) {
+    return `
+    <div class="bg-white rounded-2xl shadow-2xs border border-slate-200/80 overflow-hidden" data-tab-panel="${tab}">
+      <div class="px-5 pt-4 pb-3 border-b border-slate-100">
+        <h3 class="text-sm font-bold text-slate-900">${escapeHtml3(title)}</h3>
+        <p class="text-xs text-slate-500 mt-0.5">${escapeHtml3(subtitle)}</p>
+      </div>
+      ${rows.length ? `<table class="w-full">${tableHead([...cols, "Статус", "Действия"])}
+        <tbody>${rows.join("")}</tbody>
+      </table>` : `<div class="px-5 py-10 text-center text-xs text-slate-400">Записи не найдены</div>`}
+    </div>`;
+  }
+  function tabsHtml(activeTab, counts) {
+    const tabs = [
+      { key: "subjects", label: "Предметы" },
+      { key: "rooms", label: "Аудитории" },
+      { key: "classes", label: "Классы" }
+    ];
+    return `
+    <div class="flex flex-wrap items-center gap-2" role="tablist">
+      ${tabs.map(
+      (t) => `
+        <button type="button" role="tab" data-action="switch-tab" data-tab="${t.key}"
+                class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${activeTab === t.key ? "bg-brand-500 text-white shadow-2xs" : "bg-white text-slate-600 border border-slate-200/80 hover:border-brand-300 hover:text-brand-600"}">
+          <span>${escapeHtml3(t.label)}</span>
+          <span class="${activeTab === t.key ? "text-white/80" : "text-slate-400"}">${counts[t.key]}</span>
+        </button>`
+    ).join("")}
+      <a href="/school-year" class="inline-flex items-center space-x-1.5 ml-auto px-4 py-2 rounded-xl text-xs font-semibold bg-white text-slate-600 border border-slate-200/80 hover:border-brand-300 hover:text-brand-600 transition-colors">
+        ${renderIcon("calendar", "w-3.5 h-3.5")}
+        <span>Учебные годы и четверти</span>
+        ${renderIcon("arrow-right", "w-3.5 h-3.5")}
+      </a>
+    </div>`;
+  }
+  function renderDirectoriesPanel(tab, searchQuery = "") {
+    const query = (searchQuery || "").trim().toLowerCase();
+    const data = getDirectoriesData();
+    const visible = {
+      subjects: data.subjects.filter(
+        (s) => !query || s.name.toLowerCase().includes(query) || (s.shortName || "").toLowerCase().includes(query)
+      ),
+      rooms: data.rooms.filter(
+        (r) => !query || r.name.toLowerCase().includes(query)
+      ),
+      classes: data.classes.filter(
+        (c) => !query || c.name.toLowerCase().includes(query)
+      )
+    };
+    const panel = tab === "subjects" ? directoryTable({
+      tab,
+      title: "Школьные предметы",
+      subtitle: "Предметы используются в нагрузке, журналах и расписании. Деактивация не удаляет связанные данные.",
+      cols: ["Название", "Короткое название", "Данные"],
+      rows: visible.subjects.map((s) => directoryRow(s, tab))
+    }) : tab === "rooms" ? directoryTable({
+      tab,
+      title: "Аудитории",
+      subtitle: "Аудитории указываются в занятиях расписания. Деактивация не изменяет существующие занятия.",
+      cols: ["Название", "Данные"],
+      rows: visible.rooms.map((r) => directoryRow(r, tab))
+    }) : directoryTable({
+      tab,
+      title: "Классы школы",
+      subtitle: "Классы используются в нагрузке, журналах и списках учеников. Деактивация не удаляет связанные данные.",
+      cols: ["Название", "Данные"],
+      rows: visible.classes.map((c) => directoryRow(c, tab))
+    });
+    return panel;
+  }
+  function directoriesSubtitleText() {
+    const data = getDirectoriesData();
+    const totalAll = data.subjects.length + data.rooms.length + data.classes.length;
+    const totalActive = data.subjects.filter((s) => s.isActive).length + data.rooms.filter((r) => r.isActive).length + data.classes.filter((c) => c.isActive).length;
+    return `${totalAll} ${pluralWord(totalAll)} · ${totalActive} активных`;
+  }
+  function directoriesTabCounts() {
+    return getDirectoryCounts();
+  }
+  function renderDirectoriesView(options = {}) {
+    const tab = normalizeTab(options.tab);
+    const searchQuery = (options.search || "").trim().toLowerCase();
+    const data = getDirectoriesData();
+    const counts = {
+      subjects: data.subjects.length,
+      rooms: data.rooms.length,
+      classes: data.classes.length
+    };
+    const visible = {
+      subjects: data.subjects.filter(
+        (s) => !searchQuery || s.name.toLowerCase().includes(searchQuery) || (s.shortName || "").toLowerCase().includes(searchQuery)
+      ),
+      rooms: data.rooms.filter(
+        (r) => !searchQuery || r.name.toLowerCase().includes(searchQuery)
+      ),
+      classes: data.classes.filter(
+        (c) => !searchQuery || c.name.toLowerCase().includes(searchQuery)
+      )
+    };
+    const totalActive = data.subjects.filter((s) => s.isActive).length + data.rooms.filter((r) => r.isActive).length + data.classes.filter((c) => c.isActive).length;
+    const totalAll = counts.subjects + counts.rooms + counts.classes;
+    const addLabels = {
+      subjects: "Добавить предмет",
+      rooms: "Добавить аудиторию",
+      classes: "Добавить класс"
+    };
+    const panel = tab === "subjects" ? directoryTable({
+      tab,
+      title: "Школьные предметы",
+      subtitle: "Предметы используются в нагрузке, журналах и расписании. Деактивация не удаляет связанные данные.",
+      cols: ["Название", "Короткое название", "Данные"],
+      rows: visible.subjects.map((s) => directoryRow(s, tab))
+    }) : tab === "rooms" ? directoryTable({
+      tab,
+      title: "Аудитории",
+      subtitle: "Аудитории указываются в занятиях расписания. Деактивация не изменяет существующие занятия.",
+      cols: ["Название", "Данные"],
+      rows: visible.rooms.map((r) => directoryRow(r, tab))
+    }) : directoryTable({
+      tab,
+      title: "Классы школы",
+      subtitle: "Классы используются в нагрузке, журналах и списках учеников. Деактивация не удаляет связанные данные.",
+      cols: ["Название", "Данные"],
+      rows: visible.classes.map((c) => directoryRow(c, tab))
+    });
+    return `
+    <div id="directories-view" class="space-y-6 animate-fadeIn pb-12">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Справочники</h1>
+          <p class="text-sm font-medium text-slate-500 mt-1" id="directories-total-subtitle">
+            ${totalAll} ${escapeHtml3(pluralWord(totalAll))} · ${totalActive} активных
+          </p>
+        </div>
+        <div>
+          <button type="button" id="btn-open-create-entry"
+                  class="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-semibold text-xs transition-colors shadow-2xs cursor-pointer">
+            ${renderIcon("plus", "w-4 h-4")}
+            <span>${escapeHtml3(addLabels[tab])}</span>
+          </button>
+        </div>
+      </div>
+
+      ${tabsHtml(tab, counts)}
+
+      <div class="bg-white rounded-2xl p-4 shadow-2xs border border-slate-200/80 flex flex-col md:flex-row md:items-center gap-3">
+        <div class="relative min-w-[260px] flex-1 max-w-md">
+          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            ${renderIcon("search", "w-4 h-4")}
+          </div>
+          <input type="text" id="input-directories-search" value="${escapeHtml3(options.search || "")}"
+                 placeholder="Поиск по названию..."
+                 autocomplete="off"
+                 style="padding-left: 2.75rem; padding-right: 2.25rem;"
+                 class="w-full py-2.5 rounded-xl border border-slate-200/90 bg-slate-50/50 hover:bg-white focus:bg-white text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-2xs" />
+          <button type="button" id="btn-clear-directories-search" title="Очистить поиск"
+                  class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 ${options.search ? "" : "hidden"} cursor-pointer">
+            ${renderIcon("x", "w-3.5 h-3.5")}
+          </button>
+        </div>
+      </div>
+
+      <div id="directories-table-area">${panel}</div>
+
+      <div id="modal-directory-entry" class="fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+        <div id="modal-directory-entry-dialog" class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95">
+          <div class="flex items-center justify-between mb-1">
+            <h3 class="text-base font-bold text-slate-900" id="directory-modal-title">Добавить запись</h3>
+            <button type="button" data-action="close-directory-modal" title="Закрыть"
+                    class="text-slate-400 hover:text-slate-600 p-1 rounded-lg transition-colors cursor-pointer">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <p class="text-xs text-slate-500 mb-4" id="directory-modal-subtitle"></p>
+
+          <div class="space-y-3.5">
+            <div>
+              <label for="input-directory-name" class="block text-xs font-semibold text-slate-700 mb-1.5">Название</label>
+              <input type="text" id="input-directory-name" placeholder=""
+                     class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors placeholder:text-slate-400" />
+            </div>
+
+            <div id="directory-short-name-field">
+              <label for="input-directory-short-name" class="block text-xs font-semibold text-slate-700 mb-1.5">Короткое название</label>
+              <input type="text" id="input-directory-short-name" placeholder="Например: Математика"
+                     class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors placeholder:text-slate-400" />
+            </div>
+
+            <p class="text-[11px] text-rose-500 hidden" id="directory-modal-error"></p>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 mt-5">
+            <button type="button" data-action="close-directory-modal"
+                    class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-semibold text-slate-600 transition-colors cursor-pointer">
+              Отмена
+            </button>
+            <button type="button" id="btn-save-directory-entry"
+                    class="px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white text-xs font-semibold transition-colors shadow-2xs cursor-pointer">
+              Сохранить
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="directories-toast" class="fixed bottom-6 right-6 z-50 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none">
+        <div class="bg-slate-900 text-white rounded-2xl px-4 py-3 shadow-2xl flex items-center space-x-3 max-w-sm">
+          <span id="directories-toast-icon"></span>
+          <span class="text-xs font-medium" id="directories-toast-message"></span>
+        </div>
+      </div>
+    </div>`;
+  }
+  function pluralWord(count) {
+    const mod10 = count % 10;
+    const mod100 = count % 100;
+    if (mod10 === 1 && mod100 !== 11) return "запись";
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20))
+      return "записи";
+    return "записей";
+  }
+
+  // src/views/directories/listeners.js
+  var TAB_TITLES = {
+    subjects: "предмет",
+    rooms: "аудиторию",
+    classes: "класс"
+  };
+  var ADD_LABELS = {
+    subjects: "Добавить предмет",
+    rooms: "Добавить аудиторию",
+    classes: "Добавить класс"
+  };
+  function saveEntry(tab, id, data) {
+    if (tab === "subjects") {
+      return id ? updateSubject(id, data) : addSubject(data);
+    }
+    if (tab === "rooms") {
+      return id ? updateRoom(id, data) : addRoom(data);
+    }
+    return id ? updateSchoolClass(id, data) : addSchoolClass(data);
+  }
+  function toggleEntry(tab, id, isActive) {
+    if (tab === "subjects") return setSubjectActive(id, isActive);
+    if (tab === "rooms") return setRoomActive(id, isActive);
+    return setClassActive(id, isActive);
+  }
+  function setupDirectoriesListeners() {
+    const view = document.getElementById("directories-view");
+    if (!view) return;
+    const params = new URLSearchParams(window.location.search || "");
+    const state = {
+      tab: normalizeTab(params.get("tab")),
+      searchQuery: params.get("search") || ""
+    };
+    const tableArea = document.getElementById("directories-table-area");
+    const subtitle = document.getElementById("directories-total-subtitle");
+    const searchInput = document.getElementById("input-directories-search");
+    const clearSearch = document.getElementById("btn-clear-directories-search");
+    const addButton = document.getElementById("btn-open-create-entry");
+    const modal = document.getElementById("modal-directory-entry");
+    const modalDialog = document.getElementById("modal-directory-entry-dialog");
+    const modalTitle = document.getElementById("directory-modal-title");
+    const modalSubtitle = document.getElementById("directory-modal-subtitle");
+    const nameInput = document.getElementById("input-directory-name");
+    const shortNameField = document.getElementById("directory-short-name-field");
+    const shortNameInput = document.getElementById("input-directory-short-name");
+    const errorLine = document.getElementById("directory-modal-error");
+    const toast = document.getElementById("directories-toast");
+    const toastMessage = document.getElementById("directories-toast-message");
+    const toastIcon = document.getElementById("directories-toast-icon");
+    let modalMode = "add";
+    let modalId = "";
+    function syncRoute() {
+      const urlParams = new URLSearchParams();
+      if (state.tab !== "subjects") urlParams.set("tab", state.tab);
+      if (state.searchQuery) urlParams.set("search", state.searchQuery);
+      const queryStr = urlParams.toString();
+      replaceUrl(queryStr ? `/directories?${queryStr}` : "/directories");
+    }
+    function showToast2(message, isError = false) {
+      if (!toast || !toastMessage) return;
+      toastMessage.textContent = message;
+      if (toastIcon) {
+        toastIcon.innerHTML = isError ? renderIcon("alert", "w-4 h-4 text-rose-400") : renderIcon("check", "w-4 h-4 text-emerald-400");
+      }
+      toast.classList.remove("opacity-0", "translate-y-4", "pointer-events-none");
+      toast.classList.add("opacity-100", "translate-y-0", "pointer-events-auto");
+      setTimeout(() => {
+        toast.classList.remove(
+          "opacity-100",
+          "translate-y-0",
+          "pointer-events-auto"
+        );
+        toast.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
+      }, 3200);
+    }
+    function refreshTable() {
+      if (tableArea) {
+        tableArea.innerHTML = renderDirectoriesPanel(
+          state.tab,
+          state.searchQuery
+        );
+      }
+      if (subtitle) subtitle.textContent = directoriesSubtitleText();
+      const counts = directoriesTabCounts();
+      view.querySelectorAll("[data-action='switch-tab']").forEach((btn) => {
+        const badge = btn.querySelector("span:last-child");
+        if (badge) badge.textContent = counts[btn.dataset.tab];
+      });
+    }
+    function updateTabsActive() {
+      view.querySelectorAll("[data-action='switch-tab']").forEach((btn) => {
+        const isActive = btn.dataset.tab === state.tab;
+        btn.className = `inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${isActive ? "bg-brand-500 text-white shadow-2xs" : "bg-white text-slate-600 border border-slate-200/80 hover:border-brand-300 hover:text-brand-600"}`;
+        const badge = btn.querySelector("span:last-child");
+        if (badge) {
+          badge.className = isActive ? "text-white/80" : "text-slate-400";
+        }
+      });
+      if (addButton) {
+        addButton.querySelector("span").textContent = ADD_LABELS[state.tab];
+      }
+    }
+    function showModal(mode, entry = null) {
+      if (!modal || !modalDialog) return;
+      modalMode = mode;
+      modalId = entry ? entry.id : "";
+      const verb = mode === "add" ? "Добавить" : "Изменить";
+      modalTitle.textContent = `${verb} ${TAB_TITLES[state.tab]}`;
+      modalSubtitle.textContent = mode === "add" ? `Новая запись появится в справочнике и станет доступна для выбора в формах.` : `Изменения названия применяются во всех разделах, где используется запись.`;
+      nameInput.value = entry ? entry.name : "";
+      nameInput.placeholder = `Например: ${state.tab === "subjects" ? "Информатика" : state.tab === "rooms" ? "Каб. 105" : "5А"}`;
+      shortNameField.style.display = state.tab === "subjects" ? "" : "none";
+      shortNameInput.value = entry ? entry.shortName || "" : "";
+      errorLine.classList.add("hidden");
+      modal.classList.remove("opacity-0", "pointer-events-none");
+      modalDialog.classList.remove("scale-95");
+      setTimeout(() => nameInput.focus(), 50);
+    }
+    function hideModal() {
+      if (!modal || !modalDialog) return;
+      modal.classList.add("opacity-0", "pointer-events-none");
+      modalDialog.classList.add("scale-95");
+      modalMode = "add";
+      modalId = "";
+    }
+    function showError(message) {
+      errorLine.textContent = message;
+      errorLine.classList.remove("hidden");
+    }
+    function saveFromModal() {
+      const name = (nameInput.value || "").trim();
+      const shortName = (shortNameInput.value || "").trim();
+      const result = saveEntry(state.tab, modalId, { name, shortName });
+      if (!result.success) {
+        showError(result.error || "Не удалось сохранить запись");
+        return;
+      }
+      const wasAdding = modalMode === "add";
+      hideModal();
+      refreshTable();
+      showToast2(
+        wasAdding ? `Запись «${name}» добавлена в справочник` : `Запись «${name}» обновлена`
+      );
+    }
+    view.addEventListener("click", (event) => {
+      const actionEl = event.target.closest("[data-action]");
+      if (!actionEl) return;
+      const action = actionEl.dataset.action;
+      if (action === "switch-tab") {
+        state.tab = normalizeTab(actionEl.dataset.tab);
+        syncRoute();
+        updateTabsActive();
+        refreshTable();
+        return;
+      }
+      if (action === "open-entry-modal" || actionEl.id === "btn-open-create-entry") {
+        showModal("add");
+        return;
+      }
+      if (action === "edit-entry") {
+        const row = actionEl.closest("tr[data-row-id]");
+        if (!row) return;
+        const cells = row.querySelectorAll("td");
+        const entry = {
+          id: actionEl.dataset.id,
+          name: cells[0].textContent.trim(),
+          shortName: state.tab === "subjects" ? cells[1].textContent.trim() === "—" ? "" : cells[1].textContent.trim() : ""
+        };
+        showModal("edit", entry);
+        return;
+      }
+      if (action === "toggle-entry") {
+        const result = toggleEntry(
+          actionEl.dataset.tab,
+          actionEl.dataset.id,
+          actionEl.dataset.active !== "1"
+        );
+        if (!result.success) {
+          showToast2(result.error || "Не удалось изменить запись", true);
+          return;
+        }
+        refreshTable();
+        showToast2(
+          result.subject || result.room || result.schoolClass ? actionEl.dataset.active === "1" ? `Запись «${(result.subject || result.room || result.schoolClass).name}» деактивирована` : `Запись «${(result.subject || result.room || result.schoolClass).name}» снова активна` : "Состояние записи изменено"
+        );
+        return;
+      }
+      if (action === "close-directory-modal") {
+        hideModal();
+        return;
+      }
+    });
+    if (addButton) {
+      addButton.addEventListener("click", () => showModal("add"));
+    }
+    const saveButton = document.getElementById("btn-save-directory-entry");
+    if (saveButton) {
+      saveButton.addEventListener("click", saveFromModal);
+    }
+    [nameInput, shortNameInput].forEach((input) => {
+      if (input) {
+        input.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            saveFromModal();
+          }
+        });
+      }
+    });
+    if (modal) {
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) hideModal();
+      });
+    }
+    if (searchInput) {
+      searchInput.addEventListener("input", () => {
+        state.searchQuery = searchInput.value.trim();
+        if (clearSearch) {
+          clearSearch.classList.toggle("hidden", !state.searchQuery);
+        }
+        syncRoute();
+        refreshTable();
+      });
+    }
+    if (clearSearch) {
+      clearSearch.addEventListener("click", () => {
+        state.searchQuery = "";
+        if (searchInput) {
+          searchInput.value = "";
+          searchInput.focus();
+        }
+        clearSearch.classList.add("hidden");
+        syncRoute();
+        refreshTable();
+      });
+    }
+    view.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !modal.classList.contains("opacity-0")) {
+        hideModal();
+      }
+    });
+  }
+
+  // src/views/workload/helpers.js
+  function escapeHtml4(text) {
     return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
   function pluralizeRows(count) {
@@ -33622,7 +34377,7 @@
         <div class="flex items-center space-x-2.5">
           <span class="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-slate-100/90 text-slate-700 text-xs font-semibold border border-slate-200/80" id="badge-workload-academic-year">
             ${renderIcon("calendar", "w-3.5 h-3.5 text-slate-500")}
-            <span>${escapeHtml3(activeYear ? activeYear.name : "2024/2025")}</span>
+            <span>${escapeHtml4(activeYear ? activeYear.name : "2024/2025")}</span>
           </span>
           <button type="button" id="btn-open-add-workload"
                   class="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-semibold text-xs transition-colors shadow-2xs cursor-pointer">
@@ -33652,7 +34407,7 @@
           <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
             ${renderIcon("search", "w-4 h-4")}
           </div>
-          <input type="text" id="input-workload-search" value="${escapeHtml3(searchQuery)}"
+          <input type="text" id="input-workload-search" value="${escapeHtml4(searchQuery)}"
                  placeholder="Поиск по учителю или предмету..."
                  autocomplete="off"
                  style="padding-left: 2.75rem; padding-right: 2.25rem;"
@@ -33668,7 +34423,7 @@
                   style="padding-left: 0.875rem; padding-right: 2.25rem;"
                   class="appearance-none py-2.5 rounded-xl border border-slate-200/90 bg-white hover:border-slate-300 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all cursor-pointer md:w-52">
             <option value="all" ${filterSubject === "all" ? "selected" : ""}>Все предметы</option>
-            ${subjects.map((s) => `<option value="${escapeHtml3(s.id)}" ${filterSubject === s.id ? "selected" : ""}>${escapeHtml3(s.shortName || s.name)}</option>`).join("")}
+            ${subjects.map((s) => `<option value="${escapeHtml4(s.id)}" ${filterSubject === s.id ? "selected" : ""}>${escapeHtml4(s.shortName || s.name)}</option>`).join("")}
           </select>
           <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
             ${renderIcon("chevron-down", "w-4 h-4")}
@@ -33680,7 +34435,7 @@
                   style="padding-left: 0.875rem; padding-right: 2.25rem;"
                   class="appearance-none py-2.5 rounded-xl border border-slate-200/90 bg-white hover:border-slate-300 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all cursor-pointer md:w-40">
             <option value="all" ${filterClass === "all" ? "selected" : ""}>Все классы</option>
-            ${classes.map((c) => `<option value="${escapeHtml3(c.id)}" ${filterClass === c.id ? "selected" : ""}>${escapeHtml3(c.name)}</option>`).join("")}
+            ${classes.map((c) => `<option value="${escapeHtml4(c.id)}" ${filterClass === c.id ? "selected" : ""}>${escapeHtml4(c.name)}</option>`).join("")}
           </select>
           <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
             ${renderIcon("chevron-down", "w-4 h-4")}
@@ -33708,7 +34463,7 @@
                 <select id="select-workload-teacher"
                         class="appearance-none w-full px-3.5 py-2.5 pr-9 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors cursor-pointer">
                   <option value="">Выберите учителя</option>
-                  ${teachers.map((t) => `<option value="${escapeHtml3(t.id)}">${escapeHtml3(t.fullName)}</option>`).join("")}
+                  ${teachers.map((t) => `<option value="${escapeHtml4(t.id)}">${escapeHtml4(t.fullName)}</option>`).join("")}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
                   ${renderIcon("chevron-down", "w-4 h-4")}
@@ -33722,7 +34477,7 @@
                 <select id="select-workload-subject-modal"
                         class="appearance-none w-full px-3.5 py-2.5 pr-9 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors cursor-pointer">
                   <option value="">Выберите предмет</option>
-                  ${subjects.map((s) => `<option value="${escapeHtml3(s.id)}">${escapeHtml3(s.name)}</option>`).join("")}
+                  ${subjects.map((s) => `<option value="${escapeHtml4(s.id)}">${escapeHtml4(s.name)}</option>`).join("")}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
                   ${renderIcon("chevron-down", "w-4 h-4")}
@@ -33736,7 +34491,7 @@
                 <select id="select-workload-class-modal"
                         class="appearance-none w-full px-3.5 py-2.5 pr-9 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors cursor-pointer">
                   <option value="">Выберите класс</option>
-                  ${classes.map((c) => `<option value="${escapeHtml3(c.id)}">${escapeHtml3(c.name)}</option>`).join("")}
+                  ${classes.map((c) => `<option value="${escapeHtml4(c.id)}">${escapeHtml4(c.name)}</option>`).join("")}
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
                   ${renderIcon("chevron-down", "w-4 h-4")}
@@ -33783,19 +34538,19 @@
     }
     const bodyRows = rows.map(
       (row) => `
-    <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50/60 transition-colors" data-workload-row="${escapeHtml3(row.id)}">
+    <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50/60 transition-colors" data-workload-row="${escapeHtml4(row.id)}">
       <td class="py-3 pl-4 pr-3">
-        <div class="text-xs font-bold text-slate-900">${escapeHtml3(row.teacherName)}</div>
-        <div class="text-[11px] text-slate-400 mt-0.5">${escapeHtml3(row.teacherShortName)}</div>
+        <div class="text-xs font-bold text-slate-900">${escapeHtml4(row.teacherName)}</div>
+        <div class="text-[11px] text-slate-400 mt-0.5">${escapeHtml4(row.teacherShortName)}</div>
       </td>
       <td class="px-3 py-3">
         <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-brand-50 text-brand-700 border border-brand-200/70">
-          ${escapeHtml3(row.subjectLabel)}
+          ${escapeHtml4(row.subjectLabel)}
         </span>
       </td>
       <td class="px-3 py-3">
         <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700">
-          ${escapeHtml3(row.className)}
+          ${escapeHtml4(row.className)}
         </span>
       </td>
       <td class="px-3 py-3 text-right">
@@ -33803,9 +34558,9 @@
         <span class="text-[11px] text-slate-400 ml-1">ч</span>
       </td>
       <td class="py-3 pl-3 pr-4 text-right whitespace-nowrap">
-        <button type="button" data-action="edit-workload" data-row-id="${escapeHtml3(row.id)}"
+        <button type="button" data-action="edit-workload" data-row-id="${escapeHtml4(row.id)}"
                 class="px-3 py-1.5 rounded-lg text-[11px] font-semibold border border-brand-200 text-brand-600 bg-brand-50 hover:bg-brand-100 transition-colors cursor-pointer">Изменить</button>
-        <button type="button" data-action="remove-workload" data-row-id="${escapeHtml3(row.id)}"
+        <button type="button" data-action="remove-workload" data-row-id="${escapeHtml4(row.id)}"
                 class="ml-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors cursor-pointer">Снять</button>
       </td>
     </tr>
@@ -34043,7 +34798,7 @@
   }
 
   // src/views/school-year/helpers.js
-  function escapeHtml4(text) {
+  function escapeHtml5(text) {
     return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
   function formatDateRu2(dateStr) {
@@ -34075,9 +34830,9 @@
       const isSelected = y.id === selectedYearId;
       const isActive = y.isActive;
       return `
-      <button type="button" data-year-tab="${escapeHtml4(y.id)}"
+      <button type="button" data-year-tab="${escapeHtml5(y.id)}"
               class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center space-x-1.5 ${isSelected ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"}">
-        <span>${escapeHtml4(y.name)}</span>
+        <span>${escapeHtml5(y.name)}</span>
         ${isActive ? `
           <span class="inline-block w-2 h-2 rounded-full bg-emerald-500" title="Текущий учебный год"></span>
         ` : ""}
@@ -34096,10 +34851,10 @@
     return quarters.map((q, idx) => {
       const isQActive = !!q.isActive;
       return `
-      <tr class="hover:bg-slate-50/60 transition-colors ${isQActive ? "bg-emerald-50/20" : ""}" data-quarter-row="${escapeHtml4(q.id)}">
+      <tr class="hover:bg-slate-50/60 transition-colors ${isQActive ? "bg-emerald-50/20" : ""}" data-quarter-row="${escapeHtml5(q.id)}">
         <td class="py-3.5 px-4 font-semibold text-slate-900 flex items-center space-x-2.5">
           <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">${idx + 1}</span>
-          <span class="quarter-name">${escapeHtml4(q.name)}</span>
+          <span class="quarter-name">${escapeHtml5(q.name)}</span>
         </td>
         <td class="py-3.5 px-4 font-medium text-slate-800 quarter-dates">
           ${formatDateRu2(q.startDate)} – ${formatDateRu2(q.endDate)}
@@ -34121,13 +34876,13 @@
         </td>
         <td class="py-3.5 px-4 text-right space-x-1">
           ${!isQActive ? `
-            <button type="button" data-action="set-active-quarter" data-quarter-id="${escapeHtml4(q.id)}"
+            <button type="button" data-action="set-active-quarter" data-quarter-id="${escapeHtml5(q.id)}"
                     class="px-2.5 py-1.5 rounded-lg border border-emerald-300 hover:bg-emerald-50 text-emerald-700 font-semibold text-xs transition-colors cursor-pointer">
               Сделать текущей
             </button>
           ` : ""}
-          <button type="button" data-action="edit-quarter" data-quarter-id="${escapeHtml4(q.id)}"
-                  data-quarter-name="${escapeHtml4(q.name)}" data-start-date="${escapeHtml4(q.startDate)}" data-end-date="${escapeHtml4(q.endDate)}"
+          <button type="button" data-action="edit-quarter" data-quarter-id="${escapeHtml5(q.id)}"
+                  data-quarter-name="${escapeHtml5(q.name)}" data-start-date="${escapeHtml5(q.startDate)}" data-end-date="${escapeHtml5(q.endDate)}"
                   class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-colors cursor-pointer inline-flex items-center space-x-1">
             ${renderIcon("edit", "w-3.5 h-3.5")}
             <span>Изменить даты</span>
@@ -34143,11 +34898,11 @@
     }
     return vacations.map(
       (v) => `
-    <div class="p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 hover:bg-slate-50 transition-colors flex flex-col justify-between" data-vacation-card="${escapeHtml4(v.id)}">
+    <div class="p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 hover:bg-slate-50 transition-colors flex flex-col justify-between" data-vacation-card="${escapeHtml5(v.id)}">
       <div>
         <div class="flex items-center justify-between">
-          <span class="font-bold text-slate-900 text-xs">${escapeHtml4(v.name)}</span>
-          <button type="button" data-action="delete-vacation" data-vacation-id="${escapeHtml4(v.id)}" data-vacation-name="${escapeHtml4(v.name)}"
+          <span class="font-bold text-slate-900 text-xs">${escapeHtml5(v.name)}</span>
+          <button type="button" data-action="delete-vacation" data-vacation-id="${escapeHtml5(v.id)}" data-vacation-name="${escapeHtml5(v.name)}"
                   class="text-slate-400 hover:text-rose-600 transition-colors p-1 cursor-pointer" title="Удалить">
             ${renderIcon("x", "w-3.5 h-3.5")}
           </button>
@@ -34160,8 +34915,8 @@
         </div>
       </div>
       <div class="mt-3 text-right">
-        <button type="button" data-action="edit-vacation" data-vacation-id="${escapeHtml4(v.id)}"
-                data-vacation-name="${escapeHtml4(v.name)}" data-start-date="${escapeHtml4(v.startDate)}" data-end-date="${escapeHtml4(v.endDate)}"
+        <button type="button" data-action="edit-vacation" data-vacation-id="${escapeHtml5(v.id)}"
+                data-vacation-name="${escapeHtml5(v.name)}" data-start-date="${escapeHtml5(v.startDate)}" data-end-date="${escapeHtml5(v.endDate)}"
                 class="text-xs font-semibold text-brand-600 hover:text-brand-700 cursor-pointer">
           Редактировать
         </button>
@@ -34187,7 +34942,7 @@
       meta.demoToday || "2024-10-28"
     );
     return `
-    <div id="school-year-view" class="space-y-6 animate-fadeIn pb-12 max-w-7xl mx-auto" data-selected-year-id="${escapeHtml4(currentYear ? currentYear.id : "")}">
+    <div id="school-year-view" class="space-y-6 animate-fadeIn pb-12 max-w-7xl mx-auto" data-selected-year-id="${escapeHtml5(currentYear ? currentYear.id : "")}">
       
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -34216,7 +34971,7 @@
           </div>
           <div class="mt-2.5">
             <div class="text-xl font-bold text-slate-900 tracking-tight" id="kpi-active-year-name">
-              ${escapeHtml4(activeYear ? activeYear.name : "Не выбран")}
+              ${escapeHtml5(activeYear ? activeYear.name : "Не выбран")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-active-year-dates">
               ${activeYear ? `${formatDateRu2(activeYear.startDate)} – ${formatDateRu2(activeYear.endDate)}` : "—"}
@@ -34233,7 +34988,7 @@
           </div>
           <div class="mt-2.5">
             <div class="text-xl font-bold text-slate-900 tracking-tight" id="kpi-active-quarter-name">
-              ${escapeHtml4(activePeriod.name || "I четверть")}
+              ${escapeHtml5(activePeriod.name || "I четверть")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-active-quarter-dates">
               ${formatDateRu2(activePeriod.startDate)} – ${formatDateRu2(activePeriod.endDate)}
@@ -34248,7 +35003,7 @@
           </div>
           <div class="mt-2.5">
             <div class="text-xl font-bold text-slate-900 tracking-tight" id="kpi-upcoming-vacation-name">
-              ${escapeHtml4(upcomingVacation ? upcomingVacation.name : "Каникулы не запланированы")}
+              ${escapeHtml5(upcomingVacation ? upcomingVacation.name : "Каникулы не запланированы")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-upcoming-vacation-dates">
               ${upcomingVacation ? `${formatDateRu2(upcomingVacation.startDate)} – ${formatDateRu2(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—"}
@@ -34268,7 +35023,7 @@
 
           <div class="flex items-center space-x-2" id="year-actions-container">
             ${currentYear ? `
-              <button type="button" id="btn-open-edit-year" data-year-id="${escapeHtml4(currentYear.id)}" data-year-name="${escapeHtml4(currentYear.name)}" data-year-start="${escapeHtml4(currentYear.startDate)}" data-year-end="${escapeHtml4(currentYear.endDate)}"
+              <button type="button" id="btn-open-edit-year" data-year-id="${escapeHtml5(currentYear.id)}" data-year-name="${escapeHtml5(currentYear.name)}" data-year-start="${escapeHtml5(currentYear.startDate)}" data-year-end="${escapeHtml5(currentYear.endDate)}"
                       class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center space-x-1"
                       title="Редактировать параметры года">
                 ${renderIcon("edit", "w-3.5 h-3.5")}
@@ -34276,12 +35031,12 @@
               </button>
             ` : ""}
             ${currentYear && !currentYear.isActive ? `
-              <button type="button" id="btn-set-active-year" data-year-id="${escapeHtml4(currentYear.id)}"
+              <button type="button" id="btn-set-active-year" data-year-id="${escapeHtml5(currentYear.id)}"
                       class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer inline-flex items-center space-x-1">
                 ${renderIcon("check", "w-3.5 h-3.5")}
                 <span>Сделать текущим годом</span>
               </button>
-              <button type="button" id="btn-delete-year" data-year-id="${escapeHtml4(currentYear.id)}" data-year-name="${escapeHtml4(currentYear.name)}"
+              <button type="button" id="btn-delete-year" data-year-id="${escapeHtml5(currentYear.id)}" data-year-name="${escapeHtml5(currentYear.name)}"
                       class="px-2.5 py-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center space-x-1"
                       title="Удалить учебный год">
                 ${renderIcon("trash", "w-3.5 h-3.5")}
@@ -34650,7 +35405,7 @@
       const actionsContainer = document.getElementById("year-actions-container");
       if (actionsContainer && currentYear) {
         const editBtnHtml = `
-        <button type="button" id="btn-open-edit-year" data-year-id="${escapeHtml4(currentYear.id)}" data-year-name="${escapeHtml4(currentYear.name)}" data-year-start="${escapeHtml4(currentYear.startDate)}" data-year-end="${escapeHtml4(currentYear.endDate)}"
+        <button type="button" id="btn-open-edit-year" data-year-id="${escapeHtml5(currentYear.id)}" data-year-name="${escapeHtml5(currentYear.name)}" data-year-start="${escapeHtml5(currentYear.startDate)}" data-year-end="${escapeHtml5(currentYear.endDate)}"
                 class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center space-x-1"
                 title="Редактировать параметры года">
           ${renderIcon("edit", "w-3.5 h-3.5")}
@@ -34660,12 +35415,12 @@
         if (!currentYear.isActive) {
           actionsContainer.innerHTML = `
           ${editBtnHtml}
-          <button type="button" id="btn-set-active-year" data-year-id="${escapeHtml4(currentYear.id)}"
+          <button type="button" id="btn-set-active-year" data-year-id="${escapeHtml5(currentYear.id)}"
                   class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer inline-flex items-center space-x-1">
             ${renderIcon("check", "w-3.5 h-3.5")}
             <span>Сделать текущим годом</span>
           </button>
-          <button type="button" id="btn-delete-year" data-year-id="${escapeHtml4(currentYear.id)}" data-year-name="${escapeHtml4(currentYear.name)}"
+          <button type="button" id="btn-delete-year" data-year-id="${escapeHtml5(currentYear.id)}" data-year-name="${escapeHtml5(currentYear.name)}"
                   class="px-2.5 py-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center space-x-1"
                   title="Удалить учебный год">
             ${renderIcon("trash", "w-3.5 h-3.5")}
@@ -35181,13 +35936,14 @@
     },
     "/directories": {
       title: "Справочники",
-      render: () => renderPlaceholderView(
-        "Справочники",
-        "Справочники предметов, кабинетов и причин отсутствия",
-        "/directories"
-      ),
-      setup: () => {
-      }
+      render: () => {
+        const params = getRouteParams();
+        return renderDirectoriesView({
+          tab: params.get("tab") || "subjects",
+          search: params.get("search") || ""
+        });
+      },
+      setup: () => setupDirectoriesListeners()
     },
     "/workload": {
       title: "Нагрузка",
