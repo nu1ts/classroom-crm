@@ -1,4 +1,5 @@
 import { getCurrentUser, getDB } from "../../services/storage.js";
+import { renderIcon } from "../../components/icons.js";
 import { SCHEDULE_WEEKS, TIME_SLOTS, getWeekDays } from "./helpers.js";
 
 function getClassBadgeStyle(className) {
@@ -128,6 +129,14 @@ export function renderScheduleView(options = {}) {
               ${
                 !isSubjectTeacher
                   ? `<span id="schedule-class-badge" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">Класс ${classesMap.get(allowedClassId) || "7Б"}</span>`
+                  : ""
+              }
+              ${
+                isStudent || isParent
+                  ? `<span id="badge-readonly" class="badge-read-only inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                      ${renderIcon("eye", "w-3 h-3 text-slate-500")}
+                      Только для просмотра
+                    </span>`
                   : ""
               }
             </div>
