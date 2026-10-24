@@ -29447,6 +29447,7 @@
     return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
   var currentAgendaItems = [];
+  var currentEditingAgendaIndex = -1;
   function getInitials(fullName) {
     if (!fullName) return "РД";
     const parts = fullName.trim().split(/\s+/);
@@ -29551,6 +29552,7 @@
       document.getElementById("meeting-time-input").value = "";
       document.getElementById("meeting-room-input").value = "Каб. 302";
       currentAgendaItems = [];
+      currentEditingAgendaIndex = -1;
       renderModalAgendaList();
       clearMeetingFormErrors();
       openModal("modal-meeting-form");
@@ -29568,6 +29570,7 @@
         document.getElementById("meeting-date-input").value = meeting.date || "";
         document.getElementById("meeting-time-input").value = meeting.time || "";
         document.getElementById("meeting-room-input").value = meeting.room || "Каб. 302";
+        currentEditingAgendaIndex = -1;
         currentAgendaItems = Array.isArray(meeting.agendaItems) ? [...meeting.agendaItems] : meeting.agenda ? [meeting.agenda] : [];
         renderModalAgendaList();
         clearMeetingFormErrors();
@@ -29638,24 +29641,68 @@
     const listContainer = document.getElementById("modal-agenda-items-container");
     if (listContainer) {
       listContainer.addEventListener("click", (e) => {
+        const textSpan = e.target.closest(".agenda-item-text");
+        if (textSpan) {
+          const idx = parseInt(textSpan.getAttribute("data-index"), 10);
+          if (!isNaN(idx)) {
+            currentEditingAgendaIndex = idx;
+            renderModalAgendaList();
+            return;
+          }
+        }
         const btn = e.target.closest("button");
         if (!btn) return;
         const action = btn.getAttribute("data-action");
         const index = parseInt(btn.getAttribute("data-index"), 10);
         if (isNaN(index)) return;
-        if (action === "up" && index > 0) {
+        if (action === "edit") {
+          currentEditingAgendaIndex = index;
+          renderModalAgendaList();
+        } else if (action === "save-edit") {
+          const input2 = listContainer.querySelector(`.agenda-edit-input[data-index="${index}"]`);
+          if (input2) {
+            const val = input2.value.trim();
+            if (val) currentAgendaItems[index] = val;
+          }
+          currentEditingAgendaIndex = -1;
+          renderModalAgendaList();
+        } else if (action === "cancel-edit") {
+          currentEditingAgendaIndex = -1;
+          renderModalAgendaList();
+        } else if (action === "up" && index > 0) {
+          currentEditingAgendaIndex = -1;
           const temp = currentAgendaItems[index - 1];
           currentAgendaItems[index - 1] = currentAgendaItems[index];
           currentAgendaItems[index] = temp;
           renderModalAgendaList();
         } else if (action === "down" && index < currentAgendaItems.length - 1) {
+          currentEditingAgendaIndex = -1;
           const temp = currentAgendaItems[index + 1];
           currentAgendaItems[index + 1] = currentAgendaItems[index];
           currentAgendaItems[index] = temp;
           renderModalAgendaList();
         } else if (action === "remove") {
+          currentEditingAgendaIndex = -1;
           currentAgendaItems.splice(index, 1);
           renderModalAgendaList();
+        }
+      });
+      listContainer.addEventListener("keydown", (e) => {
+        if (e.target.classList.contains("agenda-edit-input")) {
+          const index = parseInt(e.target.getAttribute("data-index"), 10);
+          if (e.key === "Enter") {
+            e.preventDefault();
+            const val = e.target.value.trim();
+            if (val && !isNaN(index)) {
+              currentAgendaItems[index] = val;
+            }
+            currentEditingAgendaIndex = -1;
+            renderModalAgendaList();
+          } else if (e.key === "Escape") {
+            e.preventDefault();
+            currentEditingAgendaIndex = -1;
+            renderModalAgendaList();
+          }
         }
       });
     }
@@ -29671,43 +29718,101 @@
     `;
       return;
     }
-    container.innerHTML = currentAgendaItems.map((item, idx) => `
-      <div class="agenda-item-row flex items-center justify-between gap-2.5 p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/60 text-xs">
-        <div class="flex items-center gap-2 flex-1 min-w-0">
-          <span class="font-bold text-slate-400 w-5 shrink-0 text-right">${idx + 1}.</span>
-          <span class="text-slate-800 truncate font-semibold">${item}</span>
+    container.innerHTML = currentAgendaItems.map((item, idx) => {
+      const isEditing = currentEditingAgendaIndex === idx;
+      if (isEditing) {
+        return `
+          <div class="agenda-item-row flex items-center justify-between gap-2 p-1.5 rounded-xl bg-brand-50/60 border border-brand-200 text-xs">
+            <span class="font-bold text-brand-600 w-5 shrink-0 text-right">${idx + 1}.</span>
+            <input
+              type="text"
+              class="agenda-edit-input flex-1 px-2.5 py-1 text-xs rounded-lg border border-brand-300 bg-white text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              value="${escapeHtml(item)}"
+              data-index="${idx}"
+            />
+            <div class="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                class="btn-agenda-save-edit p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
+                data-action="save-edit"
+                data-index="${idx}"
+                title="Сохранить (Enter)"
+              >
+                ${renderIcon("check", "w-4 h-4")}
+              </button>
+              <button
+                type="button"
+                class="btn-agenda-cancel-edit p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                data-action="cancel-edit"
+                data-index="${idx}"
+                title="Отмена (Esc)"
+              >
+                ${renderIcon("x", "w-4 h-4")}
+              </button>
+            </div>
+          </div>
+        `;
+      }
+      return `
+        <div class="agenda-item-row flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-50/80 border border-slate-200/60 text-xs hover:border-slate-300 transition-colors">
+          <div class="flex items-center gap-2 flex-1 min-w-0">
+            <span class="font-bold text-slate-400 w-5 shrink-0 text-right">${idx + 1}.</span>
+            <span
+              class="agenda-item-text text-slate-800 truncate font-semibold cursor-pointer hover:text-brand-600 transition-colors"
+              data-index="${idx}"
+              title="Нажмите для редактирования"
+            >
+              ${item}
+            </span>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              class="btn-agenda-edit p-1.5 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-colors cursor-pointer"
+              data-action="edit"
+              data-index="${idx}"
+              title="Редактировать пункт"
+            >
+              ${renderIcon("edit", "w-3.5 h-3.5")}
+            </button>
+            <button
+              type="button"
+              class="btn-agenda-up p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors ${idx === 0 ? "opacity-30 pointer-events-none" : "cursor-pointer"}"
+              data-action="up"
+              data-index="${idx}"
+              title="Переместить выше"
+            >
+              ${renderIcon("chevron-up", "w-4 h-4")}
+            </button>
+            <button
+              type="button"
+              class="btn-agenda-down p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors ${idx === currentAgendaItems.length - 1 ? "opacity-30 pointer-events-none" : "cursor-pointer"}"
+              data-action="down"
+              data-index="${idx}"
+              title="Переместить ниже"
+            >
+              ${renderIcon("chevron-down", "w-4 h-4")}
+            </button>
+            <button
+              type="button"
+              class="btn-agenda-remove p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+              data-action="remove"
+              data-index="${idx}"
+              title="Удалить"
+            >
+              ${renderIcon("trash", "w-4 h-4")}
+            </button>
+          </div>
         </div>
-        <div class="flex items-center gap-1 shrink-0">
-          <button
-            type="button"
-            class="btn-agenda-up p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors ${idx === 0 ? "opacity-30 pointer-events-none" : "cursor-pointer"}"
-            data-action="up"
-            data-index="${idx}"
-            title="Переместить выше"
-          >
-            ${renderIcon("chevron-up", "w-4 h-4")}
-          </button>
-          <button
-            type="button"
-            class="btn-agenda-down p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors ${idx === currentAgendaItems.length - 1 ? "opacity-30 pointer-events-none" : "cursor-pointer"}"
-            data-action="down"
-            data-index="${idx}"
-            title="Переместить ниже"
-          >
-            ${renderIcon("chevron-down", "w-4 h-4")}
-          </button>
-          <button
-            type="button"
-            class="btn-agenda-remove p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-            data-action="remove"
-            data-index="${idx}"
-            title="Удалить"
-          >
-            ${renderIcon("trash", "w-4 h-4")}
-          </button>
-        </div>
-      </div>
-    `).join("");
+      `;
+    }).join("");
+    if (currentEditingAgendaIndex !== -1) {
+      const editInput = container.querySelector(`.agenda-edit-input[data-index="${currentEditingAgendaIndex}"]`);
+      if (editInput) {
+        editInput.focus();
+        editInput.select();
+      }
+    }
   }
   function clearMeetingFormErrors() {
     ["error-meeting-title", "error-meeting-date", "error-meeting-time"].forEach((id) => {
