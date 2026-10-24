@@ -421,8 +421,22 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
 
   test.describe('Группа 3: Расписание уроков (TC-SCH-01 .. TC-SCH-11)', () => {
 
-    test.skip('TC-SCH-01: Расписание класса на неделю для классного руководителя', async () => {
-      // TODO: Раздел «Расписание» (#/schedule) находится в стадии разработки (заглушка)
+    test('TC-SCH-01: Расписание класса на неделю для классного руководителя', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      await loginPage.goto();
+      await loginPage.login('smirnova@school.ru', 'Test#2024');
+
+      await page.goto('schedule');
+      await expect(page.locator('#schedule-grid')).toBeVisible();
+
+      const cards = page.locator('.schedule-card[data-class-id="class-7b"]');
+      await expect(cards.first()).toBeVisible();
+      const count = await cards.count();
+      expect(count).toBeGreaterThan(0);
+
+      const firstCard = cards.first();
+      await expect(firstCard.locator('.lesson-teacher')).toBeVisible();
+      await expect(firstCard).toContainText('Каб.');
     });
 
     test('TC-SCH-02: Переключение недель', async ({ page }) => {
@@ -448,20 +462,91 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(page.locator('#schedule-week-title')).toContainText('21.10.2024');
     });
 
-    test.skip('TC-SCH-03: Расписание ребёнка в роли родителя', async () => {
-      // TODO: Раздел «Расписание» (#/schedule) находится в стадии разработки (заглушка)
+    test('TC-SCH-03: Расписание ребёнка в роли родителя', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      await loginPage.goto();
+      await loginPage.login('petrov@mail.ru', 'Test#2024');
+
+      await page.goto('schedule');
+      await expect(page.locator('#schedule-grid')).toBeVisible();
+
+      await expect(page.locator('.schedule-card[data-class-id="class-7b"]').first()).toBeVisible();
+      await expect(page.locator('#schedule-class-badge')).toContainText('7Б');
+
+      await expect(page.locator('#btn-add-lesson')).toHaveCount(0);
+      await expect(page.locator('button[data-action="edit-lesson"]')).toHaveCount(0);
+      await expect(page.locator('button[data-action="delete-lesson"]')).toHaveCount(0);
+      await expect(page.locator('input[type="text"]')).toHaveCount(0);
     });
 
-    test.skip('TC-SCH-04: Расписание в роли ученика и подсветка текущего дня', async () => {
-      // TODO: Раздел «Расписание» (#/schedule) находится в стадии разработки (заглушка)
+    test('TC-SCH-04: Расписание в роли ученика и подсветка текущего дня', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      await loginPage.goto();
+      await loginPage.login('petrova.a@school.ru', 'Test#2024');
+
+      await page.goto('schedule');
+      await expect(page.locator('#schedule-grid')).toBeVisible();
+
+      await expect(page.locator('th[data-today="true"]')).toBeVisible();
+
+      await expect(page.locator('#btn-add-lesson')).toHaveCount(0);
+      await expect(page.locator('button[data-action="edit-lesson"]')).toHaveCount(0);
+      await expect(page.locator('button[data-action="delete-lesson"]')).toHaveCount(0);
     });
 
-    test.skip('TC-SCH-05: Родитель и ученик не видят расписание чужого класса', async () => {
-      // TODO: Раздел «Расписание» (#/schedule) находится в стадии разработки (заглушка)
+    test('TC-SCH-05: Родитель и ученик не видят расписание чужого класса', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('petrov@mail.ru', 'Test#2024');
+
+      await page.goto('schedule?classId=class-8a');
+      await expect(page.locator('#schedule-forbidden-alert')).toBeVisible();
+      await expect(page.locator('#schedule-class-badge')).toContainText('7Б');
+      await expect(page.locator('.schedule-card[data-class-id="class-8a"]')).toHaveCount(0);
+      await expect(page.locator('.schedule-card[data-class-id="class-7b"]').first()).toBeVisible();
+
+      const navPage = new NavigationPage(page);
+      await navPage.logout();
+      await loginPage.goto();
+      await loginPage.login('petrova.a@school.ru', 'Test#2024');
+
+      await page.goto('schedule?classId=class-8a');
+      await expect(page.locator('#schedule-forbidden-alert')).toBeVisible();
+      await expect(page.locator('#schedule-class-badge')).toContainText('7Б');
+      await expect(page.locator('.schedule-card[data-class-id="class-8a"]')).toHaveCount(0);
+      await expect(page.locator('.schedule-card[data-class-id="class-7b"]').first()).toBeVisible();
     });
 
-    test.skip('TC-SCH-06: Одно расписание для всех ролей: состав занятий совпадает', async () => {
-      // TODO: Раздел «Расписание» (#/schedule) находится в стадии разработки (заглушка)
+    test('TC-SCH-06: Одно расписание для всех ролей: состав занятий совпадает', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('smirnova@school.ru', 'Test#2024');
+      await page.goto('schedule');
+      await expect(page.locator('#schedule-grid')).toBeVisible();
+      const teacherLessons = await page.locator('.schedule-card').allInnerTexts();
+
+      const navPage = new NavigationPage(page);
+
+      await navPage.logout();
+      await loginPage.goto();
+      await loginPage.login('petrov@mail.ru', 'Test#2024');
+      await page.goto('schedule');
+      await expect(page.locator('#schedule-grid')).toBeVisible();
+      const parentLessons = await page.locator('.schedule-card').allInnerTexts();
+
+      await navPage.logout();
+      await loginPage.goto();
+      await loginPage.login('petrova.a@school.ru', 'Test#2024');
+      await page.goto('schedule');
+      await expect(page.locator('#schedule-grid')).toBeVisible();
+      const studentLessons = await page.locator('.schedule-card').allInnerTexts();
+
+      expect(parentLessons.length).toBe(teacherLessons.length);
+      expect(studentLessons.length).toBe(teacherLessons.length);
+      expect(parentLessons).toEqual(teacherLessons);
+      expect(studentLessons).toEqual(teacherLessons);
     });
 
     test('TC-SCH-07: Своё расписание учителя-предметника по всем классам', async ({ page }) => {

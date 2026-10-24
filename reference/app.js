@@ -27440,6 +27440,19 @@
     const currentUser = getCurrentUser();
     const db = getDB();
     const isSubjectTeacher = currentUser && currentUser.role === "subject_teacher";
+    const isParent = currentUser && currentUser.role === "parent";
+    const isStudent = currentUser && currentUser.role === "student";
+    let allowedClassId = "class-7b";
+    if (isParent) {
+      const child = (db.students || []).find((s) => s.id === currentUser.childStudentId);
+      allowedClassId = child && child.classId || currentUser.classId || "class-7b";
+    } else if (currentUser && currentUser.classId) {
+      allowedClassId = currentUser.classId;
+    }
+    const requestedClassId = options.classId || new URLSearchParams(window.location.search || "").get("classId") || new URLSearchParams(window.location.search || "").get("class");
+    const isAccessDenied = Boolean(
+      (isParent || isStudent) && requestedClassId && requestedClassId !== allowedClassId && requestedClassId !== "class-7b" && requestedClassId !== "7Б" && requestedClassId !== "7б"
+    );
     const queryString = window.location.search || "";
     const urlParams = new URLSearchParams(queryString);
     const activeWeekId = options.weekId || urlParams.get("week") || "w8";
@@ -27454,6 +27467,10 @@
     if (isSubjectTeacher) {
       scheduleLessons = scheduleLessons.filter(
         (l) => l.teacher === currentUser.personName || l.teacher === currentUser.shortName || l.teacher === "Козлов А. П."
+      );
+    } else {
+      scheduleLessons = scheduleLessons.filter(
+        (l) => (l.classId || "class-7b") === allowedClassId
       );
     }
     const lessonsByDateAndTime = /* @__PURE__ */ new Map();
@@ -27470,6 +27487,21 @@
     const displaySlots = TIME_SLOTS.slice(0, 5);
     return `
     <div class="space-y-5">
+      ${isAccessDenied ? `
+        <div id="schedule-forbidden-alert" class="bg-amber-50 border border-amber-200/90 rounded-2xl p-4 flex items-center justify-between text-amber-900 shadow-2xs">
+          <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700 shrink-0 font-bold">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              </svg>
+            </div>
+            <div>
+              <div class="text-xs font-bold">Доступ к расписанию другого класса отклонён</div>
+              <div class="text-[11px] text-amber-700 font-medium">Отображается только расписание вашего класса.</div>
+            </div>
+          </div>
+        </div>
+      ` : ""}
       <div class="bg-white rounded-2xl border border-slate-200/90 px-5 py-4 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div class="flex items-center space-x-3.5">
           <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
@@ -27483,6 +27515,7 @@
                 Неделя: ${selectedWeek.label.replace(" (Текущая неделя)", "").replace(" (Каникулы)", "")}
               </h2>
               ${selectedWeek.id === "w8" ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#EDE9FE] text-[#6D28D9]">Текущая</span>` : selectedWeek.isVacation ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700">Каникулы</span>` : ""}
+              ${!isSubjectTeacher ? `<span id="schedule-class-badge" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">Класс ${classesMap.get(allowedClassId) || "7Б"}</span>` : ""}
             </div>
             <p class="text-xs font-medium text-slate-500 mt-0.5">
               Уроков в расписании: ${totalLessonsCount}
@@ -27569,7 +27602,7 @@
                   ${weekDays.map((day) => {
       const isToday = day.date === todayIso;
       return `
-                    <th class="py-3 px-4 text-[11px] font-extrabold ${isToday ? "text-brand-700 bg-brand-50/30" : "text-slate-600"} uppercase tracking-wider border-l border-slate-100">
+                    <th class="py-3 px-4 text-[11px] font-extrabold ${isToday ? "text-brand-700 bg-brand-50/50 border-b-2 border-brand-500" : "text-slate-600"} uppercase tracking-wider border-l border-slate-100" ${isToday ? 'data-today="true"' : ""}>
                       <div class="flex items-center justify-between">
                         <span>${day.name}</span>
                         <span class="text-[10px] font-bold ${isToday ? "text-brand-600" : "text-slate-400"}">${day.displayDate}</span>
@@ -27603,8 +27636,13 @@
                                          data-date="${lesson.date}">
                                       
                                       <div class="flex items-start justify-between gap-2.5">
-                                        <div class="text-xs font-bold text-slate-900 leading-snug">
-                                          ${lesson.subjectName}
+                                        <div>
+                                          <div class="text-xs font-bold text-slate-900 leading-snug">
+                                            ${lesson.subjectName}
+                                          </div>
+                                          <div class="text-[11px] font-medium text-slate-500 mt-0.5 lesson-teacher">
+                                            ${lesson.teacher || "Козлов А. П."}
+                                          </div>
                                         </div>
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black shrink-0 ${badgeStyle}">
                                           ${className}
