@@ -176,56 +176,67 @@ export function renderAnnouncementsView() {
       }
     </div>
 
-    <div id="modal-announcement-detail" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200/90 space-y-4 animate-in fade-in zoom-in-95 duration-150">
-        <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+    <div id="modal-announcement-detail"
+         class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+      <div id="modal-announcement-detail-dialog"
+           class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 space-y-4 max-h-[92vh] flex flex-col overflow-hidden">
+        <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3 shrink-0">
           <div class="space-y-1">
             <span id="modal-announcement-target" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/70">
               Адресовано классу ${className}
             </span>
             <h3 id="modal-announcement-title" class="text-base font-bold text-slate-900"></h3>
           </div>
-          <button id="btn-close-announcement-modal" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" title="Закрыть">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
+          <button id="btn-close-announcement-modal"
+                  type="button"
+                  class="btn-close-modal p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                  title="Закрыть">
+            ${renderIcon("x", "w-5 h-5")}
           </button>
         </div>
 
-        <div class="flex items-center justify-between text-2xs text-slate-400 font-semibold">
+        <div class="flex items-center justify-between text-2xs text-slate-400 font-semibold shrink-0">
           <span id="modal-announcement-author" class="text-slate-600"></span>
           <span id="modal-announcement-date"></span>
         </div>
 
-        <div id="modal-announcement-content" class="text-xs leading-relaxed text-slate-700 font-medium whitespace-pre-line py-2 max-h-96 overflow-y-auto">
+        <div id="modal-announcement-content" class="text-xs leading-relaxed text-slate-700 font-medium whitespace-pre-line py-2 overflow-y-auto flex-1">
         </div>
 
-        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+        <div class="flex items-center justify-between pt-3 border-t border-slate-100 shrink-0">
           <span id="modal-announcement-reads" class="text-xs font-semibold text-slate-500"></span>
-          <button id="btn-modal-dismiss" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
+          <button id="btn-modal-dismiss"
+                  type="button"
+                  class="btn-close-modal px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
             Закрыть
           </button>
         </div>
       </div>
     </div>
 
-    <div id="modal-announcement-create" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200/90 space-y-5 animate-in fade-in zoom-in-95 duration-150">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+    <div id="modal-announcement-create"
+         class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+      <div id="modal-announcement-create-dialog"
+           class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 space-y-5 max-h-[92vh] flex flex-col overflow-hidden">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
           <div class="flex items-center space-x-2">
             <div class="w-8 h-8 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600">
               ${renderIcon("megaphone", "w-4 h-4")}
             </div>
-            <h3 class="text-base font-bold text-slate-900">Новое объявление</h3>
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Новое объявление</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Публикация для учеников и родителей</p>
+            </div>
           </div>
-          <button id="btn-close-create-modal" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
+          <button id="btn-close-create-modal"
+                  type="button"
+                  class="btn-close-modal p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                  title="Закрыть">
+            ${renderIcon("x", "w-5 h-5")}
           </button>
         </div>
 
-        <form id="form-create-announcement" class="space-y-4" novalidate>
+        <form id="form-create-announcement" class="space-y-4 overflow-y-auto flex-1 pr-0.5" novalidate>
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">
@@ -273,10 +284,10 @@ export function renderAnnouncementsView() {
             <p id="announcement-content-error" class="hidden text-2xs text-rose-600 font-semibold mt-1"></p>
           </div>
 
-          <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+          <div class="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100 shrink-0">
             <button id="btn-cancel-create-announcement"
                     type="button"
-                    class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
+                    class="btn-close-modal px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
               Отмена
             </button>
             <button id="btn-submit-create-announcement"
@@ -289,23 +300,29 @@ export function renderAnnouncementsView() {
       </div>
     </div>
 
-    <div id="modal-announcement-edit" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200/90 space-y-5 animate-in fade-in zoom-in-95 duration-150">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+    <div id="modal-announcement-edit"
+         class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+      <div id="modal-announcement-edit-dialog"
+           class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 space-y-5 max-h-[92vh] flex flex-col overflow-hidden">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
           <div class="flex items-center space-x-2">
             <div class="w-8 h-8 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600">
               ${renderIcon("edit", "w-4 h-4")}
             </div>
-            <h3 class="text-base font-bold text-slate-900">Изменить объявление</h3>
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Изменить объявление</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Редактирование темы и текста публикации</p>
+            </div>
           </div>
-          <button id="btn-close-edit-modal" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
+          <button id="btn-close-edit-modal"
+                  type="button"
+                  class="btn-close-modal p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                  title="Закрыть">
+            ${renderIcon("x", "w-5 h-5")}
           </button>
         </div>
 
-        <form id="form-edit-announcement" class="space-y-4" novalidate>
+        <form id="form-edit-announcement" class="space-y-4 overflow-y-auto flex-1 pr-0.5" novalidate>
           <input type="hidden" id="announcement-edit-id" />
 
           <div>
@@ -330,10 +347,10 @@ export function renderAnnouncementsView() {
             <p id="announcement-edit-content-error" class="hidden text-2xs text-rose-600 font-semibold mt-1"></p>
           </div>
 
-          <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+          <div class="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100 shrink-0">
             <button id="btn-cancel-edit-announcement"
                     type="button"
-                    class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
+                    class="btn-close-modal px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
               Отмена
             </button>
             <button id="btn-submit-edit-announcement"

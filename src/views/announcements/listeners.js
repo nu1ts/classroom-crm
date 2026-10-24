@@ -7,39 +7,84 @@ import {
   formatDateRu,
 } from "../../services/announcements-ops.js";
 
+/**
+ * Закрытие модального окна в эталонном стиле CRM
+ */
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  modal.classList.remove("opacity-100", "pointer-events-auto");
+  modal.classList.add("opacity-0", "pointer-events-none");
+
+  const dialog = document.getElementById(`${modalId}-dialog`);
+  if (dialog) {
+    dialog.classList.remove("scale-100");
+    dialog.classList.add("scale-95");
+  }
+
+  modal.classList.add("hidden");
+}
+
+/**
+ * Открытие модального окна с плавной двухфазной анимацией
+ */
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  modal.classList.remove("hidden");
+
+  requestAnimationFrame(() => {
+    modal.classList.remove("opacity-0", "pointer-events-none");
+    modal.classList.add("opacity-100", "pointer-events-auto");
+
+    const dialog = document.getElementById(`${modalId}-dialog`);
+    if (dialog) {
+      dialog.classList.remove("scale-95");
+      dialog.classList.add("scale-100");
+    }
+  });
+}
+
 export function setupAnnouncementsListeners(navigate) {
   const currentUser = getCurrentUser();
 
-  const detailModal = document.getElementById("modal-announcement-detail");
+  const allModalIds = [
+    "modal-announcement-detail",
+    "modal-announcement-create",
+    "modal-announcement-edit",
+  ];
+
+  document.querySelectorAll(".btn-close-modal").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const modal = btn.closest(".fixed");
+      if (modal && modal.id) {
+        closeModal(modal.id);
+      }
+    });
+  });
+
+  allModalIds.forEach((id) => {
+    const modal = document.getElementById(id);
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          closeModal(id);
+        }
+      });
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      allModalIds.forEach((id) => closeModal(id));
+    }
+  });
+
   const modalTitle = document.getElementById("modal-announcement-title");
   const modalContent = document.getElementById("modal-announcement-content");
   const modalAuthor = document.getElementById("modal-announcement-author");
   const modalDate = document.getElementById("modal-announcement-date");
   const modalReads = document.getElementById("modal-announcement-reads");
-
-  const closeDetailModal = () => {
-    if (detailModal) {
-      detailModal.classList.add("hidden");
-    }
-  };
-
-  const btnCloseDetail = document.getElementById("btn-close-announcement-modal");
-  if (btnCloseDetail) {
-    btnCloseDetail.addEventListener("click", closeDetailModal);
-  }
-
-  const btnDismissDetail = document.getElementById("btn-modal-dismiss");
-  if (btnDismissDetail) {
-    btnDismissDetail.addEventListener("click", closeDetailModal);
-  }
-
-  if (detailModal) {
-    detailModal.addEventListener("click", (e) => {
-      if (e.target === detailModal) {
-        closeDetailModal();
-      }
-    });
-  }
 
   document.querySelectorAll(".btn-read-full").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -69,7 +114,7 @@ export function setupAnnouncementsListeners(navigate) {
         }
       }
 
-      if (detailModal && modalTitle && modalContent) {
+      if (modalTitle && modalContent) {
         modalTitle.textContent = announcement.title;
         modalContent.textContent = announcement.content;
         if (modalAuthor) modalAuthor.textContent = `Автор: ${announcement.author || "Смирнова М. В."}`;
@@ -82,23 +127,19 @@ export function setupAnnouncementsListeners(navigate) {
           const safeReads = Math.min(announcement.totalCount || 28, announcement.readCount || 0);
           modalReads.textContent = `прочитали ${safeReads} из ${announcement.totalCount || 28}`;
         }
-        detailModal.classList.remove("hidden");
+        openModal("modal-announcement-detail");
       }
     });
   });
 
-  const createModal = document.getElementById("modal-announcement-create");
   const formCreate = document.getElementById("form-create-announcement");
   const titleCreateInput = document.getElementById("announcement-create-title");
   const contentCreateInput = document.getElementById("announcement-create-content");
   const titleCreateError = document.getElementById("announcement-title-error");
   const contentCreateError = document.getElementById("announcement-content-error");
   const btnCreateOpen = document.getElementById("btn-create-announcement");
-  const btnCloseCreate = document.getElementById("btn-close-create-modal");
-  const btnCancelCreate = document.getElementById("btn-cancel-create-announcement");
 
-  const openCreateModal = (initialTitle = "") => {
-    if (!createModal) return;
+  const openCreateDialog = (initialTitle = "") => {
     if (titleCreateError) titleCreateError.classList.add("hidden");
     if (contentCreateError) contentCreateError.classList.add("hidden");
     if (titleCreateInput) {
@@ -109,7 +150,7 @@ export function setupAnnouncementsListeners(navigate) {
       contentCreateInput.classList.remove("border-rose-400", "bg-rose-50/20");
       contentCreateInput.value = "";
     }
-    createModal.classList.remove("hidden");
+    openModal("modal-announcement-create");
     if (initialTitle && contentCreateInput) {
       contentCreateInput.focus();
     } else if (titleCreateInput) {
@@ -117,27 +158,8 @@ export function setupAnnouncementsListeners(navigate) {
     }
   };
 
-  const closeCreateModal = () => {
-    if (createModal) {
-      createModal.classList.add("hidden");
-    }
-  };
-
   if (btnCreateOpen) {
-    btnCreateOpen.addEventListener("click", () => openCreateModal());
-  }
-  if (btnCloseCreate) {
-    btnCloseCreate.addEventListener("click", closeCreateModal);
-  }
-  if (btnCancelCreate) {
-    btnCancelCreate.addEventListener("click", closeCreateModal);
-  }
-  if (createModal) {
-    createModal.addEventListener("click", (e) => {
-      if (e.target === createModal) {
-        closeCreateModal();
-      }
-    });
+    btnCreateOpen.addEventListener("click", () => openCreateDialog());
   }
 
   if (titleCreateInput) {
@@ -191,7 +213,7 @@ export function setupAnnouncementsListeners(navigate) {
       });
 
       if (result.success) {
-        closeCreateModal();
+        closeModal("modal-announcement-create");
         if (navigate) {
           navigate("announcements");
         } else {
@@ -201,29 +223,12 @@ export function setupAnnouncementsListeners(navigate) {
     });
   }
 
-  const editModal = document.getElementById("modal-announcement-edit");
   const formEdit = document.getElementById("form-edit-announcement");
   const idEditInput = document.getElementById("announcement-edit-id");
   const titleEditInput = document.getElementById("announcement-edit-title");
   const contentEditInput = document.getElementById("announcement-edit-content");
   const titleEditError = document.getElementById("announcement-edit-title-error");
   const contentEditError = document.getElementById("announcement-edit-content-error");
-  const btnCloseEdit = document.getElementById("btn-close-edit-modal");
-  const btnCancelEdit = document.getElementById("btn-cancel-edit-announcement");
-
-  const closeEditModal = () => {
-    if (editModal) {
-      editModal.classList.add("hidden");
-    }
-  };
-
-  if (btnCloseEdit) btnCloseEdit.addEventListener("click", closeEditModal);
-  if (btnCancelEdit) btnCancelEdit.addEventListener("click", closeEditModal);
-  if (editModal) {
-    editModal.addEventListener("click", (e) => {
-      if (e.target === editModal) closeEditModal();
-    });
-  }
 
   if (titleEditInput) {
     titleEditInput.addEventListener("input", () => {
@@ -257,9 +262,7 @@ export function setupAnnouncementsListeners(navigate) {
       if (titleEditError) titleEditError.classList.add("hidden");
       if (contentEditError) contentEditError.classList.add("hidden");
 
-      if (editModal) {
-        editModal.classList.remove("hidden");
-      }
+      openModal("modal-announcement-edit");
     });
   });
 
@@ -297,7 +300,7 @@ export function setupAnnouncementsListeners(navigate) {
       });
 
       if (result.success) {
-        closeEditModal();
+        closeModal("modal-announcement-edit");
         if (navigate) {
           navigate("announcements");
         } else {
@@ -325,9 +328,9 @@ export function setupAnnouncementsListeners(navigate) {
     const presetTitle = sessionStorage.getItem("announcement_preset_title");
     if (presetTitle) {
       sessionStorage.removeItem("announcement_preset_title");
-      openCreateModal(presetTitle);
+      openCreateDialog(presetTitle);
     }
   } catch {
-    // игнорируем ошибки sessionStorage при ограничениях среды
+    // ignore
   }
 }

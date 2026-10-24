@@ -24253,33 +24253,38 @@
     </div>
 
     <!-- Модальное окно просмотра объявления -->
-    <div id="modal-announcement-detail" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200/90 space-y-4 animate-in fade-in zoom-in-95 duration-150">
-        <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+    <div id="modal-announcement-detail"
+         class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+      <div id="modal-announcement-detail-dialog"
+           class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 space-y-4 max-h-[92vh] flex flex-col overflow-hidden">
+        <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3 shrink-0">
           <div class="space-y-1">
             <span id="modal-announcement-target" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/70">
               Адресовано классу ${className}
             </span>
             <h3 id="modal-announcement-title" class="text-base font-bold text-slate-900"></h3>
           </div>
-          <button id="btn-close-announcement-modal" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" title="Закрыть">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
+          <button id="btn-close-announcement-modal"
+                  type="button"
+                  class="btn-close-modal p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                  title="Закрыть">
+            ${renderIcon("x", "w-5 h-5")}
           </button>
         </div>
 
-        <div class="flex items-center justify-between text-2xs text-slate-400 font-semibold">
+        <div class="flex items-center justify-between text-2xs text-slate-400 font-semibold shrink-0">
           <span id="modal-announcement-author" class="text-slate-600"></span>
           <span id="modal-announcement-date"></span>
         </div>
 
-        <div id="modal-announcement-content" class="text-xs leading-relaxed text-slate-700 font-medium whitespace-pre-line py-2 max-h-96 overflow-y-auto">
+        <div id="modal-announcement-content" class="text-xs leading-relaxed text-slate-700 font-medium whitespace-pre-line py-2 overflow-y-auto flex-1">
         </div>
 
-        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+        <div class="flex items-center justify-between pt-3 border-t border-slate-100 shrink-0">
           <span id="modal-announcement-reads" class="text-xs font-semibold text-slate-500"></span>
-          <button id="btn-modal-dismiss" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
+          <button id="btn-modal-dismiss"
+                  type="button"
+                  class="btn-close-modal px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
             Закрыть
           </button>
         </div>
@@ -24287,23 +24292,29 @@
     </div>
 
     <!-- Модальное окно публикации нового объявления -->
-    <div id="modal-announcement-create" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200/90 space-y-5 animate-in fade-in zoom-in-95 duration-150">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+    <div id="modal-announcement-create"
+         class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+      <div id="modal-announcement-create-dialog"
+           class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 space-y-5 max-h-[92vh] flex flex-col overflow-hidden">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
           <div class="flex items-center space-x-2">
             <div class="w-8 h-8 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600">
               ${renderIcon("megaphone", "w-4 h-4")}
             </div>
-            <h3 class="text-base font-bold text-slate-900">Новое объявление</h3>
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Новое объявление</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Публикация для учеников и родителей</p>
+            </div>
           </div>
-          <button id="btn-close-create-modal" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
+          <button id="btn-close-create-modal"
+                  type="button"
+                  class="btn-close-modal p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                  title="Закрыть">
+            ${renderIcon("x", "w-5 h-5")}
           </button>
         </div>
 
-        <form id="form-create-announcement" class="space-y-4" novalidate>
+        <form id="form-create-announcement" class="space-y-4 overflow-y-auto flex-1 pr-0.5" novalidate>
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">
@@ -24351,10 +24362,10 @@
             <p id="announcement-content-error" class="hidden text-2xs text-rose-600 font-semibold mt-1"></p>
           </div>
 
-          <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+          <div class="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100 shrink-0">
             <button id="btn-cancel-create-announcement"
                     type="button"
-                    class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
+                    class="btn-close-modal px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
               Отмена
             </button>
             <button id="btn-submit-create-announcement"
@@ -24368,23 +24379,29 @@
     </div>
 
     <!-- Модальное окно редактирования объявления -->
-    <div id="modal-announcement-edit" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200/90 space-y-5 animate-in fade-in zoom-in-95 duration-150">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+    <div id="modal-announcement-edit"
+         class="hidden fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
+      <div id="modal-announcement-edit-dialog"
+           class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 space-y-5 max-h-[92vh] flex flex-col overflow-hidden">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
           <div class="flex items-center space-x-2">
             <div class="w-8 h-8 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600">
               ${renderIcon("edit", "w-4 h-4")}
             </div>
-            <h3 class="text-base font-bold text-slate-900">Изменить объявление</h3>
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Изменить объявление</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Редактирование темы и текста публикации</p>
+            </div>
           </div>
-          <button id="btn-close-edit-modal" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
+          <button id="btn-close-edit-modal"
+                  type="button"
+                  class="btn-close-modal p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                  title="Закрыть">
+            ${renderIcon("x", "w-5 h-5")}
           </button>
         </div>
 
-        <form id="form-edit-announcement" class="space-y-4" novalidate>
+        <form id="form-edit-announcement" class="space-y-4 overflow-y-auto flex-1 pr-0.5" novalidate>
           <input type="hidden" id="announcement-edit-id" />
 
           <div>
@@ -24409,10 +24426,10 @@
             <p id="announcement-edit-content-error" class="hidden text-2xs text-rose-600 font-semibold mt-1"></p>
           </div>
 
-          <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+          <div class="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100 shrink-0">
             <button id="btn-cancel-edit-announcement"
                     type="button"
-                    class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
+                    class="btn-close-modal px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer">
               Отмена
             </button>
             <button id="btn-submit-edit-announcement"
@@ -24428,34 +24445,67 @@
   }
 
   // src/views/announcements/listeners.js
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.remove("opacity-100", "pointer-events-auto");
+    modal.classList.add("opacity-0", "pointer-events-none");
+    const dialog = document.getElementById(`${modalId}-dialog`);
+    if (dialog) {
+      dialog.classList.remove("scale-100");
+      dialog.classList.add("scale-95");
+    }
+    modal.classList.add("hidden");
+  }
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.remove("hidden");
+    requestAnimationFrame(() => {
+      modal.classList.remove("opacity-0", "pointer-events-none");
+      modal.classList.add("opacity-100", "pointer-events-auto");
+      const dialog = document.getElementById(`${modalId}-dialog`);
+      if (dialog) {
+        dialog.classList.remove("scale-95");
+        dialog.classList.add("scale-100");
+      }
+    });
+  }
   function setupAnnouncementsListeners(navigate2) {
     const currentUser = getCurrentUser();
-    const detailModal = document.getElementById("modal-announcement-detail");
+    const allModalIds = [
+      "modal-announcement-detail",
+      "modal-announcement-create",
+      "modal-announcement-edit"
+    ];
+    document.querySelectorAll(".btn-close-modal").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const modal = btn.closest(".fixed");
+        if (modal && modal.id) {
+          closeModal(modal.id);
+        }
+      });
+    });
+    allModalIds.forEach((id) => {
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.addEventListener("click", (e) => {
+          if (e.target === modal) {
+            closeModal(id);
+          }
+        });
+      }
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        allModalIds.forEach((id) => closeModal(id));
+      }
+    });
     const modalTitle = document.getElementById("modal-announcement-title");
     const modalContent = document.getElementById("modal-announcement-content");
     const modalAuthor = document.getElementById("modal-announcement-author");
     const modalDate = document.getElementById("modal-announcement-date");
     const modalReads = document.getElementById("modal-announcement-reads");
-    const closeDetailModal = () => {
-      if (detailModal) {
-        detailModal.classList.add("hidden");
-      }
-    };
-    const btnCloseDetail = document.getElementById("btn-close-announcement-modal");
-    if (btnCloseDetail) {
-      btnCloseDetail.addEventListener("click", closeDetailModal);
-    }
-    const btnDismissDetail = document.getElementById("btn-modal-dismiss");
-    if (btnDismissDetail) {
-      btnDismissDetail.addEventListener("click", closeDetailModal);
-    }
-    if (detailModal) {
-      detailModal.addEventListener("click", (e) => {
-        if (e.target === detailModal) {
-          closeDetailModal();
-        }
-      });
-    }
     document.querySelectorAll(".btn-read-full").forEach((btn) => {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-id");
@@ -24481,7 +24531,7 @@
             }
           }
         }
-        if (detailModal && modalTitle && modalContent) {
+        if (modalTitle && modalContent) {
           modalTitle.textContent = announcement.title;
           modalContent.textContent = announcement.content;
           if (modalAuthor) modalAuthor.textContent = `Автор: ${announcement.author || "Смирнова М. В."}`;
@@ -24492,21 +24542,17 @@
             const safeReads = Math.min(announcement.totalCount || 28, announcement.readCount || 0);
             modalReads.textContent = `прочитали ${safeReads} из ${announcement.totalCount || 28}`;
           }
-          detailModal.classList.remove("hidden");
+          openModal("modal-announcement-detail");
         }
       });
     });
-    const createModal = document.getElementById("modal-announcement-create");
     const formCreate = document.getElementById("form-create-announcement");
     const titleCreateInput = document.getElementById("announcement-create-title");
     const contentCreateInput = document.getElementById("announcement-create-content");
     const titleCreateError = document.getElementById("announcement-title-error");
     const contentCreateError = document.getElementById("announcement-content-error");
     const btnCreateOpen = document.getElementById("btn-create-announcement");
-    const btnCloseCreate = document.getElementById("btn-close-create-modal");
-    const btnCancelCreate = document.getElementById("btn-cancel-create-announcement");
-    const openCreateModal = (initialTitle = "") => {
-      if (!createModal) return;
+    const openCreateDialog = (initialTitle = "") => {
       if (titleCreateError) titleCreateError.classList.add("hidden");
       if (contentCreateError) contentCreateError.classList.add("hidden");
       if (titleCreateInput) {
@@ -24517,33 +24563,15 @@
         contentCreateInput.classList.remove("border-rose-400", "bg-rose-50/20");
         contentCreateInput.value = "";
       }
-      createModal.classList.remove("hidden");
+      openModal("modal-announcement-create");
       if (initialTitle && contentCreateInput) {
         contentCreateInput.focus();
       } else if (titleCreateInput) {
         titleCreateInput.focus();
       }
     };
-    const closeCreateModal = () => {
-      if (createModal) {
-        createModal.classList.add("hidden");
-      }
-    };
     if (btnCreateOpen) {
-      btnCreateOpen.addEventListener("click", () => openCreateModal());
-    }
-    if (btnCloseCreate) {
-      btnCloseCreate.addEventListener("click", closeCreateModal);
-    }
-    if (btnCancelCreate) {
-      btnCancelCreate.addEventListener("click", closeCreateModal);
-    }
-    if (createModal) {
-      createModal.addEventListener("click", (e) => {
-        if (e.target === createModal) {
-          closeCreateModal();
-        }
-      });
+      btnCreateOpen.addEventListener("click", () => openCreateDialog());
     }
     if (titleCreateInput) {
       titleCreateInput.addEventListener("input", () => {
@@ -24590,7 +24618,7 @@
           classId: "class-7b"
         });
         if (result.success) {
-          closeCreateModal();
+          closeModal("modal-announcement-create");
           if (navigate2) {
             navigate2("announcements");
           } else {
@@ -24599,27 +24627,12 @@
         }
       });
     }
-    const editModal = document.getElementById("modal-announcement-edit");
     const formEdit = document.getElementById("form-edit-announcement");
     const idEditInput = document.getElementById("announcement-edit-id");
     const titleEditInput = document.getElementById("announcement-edit-title");
     const contentEditInput = document.getElementById("announcement-edit-content");
     const titleEditError = document.getElementById("announcement-edit-title-error");
     const contentEditError = document.getElementById("announcement-edit-content-error");
-    const btnCloseEdit = document.getElementById("btn-close-edit-modal");
-    const btnCancelEdit = document.getElementById("btn-cancel-edit-announcement");
-    const closeEditModal = () => {
-      if (editModal) {
-        editModal.classList.add("hidden");
-      }
-    };
-    if (btnCloseEdit) btnCloseEdit.addEventListener("click", closeEditModal);
-    if (btnCancelEdit) btnCancelEdit.addEventListener("click", closeEditModal);
-    if (editModal) {
-      editModal.addEventListener("click", (e) => {
-        if (e.target === editModal) closeEditModal();
-      });
-    }
     if (titleEditInput) {
       titleEditInput.addEventListener("input", () => {
         titleEditInput.classList.remove("border-rose-400", "bg-rose-50/20");
@@ -24649,9 +24662,7 @@
         }
         if (titleEditError) titleEditError.classList.add("hidden");
         if (contentEditError) contentEditError.classList.add("hidden");
-        if (editModal) {
-          editModal.classList.remove("hidden");
-        }
+        openModal("modal-announcement-edit");
       });
     });
     if (formEdit) {
@@ -24683,7 +24694,7 @@
           content: contentVal
         });
         if (result.success) {
-          closeEditModal();
+          closeModal("modal-announcement-edit");
           if (navigate2) {
             navigate2("announcements");
           } else {
@@ -24709,7 +24720,7 @@
       const presetTitle = sessionStorage.getItem("announcement_preset_title");
       if (presetTitle) {
         sessionStorage.removeItem("announcement_preset_title");
-        openCreateModal(presetTitle);
+        openCreateDialog(presetTitle);
       }
     } catch {
     }
@@ -26007,7 +26018,7 @@
     const modalDialog = document.getElementById("modal-forgot-dialog");
     const closeForgotBtn = document.getElementById("btn-close-modal-forgot");
     const closeForgotX = document.getElementById("btn-close-modal-forgot-x");
-    function openModal3() {
+    function openModal4() {
       if (!modalForgot) return;
       modalForgot.classList.remove("opacity-0", "pointer-events-none");
       modalForgot.classList.add("opacity-100", "pointer-events-auto");
@@ -26016,7 +26027,7 @@
         modalDialog.classList.add("scale-100");
       }
     }
-    function closeModal3() {
+    function closeModal4() {
       if (!modalForgot) return;
       modalForgot.classList.remove("opacity-100", "pointer-events-auto");
       modalForgot.classList.add("opacity-0", "pointer-events-none");
@@ -26025,17 +26036,17 @@
         modalDialog.classList.add("scale-95");
       }
     }
-    if (forgotBtn) forgotBtn.addEventListener("click", openModal3);
-    if (closeForgotBtn) closeForgotBtn.addEventListener("click", closeModal3);
-    if (closeForgotX) closeForgotX.addEventListener("click", closeModal3);
+    if (forgotBtn) forgotBtn.addEventListener("click", openModal4);
+    if (closeForgotBtn) closeForgotBtn.addEventListener("click", closeModal4);
+    if (closeForgotX) closeForgotX.addEventListener("click", closeModal4);
     if (modalForgot) {
       modalForgot.addEventListener("click", (e) => {
-        if (e.target === modalForgot) closeModal3();
+        if (e.target === modalForgot) closeModal4();
       });
     }
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && modalForgot && !modalForgot.classList.contains("pointer-events-none")) {
-        closeModal3();
+        closeModal4();
       }
     });
   }
@@ -29926,7 +29937,7 @@
     setupSummaryHandlers();
     setupPublishAnnouncementHandlers(navigate2);
   }
-  function closeModal(modalId) {
+  function closeModal2(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
     modal.classList.remove("opacity-100", "pointer-events-auto");
@@ -29938,7 +29949,7 @@
     }
     modal.classList.add("hidden");
   }
-  function openModal(modalId) {
+  function openModal2(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
     modal.classList.remove("hidden");
@@ -29957,7 +29968,7 @@
       btn.addEventListener("click", () => {
         const modal = btn.closest(".fixed");
         if (modal && modal.id) {
-          closeModal(modal.id);
+          closeModal2(modal.id);
         }
       });
     });
@@ -29971,7 +29982,7 @@
       if (modal) {
         modal.addEventListener("click", (e) => {
           if (e.target === modal) {
-            closeModal(id);
+            closeModal2(id);
           }
         });
       }
@@ -29983,7 +29994,7 @@
           "modal-cancel-meeting",
           "modal-meeting-attendance",
           "modal-meeting-summary"
-        ].forEach((id) => closeModal(id));
+        ].forEach((id) => closeModal2(id));
         closeAllDropdowns();
       }
     });
@@ -30012,7 +30023,7 @@
       currentEditingAgendaIndex = -1;
       renderModalAgendaList();
       clearMeetingFormErrors();
-      openModal("modal-meeting-form");
+      openModal2("modal-meeting-form");
     });
   }
   function setupEditMeetingHandlers() {
@@ -30031,7 +30042,7 @@
         currentAgendaItems = Array.isArray(meeting.agendaItems) ? [...meeting.agendaItems] : meeting.agenda ? [meeting.agenda] : [];
         renderModalAgendaList();
         clearMeetingFormErrors();
-        openModal("modal-meeting-form");
+        openModal2("modal-meeting-form");
       });
     });
   }
@@ -30058,7 +30069,7 @@
         closeAllDropdowns();
         const meetingId = btn.getAttribute("data-meeting-id");
         document.getElementById("cancel-meeting-id").value = meetingId;
-        openModal("modal-cancel-meeting");
+        openModal2("modal-cancel-meeting");
       });
     });
     const confirmBtn = document.getElementById("btn-confirm-cancel-meeting");
@@ -30067,7 +30078,7 @@
         const meetingId = document.getElementById("cancel-meeting-id").value;
         if (meetingId) {
           cancelMeeting(meetingId);
-          closeModal("modal-cancel-meeting");
+          closeModal2("modal-cancel-meeting");
           window.location.reload();
         }
       });
@@ -30328,7 +30339,7 @@
         }
         return;
       }
-      closeModal("modal-meeting-form");
+      closeModal2("modal-meeting-form");
       window.location.reload();
     });
   }
@@ -30380,7 +30391,7 @@
           }
           return;
         }
-        closeModal("modal-meeting-attendance");
+        closeModal2("modal-meeting-attendance");
         window.location.reload();
       });
     }
@@ -30484,7 +30495,7 @@
       });
     });
     updateCounter();
-    openModal("modal-meeting-attendance");
+    openModal2("modal-meeting-attendance");
   }
   function setupSummaryHandlers() {
     document.querySelectorAll(".btn-meeting-summary").forEach((btn) => {
@@ -30497,7 +30508,7 @@
     if (btnOpenAttendance) {
       btnOpenAttendance.addEventListener("click", () => {
         const meetingId = btnOpenAttendance.getAttribute("data-meeting-id");
-        closeModal("modal-meeting-summary");
+        closeModal2("modal-meeting-summary");
         if (meetingId) {
           openAttendanceModal(meetingId);
         }
@@ -30553,7 +30564,7 @@
         }).join("");
       }
     }
-    openModal("modal-meeting-summary");
+    openModal2("modal-meeting-summary");
   }
   function setupPublishAnnouncementHandlers(navigate2) {
     document.querySelectorAll(".btn-publish-announcement").forEach((btn) => {
@@ -31667,7 +31678,7 @@
     let activeLessonId = null;
     let activeStudentId = null;
     let activeAttendanceRecord = null;
-    function closeModal3() {
+    function closeModal4() {
       if (!modal) return;
       modal.classList.remove("opacity-100", "pointer-events-auto");
       modal.classList.add("opacity-0", "pointer-events-none");
@@ -31717,11 +31728,11 @@
       }
       if (formConfirmAbsence) formConfirmAbsence.reset();
     }
-    if (btnCloseX) btnCloseX.onclick = closeModal3;
-    if (btnCloseFooter) btnCloseFooter.onclick = closeModal3;
+    if (btnCloseX) btnCloseX.onclick = closeModal4;
+    if (btnCloseFooter) btnCloseFooter.onclick = closeModal4;
     if (modal) {
       modal.addEventListener("click", (e) => {
-        if (e.target === modal) closeModal3();
+        if (e.target === modal) closeModal4();
       });
     }
     if (btnCloseConfirmX) btnCloseConfirmX.onclick = closeJournalConfirmModal;
@@ -31745,7 +31756,7 @@
         if (modalConfirm && !modalConfirm.classList.contains("pointer-events-none")) {
           closeJournalConfirmModal();
         } else if (modal && !modal.classList.contains("pointer-events-none")) {
-          closeModal3();
+          closeModal4();
         }
       }
     });
@@ -31986,7 +31997,7 @@
           confirmedBy: "Смирнова М. В."
         });
         closeJournalConfirmModal();
-        closeModal3();
+        closeModal4();
         const currentHash = "/journal" + (window.location.search || "");
         if (onNavigate) {
           onNavigate(currentHash);
@@ -39226,7 +39237,7 @@
         errorBox.classList.add("hidden");
       }
     }
-    function openModal3(rowId) {
+    function openModal4(rowId) {
       if (!modal) return;
       editingRowId = rowId || null;
       showError("");
@@ -39261,7 +39272,7 @@
         modalDialog.classList.add("scale-100");
       }
     }
-    function closeModal3() {
+    function closeModal4() {
       if (!modal) return;
       editingRowId = null;
       modal.classList.remove("opacity-100", "pointer-events-auto");
@@ -39305,7 +39316,7 @@
       });
     }
     if (addBtn) {
-      addBtn.addEventListener("click", () => openModal3(null));
+      addBtn.addEventListener("click", () => openModal4(null));
     }
     if (submitBtn) {
       submitBtn.addEventListener("click", () => {
@@ -39324,7 +39335,7 @@
           showError(res.error);
           return;
         }
-        closeModal3();
+        closeModal4();
         renderTable();
         showToast2(res.message);
       });
@@ -39336,7 +39347,7 @@
         const action = btn.getAttribute("data-action");
         const rowId = btn.getAttribute("data-row-id");
         if (action === "edit-workload") {
-          openModal3(rowId);
+          openModal4(rowId);
         }
         if (action === "remove-workload") {
           const res = removeWorkloadRow(rowId);
@@ -39351,16 +39362,16 @@
     }
     document.addEventListener("click", (e) => {
       const btn = e.target.closest('[data-action="close-workload-modal"]');
-      if (btn) closeModal3();
+      if (btn) closeModal4();
     });
     if (modal) {
       modal.addEventListener("click", (e) => {
-        if (e.target === modal) closeModal3();
+        if (e.target === modal) closeModal4();
       });
     }
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && modal && !modal.classList.contains("pointer-events-none")) {
-        closeModal3();
+        closeModal4();
       }
     });
   }
@@ -39888,7 +39899,7 @@
       toast.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
     }, 3200);
   }
-  function openModal2(modalId) {
+  function openModal3(modalId) {
     const modal = document.getElementById(modalId);
     const dialog = document.getElementById(`${modalId}-dialog`);
     if (!modal) return;
@@ -39899,7 +39910,7 @@
       dialog.classList.add("scale-100");
     }
   }
-  function closeModal2(modalId) {
+  function closeModal3(modalId) {
     const modal = document.getElementById(modalId);
     const dialog = document.getElementById(`${modalId}-dialog`);
     if (!modal) return;
@@ -39916,7 +39927,7 @@
       "modal-edit-year",
       "modal-edit-quarter",
       "modal-edit-vacation"
-    ].forEach((id) => closeModal2(id));
+    ].forEach((id) => closeModal3(id));
   }
 
   // src/views/school-year/listeners.js
@@ -40025,7 +40036,7 @@
         if (modalEl) {
           modalEl.addEventListener("click", (e) => {
             if (e.target === modalEl) {
-              closeModal2(modalId);
+              closeModal3(modalId);
             }
           });
         }
@@ -40035,7 +40046,7 @@
       const closeBtn = e.target.closest('[data-action="close-modal"]');
       if (closeBtn) {
         const parentModal = closeBtn.closest(".fixed.inset-0");
-        if (parentModal) closeModal2(parentModal.id);
+        if (parentModal) closeModal3(parentModal.id);
         return;
       }
       const tabBtn = e.target.closest("[data-year-tab]");
@@ -40079,7 +40090,7 @@
         if (errEl) errEl.classList.add("hidden");
         const form = document.getElementById("form-add-year");
         if (form) form.reset();
-        openModal2("modal-add-year");
+        openModal3("modal-add-year");
         return;
       }
       const openEditYearBtn = e.target.closest("#btn-open-edit-year");
@@ -40098,7 +40109,7 @@
         if (startEl) startEl.value = yearStart;
         if (endEl) endEl.value = yearEnd;
         if (errEl) errEl.classList.add("hidden");
-        openModal2("modal-edit-year");
+        openModal3("modal-edit-year");
         return;
       }
       const setQuarterBtn = e.target.closest(
@@ -40132,7 +40143,7 @@
         if (startEl) startEl.value = startDate;
         if (endEl) endEl.value = endDate;
         if (errEl) errEl.classList.add("hidden");
-        openModal2("modal-edit-quarter");
+        openModal3("modal-edit-quarter");
         return;
       }
       const addVacBtn = e.target.closest("#btn-add-vacation");
@@ -40145,7 +40156,7 @@
         if (titleEl) titleEl.textContent = "Добавление каникул";
         if (form) form.reset();
         if (errEl) errEl.classList.add("hidden");
-        openModal2("modal-edit-vacation");
+        openModal3("modal-edit-vacation");
         return;
       }
       const editVacBtn = e.target.closest('[data-action="edit-vacation"]');
@@ -40166,7 +40177,7 @@
         if (startEl) startEl.value = start;
         if (endEl) endEl.value = end;
         if (errEl) errEl.classList.add("hidden");
-        openModal2("modal-edit-vacation");
+        openModal3("modal-edit-vacation");
         return;
       }
       const delVacBtn = e.target.closest('[data-action="delete-vacation"]');
@@ -40199,7 +40210,7 @@
           }
           return;
         }
-        closeModal2("modal-add-year");
+        closeModal3("modal-add-year");
         updateViewData(res.year.id);
         showToast(`Учебный год «${res.year.name}» успешно создан`);
       });
@@ -40221,7 +40232,7 @@
           }
           return;
         }
-        closeModal2("modal-edit-year");
+        closeModal3("modal-edit-year");
         updateViewData(res.year.id);
         showToast(`Учебный год «${res.year.name}» успешно обновлен`);
       });
@@ -40248,7 +40259,7 @@
           }
           return;
         }
-        closeModal2("modal-edit-quarter");
+        closeModal3("modal-edit-quarter");
         updateViewData(curYearId);
         showToast(`Даты четверти «${res.quarter.name}» обновлены`);
       });
@@ -40276,7 +40287,7 @@
           }
           return;
         }
-        closeModal2("modal-edit-vacation");
+        closeModal3("modal-edit-vacation");
         updateViewData(curYearId);
         showToast(`Каникулы «${name}» сохранены`);
       });
