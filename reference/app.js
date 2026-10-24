@@ -23919,8 +23919,10 @@
       roleSubtitle = "Администратор школы";
     }
     const navHtml = items.map((item) => {
-      const isStudentDetail = item.path === "/students" && (currentPath2 === "/student" || currentPath2 === "/student-summary");
-      const isActive = currentPath2 === item.path || isStudentDetail || item.path === roleConfig.defaultRoute && (!currentPath2 || currentPath2 === "/" || currentPath2 === "");
+      const cleanPath = (currentPath2 || "").split("?")[0];
+      const isStudentDetail = item.path === "/students" && (cleanPath === "/student" || cleanPath === "/student-summary");
+      const isClassJournal = item.path === "/classes" && currentUser?.role === "subject_teacher" && cleanPath === "/journal";
+      const isActive = cleanPath === item.path || isStudentDetail || isClassJournal || item.path === roleConfig.defaultRoute && (!cleanPath || cleanPath === "/" || cleanPath === "");
       const activeClasses = isActive ? "bg-brand-sidebarActive text-white shadow-sm" : "text-slate-300 hover:text-white hover:bg-brand-sidebarHover";
       return `
       <a href="${item.path}" id="${item.id}"
@@ -24049,12 +24051,14 @@
   function updateSidebarActiveItem(currentPath2) {
     const sidebar = document.getElementById("app-sidebar");
     if (!sidebar) return;
+    const currentUser = getCurrentUser();
+    const cleanPath = (currentPath2 || "").split("?")[0];
     const links = sidebar.querySelectorAll("nav a[href]");
     links.forEach((link) => {
       const href = link.getAttribute("href");
-      const cleanPath = (currentPath2 || "").split("?")[0];
       const isStudentDetail = href === "/students" && (cleanPath === "/student" || cleanPath === "/student-summary");
-      const isActive = href === cleanPath || isStudentDetail || href === "/overview" && (!cleanPath || cleanPath === "/" || cleanPath === "");
+      const isClassJournal = href === "/classes" && currentUser?.role === "subject_teacher" && cleanPath === "/journal";
+      const isActive = href === cleanPath || isStudentDetail || isClassJournal || href === "/overview" && (!cleanPath || cleanPath === "/" || cleanPath === "");
       if (isActive) {
         link.classList.remove(
           "text-slate-300",
@@ -27672,6 +27676,15 @@
     }).join("");
     return `
     <div class="space-y-6 animate-fadeIn pb-12">
+      ${isSubjectTeacher ? `
+        <nav id="journal-breadcrumbs" aria-label="Хлебные крошки" class="flex items-center space-x-2 text-xs font-medium text-slate-500">
+          <a href="/classes" id="crumb-classes" class="hover:text-brand-600 transition-colors flex items-center space-x-1">
+            <span>Мои классы</span>
+          </a>
+          <span class="text-slate-300">/</span>
+          <span class="text-slate-900 font-semibold truncate">Журнал класса ${classDisplayName}</span>
+        </nav>
+      ` : ""}
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div class="flex items-center space-x-2.5 mb-1">

@@ -1,6 +1,6 @@
 import { ROLE_NAVIGATION } from "../config/navigation.js";
 import { renderIcon } from "./icons.js";
-import { logout, quickLoginAsRole } from "../services/storage.js";
+import { getCurrentUser, logout, quickLoginAsRole } from "../services/storage.js";
 import { isDevMode } from "../services/env.js";
 import { navigate } from "../services/navigation.js";
 
@@ -27,14 +27,20 @@ export function renderSidebar(currentUser, currentPath) {
 
   const navHtml = items
     .map((item) => {
+      const cleanPath = (currentPath || "").split("?")[0];
       const isStudentDetail =
         item.path === "/students" &&
-        (currentPath === "/student" || currentPath === "/student-summary");
+        (cleanPath === "/student" || cleanPath === "/student-summary");
+      const isClassJournal =
+        item.path === "/classes" &&
+        currentUser?.role === "subject_teacher" &&
+        cleanPath === "/journal";
       const isActive =
-        currentPath === item.path ||
+        cleanPath === item.path ||
         isStudentDetail ||
+        isClassJournal ||
         (item.path === roleConfig.defaultRoute &&
-          (!currentPath || currentPath === "/" || currentPath === ""));
+          (!cleanPath || cleanPath === "/" || cleanPath === ""));
       const activeClasses = isActive
         ? "bg-brand-sidebarActive text-white shadow-sm"
         : "text-slate-300 hover:text-white hover:bg-brand-sidebarHover";
@@ -185,16 +191,22 @@ export function updateSidebarActiveItem(currentPath) {
   const sidebar = document.getElementById("app-sidebar");
   if (!sidebar) return;
 
+  const currentUser = getCurrentUser();
+  const cleanPath = (currentPath || "").split("?")[0];
   const links = sidebar.querySelectorAll("nav a[href]");
   links.forEach((link) => {
     const href = link.getAttribute("href");
-    const cleanPath = (currentPath || "").split("?")[0];
     const isStudentDetail =
       href === "/students" &&
       (cleanPath === "/student" || cleanPath === "/student-summary");
+    const isClassJournal =
+      href === "/classes" &&
+      currentUser?.role === "subject_teacher" &&
+      cleanPath === "/journal";
     const isActive =
       href === cleanPath ||
       isStudentDetail ||
+      isClassJournal ||
       (href === "/overview" &&
         (!cleanPath || cleanPath === "/" || cleanPath === ""));
     if (isActive) {

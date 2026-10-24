@@ -463,6 +463,19 @@ export function renderJournalView(options = {}) {
 
   return `
     <div class="space-y-6 animate-fadeIn pb-12">
+      ${
+        isSubjectTeacher
+          ? `
+        <nav id="journal-breadcrumbs" aria-label="Хлебные крошки" class="flex items-center space-x-2 text-xs font-medium text-slate-500">
+          <a href="/classes" id="crumb-classes" class="hover:text-brand-600 transition-colors flex items-center space-x-1">
+            <span>Мои классы</span>
+          </a>
+          <span class="text-slate-300">/</span>
+          <span class="text-slate-900 font-semibold truncate">Журнал класса ${classDisplayName}</span>
+        </nav>
+      `
+          : ""
+      }
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div class="flex items-center space-x-2.5 mb-1">
