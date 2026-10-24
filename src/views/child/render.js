@@ -85,7 +85,9 @@ export function renderChildView(options = {}) {
       average: avg !== null ? avg.toFixed(2) : "—",
       avgNum: avg !== null ? avg : 0,
     };
-  }).filter((item) => item.grades.length > 0 || item.avgNum > 0);
+  });
+
+  const hasAnyGradesInPeriod = subjectsWithGrades.some((item) => item.grades.length > 0);
 
   const meetings = (db.meetings || []).filter((m) => m.classId === student.classId || !m.classId);
   const upcomingMeetings = meetings.filter((m) => m.status === "scheduled");
@@ -136,11 +138,19 @@ export function renderChildView(options = {}) {
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
-          <span class="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/60">
-            Успеваемость хорошая
+          <span class="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-semibold ${
+            overallAvg !== null
+              ? "bg-indigo-50 text-indigo-700 border border-indigo-200/60"
+              : "bg-slate-100 text-slate-600 border border-slate-200/60"
+          }">
+            ${overallAvg !== null ? "Успеваемость хорошая" : "Начало периода"}
           </span>
-          <span class="inline-flex items-center px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-            Средний балл: ${overallAvg !== null ? overallAvg.toFixed(2) : "4.50"}
+          <span class="inline-flex items-center px-3.5 py-1.5 rounded-xl text-xs font-bold ${
+            overallAvg !== null
+              ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+              : "bg-slate-50 text-slate-500 border border-slate-200/60"
+          }">
+            Средний балл: ${overallAvg !== null ? overallAvg.toFixed(2) : "—"}
           </span>
         </div>
       </div>
@@ -152,23 +162,34 @@ export function renderChildView(options = {}) {
           <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90">
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-base font-bold text-slate-900">Текущая успеваемость</h2>
-              <div class="flex items-center space-x-1.5">
-                <button data-period-btn="q1_2024" class="px-2.5 py-1 text-2xs font-semibold rounded-lg transition-colors ${
+              <div class="inline-flex items-center p-0.5 bg-slate-100 rounded-lg border border-slate-200/50">
+                <button data-period-btn="q1_2024" class="px-2 py-0.5 text-2xs leading-tight rounded-md transition-all ${
                   periodId === "q1_2024"
-                    ? "bg-brand-500 text-white shadow-2xs"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    ? "bg-white text-brand-600 font-bold shadow-2xs"
+                    : "text-slate-500 hover:text-slate-800 font-medium"
                 }">
                   I четверть
                 </button>
-                <button data-period-btn="q2_2024" class="px-2.5 py-1 text-2xs font-semibold rounded-lg transition-colors ${
+                <button data-period-btn="q2_2024" class="px-2 py-0.5 text-2xs leading-tight rounded-md transition-all ${
                   periodId === "q2_2024"
-                    ? "bg-brand-500 text-white shadow-2xs"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    ? "bg-white text-brand-600 font-bold shadow-2xs"
+                    : "text-slate-500 hover:text-slate-800 font-medium"
                 }">
                   II четверть
                 </button>
               </div>
             </div>
+
+            ${
+              !hasAnyGradesInPeriod
+                ? `
+              <div class="mb-4 p-3 bg-slate-50/80 rounded-2xl border border-slate-200/60 flex items-center space-x-2.5 text-xs text-slate-500">
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0"></span>
+                <span>II четверть началась 28 октября 2024 г. Оценки за текущий период ещё не выставлялись.</span>
+              </div>
+            `
+                : ""
+            }
 
             <div class="overflow-x-auto">
               <table id="child-grades-table" class="w-full text-left text-xs border-collapse">
@@ -186,21 +207,28 @@ export function renderChildView(options = {}) {
                         ${item.subject.name}
                       </td>
                       <td class="py-3.5 px-3">
-                        <div class="flex flex-wrap gap-1">
-                          ${item.grades.map((g) => `
-                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg text-xs font-bold ${
-                              g >= 4 ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60" :
-                              g === 3 ? "bg-amber-50 text-amber-700 border border-amber-200/60" :
-                              "bg-rose-50 text-rose-700 border border-rose-200/60"
-                            }">
-                              ${g}
-                            </span>
-                          `).join("")}
-                        </div>
+                        ${
+                          item.grades.length > 0
+                            ? `
+                          <div class="flex flex-wrap gap-1">
+                            ${item.grades.map((g) => `
+                              <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg text-xs font-bold ${
+                                g >= 4 ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60" :
+                                g === 3 ? "bg-amber-50 text-amber-700 border border-amber-200/60" :
+                                "bg-rose-50 text-rose-700 border border-rose-200/60"
+                              }">
+                                ${g}
+                              </span>
+                            `).join("")}
+                          </div>
+                        `
+                            : `<span class="text-slate-300 font-medium pl-1">—</span>`
+                        }
                       </td>
                       <td class="py-3.5 px-3 text-right font-bold text-sm ${
                         item.avgNum >= 4.5 ? "text-emerald-600" :
-                        item.avgNum >= 3.5 ? "text-slate-800" : "text-rose-600"
+                        item.avgNum >= 3.5 ? "text-slate-800" :
+                        item.avgNum > 0 ? "text-rose-600" : "text-slate-300 font-normal"
                       }">
                         ${item.average}
                       </td>
