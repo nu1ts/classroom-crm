@@ -452,7 +452,7 @@ export function setupJournalListeners(onNavigate) {
             </span>
             <div>
               <div class="text-xs font-bold text-slate-800">Оценка: ${grade.value}</div>
-              <div class="text-[11px] text-slate-500">${grade.teacher || "Учитель-предметник"}</div>
+              <div class="text-[11px] text-slate-500">${grade.teacher || "Учитель"}</div>
             </div>
           </div>
         `;

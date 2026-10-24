@@ -72,7 +72,7 @@ export const ROLE_NAVIGATION = {
   },
 
   subject_teacher: {
-    label: "Учитель-предметник",
+    label: "Учитель",
     defaultRoute: "/classes",
     items: [
       {
@@ -82,18 +82,17 @@ export const ROLE_NAVIGATION = {
         icon: "grid",
       },
       {
-        id: "nav-schedule",
-        title: "Расписание",
-        path: "/schedule",
-        icon: "calendar",
-      },
-      {
         id: "nav-attendance",
         title: "Посещаемость",
         path: "/attendance",
         icon: "check-square",
       },
-      { id: "nav-profile", title: "Профиль", path: "/profile", icon: "user" },
+      {
+        id: "nav-schedule",
+        title: "Расписание",
+        path: "/schedule",
+        icon: "calendar",
+      },
     ],
     allowedRoutes: [
       "/classes",

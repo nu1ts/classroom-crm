@@ -533,8 +533,15 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(analyticsPage.reportPeriodTitle).toContainText('Октябрь 2024');
   });
 
-  test.skip('TC-BP-34: Предметник не может подтвердить уважительную причину', async () => {
-    // TODO: Панель ведения урока учителем-предметником ещё не реализована в UI
+  test('TC-BP-34: Предметник не может подтвердить уважительную причину', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+    await page.goto('attendance?class=class-7b');
+    await expect(page.locator('#btn-open-batch-confirm')).toHaveCount(0);
+    await expect(page.locator('#btn-banner-confirm')).toHaveCount(0);
+    await expect(page.locator('button[data-action="open-confirm"]')).toHaveCount(0);
   });
 
   test.skip('TC-BP-35: Границы доступа: классрук видит только свой класс', async () => {

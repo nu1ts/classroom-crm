@@ -50,7 +50,7 @@ export const INITIAL_DATASET = {
       "username": "kozlov@school.ru",
       "password": "Test#2024",
       "role": "subject_teacher",
-      "roleLabel": "Учитель-предметник",
+      "roleLabel": "Учитель",
       "personName": "Козлов Андрей Павлович",
       "shortName": "Козлов А. П.",
       "cardName": "Козлов А. П.",

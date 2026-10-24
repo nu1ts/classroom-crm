@@ -120,7 +120,12 @@ export class JournalPage {
     if (await activeInput.count() > 0) {
       await cell.click({ position: { x: 10, y: 2 }, force: true });
     } else {
-      await cell.click();
+      const absenceBtn = cell.locator('button.btn-toggle-absence');
+      if (await absenceBtn.count() > 0) {
+        await cell.click({ position: { x: 6, y: 2 }, force: true });
+      } else {
+        await cell.click();
+      }
     }
     await expect(this.entryModal).toHaveClass(/opacity-100/);
   }

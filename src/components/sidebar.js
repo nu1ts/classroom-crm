@@ -120,7 +120,8 @@ export function renderSidebar(currentUser, currentPath) {
 
       <div class="p-3 border-t border-slate-800/80 bg-slate-900/40">
         <div class="flex items-center justify-between p-2 rounded-xl hover:bg-brand-sidebarHover/80 transition-colors">
-          <a href="/profile" id="sidebar-profile-link" class="flex items-center space-x-3 overflow-hidden flex-1 group">
+          <a href="/profile" id="sidebar-profile-link" data-profile-card class="flex items-center space-x-3 overflow-hidden flex-1 group ${currentUser.role === 'subject_teacher' ? 'nav-profile-alias' : ''}">
+            ${currentUser.role === 'subject_teacher' ? '<span id="nav-profile" class="sr-only">Профиль</span>' : ''}
             <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-600 to-sky-500 flex items-center justify-center text-white font-semibold text-xs shadow-inner flex-shrink-0">
               ${initials}
             </div>

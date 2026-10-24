@@ -14,7 +14,7 @@ export const TEST_USERS = {
   },
   subject_teacher: {
     role: 'subject_teacher',
-    roleLabel: 'Учитель-предметник',
+    roleLabel: 'Учитель',
     username: 'kozlov@school.ru',
     email: 'kozlov@school.ru',
     password: 'Test#2024',

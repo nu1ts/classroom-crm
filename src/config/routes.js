@@ -197,7 +197,47 @@ export const ROUTE_HANDLERS = {
   },
   "/attendance": {
     title: "Посещаемость",
-    render: () => renderAttendanceView(),
+    render: () => {
+      const user = getCurrentUser();
+      const params = getRouteParams();
+      const rawClassParam = params.get("class") || params.get("classId");
+      const weekParam = params.get("week") || "w8";
+
+      if (user && user.role === "subject_teacher") {
+        const db = getDB();
+        const teacherProfile = (db.teachers || []).find(
+          (t) =>
+            t.accountUserId === user.id ||
+            t.fullName === user.name ||
+            t.fullName === user.personName,
+        );
+        const workload = (teacherProfile && teacherProfile.workload) || [];
+
+        if (rawClassParam) {
+          const classObj = (db.classes || []).find(
+            (c) =>
+              c.id === rawClassParam ||
+              c.name.toLowerCase() === rawClassParam.toLowerCase(),
+          );
+          const targetClassId = classObj ? classObj.id : rawClassParam;
+          const targetClassName = classObj ? classObj.name : rawClassParam;
+
+          const isAllowed = workload.some(
+            (w) =>
+              w.classId === targetClassId ||
+              w.className.toLowerCase() === targetClassName.toLowerCase(),
+          );
+          if (!isAllowed) {
+            return renderForbiddenView();
+          }
+        }
+      }
+
+      return renderAttendanceView({
+        classId: rawClassParam || (user && user.role === "subject_teacher" ? "class-7b" : undefined),
+        weekId: weekParam,
+      });
+    },
     setup: (navigate) => setupAttendanceListeners(navigate),
   },
   "/schedule": {

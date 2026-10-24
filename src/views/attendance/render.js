@@ -4,6 +4,7 @@ import {
 } from "./helpers.js";
 import {
   getDB,
+  getCurrentUser,
   confirmAbsenceRecord,
   batchConfirmAbsences,
 } from "../../services/storage.js";
@@ -13,8 +14,34 @@ import { navigate } from "../../services/navigation.js";
 
 export function renderAttendanceView(options = {}) {
   const db = getDB();
+  const currentUser = getCurrentUser();
+  const isSubjectTeacher = currentUser && currentUser.role === "subject_teacher";
   const periodId = "q1_2024";
-  const students = db.students || [];
+
+  let teacherWorkload = [];
+  if (isSubjectTeacher) {
+    const teacherProfile = (db.teachers || []).find(
+      (t) =>
+        t.accountUserId === currentUser.id ||
+        t.fullName === currentUser.name ||
+        t.fullName === currentUser.personName,
+    );
+    teacherWorkload = (teacherProfile && teacherProfile.workload) || [];
+  }
+
+  const queryString = window.location.search || "";
+  const urlParams = new URLSearchParams(queryString);
+  const selectedClassId = options.classId || urlParams.get("class") || (isSubjectTeacher ? "class-7b" : "class-7b");
+
+  const currentClassObj = (db.classes || []).find(
+    (c) => c.id === selectedClassId || c.name.toLowerCase() === selectedClassId.toLowerCase(),
+  );
+  const classNameDisplay = currentClassObj ? currentClassObj.name : "7Б";
+
+  const allStudents = db.students || [];
+  const students = allStudents.filter(
+    (st) => !st.classId || st.classId === selectedClassId || selectedClassId === "class-7b",
+  );
 
   const unconfirmedList = getUnconfirmedAbsences(
     db.attendance,
@@ -76,18 +103,31 @@ export function renderAttendanceView(options = {}) {
     },
   ];
 
-  const queryString = window.location.search || "";
-  const urlParams = new URLSearchParams(queryString);
   const activeWeekId = options.weekId || urlParams.get("week") || "w8";
   const selectedWeek = weeks.find((w) => w.id === activeWeekId) || weeks[0];
 
   const daysOfWeek = generateDaysOfWeek(selectedWeek.from);
   const weekDateSet = new Set(daysOfWeek.map((d) => d.date));
-  const weekLessons = (db.lessons || []).filter((l) => weekDateSet.has(l.date));
-  const weekLessonsCount = weekLessons.length > 0 ? weekLessons.length : 20;
+  let weekLessons = (db.lessons || []).filter((l) => weekDateSet.has(l.date));
+
+  if (isSubjectTeacher) {
+    const workloadClasses = new Set(teacherWorkload.map((w) => w.classId));
+    weekLessons = weekLessons.filter(
+      (l) =>
+        (!l.classId || l.classId === selectedClassId) &&
+        (l.teacher === currentUser.personName ||
+          l.teacher === currentUser.shortName ||
+          l.subjectId === "math"),
+    );
+  }
+  const weekLessonsCount = weekLessons.length > 0 ? weekLessons.length : isSubjectTeacher ? 5 : 20;
 
   const attendanceByStudentDay = new Map();
+  const weekLessonIds = new Set(weekLessons.map((l) => l.id));
   (db.attendance || []).forEach((att) => {
+    if (isSubjectTeacher && !weekLessonIds.has(att.lessonId)) {
+      return;
+    }
     const key = `${att.studentId}_${att.date}`;
     const existing = attendanceByStudentDay.get(key) || [];
     existing.push(att);
@@ -144,6 +184,16 @@ export function renderAttendanceView(options = {}) {
             dayAbsenceRecords.length > 1
               ? ` (${dayAbsenceRecords.length})`
               : "";
+          if (isSubjectTeacher) {
+            return `
+            <td class="py-3 px-3 text-center">
+              <span title="Пропущено уроков: ${dayAbsenceRecords.length}. Не подтверждено"
+                    class="inline-block px-3 py-1 rounded-lg text-xs font-bold bg-rose-500 text-white shadow-2xs">
+                Н (Нп)${countBadge}
+              </span>
+            </td>
+          `;
+          }
           return `
           <td class="py-3 px-3 text-center">
             <button type="button"
@@ -220,7 +270,7 @@ export function renderAttendanceView(options = {}) {
             <div class="flex items-center space-x-2">
               <span>${st.fullName}</span>
               ${
-                hasUnconfirmed
+                !isSubjectTeacher && hasUnconfirmed
                   ? `
                 <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
                   Требует справку
@@ -243,6 +293,35 @@ export function renderAttendanceView(options = {}) {
     <div class="space-y-5 animate-fadeIn pb-12">
       <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+          ${
+            isSubjectTeacher && teacherWorkload.length > 0
+              ? `
+            <div>
+              <label for="select-attendance-class" class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                Класс
+              </label>
+              <div class="relative">
+                <select id="select-attendance-class"
+                        class="appearance-none pl-3.5 pr-10 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-xs font-bold text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer">
+                  ${teacherWorkload
+                    .map(
+                      (w) => `
+                    <option value="${w.classId}" ${w.classId === selectedClassId ? "selected" : ""}>
+                      ${w.className} (${w.subjectLabel || "Математика"})
+                    </option>
+                  `,
+                    )
+                    .join("")}
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                  ${renderIcon("chevron-down", "w-4 h-4")}
+                </div>
+              </div>
+            </div>
+          `
+              : ""
+          }
+
           <div>
             <label for="select-attendance-week" class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
               Учебная неделя
@@ -275,6 +354,9 @@ export function renderAttendanceView(options = {}) {
           </label>
         </div>
 
+        ${
+          !isSubjectTeacher
+            ? `
         <div class="flex items-center space-x-2.5">
           <button type="button" id="btn-open-batch-confirm"
                   class="py-2.5 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-xs transition-colors flex items-center space-x-2">
@@ -282,11 +364,15 @@ export function renderAttendanceView(options = {}) {
             <span>Подтвердить уваж. причину</span>
           </button>
         </div>
+        `
+            : ""
+        }
       </div>
 
       ${
-        unconfirmedCount > 0
-          ? `
+        !isSubjectTeacher
+          ? unconfirmedCount > 0
+            ? `
         <div id="banner-unconfirmed" class="bg-rose-50/80 border border-rose-200/90 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div class="flex items-start space-x-3">
             <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 mt-0.5 border border-rose-200">
@@ -310,7 +396,7 @@ export function renderAttendanceView(options = {}) {
           </button>
         </div>
       `
-          : `
+            : `
         <div id="banner-unconfirmed" class="bg-emerald-50/80 border border-emerald-200/90 rounded-2xl p-4 flex items-center justify-between shadow-xs">
           <div class="flex items-center space-x-3">
             <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">✓</div>
@@ -321,12 +407,13 @@ export function renderAttendanceView(options = {}) {
           </div>
         </div>
       `
+          : ""
       }
 
       <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
         <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
           <div>
-            <h2 class="text-base font-bold text-slate-900">Журнал посещаемости 7Б</h2>
+            <h2 class="text-base font-bold text-slate-900">Журнал посещаемости ${classNameDisplay}</h2>
             <p class="text-xs text-slate-500 mt-0.5">${students.length} учеников · Учебная неделя ${selectedWeek.label.replace(" (Текущая неделя)", "")}</p>
           </div>
           <span class="text-xs font-semibold text-slate-500">
@@ -372,14 +459,23 @@ export function renderAttendanceView(options = {}) {
             <span class="px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-400 border border-slate-200">—</span>
             <span>Нет уроков по расписанию</span>
           </div>
+          ${
+            !isSubjectTeacher
+              ? `
           <div class="flex items-center space-x-2">
             <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">Требует справку</span>
             <span>Ожидает подтверждения от родителей</span>
           </div>
+          `
+              : ""
+          }
         </div>
       </div>
     </div>
 
+    ${
+      !isSubjectTeacher
+        ? `
     <div id="modal-confirm-absence" class="fixed inset-0 z-50 !m-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none">
       <div id="modal-confirm-dialog" class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-100 transform transition-all duration-200 scale-95 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
@@ -470,5 +566,8 @@ export function renderAttendanceView(options = {}) {
         </form>
       </div>
     </div>
+    `
+        : ""
+    }
   `;
 }
