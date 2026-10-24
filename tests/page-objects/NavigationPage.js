@@ -12,7 +12,7 @@ export class NavigationPage {
     this.profileLink = page.locator('#sidebar-profile-link');
     this.logoutBtn = page.locator('#btn-sidebar-logout');
     this.roleSwitcher = page.locator('#demo-role-switcher');
-    this.readOnlyBadge = page.locator('text="Только для просмотра"');
+    this.readOnlyBadge = page.locator('text="Только для просмотра"').first();
   }
 
   /**
