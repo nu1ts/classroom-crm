@@ -355,7 +355,7 @@ export function getCurrentUser() {
 /** Подписи ролей для отображения в интерфейсе. */
 export const ROLE_LABELS = {
   teacher: "Классный руководитель",
-  subject_teacher: "Учитель-предметник",
+  subject_teacher: "Учитель",
   parent: "Родитель",
   student: "Ученик",
   admin: "Администратор",

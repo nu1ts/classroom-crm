@@ -52,7 +52,7 @@
         "username": "kozlov@school.ru",
         "password": "Test#2024",
         "role": "subject_teacher",
-        "roleLabel": "Учитель-предметник",
+        "roleLabel": "Учитель",
         "personName": "Козлов Андрей Павлович",
         "shortName": "Козлов А. П.",
         "cardName": "Козлов А. П.",
@@ -23104,7 +23104,7 @@
   }
   var ROLE_LABELS = {
     teacher: "Классный руководитель",
-    subject_teacher: "Учитель-предметник",
+    subject_teacher: "Учитель",
     parent: "Родитель",
     student: "Ученик",
     admin: "Администратор"
@@ -23347,7 +23347,7 @@
       ]
     },
     subject_teacher: {
-      label: "Учитель-предметник",
+      label: "Учитель",
       defaultRoute: "/classes",
       items: [
         {
@@ -23357,18 +23357,17 @@
           icon: "grid"
         },
         {
-          id: "nav-schedule",
-          title: "Расписание",
-          path: "/schedule",
-          icon: "calendar"
-        },
-        {
           id: "nav-attendance",
           title: "Посещаемость",
           path: "/attendance",
           icon: "check-square"
         },
-        { id: "nav-profile", title: "Профиль", path: "/profile", icon: "user" }
+        {
+          id: "nav-schedule",
+          title: "Расписание",
+          path: "/schedule",
+          icon: "calendar"
+        }
       ],
       allowedRoutes: [
         "/classes",
@@ -23894,7 +23893,8 @@
 
       <div class="p-3 border-t border-slate-800/80 bg-slate-900/40">
         <div class="flex items-center justify-between p-2 rounded-xl hover:bg-brand-sidebarHover/80 transition-colors">
-          <a href="/profile" id="sidebar-profile-link" class="flex items-center space-x-3 overflow-hidden flex-1 group">
+          <a href="/profile" id="sidebar-profile-link" data-profile-card class="flex items-center space-x-3 overflow-hidden flex-1 group ${currentUser.role === "subject_teacher" ? "nav-profile-alias" : ""}">
+            ${currentUser.role === "subject_teacher" ? '<span id="nav-profile" class="sr-only">Профиль</span>' : ""}
             <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-600 to-sky-500 flex items-center justify-center text-white font-semibold text-xs shadow-inner flex-shrink-0">
               ${initials}
             </div>
@@ -28111,7 +28111,7 @@
             </span>
             <div>
               <div class="text-xs font-bold text-slate-800">Оценка: ${grade.value}</div>
-              <div class="text-[11px] text-slate-500">${grade.teacher || "Учитель-предметник"}</div>
+              <div class="text-[11px] text-slate-500">${grade.teacher || "Учитель"}</div>
             </div>
           </div>
         `;
