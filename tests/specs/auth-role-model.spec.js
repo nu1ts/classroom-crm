@@ -508,8 +508,29 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     ]);
   });
 
-  test.skip('[TC-RM-12] Отказ не раскрывает лишних сведений (Негативный)', async () => {
-    // TODO: Будет реализовано после создания карточек других учеников и унификации сообщений об ограничении доступа.
+  test('[TC-RM-12] Отказ не раскрывает лишних сведений (Негативный)', async ({ page, loginPage, navigationPage }) => {
+    await loginPage.goto();
+    await loginPage.loginAs('parent');
+    await page.waitForURL(/\/child\/?/, { timeout: 7000 });
+
+    await page.goto('child?id=st-14');
+    await expect(page.locator('text=Доступ ограничен')).toBeVisible();
+    await expect(page.locator('text=У вас нет прав для просмотра данного раздела или объекта системы')).toBeVisible();
+    await expect(page.locator('#app-content').locator('text=Сидоров')).toHaveCount(0);
+    await expect(page.locator('#child-grades-table')).toHaveCount(0);
+
+    await page.goto('child?id=nonexistent-999');
+    await expect(page.locator('text=Доступ ограничен')).toBeVisible();
+    await expect(page.locator('text=У вас нет прав для просмотра данного раздела или объекта системы')).toBeVisible();
+    await expect(page.locator('#child-grades-table')).toHaveCount(0);
+
+    await navigationPage.logout();
+    await loginPage.loginAs('student');
+    await page.waitForURL(/\/schedule\/?/, { timeout: 7000 });
+
+    await page.goto('student?id=st-14');
+    await expect(page.locator('text=Доступ ограничен')).toBeVisible();
+    await expect(page.locator('text=У вас нет прав для просмотра данного раздела или объекта системы')).toBeVisible();
   });
 
   test('[TC-RM-13] Профиль показывает роль и привязку без права правки (Правило)', async ({ page, loginPage, profilePage, navigationPage }) => {

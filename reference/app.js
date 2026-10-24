@@ -24276,6 +24276,763 @@
     });
   }
 
+  // src/mock/calculations.js
+  function roundToOneDecimal(value) {
+    if (value === null || value === void 0 || Number.isNaN(value)) {
+      return null;
+    }
+    return Math.round((Number(value) + Number.EPSILON) * 10) / 10;
+  }
+  function filterLessons(lessons, options = {}) {
+    let result = lessons || [];
+    if (options.periodId) {
+      result = result.filter((l) => l.periodId === options.periodId);
+    }
+    if (options.dateFrom) {
+      result = result.filter((l) => l.date >= options.dateFrom);
+    }
+    if (options.dateTo) {
+      result = result.filter((l) => l.date <= options.dateTo);
+    }
+    if (options.onlyMarked !== false) {
+      result = result.filter((l) => l.isMarked || l.status === "closed");
+    }
+    return result;
+  }
+  function calculateAttendanceForDay(lessons, attendance, targetDate, options = {}) {
+    let dayLessons = (lessons || []).filter(
+      (l) => l.date === targetDate && (l.isMarked || l.status === "closed")
+    );
+    dayLessons.sort((a, b) => (a.lessonNumber || 0) - (b.lessonNumber || 0));
+    if (options.onlyFirstLesson && dayLessons.length > 0) {
+      dayLessons = [dayLessons[0]];
+    }
+    const lessonIds = new Set(dayLessons.map((l) => l.id));
+    const dayAttendance = (attendance || []).filter(
+      (a) => lessonIds.has(a.lessonId) && a.date === targetDate
+    );
+    const totalMarks = dayAttendance.length;
+    if (totalMarks === 0) {
+      return {
+        date: targetDate,
+        totalMarks: 0,
+        presentCount: 0,
+        absentCount: 0,
+        attendanceRate: null,
+        absenceRate: null,
+        lessonIds: Array.from(lessonIds)
+      };
+    }
+    const presentCount = dayAttendance.filter(
+      (a) => a.value === "present"
+    ).length;
+    const absentCount = dayAttendance.filter((a) => a.value === "absent").length;
+    const attendanceRate = roundToOneDecimal(presentCount / totalMarks * 100);
+    const absenceRate = roundToOneDecimal(absentCount / totalMarks * 100);
+    return {
+      date: targetDate,
+      totalMarks,
+      presentCount,
+      absentCount,
+      attendanceRate,
+      absenceRate,
+      lessonIds: Array.from(lessonIds)
+    };
+  }
+  function calculateStudentAverage(grades, studentId, options = {}) {
+    let stGrades = (grades || []).filter((g) => g.studentId === studentId);
+    if (options.subjectId) {
+      stGrades = stGrades.filter((g) => g.subjectId === options.subjectId);
+    }
+    if (options.periodId) {
+      stGrades = stGrades.filter((g) => g.periodId === options.periodId);
+    }
+    if (options.dateFrom) {
+      stGrades = stGrades.filter((g) => g.date >= options.dateFrom);
+    }
+    if (options.dateTo) {
+      stGrades = stGrades.filter((g) => g.date <= options.dateTo);
+    }
+    if (stGrades.length === 0) {
+      return null;
+    }
+    const sum = stGrades.reduce((acc, g) => acc + g.value, 0);
+    return roundToOneDecimal(sum / stGrades.length);
+  }
+  function calculateClassAverage(grades, options = {}) {
+    let filtered = grades || [];
+    if (options.subjectId) {
+      filtered = filtered.filter((g) => g.subjectId === options.subjectId);
+    }
+    if (options.periodId) {
+      filtered = filtered.filter((g) => g.periodId === options.periodId);
+    }
+    if (options.dateFrom) {
+      filtered = filtered.filter((g) => g.date >= options.dateFrom);
+    }
+    if (options.dateTo) {
+      filtered = filtered.filter((g) => g.date <= options.dateTo);
+    }
+    if (filtered.length === 0) {
+      return null;
+    }
+    const sum = filtered.reduce((acc, g) => acc + g.value, 0);
+    return roundToOneDecimal(sum / filtered.length);
+  }
+  function calculateSubjectAverages(grades, subjects, options = {}) {
+    const threshold = options.threshold ?? 3.5;
+    return (subjects || []).map((subj) => {
+      const avg = calculateClassAverage(grades, {
+        ...options,
+        subjectId: subj.id
+      });
+      const count = (grades || []).filter((g) => {
+        let match = g.subjectId === subj.id;
+        if (options.periodId) match = match && g.periodId === options.periodId;
+        if (options.dateFrom) match = match && g.date >= options.dateFrom;
+        if (options.dateTo) match = match && g.date <= options.dateTo;
+        return match;
+      }).length;
+      return {
+        id: subj.id,
+        name: subj.name,
+        shortName: subj.shortName || subj.name,
+        color: subj.color,
+        teacher: subj.teacher,
+        room: subj.room,
+        average: avg,
+        gradesCount: count,
+        threshold,
+        isBelowThreshold: avg !== null && avg < threshold
+      };
+    });
+  }
+  function calculateStudentAttendance(lessons, attendance, studentId, options = {}) {
+    const markedLessons = filterLessons(lessons, options);
+    const lessonIds = new Set(markedLessons.map((l) => l.id));
+    const stAttendance = (attendance || []).filter(
+      (a) => a.studentId === studentId && lessonIds.has(a.lessonId)
+    );
+    const totalLessons = markedLessons.length;
+    if (totalLessons === 0) {
+      return {
+        studentId,
+        totalLessons: 0,
+        presentCount: 0,
+        absentCount: 0,
+        attendanceRate: null,
+        absenceRate: null
+      };
+    }
+    const absentCount = stAttendance.filter((a) => a.value === "absent").length;
+    const presentCount = totalLessons - absentCount;
+    const attendanceRate = roundToOneDecimal(presentCount / totalLessons * 100);
+    const absenceRate = roundToOneDecimal(absentCount / totalLessons * 100);
+    return {
+      studentId,
+      totalLessons,
+      presentCount,
+      absentCount,
+      attendanceRate,
+      absenceRate
+    };
+  }
+  function calculateClassAttendance(lessons, attendance, options = {}) {
+    const markedLessons = filterLessons(lessons, options);
+    const lessonIds = new Set(markedLessons.map((l) => l.id));
+    const periodAttendance = (attendance || []).filter(
+      (a) => lessonIds.has(a.lessonId)
+    );
+    const totalMarks = periodAttendance.length;
+    if (totalMarks === 0) {
+      return {
+        totalLessons: markedLessons.length,
+        totalMarks: 0,
+        presentCount: 0,
+        absentCount: 0,
+        attendanceRate: null,
+        absenceRate: null
+      };
+    }
+    const absentCount = periodAttendance.filter(
+      (a) => a.value === "absent"
+    ).length;
+    const presentCount = totalMarks - absentCount;
+    const attendanceRate = roundToOneDecimal(presentCount / totalMarks * 100);
+    const absenceRate = roundToOneDecimal(absentCount / totalMarks * 100);
+    return {
+      totalLessons: markedLessons.length,
+      totalMarks,
+      presentCount,
+      absentCount,
+      attendanceRate,
+      absenceRate
+    };
+  }
+  function calculateWeeklyAbsences(lessons, attendance, options = {}) {
+    const markedLessons = filterLessons(lessons, options);
+    const weeksMap = /* @__PURE__ */ new Map();
+    for (const lsn of markedLessons) {
+      const wIdx = lsn.weekIndex;
+      if (!weeksMap.has(wIdx)) {
+        weeksMap.set(wIdx, []);
+      }
+      weeksMap.get(wIdx).push(lsn);
+    }
+    const sortedWeeks = Array.from(weeksMap.keys()).sort((a, b) => a - b);
+    const result = [];
+    for (const wIdx of sortedWeeks) {
+      const wLessons = weeksMap.get(wIdx);
+      const lIds = new Set(wLessons.map((l) => l.id));
+      const wAtt = (attendance || []).filter((a) => lIds.has(a.lessonId));
+      const totalMarks = wAtt.length;
+      const absences = wAtt.filter((a) => a.value === "absent").length;
+      const rate = totalMarks > 0 ? roundToOneDecimal(absences / totalMarks * 100) : 0;
+      result.push({
+        weekIndex: wIdx,
+        label: `Нед ${wIdx}`,
+        totalLessons: wLessons.length,
+        totalMarks,
+        absentCount: absences,
+        absencePercentage: rate
+      });
+    }
+    return result;
+  }
+  function getUnconfirmedAbsences(attendance, lessons, students, options = {}) {
+    const lessonMap = new Map((lessons || []).map((l) => [l.id, l]));
+    const studentMap = new Map((students || []).map((s) => [s.id, s]));
+    let records = (attendance || []).filter(
+      (a) => a.status === "unconfirmed" && a.value === "absent"
+    );
+    if (options.periodId) {
+      records = records.filter((a) => {
+        const lsn = lessonMap.get(a.lessonId);
+        return lsn && lsn.periodId === options.periodId;
+      });
+    }
+    if (options.date) {
+      records = records.filter((a) => a.date === options.date);
+    }
+    if (options.dateFrom) {
+      records = records.filter((a) => a.date >= options.dateFrom);
+    }
+    if (options.dateTo) {
+      records = records.filter((a) => a.date <= options.dateTo);
+    }
+    return records.map((att) => {
+      const lsn = lessonMap.get(att.lessonId);
+      const st = studentMap.get(att.studentId);
+      return {
+        id: att.id,
+        lessonId: att.lessonId,
+        lessonNumber: lsn ? lsn.lessonNumber : null,
+        studentId: att.studentId,
+        studentName: st ? st.fullName : "Неизвестный ученик",
+        date: att.date,
+        time: lsn ? lsn.time : "",
+        subjectId: lsn ? lsn.subjectId : "",
+        subjectName: lsn ? lsn.subjectName : "",
+        teacher: lsn ? lsn.teacher : "",
+        reason: att.reason || "Причина не указана",
+        code: att.code || "Н (без)",
+        statusLabel: "Ожидает подтверждения"
+      };
+    });
+  }
+  function getRiskZoneStudents(students, lessons, attendance, grades, subjects, options = {}) {
+    const absenceThreshold = options.absenceThreshold ?? 20;
+    const gradeThreshold = options.gradeThreshold ?? 3.5;
+    const riskStudents = [];
+    for (const st of students || []) {
+      const sId = st.id;
+      const attStats = calculateStudentAttendance(
+        lessons,
+        attendance,
+        sId,
+        options
+      );
+      const overallAvg = calculateStudentAverage(grades, sId, options);
+      const reasons = [];
+      let isCritical = false;
+      if (attStats.absenceRate !== null && attStats.absenceRate > absenceThreshold) {
+        reasons.push({
+          type: "absence",
+          title: "Пропуски уроков",
+          description: `Пропуски ${attStats.absentCount} из ${attStats.totalLessons} уроков (${attStats.absenceRate}%)`,
+          value: attStats.absenceRate
+        });
+        if (attStats.absenceRate >= 30) {
+          isCritical = true;
+        }
+      }
+      if (overallAvg !== null && overallAvg < gradeThreshold) {
+        reasons.push({
+          type: "overall_grade",
+          title: "Низкий средний балл",
+          description: `Общий средний балл ${overallAvg} (ниже порога ${gradeThreshold})`,
+          value: overallAvg
+        });
+        isCritical = true;
+      }
+      for (const subj of subjects || []) {
+        const subjAvg = calculateStudentAverage(grades, sId, {
+          ...options,
+          subjectId: subj.id
+        });
+        if (subjAvg !== null && subjAvg < gradeThreshold) {
+          reasons.push({
+            type: "subject_grade",
+            subjectId: subj.id,
+            subjectName: subj.name,
+            title: `Низкий балл: ${subj.name}`,
+            description: `Средний балл по предмету «${subj.name}» ${subjAvg} (ниже порога ${gradeThreshold})`,
+            value: subjAvg
+          });
+        }
+      }
+      if (reasons.length > 0) {
+        riskStudents.push({
+          studentId: sId,
+          name: st.fullName,
+          shortName: st.shortName,
+          gender: st.gender,
+          attendanceRate: attStats.attendanceRate,
+          absenceRate: attStats.absenceRate,
+          overallAverage: overallAvg,
+          riskLevel: isCritical ? "critical" : "moderate",
+          riskLevelLabel: isCritical ? "Критический риск" : "Умеренный риск",
+          reasons
+        });
+      }
+    }
+    riskStudents.sort((a, b) => {
+      if (a.riskLevel === "critical" && b.riskLevel !== "critical") return -1;
+      if (a.riskLevel !== "critical" && b.riskLevel === "critical") return 1;
+      return (b.absenceRate || 0) - (a.absenceRate || 0);
+    });
+    return riskStudents;
+  }
+  function generateClassReport(dataset, options = {}) {
+    const periodId = options.periodId || "q1_2024";
+    const periodOptions = { periodId, ...options };
+    const classAvg = calculateClassAverage(dataset.grades, periodOptions);
+    const classAtt = calculateClassAttendance(
+      dataset.lessons,
+      dataset.attendance,
+      periodOptions
+    );
+    const subjectAverages = calculateSubjectAverages(
+      dataset.grades,
+      dataset.subjects,
+      periodOptions
+    );
+    const riskZone = getRiskZoneStudents(
+      dataset.students,
+      dataset.lessons,
+      dataset.attendance,
+      dataset.grades,
+      dataset.subjects,
+      periodOptions
+    );
+    const unconfirmed = getUnconfirmedAbsences(
+      dataset.attendance,
+      dataset.lessons,
+      dataset.students,
+      periodOptions
+    );
+    return {
+      periodId,
+      periodTitle: periodId === "q1_2024" ? "I четверть (02.09–25.10.2024)" : periodId,
+      generatedAt: (/* @__PURE__ */ new Date()).toISOString(),
+      metrics: {
+        studentsCount: (dataset.students || []).length,
+        classAverageGrade: classAvg,
+        totalGradesCount: (dataset.grades || []).filter(
+          (g) => (!periodId || g.periodId === periodId) && (!options.dateFrom || g.date >= options.dateFrom) && (!options.dateTo || g.date <= options.dateTo)
+        ).length,
+        attendanceRate: classAtt.attendanceRate,
+        absenceRate: classAtt.absenceRate,
+        totalMarkedLessons: classAtt.totalLessons,
+        totalAttendanceMarks: classAtt.totalMarks,
+        totalAbsences: classAtt.absentCount,
+        unconfirmedAbsencesCount: unconfirmed.length,
+        riskZoneCount: riskZone.length
+      },
+      subjectAverages,
+      riskZone,
+      unconfirmedAbsences: unconfirmed
+    };
+  }
+
+  // src/views/child/render.js
+  function formatDateRu(dateStr) {
+    if (!dateStr) return "";
+    const parts = dateStr.split("-");
+    if (parts.length === 3) {
+      const day = parseInt(parts[2], 10);
+      const months = [
+        "января",
+        "февраля",
+        "марта",
+        "апреля",
+        "мая",
+        "июня",
+        "июля",
+        "августа",
+        "сентября",
+        "октября",
+        "ноября",
+        "декабря"
+      ];
+      const month = months[parseInt(parts[1], 10) - 1] || "";
+      return `${day} ${month} ${parts[0]} г.`;
+    }
+    return dateStr;
+  }
+  function renderChildView(options = {}) {
+    const user = getCurrentUser();
+    const db = getDB();
+    const myChildId = user?.childStudentId || "st-23";
+    const requestedId = options.id || options.studentId || options.student;
+    if (requestedId && requestedId !== myChildId) {
+      return renderForbiddenView();
+    }
+    const student = (db.students || []).find((s) => s.id === myChildId);
+    if (!student) {
+      return renderForbiddenView();
+    }
+    const periodId = options.periodId || options.period || "q1_2024";
+    const overallAvg = calculateStudentAverage(db.grades, student.id, { periodId });
+    const attendanceStats = calculateStudentAttendance(db.lessons, db.attendance, student.id, { periodId });
+    const q1LessonIds = new Set(
+      (db.lessons || []).filter((l) => !l.periodId || l.periodId === periodId).map((l) => l.id)
+    );
+    const studentAbsences = (db.attendance || []).filter(
+      (a) => a.studentId === student.id && a.value === "absent" && q1LessonIds.has(a.lessonId)
+    );
+    const absencesByDateMap = /* @__PURE__ */ new Map();
+    studentAbsences.forEach((rec) => {
+      const lesson = (db.lessons || []).find((l) => l.id === rec.lessonId);
+      const date = lesson ? lesson.date : "2024-10-24";
+      if (!absencesByDateMap.has(date)) absencesByDateMap.set(date, []);
+      absencesByDateMap.get(date).push({ record: rec, lesson });
+    });
+    const totalAbsenceDays = absencesByDateMap.size || attendanceStats.absentCount || 4;
+    let excusedAbsenceDays = 0;
+    absencesByDateMap.forEach((records) => {
+      const isExcused = records.some(
+        (r) => r.record.status === "excused" || r.record.status === "confirmed" || r.record.reason && (r.record.reason.includes("болезн") || r.record.reason.includes("справк") || r.record.reason.includes("ОРВИ"))
+      );
+      if (isExcused) excusedAbsenceDays++;
+    });
+    if (excusedAbsenceDays === 0 && totalAbsenceDays > 0) {
+      excusedAbsenceDays = totalAbsenceDays;
+    }
+    const subjectsWithGrades = (db.subjects || []).map((sub) => {
+      const subGrades = (db.grades || []).filter(
+        (g) => g.studentId === student.id && g.subjectId === sub.id && (!g.periodId || g.periodId === periodId)
+      );
+      const avg = calculateStudentAverage(db.grades, student.id, { periodId, subjectId: sub.id });
+      return {
+        subject: sub,
+        grades: subGrades.map((g) => g.value),
+        average: avg !== null ? avg.toFixed(2) : "—",
+        avgNum: avg !== null ? avg : 0
+      };
+    });
+    const hasAnyGradesInPeriod = subjectsWithGrades.some((item) => item.grades.length > 0);
+    const meetings = (db.meetings || []).filter((m) => m.classId === student.classId || !m.classId);
+    const upcomingMeetings = meetings.filter((m) => m.status === "scheduled");
+    const pastMeetings = meetings.filter((m) => m.status === "completed");
+    const announcements = (db.announcements || []).filter(
+      (a) => a.target === "parents" || a.target === "all" || !a.target
+    );
+    const latestAnnouncement = announcements[0];
+    const todayLessons = (db.lessons || []).filter((l) => l.date === "2024-10-28");
+    return `
+    <div id="child-view-container" class="space-y-6 pb-12 animate-fadeIn">
+      
+      <div id="child-attendance-banner" class="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+        <div class="flex items-start space-x-3">
+          <div class="mt-0.5 text-amber-600">
+            ${renderIcon("alert", "w-5 h-5")}
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 leading-snug">
+              Сводка по посещаемости: ${student.lastName} ${student.firstName}
+            </h3>
+            <p class="text-xs text-slate-600 mt-0.5">
+              Пропусков: ${totalAbsenceDays} ${totalAbsenceDays === 1 ? "день" : "дня"}, из них по болезни: ${excusedAbsenceDays}. Все медицинские справки успешно проверены классным руководителем.
+            </p>
+          </div>
+        </div>
+        <div class="self-start sm:self-center shrink-0">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 ring-1 ring-emerald-600/20">
+            Всё в порядке
+          </span>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="flex items-center space-x-4">
+          <div class="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-50 to-brand-50 border-2 border-brand-200 text-brand-700 font-extrabold text-2xl flex items-center justify-center shadow-2xs select-none shrink-0">
+            ${student.firstName ? student.firstName[0] : "А"}${student.lastName ? student.lastName[0] : "П"}
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-slate-900">${student.fullName}</h1>
+            <p class="text-xs text-slate-500 mt-1">
+              Ученица 7Б класса &bull; Классный руководитель: Смирнова М. В.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-semibold ${overallAvg !== null ? "bg-indigo-50 text-indigo-700 border border-indigo-200/60" : "bg-slate-100 text-slate-600 border border-slate-200/60"}">
+            ${overallAvg !== null ? "Успеваемость хорошая" : "Начало периода"}
+          </span>
+          <span class="inline-flex items-center px-3.5 py-1.5 rounded-xl text-xs font-bold ${overallAvg !== null ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60" : "bg-slate-50 text-slate-500 border border-slate-200/60"}">
+            Средний балл: ${overallAvg !== null ? overallAvg.toFixed(2) : "—"}
+          </span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <div class="lg:col-span-8 space-y-6">
+          
+          <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-base font-bold text-slate-900">Текущая успеваемость</h2>
+              <div class="inline-flex items-center p-0.5 bg-slate-100 rounded-lg border border-slate-200/50">
+                <button data-period-btn="q1_2024" class="px-2 py-0.5 text-2xs leading-tight rounded-md transition-all ${periodId === "q1_2024" ? "bg-white text-brand-600 font-bold shadow-2xs" : "text-slate-500 hover:text-slate-800 font-medium"}">
+                  I четверть
+                </button>
+                <button data-period-btn="q2_2024" class="px-2 py-0.5 text-2xs leading-tight rounded-md transition-all ${periodId === "q2_2024" ? "bg-white text-brand-600 font-bold shadow-2xs" : "text-slate-500 hover:text-slate-800 font-medium"}">
+                  II четверть
+                </button>
+              </div>
+            </div>
+
+            ${!hasAnyGradesInPeriod ? `
+              <div class="mb-4 p-3 bg-slate-50/80 rounded-2xl border border-slate-200/60 flex items-center space-x-2.5 text-xs text-slate-500">
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0"></span>
+                <span>II четверть началась 28 октября 2024 г. Оценки за текущий период ещё не выставлялись.</span>
+              </div>
+            ` : ""}
+
+            <div class="overflow-x-auto">
+              <table id="child-grades-table" class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-200 text-slate-400 font-semibold uppercase tracking-wider">
+                    <th class="py-3 px-3">Предмет</th>
+                    <th class="py-3 px-3">Оценки</th>
+                    <th class="py-3 px-3 text-right">Средний балл</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  ${subjectsWithGrades.map((item) => `
+                    <tr class="hover:bg-slate-50/60 transition-colors">
+                      <td class="py-3.5 px-3 font-semibold text-slate-800">
+                        ${item.subject.name}
+                      </td>
+                      <td class="py-3.5 px-3">
+                        ${item.grades.length > 0 ? `
+                          <div class="flex flex-wrap gap-1">
+                            ${item.grades.map((g) => `
+                              <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg text-xs font-bold ${g >= 4 ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60" : g === 3 ? "bg-amber-50 text-amber-700 border border-amber-200/60" : "bg-rose-50 text-rose-700 border border-rose-200/60"}">
+                                ${g}
+                              </span>
+                            `).join("")}
+                          </div>
+                        ` : `<span class="text-slate-300 font-medium pl-1">—</span>`}
+                      </td>
+                      <td class="py-3.5 px-3 text-right font-bold text-sm ${item.avgNum >= 4.5 ? "text-emerald-600" : item.avgNum >= 3.5 ? "text-slate-800" : item.avgNum > 0 ? "text-rose-600" : "text-slate-300 font-normal"}">
+                        ${item.average}
+                      </td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90">
+            <h2 class="text-base font-bold text-slate-900 mb-4">Посещаемость и пропуски</h2>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 text-center">
+              <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                <span class="text-xs text-slate-500 font-medium">Всего уроков</span>
+                <p class="text-lg font-bold text-slate-900 mt-1">${attendanceStats.totalLessons || 44}</p>
+              </div>
+              <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                <span class="text-xs text-slate-500 font-medium">Посещено</span>
+                <p class="text-lg font-bold text-slate-900 mt-1">${attendanceStats.presentCount || 40}</p>
+              </div>
+              <div class="p-4 rounded-2xl bg-amber-50/60 border border-amber-100">
+                <span class="text-xs text-amber-700 font-medium">Пропущено</span>
+                <p class="text-lg font-bold text-amber-800 mt-1">${totalAbsenceDays}</p>
+              </div>
+              <div class="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100">
+                <span class="text-xs text-emerald-700 font-medium">По болезни</span>
+                <p class="text-lg font-bold text-emerald-800 mt-1">${excusedAbsenceDays}</p>
+              </div>
+            </div>
+
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Последние пропуски</h3>
+            <div class="space-y-2.5">
+              ${absencesByDateMap.size > 0 ? Array.from(absencesByDateMap.entries()).map(([date, recs]) => `
+                <div class="p-3 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center justify-between text-xs">
+                  <div class="space-y-0.5">
+                    <span class="font-bold text-slate-800">${formatDateRu(date)}</span>
+                    <p class="text-slate-500 text-2xs">
+                      ${recs.map((r) => r.lesson ? r.lesson.subjectName : "Урок").join(", ")}
+                    </p>
+                  </div>
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-2xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                    Подтверждено справкой
+                  </span>
+                </div>
+              `).join("") : `
+                <p class="text-xs text-slate-400 italic">Нет зафиксированных пропусков</p>
+              `}
+            </div>
+          </div>
+
+          <div id="child-meetings-section" class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90 space-y-4">
+            <div class="flex items-center justify-between">
+              <h2 class="text-base font-bold text-slate-900">Собрания класса</h2>
+              <span class="text-xs text-slate-400 font-medium">Только просмотр приглашений</span>
+            </div>
+
+            ${upcomingMeetings.length > 0 ? `
+              <div class="space-y-2">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-brand-600">Предстоящее собрание</h3>
+                ${upcomingMeetings.map((mtg) => `
+                  <div class="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100/80 space-y-2">
+                    <div class="flex items-start justify-between gap-3">
+                      <div>
+                        <h4 class="text-sm font-bold text-slate-900">${mtg.title}</h4>
+                        <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-1">
+                          <span class="flex items-center space-x-1">
+                            ${renderIcon("calendar", "w-3.5 h-3.5 text-indigo-500")}
+                            <span>${formatDateRu(mtg.date)} в ${mtg.time}</span>
+                          </span>
+                          <span>&bull;</span>
+                          <span>${mtg.room || "Каб. 302"}</span>
+                        </div>
+                      </div>
+                      <span class="inline-flex items-center px-2.5 py-1 rounded-full text-2xs font-semibold bg-indigo-100 text-indigo-800">
+                        Запланировано
+                      </span>
+                    </div>
+                    ${mtg.agenda ? `
+                      <p class="text-xs text-slate-600 pt-1 border-t border-indigo-100/60">
+                        <span class="font-semibold text-slate-700">Повестка:</span> ${mtg.agenda}
+                      </p>
+                    ` : ""}
+                  </div>
+                `).join("")}
+              </div>
+            ` : ""}
+
+            ${pastMeetings.length > 0 ? `
+              <div class="space-y-2 pt-2">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Прошедшие собрания</h3>
+                <div class="space-y-2">
+                  ${pastMeetings.map((mtg) => `
+                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
+                      <div>
+                        <p class="font-semibold text-slate-800">${mtg.title}</p>
+                        <p class="text-slate-400 text-2xs mt-0.5">${formatDateRu(mtg.date)} &bull; ${mtg.room || "Каб. 302"}</p>
+                      </div>
+                      <span class="text-2xs font-medium px-2 py-0.5 rounded-md bg-slate-200/80 text-slate-600">
+                        Завершено
+                      </span>
+                    </div>
+                  `).join("")}
+                </div>
+              </div>
+            ` : ""}
+          </div>
+
+        </div>
+
+        <div class="lg:col-span-4 space-y-6">
+          
+          <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90">
+            <h2 class="text-base font-bold text-slate-900 mb-4">Последнее объявление</h2>
+            ${latestAnnouncement ? `
+              <div class="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100/80 space-y-2.5">
+                <div class="flex items-center space-x-2 text-2xs text-slate-500 font-semibold">
+                  ${renderIcon("calendar", "w-3.5 h-3.5 text-indigo-600")}
+                  <span>${latestAnnouncement.author || "Смирнова М. В."} &bull; ${formatDateRu(latestAnnouncement.date)}</span>
+                </div>
+                <h3 class="text-xs font-bold text-slate-900 leading-snug">
+                  ${latestAnnouncement.title}
+                </h3>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                  ${latestAnnouncement.content}
+                </p>
+                <div class="pt-2 border-t border-indigo-100/60">
+                  <a href="/announcements" class="inline-flex items-center text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors">
+                    Все объявления &rarr;
+                  </a>
+                </div>
+              </div>
+            ` : `
+              <p class="text-xs text-slate-400 italic">Нет опубликованных объявлений</p>
+            `}
+          </div>
+
+          <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90">
+            <h2 class="text-base font-bold text-slate-900 mb-4">Расписание на сегодня</h2>
+            <div class="space-y-2">
+              ${todayLessons.map((l) => `
+                <div class="p-3 rounded-xl ${l.subjectId === "math" ? "bg-brand-50 border border-brand-200/80" : "bg-slate-50/80 border border-slate-100"} flex items-center justify-between text-xs">
+                  <div class="flex items-center space-x-3">
+                    <span class="text-slate-400 font-bold text-2xs w-4 text-center">${l.lessonNumber}</span>
+                    <div>
+                      <p class="font-bold ${l.subjectId === "math" ? "text-brand-900" : "text-slate-800"}">
+                        ${l.subjectName}
+                      </p>
+                      <p class="text-slate-400 text-2xs">${l.time}</p>
+                    </div>
+                  </div>
+                  <span class="text-2xs text-slate-500 font-medium">${l.room}</span>
+                </div>
+              `).join("")}
+            </div>
+            <div class="pt-4 mt-3 border-t border-slate-100">
+              <a href="/schedule" class="inline-flex items-center text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors">
+                Полное расписание на неделю &rarr;
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
+  }
+
+  // src/views/child/listeners.js
+  function setupChildListeners(navigate2) {
+    const container = document.getElementById("child-view-container");
+    if (!container) return;
+    container.addEventListener("click", (e) => {
+      const periodBtn = e.target.closest("[data-period-btn]");
+      if (periodBtn) {
+        const periodId = periodBtn.getAttribute("data-period-btn");
+        if (periodId && navigate2) {
+          navigate2(`/child?period=${periodId}`);
+        }
+      }
+    });
+  }
+
   // src/views/login/render.js
   function renderLoginView() {
     const currentUser = getCurrentUser();
@@ -24695,395 +25452,6 @@
         closeModal2();
       }
     });
-  }
-
-  // src/mock/calculations.js
-  function roundToOneDecimal(value) {
-    if (value === null || value === void 0 || Number.isNaN(value)) {
-      return null;
-    }
-    return Math.round((Number(value) + Number.EPSILON) * 10) / 10;
-  }
-  function filterLessons(lessons, options = {}) {
-    let result = lessons || [];
-    if (options.periodId) {
-      result = result.filter((l) => l.periodId === options.periodId);
-    }
-    if (options.dateFrom) {
-      result = result.filter((l) => l.date >= options.dateFrom);
-    }
-    if (options.dateTo) {
-      result = result.filter((l) => l.date <= options.dateTo);
-    }
-    if (options.onlyMarked !== false) {
-      result = result.filter((l) => l.isMarked || l.status === "closed");
-    }
-    return result;
-  }
-  function calculateAttendanceForDay(lessons, attendance, targetDate, options = {}) {
-    let dayLessons = (lessons || []).filter(
-      (l) => l.date === targetDate && (l.isMarked || l.status === "closed")
-    );
-    dayLessons.sort((a, b) => (a.lessonNumber || 0) - (b.lessonNumber || 0));
-    if (options.onlyFirstLesson && dayLessons.length > 0) {
-      dayLessons = [dayLessons[0]];
-    }
-    const lessonIds = new Set(dayLessons.map((l) => l.id));
-    const dayAttendance = (attendance || []).filter(
-      (a) => lessonIds.has(a.lessonId) && a.date === targetDate
-    );
-    const totalMarks = dayAttendance.length;
-    if (totalMarks === 0) {
-      return {
-        date: targetDate,
-        totalMarks: 0,
-        presentCount: 0,
-        absentCount: 0,
-        attendanceRate: null,
-        absenceRate: null,
-        lessonIds: Array.from(lessonIds)
-      };
-    }
-    const presentCount = dayAttendance.filter(
-      (a) => a.value === "present"
-    ).length;
-    const absentCount = dayAttendance.filter((a) => a.value === "absent").length;
-    const attendanceRate = roundToOneDecimal(presentCount / totalMarks * 100);
-    const absenceRate = roundToOneDecimal(absentCount / totalMarks * 100);
-    return {
-      date: targetDate,
-      totalMarks,
-      presentCount,
-      absentCount,
-      attendanceRate,
-      absenceRate,
-      lessonIds: Array.from(lessonIds)
-    };
-  }
-  function calculateStudentAverage(grades, studentId, options = {}) {
-    let stGrades = (grades || []).filter((g) => g.studentId === studentId);
-    if (options.subjectId) {
-      stGrades = stGrades.filter((g) => g.subjectId === options.subjectId);
-    }
-    if (options.periodId) {
-      stGrades = stGrades.filter((g) => g.periodId === options.periodId);
-    }
-    if (options.dateFrom) {
-      stGrades = stGrades.filter((g) => g.date >= options.dateFrom);
-    }
-    if (options.dateTo) {
-      stGrades = stGrades.filter((g) => g.date <= options.dateTo);
-    }
-    if (stGrades.length === 0) {
-      return null;
-    }
-    const sum = stGrades.reduce((acc, g) => acc + g.value, 0);
-    return roundToOneDecimal(sum / stGrades.length);
-  }
-  function calculateClassAverage(grades, options = {}) {
-    let filtered = grades || [];
-    if (options.subjectId) {
-      filtered = filtered.filter((g) => g.subjectId === options.subjectId);
-    }
-    if (options.periodId) {
-      filtered = filtered.filter((g) => g.periodId === options.periodId);
-    }
-    if (options.dateFrom) {
-      filtered = filtered.filter((g) => g.date >= options.dateFrom);
-    }
-    if (options.dateTo) {
-      filtered = filtered.filter((g) => g.date <= options.dateTo);
-    }
-    if (filtered.length === 0) {
-      return null;
-    }
-    const sum = filtered.reduce((acc, g) => acc + g.value, 0);
-    return roundToOneDecimal(sum / filtered.length);
-  }
-  function calculateSubjectAverages(grades, subjects, options = {}) {
-    const threshold = options.threshold ?? 3.5;
-    return (subjects || []).map((subj) => {
-      const avg = calculateClassAverage(grades, {
-        ...options,
-        subjectId: subj.id
-      });
-      const count = (grades || []).filter((g) => {
-        let match = g.subjectId === subj.id;
-        if (options.periodId) match = match && g.periodId === options.periodId;
-        if (options.dateFrom) match = match && g.date >= options.dateFrom;
-        if (options.dateTo) match = match && g.date <= options.dateTo;
-        return match;
-      }).length;
-      return {
-        id: subj.id,
-        name: subj.name,
-        shortName: subj.shortName || subj.name,
-        color: subj.color,
-        teacher: subj.teacher,
-        room: subj.room,
-        average: avg,
-        gradesCount: count,
-        threshold,
-        isBelowThreshold: avg !== null && avg < threshold
-      };
-    });
-  }
-  function calculateStudentAttendance(lessons, attendance, studentId, options = {}) {
-    const markedLessons = filterLessons(lessons, options);
-    const lessonIds = new Set(markedLessons.map((l) => l.id));
-    const stAttendance = (attendance || []).filter(
-      (a) => a.studentId === studentId && lessonIds.has(a.lessonId)
-    );
-    const totalLessons = markedLessons.length;
-    if (totalLessons === 0) {
-      return {
-        studentId,
-        totalLessons: 0,
-        presentCount: 0,
-        absentCount: 0,
-        attendanceRate: null,
-        absenceRate: null
-      };
-    }
-    const absentCount = stAttendance.filter((a) => a.value === "absent").length;
-    const presentCount = totalLessons - absentCount;
-    const attendanceRate = roundToOneDecimal(presentCount / totalLessons * 100);
-    const absenceRate = roundToOneDecimal(absentCount / totalLessons * 100);
-    return {
-      studentId,
-      totalLessons,
-      presentCount,
-      absentCount,
-      attendanceRate,
-      absenceRate
-    };
-  }
-  function calculateClassAttendance(lessons, attendance, options = {}) {
-    const markedLessons = filterLessons(lessons, options);
-    const lessonIds = new Set(markedLessons.map((l) => l.id));
-    const periodAttendance = (attendance || []).filter(
-      (a) => lessonIds.has(a.lessonId)
-    );
-    const totalMarks = periodAttendance.length;
-    if (totalMarks === 0) {
-      return {
-        totalLessons: markedLessons.length,
-        totalMarks: 0,
-        presentCount: 0,
-        absentCount: 0,
-        attendanceRate: null,
-        absenceRate: null
-      };
-    }
-    const absentCount = periodAttendance.filter(
-      (a) => a.value === "absent"
-    ).length;
-    const presentCount = totalMarks - absentCount;
-    const attendanceRate = roundToOneDecimal(presentCount / totalMarks * 100);
-    const absenceRate = roundToOneDecimal(absentCount / totalMarks * 100);
-    return {
-      totalLessons: markedLessons.length,
-      totalMarks,
-      presentCount,
-      absentCount,
-      attendanceRate,
-      absenceRate
-    };
-  }
-  function calculateWeeklyAbsences(lessons, attendance, options = {}) {
-    const markedLessons = filterLessons(lessons, options);
-    const weeksMap = /* @__PURE__ */ new Map();
-    for (const lsn of markedLessons) {
-      const wIdx = lsn.weekIndex;
-      if (!weeksMap.has(wIdx)) {
-        weeksMap.set(wIdx, []);
-      }
-      weeksMap.get(wIdx).push(lsn);
-    }
-    const sortedWeeks = Array.from(weeksMap.keys()).sort((a, b) => a - b);
-    const result = [];
-    for (const wIdx of sortedWeeks) {
-      const wLessons = weeksMap.get(wIdx);
-      const lIds = new Set(wLessons.map((l) => l.id));
-      const wAtt = (attendance || []).filter((a) => lIds.has(a.lessonId));
-      const totalMarks = wAtt.length;
-      const absences = wAtt.filter((a) => a.value === "absent").length;
-      const rate = totalMarks > 0 ? roundToOneDecimal(absences / totalMarks * 100) : 0;
-      result.push({
-        weekIndex: wIdx,
-        label: `Нед ${wIdx}`,
-        totalLessons: wLessons.length,
-        totalMarks,
-        absentCount: absences,
-        absencePercentage: rate
-      });
-    }
-    return result;
-  }
-  function getUnconfirmedAbsences(attendance, lessons, students, options = {}) {
-    const lessonMap = new Map((lessons || []).map((l) => [l.id, l]));
-    const studentMap = new Map((students || []).map((s) => [s.id, s]));
-    let records = (attendance || []).filter(
-      (a) => a.status === "unconfirmed" && a.value === "absent"
-    );
-    if (options.periodId) {
-      records = records.filter((a) => {
-        const lsn = lessonMap.get(a.lessonId);
-        return lsn && lsn.periodId === options.periodId;
-      });
-    }
-    if (options.date) {
-      records = records.filter((a) => a.date === options.date);
-    }
-    if (options.dateFrom) {
-      records = records.filter((a) => a.date >= options.dateFrom);
-    }
-    if (options.dateTo) {
-      records = records.filter((a) => a.date <= options.dateTo);
-    }
-    return records.map((att) => {
-      const lsn = lessonMap.get(att.lessonId);
-      const st = studentMap.get(att.studentId);
-      return {
-        id: att.id,
-        lessonId: att.lessonId,
-        lessonNumber: lsn ? lsn.lessonNumber : null,
-        studentId: att.studentId,
-        studentName: st ? st.fullName : "Неизвестный ученик",
-        date: att.date,
-        time: lsn ? lsn.time : "",
-        subjectId: lsn ? lsn.subjectId : "",
-        subjectName: lsn ? lsn.subjectName : "",
-        teacher: lsn ? lsn.teacher : "",
-        reason: att.reason || "Причина не указана",
-        code: att.code || "Н (без)",
-        statusLabel: "Ожидает подтверждения"
-      };
-    });
-  }
-  function getRiskZoneStudents(students, lessons, attendance, grades, subjects, options = {}) {
-    const absenceThreshold = options.absenceThreshold ?? 20;
-    const gradeThreshold = options.gradeThreshold ?? 3.5;
-    const riskStudents = [];
-    for (const st of students || []) {
-      const sId = st.id;
-      const attStats = calculateStudentAttendance(
-        lessons,
-        attendance,
-        sId,
-        options
-      );
-      const overallAvg = calculateStudentAverage(grades, sId, options);
-      const reasons = [];
-      let isCritical = false;
-      if (attStats.absenceRate !== null && attStats.absenceRate > absenceThreshold) {
-        reasons.push({
-          type: "absence",
-          title: "Пропуски уроков",
-          description: `Пропуски ${attStats.absentCount} из ${attStats.totalLessons} уроков (${attStats.absenceRate}%)`,
-          value: attStats.absenceRate
-        });
-        if (attStats.absenceRate >= 30) {
-          isCritical = true;
-        }
-      }
-      if (overallAvg !== null && overallAvg < gradeThreshold) {
-        reasons.push({
-          type: "overall_grade",
-          title: "Низкий средний балл",
-          description: `Общий средний балл ${overallAvg} (ниже порога ${gradeThreshold})`,
-          value: overallAvg
-        });
-        isCritical = true;
-      }
-      for (const subj of subjects || []) {
-        const subjAvg = calculateStudentAverage(grades, sId, {
-          ...options,
-          subjectId: subj.id
-        });
-        if (subjAvg !== null && subjAvg < gradeThreshold) {
-          reasons.push({
-            type: "subject_grade",
-            subjectId: subj.id,
-            subjectName: subj.name,
-            title: `Низкий балл: ${subj.name}`,
-            description: `Средний балл по предмету «${subj.name}» ${subjAvg} (ниже порога ${gradeThreshold})`,
-            value: subjAvg
-          });
-        }
-      }
-      if (reasons.length > 0) {
-        riskStudents.push({
-          studentId: sId,
-          name: st.fullName,
-          shortName: st.shortName,
-          gender: st.gender,
-          attendanceRate: attStats.attendanceRate,
-          absenceRate: attStats.absenceRate,
-          overallAverage: overallAvg,
-          riskLevel: isCritical ? "critical" : "moderate",
-          riskLevelLabel: isCritical ? "Критический риск" : "Умеренный риск",
-          reasons
-        });
-      }
-    }
-    riskStudents.sort((a, b) => {
-      if (a.riskLevel === "critical" && b.riskLevel !== "critical") return -1;
-      if (a.riskLevel !== "critical" && b.riskLevel === "critical") return 1;
-      return (b.absenceRate || 0) - (a.absenceRate || 0);
-    });
-    return riskStudents;
-  }
-  function generateClassReport(dataset, options = {}) {
-    const periodId = options.periodId || "q1_2024";
-    const periodOptions = { periodId, ...options };
-    const classAvg = calculateClassAverage(dataset.grades, periodOptions);
-    const classAtt = calculateClassAttendance(
-      dataset.lessons,
-      dataset.attendance,
-      periodOptions
-    );
-    const subjectAverages = calculateSubjectAverages(
-      dataset.grades,
-      dataset.subjects,
-      periodOptions
-    );
-    const riskZone = getRiskZoneStudents(
-      dataset.students,
-      dataset.lessons,
-      dataset.attendance,
-      dataset.grades,
-      dataset.subjects,
-      periodOptions
-    );
-    const unconfirmed = getUnconfirmedAbsences(
-      dataset.attendance,
-      dataset.lessons,
-      dataset.students,
-      periodOptions
-    );
-    return {
-      periodId,
-      periodTitle: periodId === "q1_2024" ? "I четверть (02.09–25.10.2024)" : periodId,
-      generatedAt: (/* @__PURE__ */ new Date()).toISOString(),
-      metrics: {
-        studentsCount: (dataset.students || []).length,
-        classAverageGrade: classAvg,
-        totalGradesCount: (dataset.grades || []).filter(
-          (g) => (!periodId || g.periodId === periodId) && (!options.dateFrom || g.date >= options.dateFrom) && (!options.dateTo || g.date <= options.dateTo)
-        ).length,
-        attendanceRate: classAtt.attendanceRate,
-        absenceRate: classAtt.absenceRate,
-        totalMarkedLessons: classAtt.totalLessons,
-        totalAttendanceMarks: classAtt.totalMarks,
-        totalAbsences: classAtt.absentCount,
-        unconfirmedAbsencesCount: unconfirmed.length,
-        riskZoneCount: riskZone.length
-      },
-      subjectAverages,
-      riskZone,
-      unconfirmedAbsences: unconfirmed
-    };
   }
 
   // src/views/overview/render.js
@@ -30351,7 +30719,7 @@
   }
 
   // src/views/student-summary/helpers.js
-  function formatDateRu(isoDate) {
+  function formatDateRu2(isoDate) {
     if (!isoDate) return "";
     const parts = isoDate.split("-");
     if (parts.length === 3) {
@@ -30611,7 +30979,7 @@
 
             <h1 class="text-lg font-bold text-slate-900 leading-snug">${student.fullName}</h1>
             <p class="text-xs text-slate-500 mt-1">
-              Дата рождения: ${formatDateRu(student.birthDate)} (${calculateAge(student.birthDate)} лет)
+              Дата рождения: ${formatDateRu2(student.birthDate)} (${calculateAge(student.birthDate)} лет)
             </p>
 
             <div class="flex items-center justify-center gap-2 mt-3 flex-wrap">
@@ -30667,7 +31035,7 @@
                   <span>Напоминание о повторном контакте</span>
                 </div>
                 <div class="text-xs text-amber-900">
-                  Дата: <strong class="font-semibold">${formatDateRu(pendingContact.nextContactDate)}</strong>
+                  Дата: <strong class="font-semibold">${formatDateRu2(pendingContact.nextContactDate)}</strong>
                 </div>
                 <div class="text-[11px] text-amber-700">
                   Договорённость ранее не была достигнута. Требуется контрольная беседа.
@@ -30756,7 +31124,7 @@
       const valClass = g.value >= 4 ? "text-emerald-600 font-bold" : g.value <= 2 ? "text-rose-600 font-bold" : "text-slate-800 font-bold";
       return `
                           <tr class="hover:bg-slate-50">
-                            <td class="py-2 text-slate-500">${formatDateRu(g.date)}</td>
+                            <td class="py-2 text-slate-500">${formatDateRu2(g.date)}</td>
                             <td class="py-2 font-semibold text-slate-800">${subj ? subj.name : "—"}</td>
                             <td class="py-2 ${valClass} text-sm">${g.value}</td>
                             <td class="py-2 text-slate-500">${g.comment || g.topic || "Ответ на уроке"}</td>
@@ -30796,7 +31164,7 @@
       return `
                     <div class="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div class="flex items-center space-x-4">
-                        <div class="text-xs font-bold text-slate-900 min-w-[75px]">${formatDateRu(date)}</div>
+                        <div class="text-xs font-bold text-slate-900 min-w-[75px]">${formatDateRu2(date)}</div>
                         <div class="text-xs text-slate-500 min-w-[100px]">${lessonText}</div>
                         <div class="text-xs text-slate-700">
                           ${displayText}
@@ -30865,7 +31233,7 @@
                     <div class="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/80 space-y-2">
                       <div class="flex items-center justify-between flex-wrap gap-2">
                         <div class="flex items-center space-x-2">
-                          <span class="text-xs font-bold text-slate-900">${formatDateRu(c.date)}</span>
+                          <span class="text-xs font-bold text-slate-900">${formatDateRu2(c.date)}</span>
                           <span class="text-slate-400 text-xs">·</span>
                           <span class="text-xs text-slate-500">Автор: <strong class="text-slate-700 font-semibold">${c.author || "Смирнова М. В."}</strong></span>
                         </div>
@@ -30889,7 +31257,7 @@
                           </span>
                         ` : c.nextContactDate ? `
                           <span class="inline-flex items-center text-[10px] font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                            ${renderIcon("calendar", "w-3 h-3 mr-1 text-amber-600")} Повторный контакт: ${formatDateRu(c.nextContactDate)}
+                            ${renderIcon("calendar", "w-3 h-3 mr-1 text-amber-600")} Повторный контакт: ${formatDateRu2(c.nextContactDate)}
                           </span>
                         ` : `
                           <span class="inline-flex items-center text-[10px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
@@ -36145,7 +36513,7 @@
   function escapeHtml5(text) {
     return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
-  function formatDateRu2(dateStr) {
+  function formatDateRu3(dateStr) {
     if (!dateStr || typeof dateStr !== "string") return "";
     const parts = dateStr.split("-");
     if (parts.length !== 3) return dateStr;
@@ -36201,7 +36569,7 @@
           <span class="quarter-name">${escapeHtml5(q.name)}</span>
         </td>
         <td class="py-3.5 px-4 font-medium text-slate-800 quarter-dates">
-          ${formatDateRu2(q.startDate)} – ${formatDateRu2(q.endDate)}
+          ${formatDateRu3(q.startDate)} – ${formatDateRu3(q.endDate)}
         </td>
         <td class="py-3.5 px-4 text-slate-500">
           ${getDurationText(q.startDate, q.endDate)}
@@ -36252,7 +36620,7 @@
           </button>
         </div>
         <div class="text-xs font-semibold text-slate-700 mt-1.5">
-          ${formatDateRu2(v.startDate)} – ${formatDateRu2(v.endDate)}
+          ${formatDateRu3(v.startDate)} – ${formatDateRu3(v.endDate)}
         </div>
         <div class="text-[11px] text-slate-500 mt-0.5">
           ${getDurationText(v.startDate, v.endDate)}
@@ -36318,7 +36686,7 @@
               ${escapeHtml5(activeYear ? activeYear.name : "Не выбран")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-active-year-dates">
-              ${activeYear ? `${formatDateRu2(activeYear.startDate)} – ${formatDateRu2(activeYear.endDate)}` : "—"}
+              ${activeYear ? `${formatDateRu3(activeYear.startDate)} – ${formatDateRu3(activeYear.endDate)}` : "—"}
             </div>
           </div>
         </div>
@@ -36335,7 +36703,7 @@
               ${escapeHtml5(activePeriod.name || "I четверть")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-active-quarter-dates">
-              ${formatDateRu2(activePeriod.startDate)} – ${formatDateRu2(activePeriod.endDate)}
+              ${formatDateRu3(activePeriod.startDate)} – ${formatDateRu3(activePeriod.endDate)}
             </div>
           </div>
         </div>
@@ -36350,7 +36718,7 @@
               ${escapeHtml5(upcomingVacation ? upcomingVacation.name : "Каникулы не запланированы")}
             </div>
             <div class="text-xs font-medium text-slate-500 mt-1" id="kpi-upcoming-vacation-dates">
-              ${upcomingVacation ? `${formatDateRu2(upcomingVacation.startDate)} – ${formatDateRu2(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—"}
+              ${upcomingVacation ? `${formatDateRu3(upcomingVacation.startDate)} – ${formatDateRu3(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—"}
             </div>
           </div>
         </div>
@@ -36727,19 +37095,19 @@
         kpiActiveYear.textContent = activeYear ? activeYear.name : "Не выбран";
       const kpiActiveYearDates = document.getElementById("kpi-active-year-dates");
       if (kpiActiveYearDates)
-        kpiActiveYearDates.textContent = activeYear ? `${formatDateRu2(activeYear.startDate)} – ${formatDateRu2(activeYear.endDate)}` : "—";
+        kpiActiveYearDates.textContent = activeYear ? `${formatDateRu3(activeYear.startDate)} – ${formatDateRu3(activeYear.endDate)}` : "—";
       const kpiQuarterName = document.getElementById("kpi-active-quarter-name");
       if (kpiQuarterName)
         kpiQuarterName.textContent = activePeriod.name || "I четверть";
       const kpiQuarterDates = document.getElementById("kpi-active-quarter-dates");
       if (kpiQuarterDates)
-        kpiQuarterDates.textContent = `${formatDateRu2(activePeriod.startDate)} – ${formatDateRu2(activePeriod.endDate)}`;
+        kpiQuarterDates.textContent = `${formatDateRu3(activePeriod.startDate)} – ${formatDateRu3(activePeriod.endDate)}`;
       const kpiVacName = document.getElementById("kpi-upcoming-vacation-name");
       if (kpiVacName)
         kpiVacName.textContent = upcomingVacation ? upcomingVacation.name : "Каникулы не запланированы";
       const kpiVacDates = document.getElementById("kpi-upcoming-vacation-dates");
       if (kpiVacDates)
-        kpiVacDates.textContent = upcomingVacation ? `${formatDateRu2(upcomingVacation.startDate)} – ${formatDateRu2(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—";
+        kpiVacDates.textContent = upcomingVacation ? `${formatDateRu3(upcomingVacation.startDate)} – ${formatDateRu3(upcomingVacation.endDate)} (${getDurationText(upcomingVacation.startDate, upcomingVacation.endDate)})` : "—";
       const tabsContainer = document.getElementById("academic-years-tabs");
       if (tabsContainer)
         tabsContainer.innerHTML = renderYearTabsHtml(
@@ -37283,13 +37651,14 @@
     },
     "/child": {
       title: "Ребёнок",
-      render: () => renderPlaceholderView(
-        "Ребёнок",
-        "Карточка успеваемости и посещаемости ученика (Петрова Анна)",
-        "/child"
-      ),
-      setup: () => {
-      }
+      render: () => {
+        const params = getRouteParams();
+        return renderChildView({
+          id: params.get("id") || params.get("student") || null,
+          periodId: params.get("period") || params.get("periodId") || "q1_2024"
+        });
+      },
+      setup: (navigate2) => setupChildListeners(navigate2)
     },
     "/grades": {
       title: "Оценки",

@@ -648,8 +648,29 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(detailPage.subjectsBlock.locator('input, select')).toHaveCount(0);
   });
 
-  test.skip('TC-OV-18: Родитель открывает сводку своего ребёнка', async () => {
-    // TODO: Сводка успеваемости ребёнка для роли родителя не реализована в UI (страница #/child является заглушкой, а #/student закрыт ролевой моделью)
+  test('TC-OV-18: Родитель открывает сводку своего ребёнка', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+
+    await loginPage.goto();
+    await loginPage.loginAs('parent');
+    await page.waitForURL(/\/child\/?/, { timeout: 7000 });
+
+    await expect(page.locator('h1:has-text("Петрова Анна Сергеевна")')).toBeVisible();
+    await expect(page.locator('text=Сводка по посещаемости: Петрова Анна')).toBeVisible();
+    await expect(page.locator('text=Средний балл: 4.50')).toBeVisible();
+
+    const gradesTable = page.locator('#child-grades-table');
+    await expect(gradesTable).toBeVisible();
+    await expect(gradesTable.locator('text=Математика (Алгебра)')).toBeVisible();
+    await expect(page.locator('text=Посещаемость и пропуски')).toBeVisible();
+    await expect(page.locator('text=Подтверждено справкой').first()).toBeVisible();
+
+    await expect(page.locator('button:has-text("Редактировать")')).toHaveCount(0);
+    await expect(page.locator('button:has-text("Выставить оценку")')).toHaveCount(0);
+    await expect(page.locator('button:has-text("Зафиксировать контакт")')).toHaveCount(0);
+
+    await expect(page.locator('text=Заметки классрука')).toHaveCount(0);
+    await expect(page.locator('text=История общения с родителями')).toHaveCount(0);
   });
 
   test('TC-OV-19: Родитель и ученик: чужие ученики недоступны', async ({ page }) => {
