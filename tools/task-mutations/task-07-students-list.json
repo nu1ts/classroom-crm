@@ -1,0 +1,104 @@
+{
+  "task": "task-07-students-list",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-OV-12",
+      "expectFail": [
+        "test_ov_01_students_list_order"
+      ],
+      "patches": [
+        {
+          "file": "src/views/students/helpers.js",
+          "find": "    return sortOrder === \"desc\" ? -cmp : cmp;",
+          "replace": "    return sortOrder === \"desc\" ? cmp : -cmp;"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-OV-06",
+      "expectFail": [
+        "test_ov_02_list_matches_summary"
+      ],
+      "patches": [
+        {
+          "file": "src/views/students/helpers.js",
+          "find": "  const riskStudentIds = new Set(riskStudents.map((r) => r.studentId));\n\n  return rawStudents.map((student) => {",
+          "replace": "  const riskStudentIds = new Set(riskStudents.map((r) => r.studentId));\n  const __periodLessonIds = new Set(\n    (db.lessons || [])\n      .filter(\n        (l) =>\n          (!l.classId || l.classId === \"class-7b\") &&\n          (!periodOptions.periodId ||\n            l.periodId === periodOptions.periodId) &&\n          (l.isMarked || l.status === \"closed\"),\n      )\n      .map((l) => l.id),\n  );\n\n  return rawStudents.map((student) => {"
+        },
+        {
+          "file": "src/views/students/helpers.js",
+          "find": "      averageGrade: avg,\n      attendance: att,\n      isRisk,",
+          "replace": "      averageGrade: avg,\n      attendance: att,\n      displayAbsentCount: Math.max(\n        0,\n        att.absentCount -\n          (db.attendance || []).filter(\n            (a) =>\n              a.studentId === student.id &&\n              a.value === \"absent\" &&\n              a.status === \"unconfirmed\" &&\n              __periodLessonIds.has(a.lessonId),\n          ).length,\n      ),\n      isRisk,"
+        },
+        {
+          "file": "src/views/students/helpers.js",
+          "find": "                    <span class=\"font-bold ${isAbsentAlert ? \"text-amber-700\" : \"text-slate-800\"} text-xs\">\n                      ${row.attendance.absentCount} из ${row.attendance.totalLessons}\n                    </span>\n                    <span class=\"text-[10px] text-slate-400 mt-0.5\">\n                      ${row.attendance.absentCount === 0 ? \"0 дней\" : row.attendance.absentCount + (row.attendance.absentCount === 1 ? \" день\" : row.attendance.absentCount < 5 ? \" дня\" : \" дней\")}\n                    </span>",
+          "replace": "                    <span class=\"font-bold ${isAbsentAlert ? \"text-amber-700\" : \"text-slate-800\"} text-xs\">\n                      ${row.displayAbsentCount} из ${row.attendance.totalLessons}\n                    </span>\n                    <span class=\"text-[10px] text-slate-400 mt-0.5\">\n                      ${row.displayAbsentCount === 0 ? \"0 дней\" : row.displayAbsentCount + (row.displayAbsentCount === 1 ? \" день\" : row.displayAbsentCount < 5 ? \" дня\" : \" дней\")}\n                    </span>"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-OV-03",
+      "expectFail": [
+        "test_ov_03_search_case_insensitive"
+      ],
+      "patches": [
+        {
+          "file": "src/views/students/helpers.js",
+          "find": "      const q = searchQuery.toLowerCase();\n      const ln = (row.student.lastName || \"\").toLowerCase();",
+          "replace": "      const q = searchQuery;\n      const ln = row.student.lastName || \"\";"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-OV-13",
+      "expectFail": [
+        "test_ov_04_absences_filter"
+      ],
+      "patches": [
+        {
+          "file": "src/views/students/helpers.js",
+          "find": "    if (filterAbsencesOnly) {\n      if (!row.attendance || row.attendance.absentCount <= 0) {\n        return false;\n      }\n    }",
+          "replace": "    if (filterAbsencesOnly) {\n      if (!row.attendance) {\n        return false;\n      }\n    }"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-OV-04",
+      "expectFail": [
+        "test_ov_06_search_and_filter_combined"
+      ],
+      "patches": [
+        {
+          "file": "src/views/students/helpers.js",
+          "find": "  const filtered = studentRows.filter((row) => {\n    if (searchQuery) {",
+          "replace": "  const filtered = studentRows.filter((row) => {\n    if (searchQuery && filterAbsencesOnly) {\n      const __searchText = searchQuery.toLowerCase();\n      const __lastName = (row.student.lastName || \"\").toLowerCase();\n      const __searchMatch = __lastName.includes(__searchText);\n      const __absenceMatch = Boolean(\n        row.attendance && row.attendance.absentCount > 0,\n      );\n      return __searchMatch || __absenceMatch;\n    }\n\n    if (searchQuery) {"
+        }
+      ]
+    },
+    {
+      "folder": 7,
+      "bug": "BUG-OV-01",
+      "expectFail": [
+        "test_ov_08_pagination"
+      ],
+      "patches": [
+        {
+          "file": "src/views/students/render.js",
+          "find": "  const currentPage = parseInt(options.page || \"1\", 10);\n  const pageSize = 10;",
+          "replace": "  const currentPage = parseInt(options.page || \"1\", 10);\n  const pageSize = 7;"
+        },
+        {
+          "file": "src/views/students/listeners.js",
+          "find": "  const state = getUrlParams();\n  const pageSize = 10;",
+          "replace": "  const state = getUrlParams();\n  const pageSize = 7;"
+        }
+      ]
+    }
+  ]
+}
