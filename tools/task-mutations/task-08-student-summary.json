@@ -1,0 +1,80 @@
+{
+  "task": "task-08-student-summary",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-OV-13",
+      "expectFail": [
+        "test_ov_13_subject_threshold"
+      ],
+      "patches": [
+        {
+          "file": "src/views/student-summary/render.js",
+          "find": "                  const isSubRisk = sub.average !== null && sub.average < 3.5;",
+          "replace": "                  const isSubRisk =\n                    overallAverage !== null && overallAverage < 3.5;"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-OV-14",
+      "expectFail": [
+        "test_ov_14_absence_status"
+      ],
+      "patches": [
+        {
+          "file": "src/views/student-summary/render.js",
+          "find": "                    const isAllConfirmed = records.every(\n                      (r) =>\n                        r.record.status === \"confirmed\" ||\n                        r.record.status === \"excused\",\n                    );",
+          "replace": "                    const isAllConfirmed = false;"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-OV-15",
+      "expectFail": [
+        "test_ov_15_notes_persisted"
+      ],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "  db.notes.unshift(newNote);\n  saveDB(db);\n\n  return { success: true, note: newNote };",
+          "replace": "  db.notes.unshift(newNote);\n\n  return { success: true, note: newNote };"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-OV-16",
+      "expectFail": [
+        "test_ov_16_contacts_history_order"
+      ],
+      "patches": [
+        {
+          "file": "src/views/student-summary/render.js",
+          "find": "  const contactsHistory = [...rawContacts].sort((a, b) => {\n    const dtA = `${a.date || \"\"} ${a.time || \"\"}`;\n    const dtB = `${b.date || \"\"} ${b.time || \"\"}`;\n    return dtB.localeCompare(dtA);\n  });",
+          "replace": "  const contactsHistory = [...rawContacts].sort((a, b) => {\n    const dtA = `${a.date || \"\"} ${a.time || \"\"}`;\n    const dtB = `${b.date || \"\"} ${b.time || \"\"}`;\n    return dtA.localeCompare(dtB);\n  });"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-OV-17",
+      "expectFail": [
+        "test_ov_17_foreign_summary_read_only"
+      ],
+      "patches": [
+        {
+          "file": "src/views/student-summary/render.js",
+          "find": "              ${\n                !isOtherClassStudent\n                  ? `\n                <button type=\"button\" id=\"btn-open-contact-modal\"",
+          "replace": "              ${\n                true\n                  ? `\n                <button type=\"button\" id=\"btn-open-contact-modal\""
+        },
+        {
+          "file": "src/views/student-summary/render.js",
+          "find": "              ${\n                !isOtherClassStudent\n                  ? `\n                <button type=\"button\" id=\"btn-open-note-modal\"",
+          "replace": "              ${\n                true\n                  ? `\n                <button type=\"button\" id=\"btn-open-note-modal\""
+        }
+      ]
+    }
+  ]
+}
