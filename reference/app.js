@@ -24127,9 +24127,17 @@
     if (!Array.isArray(item.readBy)) {
       item.readBy = [];
     }
-    if (!item.readBy.includes(userIdentifier)) {
-      item.readBy.push(userIdentifier);
-      item.readCount = item.readBy.length;
+    let familyKey = userIdentifier;
+    if (currentUser) {
+      if (currentUser.role === "parent" && currentUser.childStudentId) {
+        familyKey = currentUser.childStudentId;
+      } else if (currentUser.role === "student" && currentUser.studentId) {
+        familyKey = currentUser.studentId;
+      }
+    }
+    if (!item.readBy.includes(familyKey) && !item.readBy.includes(userIdentifier)) {
+      item.readBy.push(familyKey);
+      item.readCount = Math.min(item.totalCount || 28, item.readBy.length);
       saveDB(db);
       return true;
     }

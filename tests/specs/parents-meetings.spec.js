@@ -7,7 +7,7 @@ import { StudentDetailPage } from '../page-objects/StudentDetailPage.js';
 
 test.describe('Родители и Собрания', () => {
 
-  test('TC-PR-01: База родителей класса: список', async ({ page }) => {
+  test('[TC-PR-01] База родителей класса: список', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -38,7 +38,7 @@ test.describe('Родители и Собрания', () => {
     await expect(firstRow.locator('.btn-parent-actions')).toBeVisible();
   });
 
-  test('TC-PR-02: Поиск по фамилии и по телефону', async ({ page }) => {
+  test('[TC-PR-02] Поиск по фамилии и по телефону', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -62,7 +62,7 @@ test.describe('Родители и Собрания', () => {
     await expect(parentsPage.parentRows.first()).toContainText('Сидорова Ольга Николаевна');
   });
 
-  test('TC-PR-03: Фильтр «Без связи» и пустой результат', async ({ page }) => {
+  test('[TC-PR-03] Фильтр «Без связи» и пустой результат', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -87,7 +87,7 @@ test.describe('Родители и Собрания', () => {
     await expect(parentsPage.searchInput).toHaveValue('');
   });
 
-  test('TC-PR-04: Добавление родителя со связью', async ({ page }) => {
+  test('[TC-PR-04] Добавление родителя со связью', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -123,7 +123,7 @@ test.describe('Родители и Собрания', () => {
     await expect(parentsPage.subtitle).toContainText('33 родителя · у 28 учеников');
   });
 
-  test('TC-PR-05: Добавление родителя без телефона запрещено', async ({ page }) => {
+  test('[TC-PR-05] Добавление родителя без телефона запрещено', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -146,7 +146,7 @@ test.describe('Родители и Собрания', () => {
     await expect(parentsPage.subtitle).toContainText('32 родителя · у 28 учеников');
   });
 
-  test('TC-PR-06: Карточка родителя: состав полей и изменение', async ({ page }) => {
+  test('[TC-PR-06] Карточка родителя: состав полей и изменение', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -170,7 +170,7 @@ test.describe('Родители и Собрания', () => {
     await page.locator('#btn-close-edit-parent-x').click();
   });
 
-  test('TC-PR-07: Телефон — один на человека', async ({ page }) => {
+  test('[TC-PR-07] Телефон — один на человека', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -191,7 +191,7 @@ test.describe('Родители и Собрания', () => {
     await expect(parentsPage.parentRows.first()).toContainText('+7 999 123-45-69');
   });
 
-  test('TC-PR-08: Связывание родителя с учеником', async ({ page }) => {
+  test('[TC-PR-08] Связывание родителя с учеником', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -219,7 +219,7 @@ test.describe('Родители и Собрания', () => {
     await expect(parentsPage.parentRows.filter({ hasText: 'Орлова Надежда' })).toHaveCount(0);
   });
 
-  test('TC-PR-09: Основной контакт на ученика — только один', async ({ page }) => {
+  test('[TC-PR-09] Основной контакт на ученика — только один', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -247,7 +247,7 @@ test.describe('Родители и Собрания', () => {
     await expect(updatedVasilievRow).toContainText('Дополнительный');
   });
 
-  test('TC-PR-10: Снятие связи с учеником', async ({ page }) => {
+  test('[TC-PR-10] Снятие связи с учеником', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -281,7 +281,7 @@ test.describe('Родители и Собрания', () => {
     await expect(parentsPage.parentRows.filter({ hasText: 'Орлова Надежда' })).toHaveCount(1);
   });
 
-  test('TC-PR-11: Удаление родителя со связями запрещено', async ({ page }) => {
+  test('[TC-PR-11] Удаление родителя со связями запрещено', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -298,7 +298,7 @@ test.describe('Родители и Собрания', () => {
     await expect(parentsPage.parentRows.first()).toContainText('Петрова Анна');
   });
 
-  test('TC-PR-12: Удаление родителя без связей', async ({ page }) => {
+  test('[TC-PR-12] Удаление родителя без связей', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -317,7 +317,7 @@ test.describe('Родители и Собрания', () => {
     await expect(parentsPage.subtitle).toContainText(/31 родител[яь] · у 28 учеников/);
   });
 
-  test('TC-PR-13: Сводка по родителю: состав экрана', async ({ page }) => {
+  test('[TC-PR-13] Сводка по родителю: состав экрана', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -346,7 +346,7 @@ test.describe('Родители и Собрания', () => {
     await expect(parentDetailPage.btnUnlinkStudent).toBeVisible();
   });
 
-  test('TC-PR-14: Сводка родителя с детьми в разных классах', async ({ page }) => {
+  test('[TC-PR-14] Сводка родителя с детьми в разных классах', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -366,7 +366,7 @@ test.describe('Родители и Собрания', () => {
     await expect(parentDetailPage.riskChildBlock).toContainText('Котов Максим');
   });
 
-  test('TC-PR-15: Фиксация контакта с родителем', async ({ page }) => {
+  test('[TC-PR-15] Фиксация контакта с родителем', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -396,7 +396,7 @@ test.describe('Родители и Собрания', () => {
     await expect(studentDetailPage.contactsHistoryBlock).toContainText(summaryText);
   });
 
-  test('TC-PR-16: Фиксация контакта: обязательные поля', async ({ page }) => {
+  test('[TC-PR-16] Фиксация контакта: обязательные поля', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -420,7 +420,7 @@ test.describe('Родители и Собрания', () => {
     await expect(parentDetailPage.contactsHistoryList).toContainText('Успешный контакт после проверок');
   });
 
-  test('TC-PR-17: Запись контакта без привязки к ученику', async ({ page }) => {
+  test('[TC-PR-17] Запись контакта без привязки к ученику', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -444,7 +444,7 @@ test.describe('Родители и Собрания', () => {
     await expect(studentDetailPage.contactsHistoryBlock).not.toContainText(generalSummary);
   });
 
-  test('TC-PR-18: История общения: порядок записей и пустое состояние', async ({ page }) => {
+  test('[TC-PR-18] История общения: порядок записей и пустое состояние', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -463,7 +463,7 @@ test.describe('Родители и Собрания', () => {
     await expect(parentDetailPage.contactsHistoryList.locator('#btn-empty-record-contact')).toBeVisible();
   });
 
-  test('TC-PR-19: Права: база родителей недоступна предметнику и родителю', async ({ page }) => {
+  test('[TC-PR-19] Права: база родителей недоступна предметнику и родителю', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const navPage = new NavigationPage(page);
 
@@ -484,7 +484,7 @@ test.describe('Родители и Собрания', () => {
     await expect(page.locator('input[readonly]').first()).toHaveValue(/Петров/);
   });
 
-  test('TC-PR-20: Приватность: история общения не видна родителю и ученику', async ({ page }) => {
+  test('[TC-PR-20] Приватность: история общения не видна родителю и ученику', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const navPage = new NavigationPage(page);
 
@@ -504,7 +504,7 @@ test.describe('Родители и Собрания', () => {
     await expect(page.locator('text=Заметки классрука')).toHaveCount(0);
   });
 
-  test('TC-MG-01: Список собраний: ближайшее и прошедшие', async ({ page }) => {
+  test('[TC-MG-01] Список собраний: ближайшее и прошедшие', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -541,7 +541,7 @@ test.describe('Родители и Собрания', () => {
     await expect(pastSection.locator('.btn-meeting-summary').first()).toBeVisible();
   });
 
-  test('TC-MG-02: Создание собрания', async ({ page }) => {
+  test('[TC-MG-02] Создание собрания', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -573,7 +573,7 @@ test.describe('Родители и Собрания', () => {
     await expect(otherSection).toContainText('20.12.2024');
   });
 
-  test('TC-MG-03: Создание собрания без обязательных полей', async ({ page }) => {
+  test('[TC-MG-03] Создание собрания без обязательных полей', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -596,7 +596,7 @@ test.describe('Родители и Собрания', () => {
     await expect(page.locator('text=Собрание без даты и времени')).toHaveCount(0);
   });
 
-  test('TC-MG-04: Повестка собрания: состав и порядок пунктов', async ({ page }) => {
+  test('[TC-MG-04] Повестка собрания: состав и порядок пунктов', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -628,7 +628,7 @@ test.describe('Родители и Собрания', () => {
     await expect(items.nth(2)).toContainText('Проблемы с посещаемостью и успеваемостью');
   });
 
-  test('TC-MG-05: Перенос собрания', async ({ page, loginPage }) => {
+  test('[TC-MG-05] Перенос собрания', async ({ page, loginPage }) => {
     const navPage = new NavigationPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -654,7 +654,7 @@ test.describe('Родители и Собрания', () => {
     await expect(parentSection.locator('text=Каб. 204')).toBeVisible();
   });
 
-  test('TC-MG-06: Отмена собрания не удаляет объявление', async ({ page, loginPage }) => {
+  test('[TC-MG-06] Отмена собрания не удаляет объявление', async ({ page, loginPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('teacher');
 
@@ -679,7 +679,7 @@ test.describe('Родители и Собрания', () => {
     await expect(page.locator('.announcement-card', { hasText: 'Родительское собрание 31 октября' })).toBeVisible();
   });
 
-  test('TC-MG-07: Отметка явки: значения и сохранение', async ({ page, loginPage }) => {
+  test('[TC-MG-07] Отметка явки: значения и сохранение', async ({ page, loginPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('teacher');
 
@@ -706,7 +706,7 @@ test.describe('Родители и Собрания', () => {
     await expect(modal).not.toBeVisible();
   });
 
-  test('TC-MG-08: Явка: причина обязательна при неявке', async ({ page, loginPage }) => {
+  test('[TC-MG-08] Явка: причина обязательна при неявке', async ({ page, loginPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('teacher');
 
@@ -731,7 +731,7 @@ test.describe('Родители и Собрания', () => {
     await expect(modal).not.toBeVisible();
   });
 
-  test('TC-MG-09: Отметить явку до собрания нельзя', async ({ page, loginPage }) => {
+  test('[TC-MG-09] Отметить явку до собрания нельзя', async ({ page, loginPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('teacher');
 
@@ -741,7 +741,7 @@ test.describe('Родители и Собрания', () => {
     await expect(nextSection.locator('.btn-mark-attendance')).toHaveCount(0);
   });
 
-  test('TC-MG-10: Итоги собрания: счётчик считается по явке', async ({ page, loginPage }) => {
+  test('[TC-MG-10] Итоги собрания: счётчик считается по явке', async ({ page, loginPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('teacher');
 
@@ -770,7 +770,7 @@ test.describe('Родители и Собрания', () => {
     await expect(page.locator('#summary-absent-list')).toContainText('Петров С. В.');
   });
 
-  test('TC-MG-11: Родитель видит собрания класса', async ({ page, loginPage }) => {
+  test('[TC-MG-11] Родитель видит собрания класса', async ({ page, loginPage }) => {
     await loginPage.goto();
     await loginPage.loginAs('parent');
     await page.waitForURL(/\/child\/?/, { timeout: 7000 });
@@ -792,7 +792,7 @@ test.describe('Родители и Собрания', () => {
     await expect(meetingsSection.locator('input[type="checkbox"]')).toHaveCount(0);
   });
 
-  test('TC-MG-12: Права: предметник не ведёт собрания', async ({ page, loginPage }) => {
+  test('[TC-MG-12] Права: предметник не ведёт собрания', async ({ page, loginPage }) => {
     await loginPage.goto();
     await loginPage.login('kozlov@school.ru', 'Test#2024');
 
@@ -805,7 +805,45 @@ test.describe('Родители и Собрания', () => {
     await expect(page.locator('text=Родительские собрания 7Б')).toHaveCount(0);
   });
 
-  test('TC-AN-01: Список объявлений класса', async ({ page }) => {
+  test('[TC-MG-13] Явка: все пришли — граница счётчика 28 из 28', async ({ page, loginPage }) => {
+    await loginPage.goto();
+    await loginPage.loginAs('teacher');
+
+    await page.goto('meetings');
+
+    await page.locator('#section-past-meetings .btn-mark-attendance').first().click();
+    const attendanceModal = page.locator('#modal-meeting-attendance');
+    await expect(attendanceModal).toBeVisible();
+
+    const selects = attendanceModal.locator('.attendance-status-select');
+    const count = await selects.count();
+    expect(count).toBe(28);
+
+    for (let i = 0; i < count; i++) {
+      await selects.nth(i).selectOption('present');
+    }
+
+    await expect(page.locator('#attendance-counter-badge')).toContainText('Всего пришли: 28 из 28');
+
+    await page.locator('#btn-save-attendance').click();
+    await expect(attendanceModal).not.toBeVisible();
+
+    await page.locator('#section-past-meetings .btn-mark-attendance').first().click();
+    await expect(attendanceModal).toBeVisible();
+    await expect(page.locator('#attendance-counter-badge')).toContainText('Всего пришли: 28 из 28');
+
+    await attendanceModal.locator('.btn-close-modal').first().click();
+    await expect(attendanceModal).not.toBeVisible();
+
+    await page.locator('#section-past-meetings .btn-meeting-summary').first().click();
+    const summaryModal = page.locator('#modal-meeting-summary');
+    await expect(summaryModal).toBeVisible();
+    await expect(page.locator('#summary-ratio-text')).toHaveText('28 из 28');
+    await expect(page.locator('#summary-percentage-text')).toHaveText('100%');
+    await summaryModal.locator('.btn-close-modal').first().click();
+  });
+
+  test('[TC-AN-01] Список объявлений класса', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.login('smirnova@school.ru', 'Test#2024');
@@ -832,7 +870,7 @@ test.describe('Родители и Собрания', () => {
     await expect(secondCard).toContainText('Адресовано классу 7Б');
   });
 
-  test('TC-AN-02: Публикация объявления', async ({ page }) => {
+  test('[TC-AN-02] Публикация объявления', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.login('smirnova@school.ru', 'Test#2024');
@@ -865,7 +903,7 @@ test.describe('Родители и Собрания', () => {
     await expect(cardsAfterReload.first()).toContainText('Организация дежурства');
   });
 
-  test('TC-AN-03: Публикация без обязательных полей', async ({ page }) => {
+  test('[TC-AN-03] Публикация без обязательных полей', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.login('smirnova@school.ru', 'Test#2024');
@@ -896,7 +934,7 @@ test.describe('Родители и Собрания', () => {
     await expect(cards).toHaveCount(2);
   });
 
-  test('TC-AN-04: Изменение объявления', async ({ page }) => {
+  test('[TC-AN-04] Изменение объявления', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const navPage = new NavigationPage(page);
 
@@ -936,7 +974,7 @@ test.describe('Родители и Собрания', () => {
     await expect(parentCard).toContainText('прочитали 22 из 28');
   });
 
-  test('TC-AN-05: Удаление объявления и пустое состояние', async ({ page }) => {
+  test('[TC-AN-05] Удаление объявления и пустое состояние', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const navPage = new NavigationPage(page);
 
@@ -972,7 +1010,7 @@ test.describe('Родители и Собрания', () => {
     await expect(page.locator('#announcements-empty-state')).toContainText('Объявлений пока нет');
   });
 
-  test('TC-AN-06: Объявление видят родители и ученики класса', async ({ page }) => {
+  test('[TC-AN-06] Объявление видят родители и ученики класса', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const navPage = new NavigationPage(page);
 
@@ -1008,7 +1046,7 @@ test.describe('Родители и Собрания', () => {
 
     await studentCard.locator('.btn-read-full').click();
     await expect(page.locator('#modal-announcement-detail')).toBeVisible();
-    await expect(page.locator('#modal-announcement-reads')).toContainText('прочитали 21 из 28');
+    await expect(page.locator('#modal-announcement-reads')).toContainText('прочитали 20 из 28');
     await page.locator('#btn-modal-dismiss').click();
     await expect(page.locator('#modal-announcement-detail')).toBeHidden();
 
@@ -1017,10 +1055,10 @@ test.describe('Родители и Собрания', () => {
     await loginPage.login('smirnova@school.ru', 'Test#2024');
     await page.goto('announcements');
     const teacherCard = page.locator('.announcement-card').filter({ hasText: 'Родительское собрание 31 октября' });
-    await expect(teacherCard).toContainText('прочитали 21 из 28');
+    await expect(teacherCard).toContainText('прочитали 20 из 28');
   });
 
-  test('TC-AN-07: Удаление объявления не влияет на собрание', async ({ page }) => {
+  test('[TC-AN-07] Удаление объявления не влияет на собрание', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.login('smirnova@school.ru', 'Test#2024');
@@ -1052,7 +1090,7 @@ test.describe('Родители и Собрания', () => {
     await expect(banner).toContainText('Каб. 302');
   });
 
-  test('TC-AN-08: Публикация объявления из карточки собрания', async ({ page }) => {
+  test('[TC-AN-08] Публикация объявления из карточки собрания', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.login('smirnova@school.ru', 'Test#2024');
@@ -1080,6 +1118,105 @@ test.describe('Родители и Собрания', () => {
     await expect(banner).toContainText('Итоги первой четверти 7Б');
     await expect(banner).toContainText('31.10.2024');
     await expect(banner).toContainText('18:30');
+  });
+
+  test('[TC-AN-09] Граница счётчика прочтений: 27 —> 28 и повторные открытия', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    const navPage = new NavigationPage(page);
+
+    await loginPage.goto();
+    await page.evaluate(() => {
+      const raw = localStorage.getItem('classroom_crm_db');
+      if (raw) {
+        const db = JSON.parse(raw);
+        const anc = (db.announcements || []).find((a) => a.id === 'anc-02');
+        if (anc) {
+          anc.readBy = [
+            'st-01', 'st-02', 'st-03', 'st-04', 'st-05', 'st-06', 'st-07', 'st-08', 'st-09',
+            'st-10', 'st-11', 'st-12', 'st-13', 'st-14', 'st-15', 'st-16', 'st-17', 'st-18',
+            'st-19', 'st-20', 'st-21', 'st-22', 'st-24', 'st-25', 'st-26', 'st-27', 'st-28'
+          ];
+          anc.readCount = 27;
+          anc.totalCount = 28;
+          localStorage.setItem('classroom_crm_db', JSON.stringify(db));
+        }
+      }
+    });
+
+    await loginPage.login('petrov@mail.ru', 'Test#2024');
+    await page.goto('announcements');
+
+    const card = page.locator('.announcement-card').filter({ hasText: 'Каникулы с 28 октября по 5 ноября' });
+    await expect(card).toContainText('прочитали 27 из 28');
+
+    await card.locator('.btn-read-full').click();
+    await expect(page.locator('#modal-announcement-detail')).toBeVisible();
+    await expect(page.locator('#modal-announcement-reads')).toContainText('прочитали 28 из 28');
+    await page.locator('#btn-close-announcement-modal').click();
+    await expect(page.locator('#modal-announcement-detail')).toBeHidden();
+    await expect(card).toContainText('прочитали 28 из 28');
+
+    await card.locator('.btn-read-full').click();
+    await expect(page.locator('#modal-announcement-detail')).toBeVisible();
+    await expect(page.locator('#modal-announcement-reads')).toContainText('прочитали 28 из 28');
+    await page.locator('#btn-close-announcement-modal').click();
+    await expect(page.locator('#modal-announcement-detail')).toBeHidden();
+    await expect(card).toContainText('прочитали 28 из 28');
+
+    await navPage.logout();
+    await loginPage.goto();
+    await loginPage.login('petrova.a@school.ru', 'Test#2024');
+    await page.goto('announcements');
+
+    const studentCard = page.locator('.announcement-card').filter({ hasText: 'Каникулы с 28 октября по 5 ноября' });
+    await expect(studentCard).toContainText('прочитали 28 из 28');
+
+    await studentCard.locator('.btn-read-full').click();
+    await expect(page.locator('#modal-announcement-detail')).toBeVisible();
+    await expect(page.locator('#modal-announcement-reads')).toContainText('прочитали 28 из 28');
+    await page.locator('#btn-modal-dismiss').click();
+    await expect(page.locator('#modal-announcement-detail')).toBeHidden();
+  });
+
+  test('[TC-AN-10] Удаление всех объявлений: пустое состояние у всех ролей', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    const navPage = new NavigationPage(page);
+
+    await loginPage.goto();
+    await loginPage.login('smirnova@school.ru', 'Test#2024');
+    await page.goto('announcements');
+
+    const count = await page.locator('.announcement-card').count();
+    for (let i = 0; i < count; i++) {
+      page.once('dialog', async (dialog) => {
+        await dialog.accept();
+      });
+      await page.locator('.btn-delete-announcement').first().click();
+      await page.waitForTimeout(300);
+    }
+
+    const emptyState = page.locator('#announcements-empty-state');
+    await expect(emptyState).toBeVisible();
+    await expect(emptyState).toContainText('Объявлений пока нет. Опубликуйте первое — его увидят родители и ученики класса');
+    await expect(page.locator('#btn-create-announcement')).toBeVisible();
+
+    await navPage.logout();
+    await loginPage.goto();
+    await loginPage.login('petrov@mail.ru', 'Test#2024');
+    await page.goto('announcements');
+
+    await expect(page.locator('#announcements-empty-state')).toBeVisible();
+    await expect(page.locator('#announcements-empty-state')).toContainText('Объявлений пока нет');
+    await expect(page.locator('.announcement-card')).toHaveCount(0);
+
+    await navPage.logout();
+    await loginPage.goto();
+    await loginPage.login('petrova.a@school.ru', 'Test#2024');
+    await page.goto('announcements');
+
+    await expect(page.locator('#announcements-empty-state')).toBeVisible();
+    await expect(page.locator('#announcements-empty-state')).toContainText('Объявлений пока нет');
+    await expect(page.locator('.announcement-card')).toHaveCount(0);
   });
 
 });
