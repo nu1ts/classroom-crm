@@ -10,3 +10,8 @@ playwright-report/
 test-results/
 build/
 scratch
+
+# Результаты прогонов и кэш Python в учебных задачах
+tasks/*/results/
+tasks/*/__pycache__/
+tasks/*/.pytest_cache/
