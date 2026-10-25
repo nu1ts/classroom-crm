@@ -1,5 +1,5 @@
-import { test, expect } from '../fixtures/base-test.js';
-import { LoginPage } from '../page-objects/LoginPage.js';
+import { test, expect } from '../../fixtures/base-test.js';
+import { LoginPage } from '../../page-objects/LoginPage.js';
 
 async function openSchoolYearAsAdmin(page) {
   await page.goto('login');

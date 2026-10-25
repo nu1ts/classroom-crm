@@ -1,5 +1,5 @@
-import { test, expect } from '../fixtures/base-test.js';
-import { TEST_USERS } from '../config/test-users.js';
+import { test, expect } from '../../fixtures/base-test.js';
+import { TEST_USERS } from '../../config/test-users.js';
 
 test.describe('[AT] Стенд Playwright: конфиг, webServer и фикстуры', () => {
 

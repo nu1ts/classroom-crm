@@ -30,6 +30,26 @@ export class AttendancePage {
   }
 
   /**
+   * Получить кнопку подтверждения пропуска по имени ученика и дате
+   * @param {string} studentName
+   * @param {string} date 'YYYY-MM-DD'
+   */
+  getConfirmButton(studentName, date) {
+    return this.page.locator(`button[data-action="open-confirm"][data-student-name*="${studentName}"][data-date="${date}"]`);
+  }
+
+  /**
+   * Открыть подтверждение пропуска для конкретного ученика и даты
+   * @param {string} studentName
+   * @param {string} date 'YYYY-MM-DD'
+   */
+  async openConfirmFor(studentName, date) {
+    const btn = this.getConfirmButton(studentName, date);
+    await btn.click();
+    await expect(this.modalConfirm).toHaveClass(/opacity-100/);
+  }
+
+  /**
    * Открыть экран Посещаемости
    * @param {string} [queryString='']
    */

@@ -105,7 +105,7 @@ if (existsSync(OUT)) {
   const entries = await readdir(OUT);
   for (const e of entries) {
     if (e !== 'app.js' && e !== 'styles.css') {
-      await rm(path.join(OUT, e), { recursive: true, force: true });
+      try { await rm(path.join(OUT, e), { recursive: true, force: true }); } catch (err) {}
     }
   }
 }

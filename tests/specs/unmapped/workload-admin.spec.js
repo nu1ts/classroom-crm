@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage } from '../page-objects/LoginPage.js';
-import { NavigationPage } from '../page-objects/NavigationPage.js';
+import { LoginPage } from '../../page-objects/LoginPage.js';
+import { NavigationPage } from '../../page-objects/NavigationPage.js';
 
 // ────────────────────────
 // ВНЕ ТАБЛИЦЫ ТЕСТ-КЕЙСОВ

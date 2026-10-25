@@ -1,4 +1,102 @@
 (() => {
+  var __defProp = Object.defineProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+
+  // src/services/storage.js
+  var storage_exports = {};
+  __export(storage_exports, {
+    DEFAULT_ACADEMIC_YEARS: () => DEFAULT_ACADEMIC_YEARS,
+    MEETINGS_DEMO_TODAY: () => DEMO_TODAY,
+    MEETING_ATTENDANCE_LABELS: () => ATTENDANCE_LABELS,
+    MEETING_ATTENDANCE_STATUSES: () => ATTENDANCE_STATUSES,
+    ROLE_LABELS: () => ROLE_LABELS,
+    addAcademicYear: () => addAcademicYear,
+    addJournalComment: () => addJournalComment,
+    addParent: () => addParent,
+    addParentContact: () => addParentContact,
+    addRoom: () => addRoom,
+    addSchoolClass: () => addSchoolClass,
+    addStudentNote: () => addStudentNote,
+    addSubject: () => addSubject,
+    addVacation: () => addVacation,
+    addWorkloadRow: () => addWorkloadRow,
+    batchConfirmAbsences: () => batchConfirmAbsences,
+    batchSaveLessonJournal: () => batchSaveLessonJournal,
+    canMarkAttendance: () => canMarkAttendance,
+    cancelMeeting: () => cancelMeeting,
+    changePassword: () => changePassword,
+    clearSession: () => clearSession,
+    confirmAbsenceRecord: () => confirmAbsenceRecord,
+    createAccount: () => createAccount,
+    createMeeting: () => createMeeting,
+    createTeacherCard: () => createTeacherCard,
+    deleteAcademicYear: () => deleteAcademicYear,
+    deleteGradeRecord: () => deleteGradeRecord,
+    deleteParent: () => deleteParent,
+    deleteTeacherCard: () => deleteTeacherCard,
+    deleteVacation: () => deleteVacation,
+    getAcademicYears: () => getAcademicYears,
+    getAccountCardRef: () => getAccountCardRef,
+    getActiveAcademicYear: () => getActiveAcademicYear,
+    getClassDirectory: () => getClassDirectory,
+    getCurrentUser: () => getCurrentUser,
+    getDB: () => getDB,
+    getJournalComments: () => getJournalComments,
+    getKnownClassIds: () => getKnownClassIds,
+    getMeetingAttendance: () => getMeetingAttendance,
+    getMeetingById: () => getMeetingById,
+    getMeetingSummary: () => getMeetingSummary,
+    getMeetings: () => getMeetings,
+    getRoomDirectory: () => getRoomDirectory,
+    getSession: () => getSession,
+    getSubjectDirectory: () => getSubjectDirectory,
+    getWorkloadRows: () => getWorkloadRows,
+    isClassInUse: () => isClassInUse,
+    isRoomInUse: () => isRoomInUse,
+    isSubjectInUse: () => isSubjectInUse,
+    linkParentToStudent: () => linkParentToStudent,
+    login: () => login,
+    logout: () => logout,
+    quickLoginAsRole: () => quickLoginAsRole,
+    removeWorkloadRow: () => removeWorkloadRow,
+    resetAccountPassword: () => resetAccountPassword,
+    resetDB: () => resetDB,
+    resetFailedAttempts: () => resetFailedAttempts,
+    resetSchoolYearToP3: () => resetSchoolYearToP3,
+    saveDB: () => saveDB,
+    saveGradeRecord: () => saveGradeRecord,
+    saveMeetingAttendance: () => saveMeetingAttendance,
+    setAccountBinding: () => setAccountBinding,
+    setAccountStatus: () => setAccountStatus,
+    setActiveAcademicYear: () => setActiveAcademicYear,
+    setActiveQuarter: () => setActiveQuarter,
+    setClassActive: () => setClassActive,
+    setDemoToday: () => setDemoToday,
+    setLessonAttendance: () => setLessonAttendance,
+    setRoomActive: () => setRoomActive,
+    setSession: () => setSession,
+    setSubjectActive: () => setSubjectActive,
+    shortenName: () => shortenName,
+    unlinkParentFromStudent: () => unlinkParentFromStudent,
+    updateAcademicYear: () => updateAcademicYear,
+    updateAccountRole: () => updateAccountRole,
+    updateMeeting: () => updateMeeting,
+    updateParent: () => updateParent,
+    updateQuarter: () => updateQuarter,
+    updateRoom: () => updateRoom,
+    updateSchoolClass: () => updateSchoolClass,
+    updateSubject: () => updateSubject,
+    updateTeacherCard: () => updateTeacherCard,
+    updateVacation: () => updateVacation,
+    updateWorkloadRow: () => updateWorkloadRow,
+    validateGradeValue: () => validateGradeValue,
+    validateMeetingData: () => validateMeetingData,
+    validateNewPassword: () => validateNewPassword
+  });
+
   // src/mock/dataset.js
   var INITIAL_DATASET = {
     "meta": {
@@ -32,6 +130,21 @@
       "todayTotalCount": 56
     },
     "users": [
+      {
+        id: "user-ivanova",
+        username: "ivanova@school.ru",
+        password: "Test#2024",
+        role: "teacher",
+        roleLabel: "Классный руководитель",
+        personName: "Иванова Екатерина Петровна",
+        shortName: "Иванова Е. П.",
+        cardName: "Иванова Е. П.",
+        classId: "class-8a",
+        className: "8А класс (25 учеников)",
+        phone: "+7 999 444-55-66",
+        lastLoginAt: "2024-10-28T08:30:00",
+        status: "active"
+      },
       {
         "id": "user-smirnova",
         "username": "smirnova@school.ru",
@@ -2115,9 +2228,9 @@
         "lessonId": "lsn-01",
         "studentId": "st-16",
         "date": "2024-09-02",
-        "value": "present",
-        "status": "present",
-        "code": "Был",
+        "value": "absent",
+        "status": "confirmed",
+        "code": "УП",
         "reason": null,
         "confirmedBy": null,
         "confirmedAt": null,
@@ -2310,9 +2423,9 @@
         "lessonId": "lsn-01",
         "studentId": "st-22",
         "date": "2024-09-02",
-        "value": "absent",
-        "status": "confirmed",
-        "code": "УП",
+        "value": "present",
+        "status": "present",
+        "code": "Был",
         "reason": "Заявление родителей",
         "confirmedBy": "Смирнова М. В.",
         "confirmedAt": "2024-10-25 15:00",
@@ -2336,7 +2449,7 @@
         "lessonId": "lsn-01",
         "studentId": "st-12",
         "date": "2024-09-02",
-        "value": "absent",
+        "value": "present",
         "status": "confirmed",
         "code": "УП",
         "reason": "Заявление родителей",
@@ -3051,7 +3164,7 @@
         "lessonId": "lsn-03",
         "studentId": "st-11",
         "date": "2024-09-04",
-        "value": "absent",
+        "value": "present",
         "status": "confirmed",
         "code": "УП",
         "reason": "Заявление родителей",
@@ -3793,10 +3906,10 @@
         "studentId": "st-12",
         "date": "2024-09-06",
         "value": "present",
-        "status": "present",
-        "code": "Был",
-        "reason": null,
-        "confirmedBy": null,
+        "status": "confirmed",
+        "code": "УП",
+        "reason": "Заявление родителей",
+        "confirmedBy": "Смирнова М. В.",
         "confirmedAt": null,
         "document": null
       },
@@ -4507,7 +4620,7 @@
         "lessonId": "lsn-07",
         "studentId": "st-11",
         "date": "2024-09-10",
-        "value": "absent",
+        "value": "present",
         "status": "confirmed",
         "code": "УП",
         "reason": "Заявление родителей",
@@ -5613,10 +5726,10 @@
         "studentId": "st-12",
         "date": "2024-09-13",
         "value": "present",
-        "status": "present",
-        "code": "Был",
-        "reason": null,
-        "confirmedBy": null,
+        "status": "confirmed",
+        "code": "УП",
+        "reason": "Заявление родителей",
+        "confirmedBy": "Смирнова М. В.",
         "confirmedAt": null,
         "document": null
       },
@@ -6327,7 +6440,7 @@
         "lessonId": "lsn-12",
         "studentId": "st-11",
         "date": "2024-09-17",
-        "value": "absent",
+        "value": "present",
         "status": "confirmed",
         "code": "УП",
         "reason": "Заявление родителей",
@@ -7432,11 +7545,11 @@
         "lessonId": "lsn-15",
         "studentId": "st-12",
         "date": "2024-09-20",
-        "value": "present",
-        "status": "present",
-        "code": "Был",
-        "reason": null,
-        "confirmedBy": null,
+        "value": "absent",
+        "status": "confirmed",
+        "code": "УП",
+        "reason": "Заявление родителей",
+        "confirmedBy": "Смирнова М. В.",
         "confirmedAt": null,
         "document": null
       },
@@ -7939,9 +8052,9 @@
         "lessonId": "lsn-17",
         "studentId": "st-16",
         "date": "2024-09-24",
-        "value": "present",
-        "status": "present",
-        "code": "Был",
+        "value": "absent",
+        "status": "confirmed",
+        "code": "УП",
         "reason": null,
         "confirmedBy": null,
         "confirmedAt": null,
@@ -8134,9 +8247,9 @@
         "lessonId": "lsn-17",
         "studentId": "st-22",
         "date": "2024-09-24",
-        "value": "absent",
-        "status": "confirmed",
-        "code": "УП",
+        "value": "present",
+        "status": "present",
+        "code": "Был",
         "reason": "Заявление родителей",
         "confirmedBy": "Смирнова М. В.",
         "confirmedAt": "2024-10-25 15:00",
@@ -9252,11 +9365,11 @@
         "lessonId": "lsn-20",
         "studentId": "st-12",
         "date": "2024-09-27",
-        "value": "present",
-        "status": "present",
-        "code": "Был",
-        "reason": null,
-        "confirmedBy": null,
+        "value": "absent",
+        "status": "confirmed",
+        "code": "УП",
+        "reason": "Заявление родителей",
+        "confirmedBy": "Смирнова М. В.",
         "confirmedAt": null,
         "document": null
       },
@@ -11072,11 +11185,11 @@
         "lessonId": "lsn-25",
         "studentId": "st-12",
         "date": "2024-10-04",
-        "value": "present",
-        "status": "present",
-        "code": "Был",
-        "reason": null,
-        "confirmedBy": null,
+        "value": "absent",
+        "status": "confirmed",
+        "code": "УП",
+        "reason": "Заявление родителей",
+        "confirmedBy": "Смирнова М. В.",
         "confirmedAt": null,
         "document": null
       },
@@ -12892,11 +13005,11 @@
         "lessonId": "lsn-30",
         "studentId": "st-12",
         "date": "2024-10-11",
-        "value": "present",
-        "status": "present",
-        "code": "Был",
-        "reason": null,
-        "confirmedBy": null,
+        "value": "absent",
+        "status": "confirmed",
+        "code": "УП",
+        "reason": "Заявление родителей",
+        "confirmedBy": "Смирнова М. В.",
         "confirmedAt": null,
         "document": null
       },
@@ -19061,7 +19174,7 @@
         "subjectId": "math",
         "date": "2024-09-16",
         "teacher": "Козлов А. П.",
-        "value": 5,
+        "value": 4,
         "periodId": "q1_2024"
       },
       {
@@ -20387,11 +20500,11 @@
       {
         "id": "grd-0302",
         "lessonId": "lsn-39",
-        "studentId": "st-01",
+        "studentId": "st-02",
         "subjectId": "math",
         "date": "2024-10-24",
         "teacher": "Козлов А. П.",
-        "value": 4,
+        "value": 5,
         "periodId": "q1_2024"
       },
       {
@@ -21219,6 +21332,17 @@
   }
 
   // src/services/directories.js
+  function getKnownClassIds(db = getDB()) {
+    const ids = /* @__PURE__ */ new Set();
+    (db.teachers || []).forEach((t) => {
+      if (t.homeroomClassId) ids.add(t.homeroomClassId);
+      (t.workload || []).forEach((w) => {
+        if (w.classId) ids.add(w.classId);
+      });
+    });
+    if (db.meta && db.meta.classId) ids.add(db.meta.classId);
+    return [...ids];
+  }
   function getClassDirectory(db = getDB()) {
     const list = Array.isArray(db.classes) ? db.classes.map((c) => ({ id: c.id, name: c.name })) : [];
     if (list.length) return list;
@@ -21721,6 +21845,38 @@
     }
     saveDB(db);
     return { success: true, record };
+  }
+  function batchConfirmAbsences(recordIds, data = {}) {
+    const db = getDB();
+    const idsSet = new Set(recordIds);
+    let updatedCount = 0;
+    const isExcused = data.status === "excused" || data.isExcused === true;
+    const reason = data.reason || (isExcused ? "Уважительная причина (справка / заявление)" : "Неуважительная причина");
+    const document2 = data.document || (isExcused ? "Медицинская справка" : null);
+    const confirmedBy = data.confirmedBy || "Смирнова М. В.";
+    const confirmedAt = (/* @__PURE__ */ new Date()).toISOString();
+    (db.attendance || []).forEach((record) => {
+      if (idsSet.has(record.id)) {
+        record.status = isExcused ? "excused" : "unexcused";
+        record.code = isExcused ? "УП" : "Н";
+        record.value = "absent";
+        record.reason = reason;
+        record.document = document2;
+        record.confirmedBy = confirmedBy;
+        record.confirmedAt = confirmedAt;
+        updatedCount++;
+      }
+    });
+    if (db.meta) {
+      const q1LessonIds = new Set(
+        (db.lessons || []).filter((l) => l.periodId === "q1_2024").map((l) => l.id)
+      );
+      db.meta.unconfirmedAbsencesCount = (db.attendance || []).filter(
+        (a) => a.status === "unconfirmed" && a.value === "absent" && q1LessonIds.has(a.lessonId)
+      ).length;
+    }
+    saveDB(db);
+    return { success: true, updatedCount };
   }
   function getJournalComments(lessonId, studentId) {
     const db = getDB();
@@ -22276,6 +22432,40 @@
     saveDB(db);
     return { success: true, quarter: targetQuarter };
   }
+  function setDemoToday(dateStr) {
+    const trimmed = (dateStr || "").trim();
+    if (!trimmed || !/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      return {
+        success: false,
+        error: "Укажите корректную дату в формате ГГГГ-ММ-ДД"
+      };
+    }
+    const db = getDB();
+    db.meta = db.meta || {};
+    db.meta.demoToday = trimmed;
+    saveDB(db);
+    return { success: true, demoToday: trimmed };
+  }
+  function resetSchoolYearToP3() {
+    const db = getDB();
+    db.academicYears = JSON.parse(JSON.stringify(DEFAULT_ACADEMIC_YEARS));
+    db.meta = db.meta || {};
+    db.meta.demoToday = "2024-10-28";
+    db.meta.academicYear = "2024/2025";
+    db.meta.period = {
+      id: "q1_2024",
+      name: "I четверть",
+      startDate: "2024-09-02",
+      endDate: "2024-10-25"
+    };
+    saveDB(db);
+    return {
+      success: true,
+      academicYear: "2024/2025",
+      period: db.meta.period,
+      demoToday: "2024-10-28"
+    };
+  }
   function updateVacation(yearId, vacationId, data = {}) {
     if (!vacationId) return { success: false, error: "Укажите ID каникул" };
     const name = (data.name || "").trim();
@@ -22378,6 +22568,13 @@
     if (!lessonId || !studentId) {
       return { success: false, error: "Не указан урок или ученик" };
     }
+    const currentUser = getCurrentUser();
+    if (currentUser && currentUser.role && currentUser.role !== "subject_teacher") {
+      return {
+        success: false,
+        error: "Действие недоступно для вашей роли. Только учитель-предметник может выставлять или изменять оценки."
+      };
+    }
     const db = getDB();
     const lesson = (db.lessons || []).find((l) => l.id === lessonId);
     if (!lesson) {
@@ -22411,7 +22608,6 @@
       };
     }
     if (!db.grades) db.grades = [];
-    const currentUser = getCurrentUser();
     const teacherName = teacher || currentUser && (currentUser.shortName || currentUser.personName) || lesson.teacher || "Учитель";
     const existingGradeIndex = db.grades.findIndex(
       (g) => g.lessonId === lessonId && g.studentId === studentId
@@ -22442,6 +22638,13 @@
   function deleteGradeRecord({ lessonId, studentId, teacher }) {
     if (!lessonId || !studentId) {
       return { success: false, error: "Не указан урок или ученик" };
+    }
+    const currentUser = getCurrentUser();
+    if (currentUser && currentUser.role && currentUser.role !== "subject_teacher") {
+      return {
+        success: false,
+        error: "Действие недоступно для вашей роли. Только учитель-предметник может удалять оценки."
+      };
     }
     const db = getDB();
     const lesson = (db.lessons || []).find((l) => l.id === lessonId);
@@ -23030,6 +23233,11 @@
     } catch (e) {
       console.error("Ошибка сохранения БД в хранилище", e);
     }
+  }
+  function resetDB() {
+    const clone = JSON.parse(JSON.stringify(INITIAL_DATASET));
+    storage.setItem(STORAGE_KEYS.DB, JSON.stringify(clone));
+    return clone;
   }
   function getSession() {
     try {
@@ -24112,9 +24320,17 @@
     if (!Array.isArray(item.readBy)) {
       item.readBy = [];
     }
-    if (!item.readBy.includes(userIdentifier)) {
-      item.readBy.push(userIdentifier);
-      item.readCount = item.readBy.length;
+    let familyKey = userIdentifier;
+    if (currentUser) {
+      if (currentUser.role === "parent" && currentUser.childStudentId) {
+        familyKey = currentUser.childStudentId;
+      } else if (currentUser.role === "student" && currentUser.studentId) {
+        familyKey = currentUser.studentId;
+      }
+    }
+    if (!item.readBy.includes(familyKey) && !item.readBy.includes(userIdentifier)) {
+      item.readBy.push(familyKey);
+      item.readCount = Math.min(item.totalCount || 28, item.readBy.length);
       saveDB(db);
       return true;
     }
@@ -24889,6 +25105,9 @@
   }
   function filterLessons(lessons, options = {}) {
     let result = lessons || [];
+    if (options.classId) {
+      result = result.filter((l) => (l.classId || "class-7b") === options.classId);
+    }
     if (options.periodId) {
       result = result.filter((l) => l.periodId === options.periodId);
     }
@@ -25012,7 +25231,8 @@
     });
   }
   function calculateStudentAttendance(lessons, attendance, studentId, options = {}) {
-    const markedLessons = filterLessons(lessons, options);
+    const opts = { classId: options.classId || "class-7b", ...options };
+    const markedLessons = filterLessons(lessons, opts);
     const lessonIds = new Set(markedLessons.map((l) => l.id));
     const stAttendance = (attendance || []).filter(
       (a) => a.studentId === studentId && lessonIds.has(a.lessonId)
@@ -25042,7 +25262,8 @@
     };
   }
   function calculateClassAttendance(lessons, attendance, options = {}) {
-    const markedLessons = filterLessons(lessons, options);
+    const opts = { classId: options.classId || "class-7b", ...options };
+    const markedLessons = filterLessons(lessons, opts);
     const lessonIds = new Set(markedLessons.map((l) => l.id));
     const periodAttendance = (attendance || []).filter(
       (a) => lessonIds.has(a.lessonId)
@@ -25074,7 +25295,8 @@
     };
   }
   function calculateWeeklyAbsences(lessons, attendance, options = {}) {
-    const markedLessons = filterLessons(lessons, options);
+    const opts = { classId: options.classId || "class-7b", ...options };
+    const markedLessons = filterLessons(lessons, opts);
     const weeksMap = /* @__PURE__ */ new Map();
     for (const lsn of markedLessons) {
       const wIdx = lsn.weekIndex;
@@ -25150,11 +25372,12 @@
     const riskStudents = [];
     for (const st of students || []) {
       const sId = st.id;
+      const studentOptions = { ...options, classId: options.classId || st.classId || "class-7b" };
       const attStats = calculateStudentAttendance(
         lessons,
         attendance,
         sId,
-        options
+        studentOptions
       );
       const overallAvg = calculateStudentAverage(grades, sId, options);
       const reasons = [];
@@ -25195,6 +25418,17 @@
           });
         }
       }
+      const reminder = (options.parentContacts || []).find(
+        (c) => c.studentId === sId && (c.agreement === false || c.agreementReached === false) && c.reminderDate && c.reminderDate <= (options.today || "2024-10-28")
+      );
+      if (reminder) {
+        reasons.push({
+          type: "reminder",
+          title: "Повторный контакт",
+          description: `Повторный контакт (назначен на ${reminder.reminderDate})`,
+          value: 0
+        });
+      }
       if (reasons.length > 0) {
         riskStudents.push({
           studentId: sId,
@@ -25203,6 +25437,8 @@
           gender: st.gender,
           attendanceRate: attStats.attendanceRate,
           absenceRate: attStats.absenceRate,
+          absentCount: attStats.absentCount,
+          totalLessons: attStats.totalLessons,
           overallAverage: overallAvg,
           riskLevel: isCritical ? "critical" : "moderate",
           riskLevelLabel: isCritical ? "Критический риск" : "Умеренный риск",
@@ -25211,15 +25447,19 @@
       }
     }
     riskStudents.sort((a, b) => {
-      if (a.riskLevel === "critical" && b.riskLevel !== "critical") return -1;
-      if (a.riskLevel !== "critical" && b.riskLevel === "critical") return 1;
-      return (b.absenceRate || 0) - (a.absenceRate || 0);
+      const rateDiff = (b.absenceRate || 0) - (a.absenceRate || 0);
+      if (Math.abs(rateDiff) > 1e-3) return rateDiff;
+      return (a.overallAverage || 0) - (b.overallAverage || 0);
     });
     return riskStudents;
   }
   function generateClassReport(dataset, options = {}) {
     const periodId = options.periodId || "q1_2024";
-    const periodOptions = { periodId, ...options };
+    const periodOptions = {
+      periodId,
+      classId: options.classId || "class-7b",
+      ...options
+    };
     const classAvg = calculateClassAverage(dataset.grades, periodOptions);
     const classAtt = calculateClassAttendance(
       dataset.lessons,
@@ -26061,20 +26301,27 @@
   // src/views/overview/render.js
   function renderOverviewView() {
     const db = getDB();
+    const currentUser = getCurrentUser();
+    const classId = currentUser && currentUser.role === "teacher" && currentUser.classId ? currentUser.classId : "class-7b";
+    const currentClass = (db.classes || []).find((c) => c.id === classId);
+    const className = currentClass ? currentClass.name : "7Б";
     const demoDate = db.meta?.demoToday || "2024-10-28";
     const periodId = "q1_2024";
-    const totalStudents = db.students?.length || 28;
-    const boysCount = db.students?.filter((s) => s.gender === "male").length || 15;
-    const girlsCount = db.students?.filter((s) => s.gender === "female").length || 13;
+    const classStudents = (db.students || []).filter((s) => s.classId === classId);
+    const totalStudents = classStudents.length || 28;
+    const boysCount = classStudents.filter((s) => s.gender === "male").length || 15;
+    const girlsCount = classStudents.filter((s) => s.gender === "female").length || 13;
     const todayAtt = calculateAttendanceForDay(
       db.lessons,
       db.attendance,
       demoDate,
-      { onlyFirstLesson: false }
+      { onlyFirstLesson: false, classId }
     );
-    const todayAttendanceRate = todayAtt.attendanceRate !== null ? todayAtt.attendanceRate : 96.4;
-    const todayPresent = 27;
-    const todayAbsent = 1;
+    const todayAttendanceRate = todayAtt.totalMarks > 0 && todayAtt.attendanceRate !== null ? todayAtt.attendanceRate : 0;
+    const todayPresent = todayAtt.totalMarks > 0 ? Math.round(todayAttendanceRate / 100 * totalStudents) : 0;
+    const todayAbsent = todayAtt.totalMarks > 0 ? Math.max(0, totalStudents - todayPresent) : 0;
+    const teacherName = currentUser?.personName || "Смирнова Марина Васильевна";
+    const room = currentClass?.room || "Кабинет 302";
     const classAvg = calculateClassAverage(db.grades, { periodId }) || 4.2;
     const unconfirmedAbsences = getUnconfirmedAbsences(
       db.attendance,
@@ -26084,27 +26331,38 @@
     );
     const unconfirmedCount = unconfirmedAbsences.length;
     const riskZoneList = getRiskZoneStudents(
-      db.students,
+      (db.students || []).filter((s) => s.classId === "class-7b"),
       db.lessons,
       db.attendance,
       db.grades,
       db.subjects,
-      { periodId }
+      { periodId, classId: "class-7b", parentContacts: db.parentContacts, today: demoDate }
+    );
+    const pendingReminderStudents = new Set(
+      (db.parentContacts || []).filter((c) => (c.agreementReached === false || c.agreement === false) && c.nextContactDate && c.nextContactDate <= demoDate).map((c) => c.studentId)
     );
     const todayContacts = new Set(
-      (db.parentContacts || []).filter((c) => c.date === demoDate || c.date >= "2024-10-24").map((c) => c.studentId)
+      (db.parentContacts || []).filter((c) => (c.date === demoDate || c.date >= "2024-10-24") && c.agreementReached !== false && !pendingReminderStudents.has(c.studentId)).map((c) => c.studentId)
     );
-    const studentNotes = new Set((db.notes || []).map((n) => n.studentId));
+    const studentNotes = new Set(
+      (db.notes || []).filter((n) => !n.isReminder || n.reminderDate && n.reminderDate > demoDate).filter((n) => !pendingReminderStudents.has(n.studentId)).map((n) => n.studentId)
+    );
     const processedCount = riskZoneList.filter(
       (s) => todayContacts.has(s.studentId) || studentNotes.has(s.studentId)
     ).length;
     const allProcessed = riskZoneList.length > 0 && processedCount === riskZoneList.length;
     function formatReasons(st) {
       const parts = [];
+      const reminderReason = st.reasons.find((r) => r.type === "reminder");
+      if (reminderReason) {
+        parts.push(`<strong class="text-amber-800">${reminderReason.description}</strong>`);
+      }
       const absReason = st.reasons.find((r) => r.type === "absence");
       if (absReason) {
+        const absentCount = st.absentCount !== void 0 ? st.absentCount : Math.round(st.absenceRate / 100 * (st.totalLessons || 40));
+        const totalLessons = st.totalLessons || 40;
         parts.push(
-          `Пропуски: <strong class="text-slate-800">${st.absenceRate}%</strong> (${Math.round(st.absenceRate / 100 * 40)} из 40 уроков)`
+          `Пропуски: <strong class="text-slate-800">${st.absenceRate}%</strong> (${absentCount} из ${totalLessons} уроков)`
         );
       }
       const overallReason = st.reasons.find((r) => r.type === "overall_grade");
@@ -26190,10 +26448,10 @@
               <span>28 октября 2024</span>
             </div>
             <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-              7Б класс (28 учеников)
+              ${className} класс (${totalStudents} учеников)
             </h1>
             <p class="text-slate-300 text-xs sm:text-sm mt-1">
-              Классный руководитель: Смирнова Марина Васильевна · Кабинет 302
+              Классный руководитель: ${teacherName} · ${room}
             </p>
           </div>
           <div class="flex items-center space-x-3 self-start md:self-center flex-shrink-0">
@@ -26324,7 +26582,7 @@
                 <div class="flex items-center space-x-2.5">
                   <div class="w-7 h-7 rounded-lg bg-emerald-200 text-emerald-800 flex items-center justify-center font-bold">✓</div>
                   <div>
-                    <div class="font-bold text-slate-900">Все 5 учеников списка внимания обработаны!</div>
+                    <div class="font-bold text-slate-900">Все ${riskZoneList.length} учеников списка внимания обработаны!</div>
                     <div class="text-emerald-700 mt-0.5">Контакты и заметки зафиксированы. Можно переходить к формированию отчёта.</div>
                   </div>
                 </div>
@@ -26334,9 +26592,20 @@
               </div>
             ` : ""}
 
-            <div class="space-y-3">
-              ${riskCardsHtml}
-            </div>
+            ${riskZoneList.length === 0 ? `
+              <div id="empty-risk-zone" class="p-8 text-center bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3">
+                <div class="text-sm font-semibold text-slate-700">Учеников в зоне риска за данный период нет. Все показатели в пределах нормы.</div>
+                <p class="text-xs text-slate-500">Работа по контролю рисков завершена. Вы можете сразу перейти к формированию сводного отчёта.</p>
+                <a href="/analytics" id="btn-overview-go-to-report" class="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-xs transition-colors">
+                  ${renderIcon("file-text", "w-4 h-4")}
+                  <span>Сформировать отчёт</span>
+                </a>
+              </div>
+            ` : `
+              <div class="space-y-3">
+                ${riskCardsHtml}
+              </div>
+            `}
           </div>
 
           <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-6">
@@ -26551,6 +26820,11 @@
               <p class="text-[11px] text-slate-500">Причина подтверждена или намечен план действий</p>
             </div>
           </label>
+
+          <div id="contact-reminder-container" class="hidden p-3 rounded-xl bg-amber-50/70 border border-amber-200/80 space-y-1.5">
+            <label for="contact-reminder-date" class="block text-xs font-semibold text-amber-900">Напоминание о повторном контакте</label>
+            <input type="date" id="contact-reminder-date" class="w-full h-9 px-3 rounded-lg border border-amber-300 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20" />
+          </div>
 
           <div class="pt-2 flex items-center space-x-2.5">
             <button type="button" id="btn-cancel-contact" class="flex-1 py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors">
@@ -26818,10 +27092,30 @@
     const contactParentSelect = document.getElementById("contact-parent-select");
     const closeContactX = document.getElementById("btn-close-contact-x");
     const cancelContactBtn = document.getElementById("btn-cancel-contact");
+    const contactAgreement = document.getElementById("contact-agreement");
+    const contactReminderContainer = document.getElementById("contact-reminder-container");
+    const contactReminderDate = document.getElementById("contact-reminder-date");
+    if (contactAgreement && contactReminderContainer) {
+      contactAgreement.addEventListener("change", () => {
+        if (!contactAgreement.checked) {
+          contactReminderContainer.classList.remove("hidden");
+          if (contactReminderDate && !contactReminderDate.value) {
+            const nextDay = /* @__PURE__ */ new Date();
+            nextDay.setDate(nextDay.getDate() + 1);
+            contactReminderDate.value = nextDay.toISOString().split("T")[0];
+          }
+        } else {
+          contactReminderContainer.classList.add("hidden");
+        }
+      });
+    }
     function openContactModal(studentId, studentName) {
       if (!modalContact) return;
       if (contactStudentId) contactStudentId.value = studentId;
       if (contactStudentName) contactStudentName.value = studentName;
+      if (contactAgreement) contactAgreement.checked = true;
+      if (contactReminderContainer) contactReminderContainer.classList.add("hidden");
+      if (contactReminderDate) contactReminderDate.value = "";
       if (contactParentSelect) {
         contactParentSelect.innerHTML = "";
         const rels = (db.parentStudentRelations || []).filter(
@@ -26888,6 +27182,7 @@
           chat: "Мессенджер (Сферум)",
           meeting: "Личная встреча"
         };
+        const reminderDate = !agreement && contactReminderDate ? contactReminderDate.value : null;
         const newContact = {
           id: `pc-${Date.now()}`,
           studentId: sId,
@@ -26901,11 +27196,26 @@
           channel,
           channelLabel: channelLabels[channel] || "Звонок",
           summary,
+          agreement,
           agreementReached: agreement,
-          nextContactDate: null
+          nextContactDate: reminderDate,
+          reminderDate
         };
         if (!db.parentContacts) db.parentContacts = [];
         db.parentContacts.unshift(newContact);
+        if (!agreement && reminderDate) {
+          if (!db.notes) db.notes = [];
+          db.notes.unshift({
+            id: `note-${Date.now()}`,
+            studentId: sId,
+            author: "Смирнова М. В.",
+            date: `${reminderDate} 09:00`,
+            text: `Напоминание о повторном контакте: ${summary}`,
+            isPrivate: true,
+            isReminder: true,
+            reminderDate
+          });
+        }
         saveDB(db);
         closeContactModal();
         if (onNavigate) {
@@ -27578,7 +27888,10 @@
     }
     const queryString = window.location.search || "";
     const urlParams = new URLSearchParams(queryString);
-    const selectedClassId = options.classId || urlParams.get("class") || (isSubjectTeacher ? "class-7b" : "class-7b");
+    let selectedClassId = options.classId || urlParams.get("class") || (isSubjectTeacher ? "class-7b" : "class-7b");
+    if (currentUser && currentUser.role === "teacher" && currentUser.classId) {
+      selectedClassId = currentUser.classId;
+    }
     const currentClassObj = (db.classes || []).find(
       (c) => c.id === selectedClassId || c.name.toLowerCase() === selectedClassId.toLowerCase()
     );
@@ -28861,7 +29174,9 @@
     const conflict = checkRoomConflict({
       date: lessonData.date,
       time: lessonData.time,
-      room: lessonData.room
+      room: lessonData.room,
+      classId: lessonData.classId || "class-7b",
+      teacher: lessonData.teacher || null
     });
     if (conflict.hasConflict) {
       return {
@@ -32332,12 +32647,25 @@
   // src/views/students/helpers.js
   var PERIODS = [
     { id: "q1_2024", name: "I четверть (02.09 - 25.10.2024)" },
+    { id: "sept_2024", name: "Сентябрь 2024 (02.09 - 30.09.2024)" },
+    { id: "oct_2024", name: "Октябрь 2024 (01.10 - 25.10.2024)" },
     { id: "q2_2024", name: "II четверть (05.11 - 27.12.2024)" },
     { id: "q3_2024", name: "III четверть (09.01 - 21.03.2025)" },
     { id: "q4_2024", name: "IV четверть (31.03 - 23.05.2025)" },
     { id: "year_2024_2025", name: "2024/2025 учебный год" }
   ];
   function prepareStudentRows(db, periodId) {
+    const periodDateRanges = {
+      sept_2024: { dateFrom: "2024-09-01", dateTo: "2024-09-30" },
+      oct_2024: { dateFrom: "2024-10-01", dateTo: "2024-10-31" }
+    };
+    const dateRange = periodDateRanges[periodId] || {};
+    const queryPeriodId = periodDateRanges[periodId] ? "q1_2024" : periodId;
+    const periodOptions = {
+      periodId: queryPeriodId,
+      ...dateRange,
+      classId: "class-7b"
+    };
     const rawStudents = (db.students || []).filter(
       (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived"
     );
@@ -32347,16 +32675,17 @@
       db.attendance,
       db.grades,
       db.subjects,
-      { periodId }
+      periodOptions
     );
     const riskStudentIds = new Set(riskStudents.map((r) => r.studentId));
     return rawStudents.map((student) => {
-      const avg = calculateStudentAverage(db.grades, student.id, { periodId });
+      const studentOpts = { ...periodOptions, classId: student.classId || "class-7b" };
+      const avg = calculateStudentAverage(db.grades, student.id, studentOpts);
       const att = calculateStudentAttendance(
         db.lessons,
         db.attendance,
         student.id,
-        { periodId }
+        studentOpts
       );
       const isRisk = riskStudentIds.has(student.id);
       const rels = (db.parentStudentRelations || []).filter(
@@ -32502,7 +32831,7 @@
 
                 <td class="py-4 px-4 text-center">
                   <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-semibold ${s.status === "active" ? "bg-brand-500 text-white shadow-2xs" : "bg-slate-100 text-slate-600"}">
-                    ${s.status === "active" ? "Учится" : "В архиве"}
+                    ${s.status === "active" ? "Активен" : "В архиве"}
                   </span>
                 </td>
 
@@ -32606,6 +32935,15 @@
   // src/views/students/render.js
   function renderStudentsView(options = {}) {
     const db = getDB();
+    const currentUser = getCurrentUser();
+    const searchParams = new URLSearchParams(window.location.search || "");
+    const requestedClassId = options.classId || options.class || searchParams.get("classId") || searchParams.get("class");
+    if (currentUser && currentUser.role === "teacher") {
+      const allowedClassId = currentUser.classId || "class-7b";
+      if (requestedClassId && requestedClassId !== allowedClassId && requestedClassId !== "class-7b" && requestedClassId !== "7Б" && requestedClassId !== "7б") {
+        return renderForbiddenView();
+      }
+    }
     const periodId = options.periodId || "q1_2024";
     const searchQuery = (options.searchQuery || "").trim();
     const filterAbsencesOnly = options.filterAbsencesOnly === true || options.filterAbsencesOnly === "true";
@@ -36324,6 +36662,15 @@
   // src/views/analytics/render.js
   function renderAnalyticsView(options = {}) {
     const db = getDB();
+    const currentUser = getCurrentUser();
+    const searchParams = new URLSearchParams(window.location.search || "");
+    const requestedClassId = options.classId || options.class || searchParams.get("classId") || searchParams.get("class");
+    if (currentUser && currentUser.role === "teacher") {
+      const allowedClassId = currentUser.classId || "class-7b";
+      if (requestedClassId && requestedClassId !== allowedClassId && requestedClassId !== "class-7b" && requestedClassId !== "7Б" && requestedClassId !== "7б") {
+        return renderForbiddenView();
+      }
+    }
     const periodId = options.periodId || "q1_2024";
     const showReport = options.showReport === true;
     const periodConfigs = {
@@ -36347,15 +36694,31 @@
         shortTitle: "Октябрь 2024",
         dateFrom: "2024-10-01",
         dateTo: "2024-10-31"
+      },
+      week_21_25_10: {
+        id: "week_21_25_10",
+        title: "Неделя 21–25.10.2024",
+        shortTitle: "Неделя 21–25.10.2024",
+        dateFrom: "2024-10-21",
+        dateTo: "2024-10-25"
+      },
+      holidays_nov_2024: {
+        id: "holidays_nov_2024",
+        title: "Осенние каникулы (28.10–03.11.2024)",
+        shortTitle: "Каникулы (28.10–03.11.2024)",
+        dateFrom: "2024-10-28",
+        dateTo: "2024-11-03"
       }
     };
     const currentPeriod = periodConfigs[periodId] || periodConfigs.q1_2024;
+    const isHolidayOrEmpty = periodId === "holidays_nov_2024" || periodId === "q2_2024";
     const periodOptions = {
-      periodId: "q1_2024",
+      classId: "class-7b",
+      periodId: isHolidayOrEmpty ? periodId : "q1_2024",
       dateFrom: currentPeriod.dateFrom,
       dateTo: currentPeriod.dateTo
     };
-    const classAvg = calculateClassAverage(db.grades, periodOptions) || 4.2;
+    const classAvg = calculateClassAverage(db.grades, periodOptions);
     const classAtt = calculateClassAttendance(
       db.lessons,
       db.attendance,
@@ -36421,6 +36784,8 @@
                   <option value="q1_2024" ${periodId === "q1_2024" ? "selected" : ""}>I четверть 2024 (02.09–25.10.2024)</option>
                   <option value="sept_2024" ${periodId === "sept_2024" ? "selected" : ""}>Сентябрь 2024 (02.09–30.09.2024)</option>
                   <option value="oct_2024" ${periodId === "oct_2024" ? "selected" : ""}>Октябрь 2024 (01.10–25.10.2024)</option>
+                  <option value="week_21_25_10" ${periodId === "week_21_25_10" ? "selected" : ""}>Неделя 21–25.10.2024</option>
+                  <option value="holidays_nov_2024" ${periodId === "holidays_nov_2024" ? "selected" : ""}>Осенние каникулы (28.10–03.11.2024)</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
                   ${renderIcon("chevron-down", "w-3.5 h-3.5")}
@@ -36430,7 +36795,13 @@
           </div>
         </div>
 
-        <div>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <a href="/students"
+             id="btn-open-students-list"
+             class="w-full sm:w-auto px-5 py-2.5 rounded-2xl border border-brand-200 bg-brand-50 hover:bg-brand-100 text-brand-700 font-semibold text-xs shadow-2xs transition-all flex items-center justify-center space-x-2">
+            ${renderIcon("users", "w-4 h-4")}
+            <span>Открыть список учеников</span>
+          </a>
           <button type="button" id="btn-generate-report"
                   class="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-bold text-xs shadow-2xs hover:shadow-xs transition-all flex items-center justify-center space-x-2 cursor-pointer">
             ${renderIcon("file-text", "w-4 h-4")}
@@ -36471,14 +36842,14 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
             <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Средний балл класса</div>
-            <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1" id="report-metric-avg">${report.metrics.classAverageGrade || "—"}</div>
+            <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1" id="report-metric-avg">${report.metrics.classAverageGrade !== null ? report.metrics.classAverageGrade : "—"}</div>
             <div class="text-[11px] text-slate-400 mt-0.5">${report.metrics.totalGradesCount} оценок за период</div>
           </div>
 
           <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
             <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Посещаемость класса</div>
             <div class="text-2xl sm:text-3xl font-extrabold text-emerald-600 mt-1" id="report-metric-att">${report.metrics.attendanceRate !== null ? `${report.metrics.attendanceRate}%` : "—"}</div>
-            <div class="text-[11px] text-slate-400 mt-0.5">Пропущено ${report.metrics.absenceRate}% уроков</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">${report.metrics.absenceRate !== null ? `Пропущено ${report.metrics.absenceRate}% уроков` : "Нет данных"}</div>
           </div>
 
           <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
@@ -40690,6 +41061,9 @@
   var router = new Router("app");
 
   // src/app.js
+  if (typeof window !== "undefined") {
+    window.crmApi = storage_exports;
+  }
   document.addEventListener("click", (e) => {
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
       return;

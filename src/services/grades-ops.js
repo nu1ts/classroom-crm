@@ -23,6 +23,14 @@ export function saveGradeRecord({ lessonId, studentId, value, teacher }) {
     return { success: false, error: "Не указан урок или ученик" };
   }
 
+  const currentUser = getCurrentUser();
+  if (currentUser && currentUser.role && currentUser.role !== "subject_teacher") {
+    return {
+      success: false,
+      error: "Действие недоступно для вашей роли. Только учитель-предметник может выставлять или изменять оценки.",
+    };
+  }
+
   const db = getDB();
   const lesson = (db.lessons || []).find((l) => l.id === lessonId);
   if (!lesson) {
@@ -61,8 +69,6 @@ export function saveGradeRecord({ lessonId, studentId, value, teacher }) {
   }
 
   if (!db.grades) db.grades = [];
-
-  const currentUser = getCurrentUser();
   const teacherName =
     teacher ||
     (currentUser && (currentUser.shortName || currentUser.personName)) ||
@@ -106,6 +112,14 @@ export function saveGradeRecord({ lessonId, studentId, value, teacher }) {
 export function deleteGradeRecord({ lessonId, studentId, teacher }) {
   if (!lessonId || !studentId) {
     return { success: false, error: "Не указан урок или ученик" };
+  }
+
+  const currentUser = getCurrentUser();
+  if (currentUser && currentUser.role && currentUser.role !== "subject_teacher") {
+    return {
+      success: false,
+      error: "Действие недоступно для вашей роли. Только учитель-предметник может удалять оценки.",
+    };
   }
 
   const db = getDB();

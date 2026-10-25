@@ -31,7 +31,10 @@ export function renderAttendanceView(options = {}) {
 
   const queryString = window.location.search || "";
   const urlParams = new URLSearchParams(queryString);
-  const selectedClassId = options.classId || urlParams.get("class") || (isSubjectTeacher ? "class-7b" : "class-7b");
+  let selectedClassId = options.classId || urlParams.get("class") || (isSubjectTeacher ? "class-7b" : "class-7b");
+  if (currentUser && currentUser.role === "teacher" && currentUser.classId) {
+    selectedClassId = currentUser.classId;
+  }
 
   const currentClassObj = (db.classes || []).find(
     (c) => c.id === selectedClassId || c.name.toLowerCase() === selectedClassId.toLowerCase(),

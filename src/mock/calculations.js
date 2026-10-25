@@ -19,6 +19,9 @@ export function roundToOneDecimal(value) {
  */
 export function filterLessons(lessons, options = {}) {
   let result = lessons || [];
+  if (options.classId) {
+    result = result.filter((l) => (l.classId || "class-7b") === options.classId);
+  }
   if (options.periodId) {
     result = result.filter((l) => l.periodId === options.periodId);
   }
@@ -215,7 +218,8 @@ export function calculateStudentAttendance(
   studentId,
   options = {},
 ) {
-  const markedLessons = filterLessons(lessons, options);
+  const opts = { classId: options.classId || "class-7b", ...options };
+  const markedLessons = filterLessons(lessons, opts);
   const lessonIds = new Set(markedLessons.map((l) => l.id));
 
   const stAttendance = (attendance || []).filter(
@@ -259,7 +263,8 @@ export function calculateStudentAttendance(
  * @returns {Object} { totalMarks, presentCount, absentCount, attendanceRate, absenceRate, totalLessons }
  */
 export function calculateClassAttendance(lessons, attendance, options = {}) {
-  const markedLessons = filterLessons(lessons, options);
+  const opts = { classId: options.classId || "class-7b", ...options };
+  const markedLessons = filterLessons(lessons, opts);
   const lessonIds = new Set(markedLessons.map((l) => l.id));
 
   const periodAttendance = (attendance || []).filter((a) =>
@@ -304,7 +309,8 @@ export function calculateClassAttendance(lessons, attendance, options = {}) {
  * @returns {Array} Массив недель с долей пропусков
  */
 export function calculateWeeklyAbsences(lessons, attendance, options = {}) {
-  const markedLessons = filterLessons(lessons, options);
+  const opts = { classId: options.classId || "class-7b", ...options };
+  const markedLessons = filterLessons(lessons, opts);
 
   const weeksMap = new Map();
   for (const lsn of markedLessons) {
@@ -430,11 +436,12 @@ export function getRiskZoneStudents(
 
   for (const st of students || []) {
     const sId = st.id;
+    const studentOptions = { ...options, classId: options.classId || st.classId || "class-7b" };
     const attStats = calculateStudentAttendance(
       lessons,
       attendance,
       sId,
-      options,
+      studentOptions,
     );
     const overallAvg = calculateStudentAverage(grades, sId, options);
 
@@ -483,6 +490,18 @@ export function getRiskZoneStudents(
       }
     }
 
+    const reminder = (options.parentContacts || []).find(
+      (c) => c.studentId === sId && (c.agreement === false || c.agreementReached === false) && c.reminderDate && c.reminderDate <= (options.today || "2024-10-28")
+    );
+    if (reminder) {
+      reasons.push({
+        type: "reminder",
+        title: "Повторный контакт",
+        description: `Повторный контакт (назначен на ${reminder.reminderDate})`,
+        value: 0,
+      });
+    }
+
     if (reasons.length > 0) {
       riskStudents.push({
         studentId: sId,
@@ -491,6 +510,8 @@ export function getRiskZoneStudents(
         gender: st.gender,
         attendanceRate: attStats.attendanceRate,
         absenceRate: attStats.absenceRate,
+        absentCount: attStats.absentCount,
+        totalLessons: attStats.totalLessons,
         overallAverage: overallAvg,
         riskLevel: isCritical ? "critical" : "moderate",
         riskLevelLabel: isCritical ? "Критический риск" : "Умеренный риск",
@@ -500,9 +521,9 @@ export function getRiskZoneStudents(
   }
 
   riskStudents.sort((a, b) => {
-    if (a.riskLevel === "critical" && b.riskLevel !== "critical") return -1;
-    if (a.riskLevel !== "critical" && b.riskLevel === "critical") return 1;
-    return (b.absenceRate || 0) - (a.absenceRate || 0);
+    const rateDiff = (b.absenceRate || 0) - (a.absenceRate || 0);
+    if (Math.abs(rateDiff) > 0.001) return rateDiff;
+    return (a.overallAverage || 0) - (b.overallAverage || 0);
   });
 
   return riskStudents;
@@ -517,7 +538,11 @@ export function getRiskZoneStudents(
  */
 export function generateClassReport(dataset, options = {}) {
   const periodId = options.periodId || "q1_2024";
-  const periodOptions = { periodId, ...options };
+  const periodOptions = {
+    periodId,
+    classId: options.classId || "class-7b",
+    ...options,
+  };
 
   const classAvg = calculateClassAverage(dataset.grades, periodOptions);
   const classAtt = calculateClassAttendance(

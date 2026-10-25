@@ -1,4 +1,6 @@
 import { getDB, getCurrentUser } from "./services/storage.js";
+import * as storageApi from "./services/storage.js";
+if (typeof window !== "undefined") { window.crmApi = storageApi; }
 import { router } from "./router.js";
 import { navigate } from "./services/navigation.js";
 
