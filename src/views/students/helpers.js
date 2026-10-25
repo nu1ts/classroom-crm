@@ -9,6 +9,8 @@ import {
 
 export const PERIODS = [
   { id: "q1_2024", name: "I четверть (02.09 - 25.10.2024)" },
+  { id: "sept_2024", name: "Сентябрь 2024 (02.09 - 30.09.2024)" },
+  { id: "oct_2024", name: "Октябрь 2024 (01.10 - 25.10.2024)" },
   { id: "q2_2024", name: "II четверть (05.11 - 27.12.2024)" },
   { id: "q3_2024", name: "III четверть (09.01 - 21.03.2025)" },
   { id: "q4_2024", name: "IV четверть (31.03 - 23.05.2025)" },
@@ -16,6 +18,18 @@ export const PERIODS = [
 ];
 
 export function prepareStudentRows(db, periodId) {
+  const periodDateRanges = {
+    sept_2024: { dateFrom: "2024-09-01", dateTo: "2024-09-30" },
+    oct_2024: { dateFrom: "2024-10-01", dateTo: "2024-10-31" },
+  };
+  const dateRange = periodDateRanges[periodId] || {};
+  const queryPeriodId = periodDateRanges[periodId] ? "q1_2024" : periodId;
+  const periodOptions = {
+    periodId: queryPeriodId,
+    ...dateRange,
+    classId: "class-7b",
+  };
+
   const rawStudents = (db.students || []).filter(
     (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived",
   );
@@ -25,17 +39,18 @@ export function prepareStudentRows(db, periodId) {
     db.attendance,
     db.grades,
     db.subjects,
-    { periodId },
+    periodOptions,
   );
   const riskStudentIds = new Set(riskStudents.map((r) => r.studentId));
 
   return rawStudents.map((student) => {
-    const avg = calculateStudentAverage(db.grades, student.id, { periodId });
+    const studentOpts = { ...periodOptions, classId: student.classId || "class-7b" };
+    const avg = calculateStudentAverage(db.grades, student.id, studentOpts);
     const att = calculateStudentAttendance(
       db.lessons,
       db.attendance,
       student.id,
-      { periodId },
+      studentOpts,
     );
     const isRisk = riskStudentIds.has(student.id);
 

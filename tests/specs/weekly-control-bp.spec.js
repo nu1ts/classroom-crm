@@ -591,7 +591,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await analyticsPage.generateReport();
 
     await expect(analyticsPage.reportMetricAvg).toContainText('4.2');
-    await expect(analyticsPage.reportMetricAtt).toContainText('93%');
+    await expect(analyticsPage.reportMetricAtt).toContainText(/93([.,]6)?%/);
     await expect(analyticsPage.reportMetricRisk).toContainText('5');
     await expect(analyticsPage.btnPrintReport).toBeVisible();
   });

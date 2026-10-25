@@ -30,6 +30,9 @@ export class LoginPage {
   async goto(options = {}) {
     await this.page.goto('login', options);
     await this.page.waitForLoadState('domcontentloaded');
+    if (await this.switchUserBtn.isVisible()) {
+      await this.switchUserBtn.click();
+    }
     await expect(this.submitButton).toBeVisible({ timeout: 10000 });
   }
 

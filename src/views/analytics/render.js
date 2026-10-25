@@ -36,16 +36,32 @@ export function renderAnalyticsView(options = {}) {
       dateFrom: "2024-10-01",
       dateTo: "2024-10-31",
     },
+    week_21_25_10: {
+      id: "week_21_25_10",
+      title: "Неделя 21–25.10.2024",
+      shortTitle: "Неделя 21–25.10.2024",
+      dateFrom: "2024-10-21",
+      dateTo: "2024-10-25",
+    },
+    holidays_nov_2024: {
+      id: "holidays_nov_2024",
+      title: "Осенние каникулы (28.10–03.11.2024)",
+      shortTitle: "Каникулы (28.10–03.11.2024)",
+      dateFrom: "2024-10-28",
+      dateTo: "2024-11-03",
+    },
   };
 
   const currentPeriod = periodConfigs[periodId] || periodConfigs.q1_2024;
+  const isHolidayOrEmpty = periodId === "holidays_nov_2024" || periodId === "q2_2024";
   const periodOptions = {
-    periodId: "q1_2024",
+    classId: "class-7b",
+    periodId: isHolidayOrEmpty ? periodId : "q1_2024",
     dateFrom: currentPeriod.dateFrom,
     dateTo: currentPeriod.dateTo,
   };
 
-  const classAvg = calculateClassAverage(db.grades, periodOptions) || 4.2;
+  const classAvg = calculateClassAverage(db.grades, periodOptions);
   const classAtt = calculateClassAttendance(
     db.lessons,
     db.attendance,
@@ -117,6 +133,8 @@ export function renderAnalyticsView(options = {}) {
                   <option value="q1_2024" ${periodId === "q1_2024" ? "selected" : ""}>I четверть 2024 (02.09–25.10.2024)</option>
                   <option value="sept_2024" ${periodId === "sept_2024" ? "selected" : ""}>Сентябрь 2024 (02.09–30.09.2024)</option>
                   <option value="oct_2024" ${periodId === "oct_2024" ? "selected" : ""}>Октябрь 2024 (01.10–25.10.2024)</option>
+                  <option value="week_21_25_10" ${periodId === "week_21_25_10" ? "selected" : ""}>Неделя 21–25.10.2024</option>
+                  <option value="holidays_nov_2024" ${periodId === "holidays_nov_2024" ? "selected" : ""}>Осенние каникулы (28.10–03.11.2024)</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
                   ${renderIcon("chevron-down", "w-3.5 h-3.5")}
@@ -167,14 +185,14 @@ export function renderAnalyticsView(options = {}) {
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
             <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Средний балл класса</div>
-            <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1" id="report-metric-avg">${report.metrics.classAverageGrade || "—"}</div>
+            <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1" id="report-metric-avg">${report.metrics.classAverageGrade !== null ? report.metrics.classAverageGrade : "—"}</div>
             <div class="text-[11px] text-slate-400 mt-0.5">${report.metrics.totalGradesCount} оценок за период</div>
           </div>
 
           <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
             <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Посещаемость класса</div>
             <div class="text-2xl sm:text-3xl font-extrabold text-emerald-600 mt-1" id="report-metric-att">${report.metrics.attendanceRate !== null ? `${report.metrics.attendanceRate}%` : "—"}</div>
-            <div class="text-[11px] text-slate-400 mt-0.5">Пропущено ${report.metrics.absenceRate}% уроков</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">${report.metrics.absenceRate !== null ? `Пропущено ${report.metrics.absenceRate}% уроков` : "Нет данных"}</div>
           </div>
 
           <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">

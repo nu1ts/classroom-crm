@@ -4,10 +4,11 @@ import { NavigationPage } from '../page-objects/NavigationPage.js';
 import { StudentsPage } from '../page-objects/StudentsPage.js';
 import { StudentDetailPage } from '../page-objects/StudentDetailPage.js';
 import { AnalyticsPage } from '../page-objects/AnalyticsPage.js';
+import { JournalPage } from '../page-objects/JournalPage.js';
 
 test.describe('Аналитика и Обзор класса', () => {
 
-  test('TC-ANL-01: Средний балл ученика за период', async ({ page }) => {
+  test('[TC-ANL-01] Средний балл ученика за период', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -24,7 +25,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(detailPage.averageGradeCard).toContainText(/4[.,]8/);
   });
 
-  test('TC-ANL-02: Средний балл по единственной оценке', async ({ page }) => {
+  test('[TC-ANL-02] Средний балл по единственной оценке', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -38,7 +39,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(row.locator('td').nth(2)).toContainText(/5[.,]0/);
   });
 
-  test('TC-ANL-03: Округление среднего балла', async ({ page }) => {
+  test('[TC-ANL-03] Округление среднего балла', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -58,11 +59,20 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(mathCard).toContainText(/3[.,]2/);
   });
 
-  test.skip('TC-ANL-04: Округление ровно на половине', async () => {
-    // TODO: Выбор периода «Неделя 21–25.10.2024» в аналитике не реализован в UI (доступны только четверти и месяцы)
+  test('[TC-ANL-04] Округление ровно на половине', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.loginAs('teacher');
+
+    const analyticsPage = new AnalyticsPage(page);
+    await analyticsPage.goto();
+    await analyticsPage.selectPeriod('week_21_25_10');
+    await analyticsPage.generateReport();
+
+    await expect(analyticsPage.reportMetricAvg).toHaveText(/4[.,]2/);
   });
 
-  test('TC-ANL-05: Процент посещаемости ученика', async ({ page }) => {
+  test('[TC-ANL-05] Процент посещаемости ученика', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -77,7 +87,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(row.locator('span:has-text("В зоне риска")')).toBeVisible();
   });
 
-  test('TC-ANL-06: Неотмеченные уроки не считаются прогулами', async ({ page }) => {
+  test('[TC-ANL-06] Неотмеченные уроки не считаются прогулами', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -91,7 +101,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(row.locator('td').nth(3)).toContainText('из 40');
   });
 
-  test('TC-ANL-07: Посещаемость класса', async ({ page }) => {
+  test('[TC-ANL-07] Посещаемость класса', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -105,11 +115,27 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(analyticsPage.reportContainer).toContainText('Пропущено 6.4%');
   });
 
-  test.skip('TC-ANL-08: Ученик без оценок за период', async () => {
-    // TODO: Выбор календарного месяца (Сентябрь) в списке учеников не реализован в UI
+  test('[TC-ANL-08] Ученик без оценок за период', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.loginAs('teacher');
+
+    const analyticsPage = new AnalyticsPage(page);
+    await analyticsPage.goto();
+    await analyticsPage.selectPeriod('sept_2024');
+    await analyticsPage.generateReport();
+    await expect(analyticsPage.reportMetricAvg).toContainText(/4[.,]2/);
+
+    const studentsPage = new StudentsPage(page);
+    await studentsPage.goto('period=sept_2024');
+    await studentsPage.search('Васильева');
+    const row = studentsPage.getStudentRow('Васильева');
+    await expect(row).toBeVisible();
+    await expect(row.locator('td').nth(2)).toContainText(/—|нет данных/);
+    await expect(row.locator('td').nth(3)).toContainText(/2 из 2[01]/);
   });
 
-  test('TC-ANL-09: Смена периода пересчитывает показатели', async ({ page }) => {
+  test('[TC-ANL-09] Смена периода пересчитывает показатели', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -133,7 +159,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(analyticsPage.reportPeriodTitle).toContainText('I четверть');
   });
 
-  test('TC-ANL-10: Средний балл класса: способ расчёта', async ({ page }) => {
+  test('[TC-ANL-10] Средний балл класса: способ расчёта', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -146,7 +172,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(analyticsPage.reportContainer).toContainText('303 оценок за период');
   });
 
-  test('TC-ANL-11: Средние баллы по предметам и порог', async ({ page }) => {
+  test('[TC-ANL-11] Средние баллы по предметам и порог', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -173,7 +199,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(analyticsPage.reportContainer).toContainText('Порог зоны риска: 3.5');
   });
 
-  test('TC-ANL-12: Пропуски по неделям', async ({ page }) => {
+  test('[TC-ANL-12] Пропуски по неделям', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -186,7 +212,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(analyticsPage.reportContainer).toContainText('11.4%');
   });
 
-  test('TC-ANL-13: Зона риска: состав и причины', async ({ page }) => {
+  test('[TC-ANL-13] Зона риска: состав и причины', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -202,7 +228,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(analyticsPage.reportContainer).toContainText('Петрова Анна');
   });
 
-  test('TC-ANL-14: Неподтверждённые пропуски', async ({ page }) => {
+  test('[TC-ANL-14] Неподтверждённые пропуски', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -214,7 +240,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(analyticsPage.reportMetricUnconfirmed).toHaveText('4');
   });
 
-  test('TC-ANL-15: Отчёт по классу не хранится', async ({ page }) => {
+  test('[TC-ANL-15] Отчёт по классу не хранится', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -232,7 +258,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(analyticsPage.reportMetricAvg).toHaveText('4.2');
   });
 
-  test('TC-ANL-16: Права: классрук видит только свои классы', async ({ page }) => {
+  test('[TC-ANL-16] Права: классрук видит только свои классы', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -246,7 +272,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(analyticsPage.title).toBeVisible();
   });
 
-  test('TC-ANL-17: Права: предметник видит только свои предметы и классы', async ({ page }) => {
+  test('[TC-ANL-17] Права: предметник видит только свои предметы и классы', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('subject_teacher');
@@ -255,7 +281,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(page.locator('text=Доступ ограничен')).toBeVisible();
   });
 
-  test('TC-ANL-18: Права: родитель видит показатели только своего ребёнка', async ({ page }) => {
+  test('[TC-ANL-18] Права: родитель видит показатели только своего ребёнка', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('parent');
@@ -264,11 +290,65 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(page.locator('text=Доступ ограничен')).toBeVisible();
   });
 
-  test.skip('TC-ANL-19: Отметки о присутствии не влияют на средний балл', async () => {
-    // TODO: Интерактивное выставление отметки отсутствия предметником на уроке 26.10 в UI не реализовано
+  test('[TC-ANL-19] Отметки о присутствии не влияют на средний балл', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await page.evaluate(() => {
+      const DB_KEY = 'classroom_crm_db';
+      const raw = localStorage.getItem(DB_KEY);
+      if (raw) {
+        const db = JSON.parse(raw);
+        const att24 = db.attendance?.find((a) => a.lessonId === 'lsn-39' && a.studentId === 'st-14');
+        const att23 = db.attendance?.find((a) => a.lessonId === 'lsn-38' && a.studentId === 'st-14');
+        if (att24) {
+          att24.value = 'present';
+          att24.status = 'present';
+          att24.code = 'Был';
+          att24.reason = null;
+          att24.confirmedBy = null;
+          att24.confirmedAt = null;
+          att24.document = null;
+        }
+        if (att23) {
+          att23.value = 'absent';
+          att23.status = 'confirmed';
+          att23.code = 'УП';
+        }
+        localStorage.setItem(DB_KEY, JSON.stringify(db));
+      }
+    });
+
+    await loginPage.loginAs('teacher');
+
+    const studentsPage = new StudentsPage(page);
+    await studentsPage.goto();
+    await studentsPage.search('Сидоров');
+    let row = studentsPage.getStudentRow('Сидоров');
+    await expect(row).toBeVisible();
+    await expect(row.locator('td').nth(2)).toContainText(/3[.,]1/);
+
+    const navPage = new NavigationPage(page);
+    await navPage.logout();
+    await loginPage.loginAs('subject_teacher');
+
+    const journalPage = new JournalPage(page);
+    await journalPage.goto('class=class-7b&subject=math');
+    const btn = journalPage.getAbsenceBtn('Сидоров Никита', '2024-10-24');
+    await expect(btn).toBeVisible();
+    await btn.click();
+    await journalPage.saveJournal();
+
+    await navPage.logout();
+    await loginPage.loginAs('teacher');
+    await studentsPage.goto();
+    await studentsPage.search('Сидоров');
+    row = studentsPage.getStudentRow('Сидоров');
+    await expect(row).toBeVisible();
+    await expect(row.locator('td').nth(2)).toContainText(/3[.,]1/);
+    await expect(row.locator('td').nth(3)).toContainText('13 из 40');
   });
 
-  test('TC-ANL-20: Уважительная причина остаётся пропуском', async ({ page }) => {
+  test('[TC-ANL-20] Уважительная причина остаётся пропуском', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -291,11 +371,57 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(detailPage.absencesTotalCard).toContainText('12 уроков');
   });
 
-  test.skip('TC-ANL-21: Показатели пересчитываются после новой оценки', async () => {
-    // TODO: Интерактивное выставление новых оценок в журнал учителем-предметником в UI не реализовано
+  test('[TC-ANL-21] Показатели пересчитываются после новой оценки', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.loginAs('teacher');
+
+    const analyticsPage = new AnalyticsPage(page);
+    await analyticsPage.goto();
+    await analyticsPage.selectPeriod('q1_2024');
+    await analyticsPage.generateReport();
+    await expect(analyticsPage.reportMetricAvg).toContainText(/4[.,]2/);
+
+    const navPage = new NavigationPage(page);
+    await navPage.logout();
+    await loginPage.loginAs('subject_teacher');
+
+    const journalPage = new JournalPage(page);
+    await journalPage.goto('class=class-7b&subject=math');
+    await journalPage.setGrade('Александров Егор', '2024-10-24', '2');
+    await journalPage.saveJournal();
+
+    await navPage.logout();
+    await loginPage.loginAs('teacher');
+    await analyticsPage.goto();
+    await analyticsPage.selectPeriod('q1_2024');
+    await analyticsPage.generateReport();
+    await expect(analyticsPage.reportMetricAvg).toContainText(/4[.,]2/);
+    await expect(analyticsPage.reportContainer).toContainText('304');
   });
 
-  test('TC-OV-01: Список учеников класса', async ({ page }) => {
+  
+  test('[TC-ANL-22] Аналитика за период без данных (каникулы)', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.loginAs('teacher');
+
+    const analyticsPage = new AnalyticsPage(page);
+    await analyticsPage.goto();
+    await analyticsPage.selectPeriod('holidays_nov_2024');
+    await analyticsPage.generateReport();
+
+    await expect(analyticsPage.reportMetricAvg).toContainText(/—|нет данных/);
+    await expect(analyticsPage.reportMetricAtt).toContainText(/—|нет данных/);
+    await expect(analyticsPage.riskSection).toContainText(/Учеников в зоне риска за данный период нет|0/);
+
+    await analyticsPage.selectPeriod('q1_2024');
+    await analyticsPage.generateReport();
+    await expect(analyticsPage.reportMetricAvg).toContainText(/4[.,]2/);
+    await expect(analyticsPage.reportMetricAtt).toContainText(/93[.,]6/);
+  });
+
+  test('[TC-OV-01] Список учеников класса', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -315,7 +441,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(petrovaRow.locator('td').nth(4)).toContainText('+7 999 123-45-63');
   });
 
-  test('TC-OV-02: Показатели списка совпадают со сводкой', async ({ page }) => {
+  test('[TC-OV-02] Показатели списка совпадают со сводкой', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -344,7 +470,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(detailPage.absencesTotalCard).toContainText('12 уроков');
   });
 
-  test('TC-OV-03: Поиск по фамилии', async ({ page }) => {
+  test('[TC-OV-03] Поиск по фамилии', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -362,7 +488,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(studentsPage.counterLabel).toContainText('28');
   });
 
-  test('TC-OV-04: Фильтр по пропускам', async ({ page }) => {
+  test('[TC-OV-04] Фильтр по пропускам', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -382,7 +508,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(studentsPage.studentRows.filter({ hasText: 'Александров Егор' })).toHaveCount(1);
   });
 
-  test('TC-OV-05: Статус ученика и бейдж зоны риска', async ({ page }) => {
+  test('[TC-OV-05] Статус ученика и бейдж зоны риска', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -406,7 +532,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(studentsPage.studentRows.first().locator('span:has-text("В зоне риска")')).toHaveCount(0);
   });
 
-  test('TC-OV-06: Комбинация поиска и фильтра', async ({ page }) => {
+  test('[TC-OV-06] Комбинация поиска и фильтра', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -422,7 +548,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(studentsPage.counterLabel).toContainText('1 из 28');
   });
 
-  test('TC-OV-07: Пустой результат фильтра', async ({ page }) => {
+  test('[TC-OV-07] Пустой результат фильтра', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -441,7 +567,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(studentsPage.studentRows).toHaveCount(10);
   });
 
-  test('TC-OV-08: Пагинация: страницы по 10', async ({ page }) => {
+  test('[TC-OV-08] Пагинация: страницы по 10', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -461,7 +587,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(studentsPage.counterLabel).toContainText('21–28 из 28');
   });
 
-  test('TC-OV-09: Переход по страницам сохраняет фильтр и сортировку', async ({ page }) => {
+  test('[TC-OV-09] Переход по страницам сохраняет фильтр и сортировку', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -484,7 +610,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(studentsPage.searchInput).toHaveValue('ов');
   });
 
-  test('TC-OV-10: Сортировка по показателю', async ({ page }) => {
+  test('[TC-OV-10] Сортировка по показателю', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -501,7 +627,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(firstRow.locator('td').nth(2)).toContainText(/5[.,]0/);
   });
 
-  test('TC-OV-11: Переход в детальную сводку ученика', async ({ page }) => {
+  test('[TC-OV-11] Переход в детальную сводку ученика', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -519,7 +645,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(page).toHaveURL(/\/students\/?/);
   });
 
-  test('TC-OV-12: Детальная сводка: состав данных', async ({ page }) => {
+  test('[TC-OV-12] Детальная сводка: состав данных', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -548,7 +674,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(detailPage.parentsContactsBlock).not.toContainText('Эл. почта');
   });
 
-  test('TC-OV-13: Сводка: средние баллы по предметам', async ({ page }) => {
+  test('[TC-OV-13] Сводка: средние баллы по предметам', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -571,7 +697,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(mathCard).toHaveClass(/border-rose/);
   });
 
-  test('TC-OV-14: Последние пропуски: дата, уроки, причина, статус', async ({ page }) => {
+  test('[TC-OV-14] Последние пропуски: дата, уроки, причина, статус', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -587,7 +713,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(detailPage.recentAbsencesBlock.locator('.btn-confirm-absence-action')).toBeVisible();
   });
 
-  test('TC-OV-15: Заметки классрука', async ({ page }) => {
+  test('[TC-OV-15] Заметки классрука', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -610,7 +736,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(detailPage.notesBlock).toContainText('Смирнова М. В.');
   });
 
-  test('TC-OV-16: История общения с родителями', async ({ page }) => {
+  test('[TC-OV-16] История общения с родителями', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -636,7 +762,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(detailPage.contactsHistoryBlock).toContainText(contactSummary);
   });
 
-  test('TC-OV-17: Сводка только для чтения', async ({ page }) => {
+  test('[TC-OV-17] Сводка только для чтения', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -648,7 +774,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(detailPage.subjectsBlock.locator('input, select')).toHaveCount(0);
   });
 
-  test('TC-OV-18: Родитель открывает сводку своего ребёнка', async ({ page }) => {
+  test('[TC-OV-18] Родитель открывает сводку своего ребёнка', async ({ page }) => {
     const loginPage = new LoginPage(page);
 
     await loginPage.goto();
@@ -673,7 +799,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(page.locator('text=История общения с родителями')).toHaveCount(0);
   });
 
-  test('TC-OV-19: Родитель и ученик: чужие ученики недоступны', async ({ page }) => {
+  test('[TC-OV-19] Родитель и ученик: чужие ученики недоступны', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const navPage = new NavigationPage(page);
 

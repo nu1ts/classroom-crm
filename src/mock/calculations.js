@@ -218,7 +218,8 @@ export function calculateStudentAttendance(
   studentId,
   options = {},
 ) {
-  const markedLessons = filterLessons(lessons, options);
+  const opts = { classId: options.classId || "class-7b", ...options };
+  const markedLessons = filterLessons(lessons, opts);
   const lessonIds = new Set(markedLessons.map((l) => l.id));
 
   const stAttendance = (attendance || []).filter(
@@ -262,7 +263,8 @@ export function calculateStudentAttendance(
  * @returns {Object} { totalMarks, presentCount, absentCount, attendanceRate, absenceRate, totalLessons }
  */
 export function calculateClassAttendance(lessons, attendance, options = {}) {
-  const markedLessons = filterLessons(lessons, options);
+  const opts = { classId: options.classId || "class-7b", ...options };
+  const markedLessons = filterLessons(lessons, opts);
   const lessonIds = new Set(markedLessons.map((l) => l.id));
 
   const periodAttendance = (attendance || []).filter((a) =>
@@ -307,7 +309,8 @@ export function calculateClassAttendance(lessons, attendance, options = {}) {
  * @returns {Array} Массив недель с долей пропусков
  */
 export function calculateWeeklyAbsences(lessons, attendance, options = {}) {
-  const markedLessons = filterLessons(lessons, options);
+  const opts = { classId: options.classId || "class-7b", ...options };
+  const markedLessons = filterLessons(lessons, opts);
 
   const weeksMap = new Map();
   for (const lsn of markedLessons) {
@@ -535,7 +538,11 @@ export function getRiskZoneStudents(
  */
 export function generateClassReport(dataset, options = {}) {
   const periodId = options.periodId || "q1_2024";
-  const periodOptions = { periodId, ...options };
+  const periodOptions = {
+    periodId,
+    classId: options.classId || "class-7b",
+    ...options,
+  };
 
   const classAvg = calculateClassAverage(dataset.grades, periodOptions);
   const classAtt = calculateClassAttendance(

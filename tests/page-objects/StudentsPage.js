@@ -113,4 +113,13 @@ export class StudentsPage {
     await this.page.locator(`.btn-pagination-page[data-page="${pageNum}"]`).click();
     await this.page.waitForTimeout(100);
   }
+
+  /**
+   * Выбрать период в выпадающем списке
+   * @param {string} periodId
+   */
+  async selectPeriod(periodId) {
+    await this.periodSelect.selectOption(periodId);
+    await this.page.waitForTimeout(100);
+  }
 }
