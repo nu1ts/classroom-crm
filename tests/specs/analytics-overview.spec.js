@@ -37,6 +37,10 @@ test.describe('Аналитика и Обзор класса', () => {
     const row = studentsPage.getStudentRow('Романов Илья');
     await expect(row).toBeVisible();
     await expect(row.locator('td').nth(2)).toContainText(/5[.,]0/);
+
+    await studentsPage.openFullSummary('Романов Илья');
+    const detailPage = new StudentDetailPage(page);
+    await expect(detailPage.averageGradeCard).toContainText(/5[.,]0/);
   });
 
   test('[TC-ANL-03] Округление среднего балла', async ({ page }) => {
@@ -223,8 +227,10 @@ test.describe('Аналитика и Обзор класса', () => {
 
     await expect(analyticsPage.reportMetricRisk).toHaveText('5');
     await expect(analyticsPage.reportContainer).toContainText('Сидоров Никита');
-    await expect(analyticsPage.reportContainer).toContainText('Котов Максим');
+    await expect(analyticsPage.reportContainer).toContainText('Волкова');
     await expect(analyticsPage.reportContainer).toContainText('Морозов');
+    await expect(analyticsPage.reportContainer).toContainText('Орлов');
+    await expect(analyticsPage.reportContainer).toContainText('Котов Максим');
     await expect(analyticsPage.reportContainer).toContainText('Петрова Анна');
   });
 
@@ -253,12 +259,16 @@ test.describe('Аналитика и Обзор класса', () => {
     await analyticsPage.closeReport();
     await expect(analyticsPage.reportContainer).toBeHidden();
 
+    const navPage = new NavigationPage(page);
+    await navPage.logout();
+    await loginPage.loginAs('teacher');
+    await analyticsPage.goto();
     await analyticsPage.generateReport();
     await expect(analyticsPage.reportContainer).toBeVisible();
     await expect(analyticsPage.reportMetricAvg).toHaveText('4.2');
   });
 
-  test('[TC-ANL-16] Права: классрук видит только свои классы', async ({ page }) => {
+  test('[TC-ANL-16] Права: классрук видит только свой класс', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
@@ -370,6 +380,11 @@ test.describe('Аналитика и Обзор класса', () => {
 
     await detailPage.goto('st-14');
     await expect(detailPage.absencesTotalCard).toContainText('12 уроков');
+
+    const analyticsPage = new AnalyticsPage(page);
+    await analyticsPage.goto();
+    await analyticsPage.generateReport();
+    await expect(analyticsPage.reportMetricUnconfirmed).toHaveText('3');
   });
 
   test('[TC-ANL-21] Показатели пересчитываются после новой оценки', async ({ page }) => {
@@ -399,6 +414,18 @@ test.describe('Аналитика и Обзор класса', () => {
     await analyticsPage.generateReport();
     await expect(analyticsPage.reportMetricAvg).toContainText(/4[.,]2/);
     await expect(analyticsPage.reportContainer).toContainText('304');
+
+    const studentsPage = new StudentsPage(page);
+    await studentsPage.goto();
+    await studentsPage.search('Александров');
+    const aleksandrovRow = studentsPage.getStudentRow('Александров Егор');
+    await expect(aleksandrovRow).toBeVisible();
+    await expect(aleksandrovRow.locator('td').nth(2)).toContainText(/4[.,]6/);
+
+    const detailPage = new StudentDetailPage(page);
+    await detailPage.goto('st-01');
+    await expect(detailPage.averageGradeCard).toContainText(/4[.,]6/);
+    await expect(detailPage.subjectsBlock).toContainText(/4[.,]0/);
   });
 
   
@@ -499,6 +526,7 @@ test.describe('Аналитика и Обзор класса', () => {
 
     await studentsPage.toggleAbsencesFilter();
     await expect(studentsPage.studentRows.filter({ hasText: 'Александров Егор' })).toHaveCount(0);
+    await expect(studentsPage.counterLabel).toContainText('из 25');
 
     await studentsPage.search('Сидоров');
     await expect(studentsPage.studentRows).toHaveCount(1);
@@ -520,7 +548,7 @@ test.describe('Аналитика и Обзор класса', () => {
     const statusCells = studentsPage.studentRows.locator('td:nth-child(2)');
     const count = await statusCells.count();
     for (let i = 0; i < count; i++) {
-      await expect(statusCells.nth(i)).toContainText('Учится');
+      await expect(statusCells.nth(i)).toContainText('Активен');
     }
 
     await studentsPage.search('Сидоров');

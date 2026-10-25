@@ -227,7 +227,7 @@ export function renderTableHtml({
 
                 <td class="py-4 px-4 text-center">
                   <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-semibold ${s.status === "active" ? "bg-brand-500 text-white shadow-2xs" : "bg-slate-100 text-slate-600"}">
-                    ${s.status === "active" ? "Учится" : "В архиве"}
+                    ${s.status === "active" ? "Активен" : "В архиве"}
                   </span>
                 </td>
 

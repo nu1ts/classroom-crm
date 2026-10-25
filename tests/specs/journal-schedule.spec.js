@@ -58,6 +58,15 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
         await expect(input).toHaveClass(/border-rose/);
       }
 
+      let alertMessage = '';
+      page.once('dialog', async (dialog) => {
+        alertMessage = dialog.message();
+        await dialog.accept();
+      });
+      await input.fill('6');
+      await journalPage.saveJournal();
+      expect(alertMessage).toContain('Недопустимое значение оценки');
+
       await input.fill('5');
       await expect(input).toHaveClass(/border-emerald/);
       await journalPage.saveJournal();

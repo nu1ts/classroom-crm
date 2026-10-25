@@ -32831,7 +32831,7 @@
 
                 <td class="py-4 px-4 text-center">
                   <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-semibold ${s.status === "active" ? "bg-brand-500 text-white shadow-2xs" : "bg-slate-100 text-slate-600"}">
-                    ${s.status === "active" ? "Учится" : "В архиве"}
+                    ${s.status === "active" ? "Активен" : "В архиве"}
                   </span>
                 </td>
 
@@ -36795,7 +36795,13 @@
           </div>
         </div>
 
-        <div>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <a href="/students"
+             id="btn-open-students-list"
+             class="w-full sm:w-auto px-5 py-2.5 rounded-2xl border border-brand-200 bg-brand-50 hover:bg-brand-100 text-brand-700 font-semibold text-xs shadow-2xs transition-all flex items-center justify-center space-x-2">
+            ${renderIcon("users", "w-4 h-4")}
+            <span>Открыть список учеников</span>
+          </a>
           <button type="button" id="btn-generate-report"
                   class="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-bold text-xs shadow-2xs hover:shadow-xs transition-all flex items-center justify-center space-x-2 cursor-pointer">
             ${renderIcon("file-text", "w-4 h-4")}

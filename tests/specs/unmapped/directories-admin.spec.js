@@ -1,7 +1,7 @@
 // ВНЕ ТАБЛИЦЫ ТЕСТ-КЕЙСОВ — внести в таблицу вручную.
 // Кейсы TC-DIR покрывают UC «Сервис управления справочниками»
-import { test, expect } from '../fixtures/base-test.js';
-import { LoginPage } from '../page-objects/LoginPage.js';
+import { test, expect } from '../../fixtures/base-test.js';
+import { LoginPage } from '../../page-objects/LoginPage.js';
 
 async function openDirectoriesAsAdmin(page, query = '') {
   const loginPage = new LoginPage(page);
