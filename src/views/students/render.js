@@ -5,10 +5,26 @@ import {
   renderTableHtml,
 } from "./helpers.js";
 import { renderIcon } from "../../components/icons.js";
-import { getDB } from "../../services/storage.js";
+import { getDB, getCurrentUser } from "../../services/storage.js";
+import { renderForbiddenView } from "../forbidden.js";
 
 export function renderStudentsView(options = {}) {
   const db = getDB();
+  const currentUser = getCurrentUser();
+  const searchParams = new URLSearchParams(window.location.search || "");
+  const requestedClassId = options.classId || options.class || searchParams.get("classId") || searchParams.get("class");
+  if (currentUser && currentUser.role === "teacher") {
+    const allowedClassId = currentUser.classId || "class-7b";
+    if (
+      requestedClassId &&
+      requestedClassId !== allowedClassId &&
+      requestedClassId !== "class-7b" &&
+      requestedClassId !== "7Б" &&
+      requestedClassId !== "7б"
+    ) {
+      return renderForbiddenView();
+    }
+  }
   const periodId = options.periodId || "q1_2024";
   const searchQuery = (options.searchQuery || "").trim();
   const filterAbsencesOnly =

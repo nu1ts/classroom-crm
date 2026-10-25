@@ -1,4 +1,102 @@
 (() => {
+  var __defProp = Object.defineProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+
+  // src/services/storage.js
+  var storage_exports = {};
+  __export(storage_exports, {
+    DEFAULT_ACADEMIC_YEARS: () => DEFAULT_ACADEMIC_YEARS,
+    MEETINGS_DEMO_TODAY: () => DEMO_TODAY,
+    MEETING_ATTENDANCE_LABELS: () => ATTENDANCE_LABELS,
+    MEETING_ATTENDANCE_STATUSES: () => ATTENDANCE_STATUSES,
+    ROLE_LABELS: () => ROLE_LABELS,
+    addAcademicYear: () => addAcademicYear,
+    addJournalComment: () => addJournalComment,
+    addParent: () => addParent,
+    addParentContact: () => addParentContact,
+    addRoom: () => addRoom,
+    addSchoolClass: () => addSchoolClass,
+    addStudentNote: () => addStudentNote,
+    addSubject: () => addSubject,
+    addVacation: () => addVacation,
+    addWorkloadRow: () => addWorkloadRow,
+    batchConfirmAbsences: () => batchConfirmAbsences,
+    batchSaveLessonJournal: () => batchSaveLessonJournal,
+    canMarkAttendance: () => canMarkAttendance,
+    cancelMeeting: () => cancelMeeting,
+    changePassword: () => changePassword,
+    clearSession: () => clearSession,
+    confirmAbsenceRecord: () => confirmAbsenceRecord,
+    createAccount: () => createAccount,
+    createMeeting: () => createMeeting,
+    createTeacherCard: () => createTeacherCard,
+    deleteAcademicYear: () => deleteAcademicYear,
+    deleteGradeRecord: () => deleteGradeRecord,
+    deleteParent: () => deleteParent,
+    deleteTeacherCard: () => deleteTeacherCard,
+    deleteVacation: () => deleteVacation,
+    getAcademicYears: () => getAcademicYears,
+    getAccountCardRef: () => getAccountCardRef,
+    getActiveAcademicYear: () => getActiveAcademicYear,
+    getClassDirectory: () => getClassDirectory,
+    getCurrentUser: () => getCurrentUser,
+    getDB: () => getDB,
+    getJournalComments: () => getJournalComments,
+    getKnownClassIds: () => getKnownClassIds,
+    getMeetingAttendance: () => getMeetingAttendance,
+    getMeetingById: () => getMeetingById,
+    getMeetingSummary: () => getMeetingSummary,
+    getMeetings: () => getMeetings,
+    getRoomDirectory: () => getRoomDirectory,
+    getSession: () => getSession,
+    getSubjectDirectory: () => getSubjectDirectory,
+    getWorkloadRows: () => getWorkloadRows,
+    isClassInUse: () => isClassInUse,
+    isRoomInUse: () => isRoomInUse,
+    isSubjectInUse: () => isSubjectInUse,
+    linkParentToStudent: () => linkParentToStudent,
+    login: () => login,
+    logout: () => logout,
+    quickLoginAsRole: () => quickLoginAsRole,
+    removeWorkloadRow: () => removeWorkloadRow,
+    resetAccountPassword: () => resetAccountPassword,
+    resetDB: () => resetDB,
+    resetFailedAttempts: () => resetFailedAttempts,
+    resetSchoolYearToP3: () => resetSchoolYearToP3,
+    saveDB: () => saveDB,
+    saveGradeRecord: () => saveGradeRecord,
+    saveMeetingAttendance: () => saveMeetingAttendance,
+    setAccountBinding: () => setAccountBinding,
+    setAccountStatus: () => setAccountStatus,
+    setActiveAcademicYear: () => setActiveAcademicYear,
+    setActiveQuarter: () => setActiveQuarter,
+    setClassActive: () => setClassActive,
+    setDemoToday: () => setDemoToday,
+    setLessonAttendance: () => setLessonAttendance,
+    setRoomActive: () => setRoomActive,
+    setSession: () => setSession,
+    setSubjectActive: () => setSubjectActive,
+    shortenName: () => shortenName,
+    unlinkParentFromStudent: () => unlinkParentFromStudent,
+    updateAcademicYear: () => updateAcademicYear,
+    updateAccountRole: () => updateAccountRole,
+    updateMeeting: () => updateMeeting,
+    updateParent: () => updateParent,
+    updateQuarter: () => updateQuarter,
+    updateRoom: () => updateRoom,
+    updateSchoolClass: () => updateSchoolClass,
+    updateSubject: () => updateSubject,
+    updateTeacherCard: () => updateTeacherCard,
+    updateVacation: () => updateVacation,
+    updateWorkloadRow: () => updateWorkloadRow,
+    validateGradeValue: () => validateGradeValue,
+    validateMeetingData: () => validateMeetingData,
+    validateNewPassword: () => validateNewPassword
+  });
+
   // src/mock/dataset.js
   var INITIAL_DATASET = {
     "meta": {
@@ -21234,6 +21332,17 @@
   }
 
   // src/services/directories.js
+  function getKnownClassIds(db = getDB()) {
+    const ids = /* @__PURE__ */ new Set();
+    (db.teachers || []).forEach((t) => {
+      if (t.homeroomClassId) ids.add(t.homeroomClassId);
+      (t.workload || []).forEach((w) => {
+        if (w.classId) ids.add(w.classId);
+      });
+    });
+    if (db.meta && db.meta.classId) ids.add(db.meta.classId);
+    return [...ids];
+  }
   function getClassDirectory(db = getDB()) {
     const list = Array.isArray(db.classes) ? db.classes.map((c) => ({ id: c.id, name: c.name })) : [];
     if (list.length) return list;
@@ -21736,6 +21845,38 @@
     }
     saveDB(db);
     return { success: true, record };
+  }
+  function batchConfirmAbsences(recordIds, data = {}) {
+    const db = getDB();
+    const idsSet = new Set(recordIds);
+    let updatedCount = 0;
+    const isExcused = data.status === "excused" || data.isExcused === true;
+    const reason = data.reason || (isExcused ? "Уважительная причина (справка / заявление)" : "Неуважительная причина");
+    const document2 = data.document || (isExcused ? "Медицинская справка" : null);
+    const confirmedBy = data.confirmedBy || "Смирнова М. В.";
+    const confirmedAt = (/* @__PURE__ */ new Date()).toISOString();
+    (db.attendance || []).forEach((record) => {
+      if (idsSet.has(record.id)) {
+        record.status = isExcused ? "excused" : "unexcused";
+        record.code = isExcused ? "УП" : "Н";
+        record.value = "absent";
+        record.reason = reason;
+        record.document = document2;
+        record.confirmedBy = confirmedBy;
+        record.confirmedAt = confirmedAt;
+        updatedCount++;
+      }
+    });
+    if (db.meta) {
+      const q1LessonIds = new Set(
+        (db.lessons || []).filter((l) => l.periodId === "q1_2024").map((l) => l.id)
+      );
+      db.meta.unconfirmedAbsencesCount = (db.attendance || []).filter(
+        (a) => a.status === "unconfirmed" && a.value === "absent" && q1LessonIds.has(a.lessonId)
+      ).length;
+    }
+    saveDB(db);
+    return { success: true, updatedCount };
   }
   function getJournalComments(lessonId, studentId) {
     const db = getDB();
@@ -22291,6 +22432,40 @@
     saveDB(db);
     return { success: true, quarter: targetQuarter };
   }
+  function setDemoToday(dateStr) {
+    const trimmed = (dateStr || "").trim();
+    if (!trimmed || !/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      return {
+        success: false,
+        error: "Укажите корректную дату в формате ГГГГ-ММ-ДД"
+      };
+    }
+    const db = getDB();
+    db.meta = db.meta || {};
+    db.meta.demoToday = trimmed;
+    saveDB(db);
+    return { success: true, demoToday: trimmed };
+  }
+  function resetSchoolYearToP3() {
+    const db = getDB();
+    db.academicYears = JSON.parse(JSON.stringify(DEFAULT_ACADEMIC_YEARS));
+    db.meta = db.meta || {};
+    db.meta.demoToday = "2024-10-28";
+    db.meta.academicYear = "2024/2025";
+    db.meta.period = {
+      id: "q1_2024",
+      name: "I четверть",
+      startDate: "2024-09-02",
+      endDate: "2024-10-25"
+    };
+    saveDB(db);
+    return {
+      success: true,
+      academicYear: "2024/2025",
+      period: db.meta.period,
+      demoToday: "2024-10-28"
+    };
+  }
   function updateVacation(yearId, vacationId, data = {}) {
     if (!vacationId) return { success: false, error: "Укажите ID каникул" };
     const name = (data.name || "").trim();
@@ -22393,6 +22568,13 @@
     if (!lessonId || !studentId) {
       return { success: false, error: "Не указан урок или ученик" };
     }
+    const currentUser = getCurrentUser();
+    if (currentUser && currentUser.role && currentUser.role !== "subject_teacher") {
+      return {
+        success: false,
+        error: "Действие недоступно для вашей роли. Только учитель-предметник может выставлять или изменять оценки."
+      };
+    }
     const db = getDB();
     const lesson = (db.lessons || []).find((l) => l.id === lessonId);
     if (!lesson) {
@@ -22426,7 +22608,6 @@
       };
     }
     if (!db.grades) db.grades = [];
-    const currentUser = getCurrentUser();
     const teacherName = teacher || currentUser && (currentUser.shortName || currentUser.personName) || lesson.teacher || "Учитель";
     const existingGradeIndex = db.grades.findIndex(
       (g) => g.lessonId === lessonId && g.studentId === studentId
@@ -22457,6 +22638,13 @@
   function deleteGradeRecord({ lessonId, studentId, teacher }) {
     if (!lessonId || !studentId) {
       return { success: false, error: "Не указан урок или ученик" };
+    }
+    const currentUser = getCurrentUser();
+    if (currentUser && currentUser.role && currentUser.role !== "subject_teacher") {
+      return {
+        success: false,
+        error: "Действие недоступно для вашей роли. Только учитель-предметник может удалять оценки."
+      };
     }
     const db = getDB();
     const lesson = (db.lessons || []).find((l) => l.id === lessonId);
@@ -23045,6 +23233,11 @@
     } catch (e) {
       console.error("Ошибка сохранения БД в хранилище", e);
     }
+  }
+  function resetDB() {
+    const clone = JSON.parse(JSON.stringify(INITIAL_DATASET));
+    storage.setItem(STORAGE_KEYS.DB, JSON.stringify(clone));
+    return clone;
   }
   function getSession() {
     try {
@@ -32742,6 +32935,15 @@
   // src/views/students/render.js
   function renderStudentsView(options = {}) {
     const db = getDB();
+    const currentUser = getCurrentUser();
+    const searchParams = new URLSearchParams(window.location.search || "");
+    const requestedClassId = options.classId || options.class || searchParams.get("classId") || searchParams.get("class");
+    if (currentUser && currentUser.role === "teacher") {
+      const allowedClassId = currentUser.classId || "class-7b";
+      if (requestedClassId && requestedClassId !== allowedClassId && requestedClassId !== "class-7b" && requestedClassId !== "7Б" && requestedClassId !== "7б") {
+        return renderForbiddenView();
+      }
+    }
     const periodId = options.periodId || "q1_2024";
     const searchQuery = (options.searchQuery || "").trim();
     const filterAbsencesOnly = options.filterAbsencesOnly === true || options.filterAbsencesOnly === "true";
@@ -36460,6 +36662,15 @@
   // src/views/analytics/render.js
   function renderAnalyticsView(options = {}) {
     const db = getDB();
+    const currentUser = getCurrentUser();
+    const searchParams = new URLSearchParams(window.location.search || "");
+    const requestedClassId = options.classId || options.class || searchParams.get("classId") || searchParams.get("class");
+    if (currentUser && currentUser.role === "teacher") {
+      const allowedClassId = currentUser.classId || "class-7b";
+      if (requestedClassId && requestedClassId !== allowedClassId && requestedClassId !== "class-7b" && requestedClassId !== "7Б" && requestedClassId !== "7б") {
+        return renderForbiddenView();
+      }
+    }
     const periodId = options.periodId || "q1_2024";
     const showReport = options.showReport === true;
     const periodConfigs = {
@@ -40844,6 +41055,9 @@
   var router = new Router("app");
 
   // src/app.js
+  if (typeof window !== "undefined") {
+    window.crmApi = storage_exports;
+  }
   document.addEventListener("click", (e) => {
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
       return;

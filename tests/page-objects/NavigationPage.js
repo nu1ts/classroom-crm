@@ -99,10 +99,13 @@ export class NavigationPage {
   }
 
   /**
-   * Прямой переход по хеш-маршруту с триггером hashchange для SPA
+   * Прямой переход по маршруту (поддерживает хеш, путь и query-параметры)
    */
   async gotoRoute(route) {
-    const cleanRoute = route.replace(/^#/, '').replace(/^\//, '');
-    await this.page.goto(cleanRoute + '/');
+    const clean = route.replace(/^[#/]+/, '');
+    const [path, query] = clean.split('?');
+    const target = path ? (path.endsWith('/') ? path : path + '/') : '';
+    const full = query ? target + '?' + query : target;
+    await this.page.goto(full);
   }
 }
