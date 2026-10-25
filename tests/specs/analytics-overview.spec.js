@@ -265,11 +265,12 @@ test.describe('Аналитика и Обзор класса', () => {
 
     const analyticsPage = new AnalyticsPage(page);
     await analyticsPage.goto();
+    await expect(page.locator('#analytics-view')).toBeVisible();
     await expect(page.locator('#analytics-view')).not.toContainText('8А класс');
 
     await page.goto('analytics?class=8A');
-    await expect(page.locator('#analytics-view')).not.toContainText('8А класс');
-    await expect(analyticsPage.title).toBeVisible();
+    await expect(page.locator('text=Доступ ограничен')).toBeVisible();
+    await expect(page.locator('text=8А класс')).toHaveCount(0);
   });
 
   test('[TC-ANL-17] Права: предметник видит только свои предметы и классы', async ({ page }) => {
