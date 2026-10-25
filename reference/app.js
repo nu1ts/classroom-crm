@@ -28966,7 +28966,9 @@
     const conflict = checkRoomConflict({
       date: lessonData.date,
       time: lessonData.time,
-      room: lessonData.room
+      room: lessonData.room,
+      classId: lessonData.classId || "class-7b",
+      teacher: lessonData.teacher || null
     });
     if (conflict.hasConflict) {
       return {

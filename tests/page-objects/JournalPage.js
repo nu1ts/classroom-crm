@@ -105,7 +105,10 @@ export class JournalPage {
    * @param {string} date 'YYYY-MM-DD'
    * @returns {import('@playwright/test').Locator}
    */
-  getCell(studentName, date) {
+  getCell(studentName, date, lessonId = null) {
+    if (lessonId) {
+      return this.page.locator(`td.cell-journal-entry[data-lesson-id="${lessonId}"][title*="${studentName}"]`);
+    }
     return this.page.locator(`td.cell-journal-entry[title*="${studentName}"][title*="${date}"]`);
   }
 

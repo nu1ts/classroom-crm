@@ -2,12 +2,13 @@ import { test, expect } from '../fixtures/base-test.js';
 import { LoginPage } from '../page-objects/LoginPage.js';
 import { NavigationPage } from '../page-objects/NavigationPage.js';
 import { JournalPage } from '../page-objects/JournalPage.js';
+import { SchedulePage } from '../page-objects/SchedulePage.js';
 
 test.describe('Тест-кейсы «Журнал» и «Расписание» (Copy of Тест-кейсы «Журнал» и «Расписание».xlsx)', () => {
 
   test.describe('Группа 1: Журнал учителя / классного руководителя (TC-TCH-01 .. TC-TCH-16)', () => {
 
-    test('TC-TCH-01: Выставление оценки одному ученику за урок', async ({ page }) => {
+    test('[TC-TCH-01] Выставление оценки одному ученику за урок', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -23,7 +24,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(input).toHaveValue('5');
     });
 
-    test('TC-TCH-02: Выставление оценок нескольким ученикам за один урок', async ({ page }) => {
+    test('[TC-TCH-02] Выставление оценок нескольким ученикам за один урок', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -42,7 +43,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(journalPage.getGradeInput('Кузнецов Данила', '2024-10-24')).toHaveValue('3');
     });
 
-    test('TC-TCH-03: Допустимые значения оценки', async ({ page }) => {
+    test('[TC-TCH-03] Допустимые значения оценки', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -65,7 +66,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(journalPage.getGradeInput('Васильева Дарья', '2024-10-24')).toHaveValue('5');
     });
 
-    test('TC-TCH-04: Изменение своей оценки, пока урок открыт', async ({ page }) => {
+    test('[TC-TCH-04] Изменение своей оценки, пока урок открыт', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -80,7 +81,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(journalPage.getGradeInput('Александров Егор', '2024-10-24')).toHaveValue('5');
     });
 
-    test('TC-TCH-05: Удаление своей оценки, пока урок открыт', async ({ page }) => {
+    test('[TC-TCH-05] Удаление своей оценки, пока урок открыт', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -96,7 +97,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(journalPage.getGradeInput('Александров Егор', '2024-10-24')).toHaveValue('');
     });
 
-    test('TC-TCH-06: Попытка изменить оценку после закрытия урока', async ({ page }) => {
+    test('[TC-TCH-06] Попытка изменить оценку после закрытия урока', async ({ page }) => {
       
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
@@ -121,7 +122,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await journalPage.closeEntryModal();
     });
 
-    test('TC-TCH-07: Правка отметки отсутствия до подтверждения причины', async ({ page }) => {
+    test('[TC-TCH-07] Правка отметки отсутствия до подтверждения причины', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -139,7 +140,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(inputAfter).toBeEnabled();
     });
 
-    test('TC-TCH-08: Отметка отсутствия не меняется после подтверждения причины', async ({ page }) => {
+    test('[TC-TCH-08] Отметка отсутствия не меняется после подтверждения причины', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -153,7 +154,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(btn).toHaveAttribute('title', /Причина подтверждена классным руководителем/i);
     });
 
-    test('TC-TCH-09: Оценка не ставится ученику, отмеченному отсутствующим', async ({ page }) => {
+    test('[TC-TCH-09] Оценка не ставится ученику, отмеченному отсутствующим', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -166,7 +167,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(input).toHaveAttribute('title', /Ученик отсутствовал/i);
     });
 
-    test('TC-TCH-10: Отметка отсутствующих на уроке для нескольких учеников', async ({ page }) => {
+    test('[TC-TCH-10] Отметка отсутствующих на уроке для нескольких учеников', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -183,7 +184,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(journalPage.getAbsenceBtn('Кузнецов Данила', '2024-10-24')).toContainText('Н');
     });
 
-    test('TC-TCH-11: Комментарий предметника к своей записи', async ({ page }) => {
+    test('[TC-TCH-11] Комментарий предметника к своей записи', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -211,7 +212,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(journalPage.commentsList).toContainText('Козлов А. П.');
     });
 
-    test('TC-TCH-12: Комментарий классрука к записи журнала', async ({ page }) => {
+    test('[TC-TCH-12] Комментарий классрука к записи журнала', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -233,7 +234,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(cell.locator('.indicator-comment')).toBeVisible();
     });
 
-    test('TC-TCH-13: Предметник видит только свои предметы и классы', async ({ page }) => {
+    test('[TC-TCH-13] Предметник видит только свои предметы и классы', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const navPage = new NavigationPage(page);
 
@@ -249,7 +250,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(page.locator('h1, h2, h3')).toContainText(/Доступ ограничен/i);
     });
 
-    test('TC-TCH-14: Классрук просматривает журнал по всем предметам, но не меняет записи', async ({ page }) => {
+    test('[TC-TCH-14] Классрук просматривает журнал по всем предметам, но не меняет записи', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -271,7 +272,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await journalPage.closeEntryModal();
     });
 
-    test('TC-TCH-15: Сетка журнала: отображение записей за период', async ({ page }) => {
+    test('[TC-TCH-15] Сетка журнала: отображение записей за период', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -293,7 +294,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(page.locator('td.cell-journal-entry span:has-text("·")').first()).toBeVisible();
     });
 
-    test('TC-TCH-16: Фильтр «Показывать только записи»', async ({ page }) => {
+    test('[TC-TCH-16] Фильтр «Показывать только записи»', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -318,7 +319,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
 
   test.describe('Группа 2: Медицинские справки и подтверждение уважительных причин (TC-MED-01 .. TC-MED-05)', () => {
 
-    test('TC-MED-01: Подтверждение медицинской справки: пропуск становится уважительным', async ({ page }) => {
+    test('[TC-MED-01] Подтверждение медицинской справки: пропуск становится уважительным', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -343,11 +344,39 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(cell).not.toContainText('Н');
     });
 
-    test.skip('TC-MED-02: Одна справка закрывает несколько дней пропуска', async () => {
-      // TODO: Пропуск за 25.10.2024 уже предзаполнен как подтверждённый в исходном датасете; групповое закрытие диапазона дат через одну форму ячейки пока не реализовано в UI
+    test('[TC-MED-02] Одна справка закрывает несколько дней пропуска', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      const journalPage = new JournalPage(page);
+
+      await loginPage.goto();
+      await loginPage.login('smirnova@school.ru', 'Test#2024');
+
+      await journalPage.goto();
+
+      const cell24 = journalPage.getCell('Петрова Анна', '2024-10-24');
+      await cell24.click();
+      await expect(journalPage.entryModal).toBeVisible();
+      await journalPage.submitAbsenceConfirmation({
+        reasonType: 'excused',
+        hasDoc: true,
+        docText: 'Справка № 142 от 25.10.2024 (ДГП № 1)',
+        notes: 'ОРВИ'
+      });
+
+      await expect(cell24).toContainText('Б');
+      await expect(cell24).not.toContainText('Н');
+
+      const cell25 = journalPage.getCell('Петрова Анна', '2024-10-25').first();
+      await expect(cell25).toContainText('Б');
+
+      await page.goto('attendance/?week=w8');
+      const petrovaRow = page.locator('tr:has-text("Петрова Анна")');
+      await expect(petrovaRow).toBeVisible();
+      await expect(petrovaRow).toContainText('УП');
+      await expect(petrovaRow).not.toContainText('Н (Нп)');
     });
 
-    test('TC-MED-03: Отказ в подтверждении справки', async ({ page }) => {
+    test('[TC-MED-03] Отказ в подтверждении справки', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -375,7 +404,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await journalPage.closeEntryModal();
     });
 
-    test('TC-MED-04: Предметник не может подтвердить справку', async ({ page }) => {
+    test('[TC-MED-04] Предметник не может подтвердить справку', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -393,7 +422,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(page.locator('button[data-action="open-confirm"]')).toHaveCount(0);
     });
 
-    test('TC-MED-05: Подтверждение не удаляет пропуск из журнала', async ({ page }) => {
+    test('[TC-MED-05] Подтверждение не удаляет пропуск из журнала', async ({ page }) => {
       const loginPage = new LoginPage(page);
       const journalPage = new JournalPage(page);
 
@@ -421,7 +450,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
 
   test.describe('Группа 3: Расписание уроков (TC-SCH-01 .. TC-SCH-11)', () => {
 
-    test('TC-SCH-01: Расписание класса на неделю для классного руководителя', async ({ page }) => {
+    test('[TC-SCH-01] Расписание класса на неделю для классного руководителя', async ({ page }) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
       await loginPage.login('smirnova@school.ru', 'Test#2024');
@@ -439,7 +468,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(firstCard).toContainText('Каб.');
     });
 
-    test('TC-SCH-02: Переключение недель', async ({ page }) => {
+    test('[TC-SCH-02] Переключение недель', async ({ page }) => {
       const loginPage = new LoginPage(page);
 
       await loginPage.goto();
@@ -462,7 +491,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(page.locator('#schedule-week-title')).toContainText('21.10.2024');
     });
 
-    test('TC-SCH-03: Расписание ребёнка в роли родителя', async ({ page }) => {
+    test('[TC-SCH-03] Расписание ребёнка в роли родителя', async ({ page }) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
       await loginPage.login('petrov@mail.ru', 'Test#2024');
@@ -479,7 +508,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(page.locator('input[type="text"]')).toHaveCount(0);
     });
 
-    test('TC-SCH-04: Расписание в роли ученика и подсветка текущего дня', async ({ page }) => {
+    test('[TC-SCH-04] Расписание в роли ученика и подсветка текущего дня', async ({ page }) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
       await loginPage.login('petrova.a@school.ru', 'Test#2024');
@@ -494,7 +523,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(page.locator('button[data-action="delete-lesson"]')).toHaveCount(0);
     });
 
-    test('TC-SCH-05: Родитель и ученик не видят расписание чужого класса', async ({ page }) => {
+    test('[TC-SCH-05] Родитель и ученик не видят расписание чужого класса', async ({ page }) => {
       const loginPage = new LoginPage(page);
 
       await loginPage.goto();
@@ -518,7 +547,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(page.locator('.schedule-card[data-class-id="class-7b"]').first()).toBeVisible();
     });
 
-    test('TC-SCH-06: Одно расписание для всех ролей: состав занятий совпадает', async ({ page }) => {
+    test('[TC-SCH-06] Одно расписание для всех ролей: состав занятий совпадает', async ({ page }) => {
       const loginPage = new LoginPage(page);
 
       await loginPage.goto();
@@ -549,7 +578,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       expect(studentLessons).toEqual(teacherLessons);
     });
 
-    test('TC-SCH-07: Своё расписание учителя-предметника по всем классам', async ({ page }) => {
+    test('[TC-SCH-07] Своё расписание учителя-предметника по всем классам', async ({ page }) => {
       const loginPage = new LoginPage(page);
 
       await loginPage.goto();
@@ -575,7 +604,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       }
     });
 
-    test('TC-SCH-08: Добавление занятия и проверка занятости аудитории', async ({ page }) => {
+    test('[TC-SCH-08] Добавление занятия и проверка занятости аудитории', async ({ page }) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
       await loginPage.login('smirnova@school.ru', 'Test#2024');
@@ -622,7 +651,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(physicsCard).toBeVisible();
     });
 
-    test('TC-SCH-09: Перенос занятия на другое время и аудиторию', async ({ page }) => {
+    test('[TC-SCH-09] Перенос занятия на другое время и аудиторию', async ({ page }) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
       await loginPage.login('smirnova@school.ru', 'Test#2024');
@@ -661,7 +690,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(cellsWithGrades.first()).toBeVisible();
     });
 
-    test('TC-SCH-10: Отмена занятия не удаляет записи журнала', async ({ page }) => {
+    test('[TC-SCH-10] Отмена занятия не удаляет записи журнала', async ({ page }) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
       await loginPage.login('smirnova@school.ru', 'Test#2024');
@@ -697,7 +726,7 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await expect(cellsWithGrades.first()).toBeVisible();
     });
 
-    test('TC-SCH-11: Пустая неделя: состояние без занятий', async ({ page }) => {
+    test('[TC-SCH-11] Пустая неделя: состояние без занятий', async ({ page }) => {
       const loginPage = new LoginPage(page);
 
       await loginPage.goto();
@@ -712,6 +741,60 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       await page.locator('#btn-empty-return-current').click();
       await expect(page.locator('#schedule-grid')).toBeVisible();
       await expect(page.locator('.schedule-card')).not.toHaveCount(0);
+    });
+
+    test('[TC-SCH-12] Граница конфликта аудитории: тот же слот, другая свободная аудитория', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      const schedulePage = new SchedulePage(page);
+
+      await loginPage.goto();
+      await loginPage.login('smirnova@school.ru', 'Test#2024');
+
+      await schedulePage.goto();
+      await expect(schedulePage.scheduleGrid).toBeVisible();
+
+      let physicsCard = schedulePage.getLessonCard('Физика', 'Каб. 401');
+      if (await physicsCard.count() === 0) {
+        await schedulePage.openAddLessonModal();
+        await schedulePage.fillLessonForm({
+          subject: 'Физика',
+          classId: 'class-7b',
+          date: '2024-10-22',
+          time: '11:30 - 12:15',
+          room: 'Каб. 401'
+        });
+        await schedulePage.saveLesson();
+        await expect(schedulePage.lessonModal).toBeHidden();
+        await expect(physicsCard).toBeVisible();
+      }
+
+      await schedulePage.openAddLessonModal();
+      await schedulePage.fillLessonForm({
+        subject: 'История',
+        date: '2024-10-23',
+        time: '11:30 - 12:15',
+        room: 'Каб. 302'
+      });
+      await schedulePage.saveLesson();
+
+      await expect(schedulePage.lessonModal).toBeHidden();
+      const historyCard = schedulePage.getLessonCard('История', 'Каб. 302').last();
+      await expect(historyCard).toBeVisible();
+
+      await schedulePage.openAddLessonModal();
+      await schedulePage.fillLessonForm({
+        subject: 'История',
+        date: '2024-10-22',
+        time: '11:30 - 12:15',
+        room: 'Каб. 401'
+      });
+      await schedulePage.saveLesson();
+
+      await expect(schedulePage.conflictErrorBox).toBeVisible();
+      await expect(schedulePage.conflictErrorText).toContainText('уже занята');
+
+      await schedulePage.btnCloseModalX.click();
+      await expect(schedulePage.lessonModal).toBeHidden();
     });
 
   });
