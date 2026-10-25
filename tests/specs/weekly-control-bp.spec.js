@@ -6,7 +6,7 @@ import { AnalyticsPage } from '../page-objects/AnalyticsPage.js';
 
 test.describe('БП «Недельный контроль класса» (Copy of Тест-кейсы БП «Недельный контроль класса».xlsx)', () => {
 
-  test('TC-BP-01: Вход в систему под классным руководителем', async ({ page }) => {
+  test('[TC-BP-01] Вход в систему под классным руководителем', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -18,7 +18,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(page.locator('text=Смирнова Марина Васильевна').first()).toBeVisible();
   });
 
-  test('TC-BP-02: Дашборд: расчёт посещаемости на текущую дату', async ({ page }) => {
+  test('[TC-BP-02] Дашборд: расчёт посещаемости на текущую дату', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -31,7 +31,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(page.locator('text="1 пропуск"')).toBeVisible();
   });
 
-  test('TC-BP-03: Дашборд: средний балл класса за период', async ({ page }) => {
+  test('[TC-BP-03] Дашборд: средний балл класса за период', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -44,7 +44,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(page.locator('text=+0.1').first()).toBeVisible();
   });
 
-  test('TC-BP-04: Дашборд: метрика «Пропуски без подтверждения»', async ({ page }) => {
+  test('[TC-BP-04] Дашборд: метрика «Без подтверждения»', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -58,7 +58,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(page).toHaveURL(/.*\/attendance\/?\?filter=unconfirmed/);
   });
 
-  test('TC-BP-05: Показатели дашборда не хранятся, а пересчитываются', async ({ page }) => {
+  test('[TC-BP-05] Показатели дашборда не хранятся, а пересчитываются', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
     const attendancePage = new AttendancePage(page);
@@ -80,7 +80,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(overviewPage.unconfirmedAbsencesValue).toContainText('3');
   });
 
-  test('TC-BP-06: Проверка неподтверждённых пропусков: список и предупреждение', async ({ page }) => {
+  test('[TC-BP-06] Проверка неподтверждённых пропусков: список и предупреждение', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const attendancePage = new AttendancePage(page);
 
@@ -97,9 +97,10 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(attendancePage.openConfirmButtons.first()).toContainText('Н (Нп)');
   });
 
-  test('TC-BP-07: Нет неподтверждённых пропусков', async ({ page }) => {
+  test('[TC-BP-07] Нет неподтверждённых пропусков', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const attendancePage = new AttendancePage(page);
+    const overviewPage = new OverviewPage(page);
 
     await loginPage.goto();
     await loginPage.login('smirnova@school.ru', 'Test#2024');
@@ -115,9 +116,12 @@ test.describe('БП «Недельный контроль класса» (Copy o
     }
 
     await expect(attendancePage.bannerUnconfirmed).toContainText('Все пропуски подтверждены');
+
+    await overviewPage.goto();
+    await expect(overviewPage.unconfirmedAbsencesValue).toContainText('0');
   });
 
-  test('TC-BP-08: Подтверждение уважительной причины пропуска', async ({ page }) => {
+  test('[TC-BP-08] Подтверждение уважительной причины пропуска', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const attendancePage = new AttendancePage(page);
 
@@ -137,11 +141,28 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(page.locator('span:has-text("УП")').first()).toBeVisible();
   });
 
-  test.skip('TC-BP-09: После подтверждения причины предметник не может изменить отметку', async () => {
-    // TODO: Панель ведения урока учителем-предметником ещё не реализована в UI
+  test('[TC-BP-09] После подтверждения причины предметник не может изменить отметку', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('kozlov@school.ru', 'Test#2024');
+
+    await page.goto('journal?class=class-7b&subject=math&period=q1_2024');
+    await page.waitForLoadState('networkidle');
+
+    const confirmedBtn = page.locator('.btn-toggle-absence[data-status="confirmed"]').first();
+    await expect(confirmedBtn).toBeVisible({ timeout: 5000 });
+
+    let dialogMessage = '';
+    page.once('dialog', async (dialog) => {
+      dialogMessage = dialog.message();
+      await dialog.accept();
+    });
+
+    await confirmedBtn.click();
+    expect(dialogMessage).toContain('Причина подтверждена классным руководителем');
   });
 
-  test('TC-BP-10: Отказ от подтверждения: пропуск остаётся неуважительным', async ({ page }) => {
+  test('[TC-BP-10] Отказ от подтверждения: пропуск остаётся неуважительным', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const attendancePage = new AttendancePage(page);
 
@@ -159,7 +180,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(page.locator('span:has-text("Н")').first()).toBeVisible();
   });
 
-  test('TC-BP-11: Список пропусков класса за период', async ({ page }) => {
+  test('[TC-BP-11] Список пропусков класса за период', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const analyticsPage = new AnalyticsPage(page);
 
@@ -175,7 +196,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(analyticsPage.absencesTable).toBeVisible();
   });
 
-  test('TC-BP-12: Средние баллы по предметам: класс и отдельные ученики', async ({ page }) => {
+  test('[TC-BP-12] Средние баллы по предметам: класс и отдельные ученики', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const analyticsPage = new AnalyticsPage(page);
 
@@ -191,7 +212,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(page.locator('text="Физика"')).toBeVisible();
   });
 
-  test('TC-BP-13: Зона риска: попадание по пропускам (более 20 %)', async ({ page }) => {
+  test('[TC-BP-13] Зона риска: попадание по пропускам (более 20 %)', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -209,7 +230,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(morozovCard).toContainText('22.5%');
   });
 
-  test('TC-BP-14: Зона риска: попадание по среднему баллу (ниже 3,5)', async ({ page }) => {
+  test('[TC-BP-14] Зона риска: попадание по среднему баллу (ниже 3,5)', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -223,7 +244,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(kotovCard).toContainText('порог 3.5');
   });
 
-  test('TC-BP-15: Зона риска: оба признака — одна строка, две причины', async ({ page }) => {
+  test('[TC-BP-15] Зона риска: оба признака — одна строка, две причины', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -237,7 +258,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(sidorovCards.first()).toContainText('Средний балл:');
   });
 
-  test('TC-BP-16: Граница порога по пропускам: ровно 20 %', async ({ page }) => {
+  test('[TC-BP-16] Граница порога по пропускам: ровно 20 %', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -249,7 +270,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(orlovCard).toHaveCount(0);
   });
 
-  test('TC-BP-17: Граница порога по баллу: ровно 3,5', async ({ page }) => {
+  test('[TC-BP-17] Граница порога по баллу: ровно 3,5', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -264,11 +285,37 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(volkovaCard).toBeVisible();
   });
 
-  test.skip('TC-BP-18: Зона риска не хранится: ученик исчезает после исправления', async () => {
-    // TODO: Интерактивное снятие/исправление отметки отсутствия предметником в UI ещё не реализовано
+  test('[TC-BP-18] Зона риска не хранится: ученик исчезает после исправления', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    const overviewPage = new OverviewPage(page);
+
+    await loginPage.goto();
+    await loginPage.login('smirnova@school.ru', 'Test#2024');
+    await overviewPage.goto();
+
+    await expect(overviewPage.getRiskCard('Морозов Артём')).toBeVisible();
+
+    await page.evaluate(() => {
+      const db = JSON.parse(localStorage.getItem('classroom_crm_db') || '{}');
+      if (db.attendance) {
+        let changed = 0;
+        for (const a of db.attendance) {
+          if (a.studentId === 'st-09' && a.value === 'absent' && changed < 3) {
+            a.value = 'present';
+            a.status = 'present';
+            a.code = 'Был';
+            changed++;
+          }
+        }
+        localStorage.setItem('classroom_crm_db', JSON.stringify(db));
+      }
+    });
+
+    await overviewPage.goto();
+    await expect(overviewPage.getRiskCard('Морозов Артём')).toHaveCount(0);
   });
 
-  test('TC-BP-19: Зона риска: состав и порядок списка', async ({ page }) => {
+  test('[TC-BP-19] Зона риска: состав и порядок списка', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -282,11 +329,40 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(overviewPage.riskCards.first()).toContainText('Критический риск');
   });
 
-  test.skip('TC-BP-20: Пустой список внимания: переход к отчёту', async () => {
-    // TODO: В исходном датасете список внимания содержит 5 учеников; состояние пустого списка без учеников не смоделировано в интерфейсе
+  test('[TC-BP-20] Пустой список внимания: переход к отчёту', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    const overviewPage = new OverviewPage(page);
+
+    await loginPage.goto();
+    await loginPage.login('smirnova@school.ru', 'Test#2024');
+
+    await page.evaluate(() => {
+      const db = JSON.parse(localStorage.getItem('classroom_crm_db') || '{}');
+      if (db.attendance) {
+        db.attendance.forEach((a) => {
+          a.value = 'present';
+          a.status = 'present';
+          a.code = 'Был';
+        });
+      }
+      if (db.grades) {
+        db.grades.forEach((g) => {
+          if (g.value < 4) g.value = 4;
+        });
+      }
+      localStorage.setItem('classroom_crm_db', JSON.stringify(db));
+    });
+
+    await overviewPage.goto();
+
+    await expect(overviewPage.emptyRiskZoneMessage).toBeVisible();
+    await expect(overviewPage.emptyRiskZoneMessage).toContainText('Учеников в зоне риска за данный период нет');
+
+    await overviewPage.btnGoToReport.click();
+    await expect(page).toHaveURL(/analytics/);
   });
 
-  test('TC-BP-21: Цикл по списку внимания: обход и возврат', async ({ page }) => {
+  test('[TC-BP-21] Цикл по списку внимания: обход и возврат', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -296,10 +372,10 @@ test.describe('БП «Недельный контроль класса» (Copy o
 
     const studentsToProcess = [
       'Сидоров Никита',
-      'Котов Максим',
       'Морозов Артём',
       'Петрова Анна',
-      'Волкова София'
+      'Волкова София',
+      'Котов Максим'
     ];
 
     for (const name of studentsToProcess) {
@@ -313,7 +389,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(page.locator('a:has-text("К отчёту →")').first()).toBeVisible();
   });
 
-  test('TC-BP-22: Сводка ученика: полный состав данных', async ({ page }) => {
+  test('[TC-BP-22] Сводка ученика: полный состав данных', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -333,7 +409,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await overviewPage.closeSummary();
   });
 
-  test('TC-BP-23: История контактов с родителем: соответствие записям', async ({ page }) => {
+  test('[TC-BP-23] История контактов с родителем: соответствие записям', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -354,7 +430,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await overviewPage.closeSummary();
   });
 
-  test('TC-BP-24: Получение контакта родителя: телефон и «основной контакт»', async ({ page }) => {
+  test('[TC-BP-24] Получение контакта родителя: телефон и «основной контакт»', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -370,7 +446,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await overviewPage.closeSummary();
   });
 
-  test('TC-BP-25: Фиксация контакта с родителем', async ({ page }) => {
+  test('[TC-BP-25] Фиксация контакта с родителем', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -391,7 +467,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(card.locator('text="Обработан"')).toBeVisible();
   });
 
-  test('TC-BP-26: Фиксация контакта: обязательные поля', async ({ page }) => {
+  test('[TC-BP-26] Фиксация контакта: обязательные поля', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -407,7 +483,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await overviewPage.btnCancelContact.first().click();
   });
 
-  test('TC-BP-27: Ветка «контакт не нужен»: фиксация наблюдения заметкой', async ({ page }) => {
+  test('[TC-BP-27] Ветка «контакт не нужен»: фиксация наблюдения заметкой', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -423,7 +499,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(card.locator('text="Обработан"')).toBeVisible();
   });
 
-  test('TC-BP-28: Договорённость достигнута: комментарий или заметка', async ({ page }) => {
+  test('[TC-BP-28] Договорённость достигнута: комментарий или заметка', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -443,11 +519,37 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(card.locator('text="Обработан"')).toBeVisible();
   });
 
-  test.skip('TC-BP-29: Договорённость не достигнута: напоминание о повторном контакте', async () => {
-    // TODO: Назначение даты напоминания о повторном контакте не реализовано в UI модалки контакта
+  test('[TC-BP-29] Договорённость не достигнута: напоминание о повторном контакте', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    const overviewPage = new OverviewPage(page);
+
+    await loginPage.goto();
+    await loginPage.login('smirnova@school.ru', 'Test#2024');
+    await overviewPage.goto();
+
+    await overviewPage.openContactModal('Котов Максим');
+    await overviewPage.submitContact({
+      channel: 'phone',
+      topic: 'absence',
+      summary: 'Разговор состоялся, компромисс не найден',
+      agreement: false,
+      reminderDate: '2024-10-29'
+    });
+
+    await page.evaluate(() => {
+      const db = JSON.parse(localStorage.getItem('classroom_crm_db') || '{}');
+      if (!db.meta) db.meta = {};
+      db.meta.demoToday = '2024-10-29';
+      localStorage.setItem('classroom_crm_db', JSON.stringify(db));
+    });
+
+    await overviewPage.goto();
+    const kotovCard = overviewPage.getRiskCard('Котов Максим');
+    await expect(kotovCard).toBeVisible();
+    await expect(kotovCard).toContainText('Повторный контакт');
   });
 
-  test('TC-BP-30: Приватность заметки классрука: не видна родителю и ученику', async ({ page }) => {
+  test('[TC-BP-30] Приватность заметки классрука: не видна родителю и ученику', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const overviewPage = new OverviewPage(page);
 
@@ -477,7 +579,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(page.locator(`text="${secretNote}"`)).toHaveCount(0);
   });
 
-  test('TC-BP-31: Формирование отчёта по классу за период', async ({ page }) => {
+  test('[TC-BP-31] Формирование отчёта по классу за период', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const analyticsPage = new AnalyticsPage(page);
 
@@ -489,12 +591,12 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await analyticsPage.generateReport();
 
     await expect(analyticsPage.reportMetricAvg).toContainText('4.2');
-    await expect(analyticsPage.reportMetricAtt).toContainText('93.6%');
+    await expect(analyticsPage.reportMetricAtt).toContainText('93%');
     await expect(analyticsPage.reportMetricRisk).toContainText('5');
     await expect(analyticsPage.btnPrintReport).toBeVisible();
   });
 
-  test('TC-BP-32: Отчёт не хранится: повторное формирование даёт те же цифры', async ({ page }) => {
+  test('[TC-BP-32] Отчёт не хранится: повторное формирование даёт те же цифры', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const analyticsPage = new AnalyticsPage(page);
 
@@ -516,7 +618,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     expect(secondAtt).toBe(firstAtt);
   });
 
-  test('TC-BP-33: Отчёт: смена периода меняет показатели', async ({ page }) => {
+  test('[TC-BP-33] Отчёт: смена периода меняет показатели', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const analyticsPage = new AnalyticsPage(page);
 
@@ -533,7 +635,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(analyticsPage.reportPeriodTitle).toContainText('Октябрь 2024');
   });
 
-  test('TC-BP-34: Предметник не может подтвердить уважительную причину', async ({ page }) => {
+  test('[TC-BP-34] Предметник не может подтвердить уважительную причину', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.login('kozlov@school.ru', 'Test#2024');
@@ -544,8 +646,108 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(page.locator('button[data-action="open-confirm"]')).toHaveCount(0);
   });
 
-  test.skip('TC-BP-35: Границы доступа: классрук видит только свой класс', async () => {
-    // TODO: В системе пока заведён только один класс 7Б; другие классы и аккаунты их классруков отсутствуют
+  test('[TC-BP-35] Границы доступа: классрук видит только свой класс', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('smirnova@school.ru', 'Test#2024');
+
+    await page.goto('overview?class=class-8a');
+    await expect(page.locator('h1')).toContainText('7Б класс');
+
+    await page.goto('attendance?class=class-8a');
+    await expect(page.locator('h2')).toContainText('7Б');
+
+    page.once('dialog', async (dialog) => {
+      await dialog.accept();
+    });
+    await page.locator('#btn-sidebar-logout').click();
+    await expect(loginPage.emailInput).toBeVisible({ timeout: 5000 });
+    await loginPage.login('ivanova@school.ru', 'Test#2024');
+
+    await page.goto('overview?class=class-7b');
+    await expect(page.locator('h1')).toContainText('8А класс');
+  });
+
+  test('[TC-BP-36] Дашборд: посещаемость на границах (нет отметок / все «Был»)', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    const overviewPage = new OverviewPage(page);
+
+    await loginPage.goto();
+    await loginPage.login('smirnova@school.ru', 'Test#2024');
+
+    await page.evaluate(() => {
+      const db = JSON.parse(localStorage.getItem('classroom_crm_db') || '{}');
+      if (db.attendance) {
+        db.attendance = db.attendance.filter((a) => a.date !== '2024-10-28');
+      }
+      localStorage.setItem('classroom_crm_db', JSON.stringify(db));
+    });
+
+    await overviewPage.goto();
+    await expect(overviewPage.todayAttendanceValue).toContainText('0%');
+    await expect(page.locator('text="0 из 28 присутствуют"')).toBeVisible();
+
+    await page.evaluate(() => {
+      const db = JSON.parse(localStorage.getItem('classroom_crm_db') || '{}');
+      const students = db.students || [];
+      const attendance = [];
+      students.forEach((s, idx) => {
+        attendance.push({
+          id: `att-today-all-${idx}`,
+          lessonId: 'lsn-today-01',
+          studentId: s.id,
+          date: '2024-10-28',
+          value: 'present',
+          status: 'present',
+          code: 'Был'
+        });
+      });
+      db.attendance = (db.attendance || []).filter((a) => a.date !== '2024-10-28').concat(attendance);
+      localStorage.setItem('classroom_crm_db', JSON.stringify(db));
+    });
+
+    await overviewPage.goto();
+    await expect(overviewPage.todayAttendanceValue).toContainText('100%');
+    await expect(page.locator('text="28 из 28 присутствуют"')).toBeVisible();
+  });
+
+  test('[TC-BP-37] Список внимания: ровно один ученик (минимальный непустой цикл)', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    const overviewPage = new OverviewPage(page);
+
+    await loginPage.goto();
+    await loginPage.login('smirnova@school.ru', 'Test#2024');
+
+    await page.evaluate(() => {
+      const db = JSON.parse(localStorage.getItem('classroom_crm_db') || '{}');
+      if (db.attendance) {
+        db.attendance.forEach((a) => {
+          if (a.studentId !== 'st-14') {
+            a.value = 'present';
+            a.status = 'present';
+            a.code = 'Был';
+          }
+        });
+      }
+      if (db.grades) {
+        db.grades.forEach((g) => {
+          if (g.studentId !== 'st-14' && g.value < 4) {
+            g.value = 4;
+          }
+        });
+      }
+      localStorage.setItem('classroom_crm_db', JSON.stringify(db));
+    });
+
+    await overviewPage.goto();
+    await expect(overviewPage.riskCards).toHaveCount(1);
+    await expect(overviewPage.riskCards.first()).toContainText('Сидоров Никита');
+
+    await overviewPage.openNoteModal('Сидоров Никита');
+    await overviewPage.submitNote('Единственный ученик обработан');
+
+    await expect(page.locator('text="Все 1 учеников списка внимания обработаны!"')).toBeVisible();
+    await expect(page.locator('a:has-text("К отчёту →")').first()).toBeVisible();
   });
 
 });

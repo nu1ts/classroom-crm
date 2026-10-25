@@ -33,6 +33,21 @@
     },
     "users": [
       {
+        id: "user-ivanova",
+        username: "ivanova@school.ru",
+        password: "Test#2024",
+        role: "teacher",
+        roleLabel: "Классный руководитель",
+        personName: "Иванова Екатерина Петровна",
+        shortName: "Иванова Е. П.",
+        cardName: "Иванова Е. П.",
+        classId: "class-8a",
+        className: "8А класс (25 учеников)",
+        phone: "+7 999 444-55-66",
+        lastLoginAt: "2024-10-28T08:30:00",
+        status: "active"
+      },
+      {
         "id": "user-smirnova",
         "username": "smirnova@school.ru",
         "password": "Test#2024",
@@ -3792,11 +3807,11 @@
         "lessonId": "lsn-05",
         "studentId": "st-12",
         "date": "2024-09-06",
-        "value": "present",
-        "status": "present",
-        "code": "Был",
-        "reason": null,
-        "confirmedBy": null,
+        "value": "absent",
+        "status": "confirmed",
+        "code": "УП",
+        "reason": "Заявление родителей",
+        "confirmedBy": "Смирнова М. В.",
         "confirmedAt": null,
         "document": null
       },
@@ -5612,11 +5627,11 @@
         "lessonId": "lsn-10",
         "studentId": "st-12",
         "date": "2024-09-13",
-        "value": "present",
-        "status": "present",
-        "code": "Был",
-        "reason": null,
-        "confirmedBy": null,
+        "value": "absent",
+        "status": "confirmed",
+        "code": "УП",
+        "reason": "Заявление родителей",
+        "confirmedBy": "Смирнова М. В.",
         "confirmedAt": null,
         "document": null
       },
@@ -7432,11 +7447,11 @@
         "lessonId": "lsn-15",
         "studentId": "st-12",
         "date": "2024-09-20",
-        "value": "present",
-        "status": "present",
-        "code": "Был",
-        "reason": null,
-        "confirmedBy": null,
+        "value": "absent",
+        "status": "confirmed",
+        "code": "УП",
+        "reason": "Заявление родителей",
+        "confirmedBy": "Смирнова М. В.",
         "confirmedAt": null,
         "document": null
       },
@@ -9252,11 +9267,11 @@
         "lessonId": "lsn-20",
         "studentId": "st-12",
         "date": "2024-09-27",
-        "value": "present",
-        "status": "present",
-        "code": "Был",
-        "reason": null,
-        "confirmedBy": null,
+        "value": "absent",
+        "status": "confirmed",
+        "code": "УП",
+        "reason": "Заявление родителей",
+        "confirmedBy": "Смирнова М. В.",
         "confirmedAt": null,
         "document": null
       },
@@ -11072,11 +11087,11 @@
         "lessonId": "lsn-25",
         "studentId": "st-12",
         "date": "2024-10-04",
-        "value": "present",
-        "status": "present",
-        "code": "Был",
-        "reason": null,
-        "confirmedBy": null,
+        "value": "absent",
+        "status": "confirmed",
+        "code": "УП",
+        "reason": "Заявление родителей",
+        "confirmedBy": "Смирнова М. В.",
         "confirmedAt": null,
         "document": null
       },
@@ -12892,11 +12907,11 @@
         "lessonId": "lsn-30",
         "studentId": "st-12",
         "date": "2024-10-11",
-        "value": "present",
-        "status": "present",
-        "code": "Был",
-        "reason": null,
-        "confirmedBy": null,
+        "value": "absent",
+        "status": "confirmed",
+        "code": "УП",
+        "reason": "Заявление родителей",
+        "confirmedBy": "Смирнова М. В.",
         "confirmedAt": null,
         "document": null
       },
@@ -24889,6 +24904,9 @@
   }
   function filterLessons(lessons, options = {}) {
     let result = lessons || [];
+    if (options.classId) {
+      result = result.filter((l) => (l.classId || "class-7b") === options.classId);
+    }
     if (options.periodId) {
       result = result.filter((l) => l.periodId === options.periodId);
     }
@@ -25150,11 +25168,12 @@
     const riskStudents = [];
     for (const st of students || []) {
       const sId = st.id;
+      const studentOptions = { ...options, classId: options.classId || st.classId || "class-7b" };
       const attStats = calculateStudentAttendance(
         lessons,
         attendance,
         sId,
-        options
+        studentOptions
       );
       const overallAvg = calculateStudentAverage(grades, sId, options);
       const reasons = [];
@@ -25195,6 +25214,17 @@
           });
         }
       }
+      const reminder = (options.parentContacts || []).find(
+        (c) => c.studentId === sId && (c.agreement === false || c.agreementReached === false) && c.reminderDate && c.reminderDate <= (options.today || "2024-10-28")
+      );
+      if (reminder) {
+        reasons.push({
+          type: "reminder",
+          title: "Повторный контакт",
+          description: `Повторный контакт (назначен на ${reminder.reminderDate})`,
+          value: 0
+        });
+      }
       if (reasons.length > 0) {
         riskStudents.push({
           studentId: sId,
@@ -25203,6 +25233,8 @@
           gender: st.gender,
           attendanceRate: attStats.attendanceRate,
           absenceRate: attStats.absenceRate,
+          absentCount: attStats.absentCount,
+          totalLessons: attStats.totalLessons,
           overallAverage: overallAvg,
           riskLevel: isCritical ? "critical" : "moderate",
           riskLevelLabel: isCritical ? "Критический риск" : "Умеренный риск",
@@ -25211,9 +25243,9 @@
       }
     }
     riskStudents.sort((a, b) => {
-      if (a.riskLevel === "critical" && b.riskLevel !== "critical") return -1;
-      if (a.riskLevel !== "critical" && b.riskLevel === "critical") return 1;
-      return (b.absenceRate || 0) - (a.absenceRate || 0);
+      const rateDiff = (b.absenceRate || 0) - (a.absenceRate || 0);
+      if (Math.abs(rateDiff) > 1e-3) return rateDiff;
+      return (a.overallAverage || 0) - (b.overallAverage || 0);
     });
     return riskStudents;
   }
@@ -26061,20 +26093,27 @@
   // src/views/overview/render.js
   function renderOverviewView() {
     const db = getDB();
+    const currentUser = getCurrentUser();
+    const classId = currentUser && currentUser.role === "teacher" && currentUser.classId ? currentUser.classId : "class-7b";
+    const currentClass = (db.classes || []).find((c) => c.id === classId);
+    const className = currentClass ? currentClass.name : "7Б";
     const demoDate = db.meta?.demoToday || "2024-10-28";
     const periodId = "q1_2024";
-    const totalStudents = db.students?.length || 28;
-    const boysCount = db.students?.filter((s) => s.gender === "male").length || 15;
-    const girlsCount = db.students?.filter((s) => s.gender === "female").length || 13;
+    const classStudents = (db.students || []).filter((s) => s.classId === classId);
+    const totalStudents = classStudents.length || 28;
+    const boysCount = classStudents.filter((s) => s.gender === "male").length || 15;
+    const girlsCount = classStudents.filter((s) => s.gender === "female").length || 13;
     const todayAtt = calculateAttendanceForDay(
       db.lessons,
       db.attendance,
       demoDate,
-      { onlyFirstLesson: false }
+      { onlyFirstLesson: false, classId }
     );
-    const todayAttendanceRate = todayAtt.attendanceRate !== null ? todayAtt.attendanceRate : 96.4;
-    const todayPresent = 27;
-    const todayAbsent = 1;
+    const todayAttendanceRate = todayAtt.totalMarks > 0 && todayAtt.attendanceRate !== null ? todayAtt.attendanceRate : 0;
+    const todayPresent = todayAtt.totalMarks > 0 ? Math.round(todayAttendanceRate / 100 * totalStudents) : 0;
+    const todayAbsent = todayAtt.totalMarks > 0 ? Math.max(0, totalStudents - todayPresent) : 0;
+    const teacherName = currentUser?.personName || "Смирнова Марина Васильевна";
+    const room = currentClass?.room || "Кабинет 302";
     const classAvg = calculateClassAverage(db.grades, { periodId }) || 4.2;
     const unconfirmedAbsences = getUnconfirmedAbsences(
       db.attendance,
@@ -26084,27 +26123,38 @@
     );
     const unconfirmedCount = unconfirmedAbsences.length;
     const riskZoneList = getRiskZoneStudents(
-      db.students,
+      (db.students || []).filter((s) => s.classId === "class-7b"),
       db.lessons,
       db.attendance,
       db.grades,
       db.subjects,
-      { periodId }
+      { periodId, classId: "class-7b", parentContacts: db.parentContacts, today: demoDate }
+    );
+    const pendingReminderStudents = new Set(
+      (db.parentContacts || []).filter((c) => (c.agreementReached === false || c.agreement === false) && c.nextContactDate && c.nextContactDate <= demoDate).map((c) => c.studentId)
     );
     const todayContacts = new Set(
-      (db.parentContacts || []).filter((c) => c.date === demoDate || c.date >= "2024-10-24").map((c) => c.studentId)
+      (db.parentContacts || []).filter((c) => (c.date === demoDate || c.date >= "2024-10-24") && c.agreementReached !== false && !pendingReminderStudents.has(c.studentId)).map((c) => c.studentId)
     );
-    const studentNotes = new Set((db.notes || []).map((n) => n.studentId));
+    const studentNotes = new Set(
+      (db.notes || []).filter((n) => !n.isReminder || n.reminderDate && n.reminderDate > demoDate).filter((n) => !pendingReminderStudents.has(n.studentId)).map((n) => n.studentId)
+    );
     const processedCount = riskZoneList.filter(
       (s) => todayContacts.has(s.studentId) || studentNotes.has(s.studentId)
     ).length;
     const allProcessed = riskZoneList.length > 0 && processedCount === riskZoneList.length;
     function formatReasons(st) {
       const parts = [];
+      const reminderReason = st.reasons.find((r) => r.type === "reminder");
+      if (reminderReason) {
+        parts.push(`<strong class="text-amber-800">${reminderReason.description}</strong>`);
+      }
       const absReason = st.reasons.find((r) => r.type === "absence");
       if (absReason) {
+        const absentCount = st.absentCount !== void 0 ? st.absentCount : Math.round(st.absenceRate / 100 * (st.totalLessons || 40));
+        const totalLessons = st.totalLessons || 40;
         parts.push(
-          `Пропуски: <strong class="text-slate-800">${st.absenceRate}%</strong> (${Math.round(st.absenceRate / 100 * 40)} из 40 уроков)`
+          `Пропуски: <strong class="text-slate-800">${st.absenceRate}%</strong> (${absentCount} из ${totalLessons} уроков)`
         );
       }
       const overallReason = st.reasons.find((r) => r.type === "overall_grade");
@@ -26190,10 +26240,10 @@
               <span>28 октября 2024</span>
             </div>
             <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-              7Б класс (28 учеников)
+              ${className} класс (${totalStudents} учеников)
             </h1>
             <p class="text-slate-300 text-xs sm:text-sm mt-1">
-              Классный руководитель: Смирнова Марина Васильевна · Кабинет 302
+              Классный руководитель: ${teacherName} · ${room}
             </p>
           </div>
           <div class="flex items-center space-x-3 self-start md:self-center flex-shrink-0">
@@ -26324,7 +26374,7 @@
                 <div class="flex items-center space-x-2.5">
                   <div class="w-7 h-7 rounded-lg bg-emerald-200 text-emerald-800 flex items-center justify-center font-bold">✓</div>
                   <div>
-                    <div class="font-bold text-slate-900">Все 5 учеников списка внимания обработаны!</div>
+                    <div class="font-bold text-slate-900">Все ${riskZoneList.length} учеников списка внимания обработаны!</div>
                     <div class="text-emerald-700 mt-0.5">Контакты и заметки зафиксированы. Можно переходить к формированию отчёта.</div>
                   </div>
                 </div>
@@ -26334,9 +26384,20 @@
               </div>
             ` : ""}
 
-            <div class="space-y-3">
-              ${riskCardsHtml}
-            </div>
+            ${riskZoneList.length === 0 ? `
+              <div id="empty-risk-zone" class="p-8 text-center bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3">
+                <div class="text-sm font-semibold text-slate-700">Учеников в зоне риска за данный период нет. Все показатели в пределах нормы.</div>
+                <p class="text-xs text-slate-500">Работа по контролю рисков завершена. Вы можете сразу перейти к формированию сводного отчёта.</p>
+                <a href="/analytics" id="btn-overview-go-to-report" class="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-xs transition-colors">
+                  ${renderIcon("file-text", "w-4 h-4")}
+                  <span>Сформировать отчёт</span>
+                </a>
+              </div>
+            ` : `
+              <div class="space-y-3">
+                ${riskCardsHtml}
+              </div>
+            `}
           </div>
 
           <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-6">
@@ -26551,6 +26612,11 @@
               <p class="text-[11px] text-slate-500">Причина подтверждена или намечен план действий</p>
             </div>
           </label>
+
+          <div id="contact-reminder-container" class="hidden p-3 rounded-xl bg-amber-50/70 border border-amber-200/80 space-y-1.5">
+            <label for="contact-reminder-date" class="block text-xs font-semibold text-amber-900">Напоминание о повторном контакте</label>
+            <input type="date" id="contact-reminder-date" class="w-full h-9 px-3 rounded-lg border border-amber-300 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20" />
+          </div>
 
           <div class="pt-2 flex items-center space-x-2.5">
             <button type="button" id="btn-cancel-contact" class="flex-1 py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors">
@@ -26818,10 +26884,30 @@
     const contactParentSelect = document.getElementById("contact-parent-select");
     const closeContactX = document.getElementById("btn-close-contact-x");
     const cancelContactBtn = document.getElementById("btn-cancel-contact");
+    const contactAgreement = document.getElementById("contact-agreement");
+    const contactReminderContainer = document.getElementById("contact-reminder-container");
+    const contactReminderDate = document.getElementById("contact-reminder-date");
+    if (contactAgreement && contactReminderContainer) {
+      contactAgreement.addEventListener("change", () => {
+        if (!contactAgreement.checked) {
+          contactReminderContainer.classList.remove("hidden");
+          if (contactReminderDate && !contactReminderDate.value) {
+            const nextDay = /* @__PURE__ */ new Date();
+            nextDay.setDate(nextDay.getDate() + 1);
+            contactReminderDate.value = nextDay.toISOString().split("T")[0];
+          }
+        } else {
+          contactReminderContainer.classList.add("hidden");
+        }
+      });
+    }
     function openContactModal(studentId, studentName) {
       if (!modalContact) return;
       if (contactStudentId) contactStudentId.value = studentId;
       if (contactStudentName) contactStudentName.value = studentName;
+      if (contactAgreement) contactAgreement.checked = true;
+      if (contactReminderContainer) contactReminderContainer.classList.add("hidden");
+      if (contactReminderDate) contactReminderDate.value = "";
       if (contactParentSelect) {
         contactParentSelect.innerHTML = "";
         const rels = (db.parentStudentRelations || []).filter(
@@ -26888,6 +26974,7 @@
           chat: "Мессенджер (Сферум)",
           meeting: "Личная встреча"
         };
+        const reminderDate = !agreement && contactReminderDate ? contactReminderDate.value : null;
         const newContact = {
           id: `pc-${Date.now()}`,
           studentId: sId,
@@ -26901,11 +26988,26 @@
           channel,
           channelLabel: channelLabels[channel] || "Звонок",
           summary,
+          agreement,
           agreementReached: agreement,
-          nextContactDate: null
+          nextContactDate: reminderDate,
+          reminderDate
         };
         if (!db.parentContacts) db.parentContacts = [];
         db.parentContacts.unshift(newContact);
+        if (!agreement && reminderDate) {
+          if (!db.notes) db.notes = [];
+          db.notes.unshift({
+            id: `note-${Date.now()}`,
+            studentId: sId,
+            author: "Смирнова М. В.",
+            date: `${reminderDate} 09:00`,
+            text: `Напоминание о повторном контакте: ${summary}`,
+            isPrivate: true,
+            isReminder: true,
+            reminderDate
+          });
+        }
         saveDB(db);
         closeContactModal();
         if (onNavigate) {
@@ -27578,7 +27680,10 @@
     }
     const queryString = window.location.search || "";
     const urlParams = new URLSearchParams(queryString);
-    const selectedClassId = options.classId || urlParams.get("class") || (isSubjectTeacher ? "class-7b" : "class-7b");
+    let selectedClassId = options.classId || urlParams.get("class") || (isSubjectTeacher ? "class-7b" : "class-7b");
+    if (currentUser && currentUser.role === "teacher" && currentUser.classId) {
+      selectedClassId = currentUser.classId;
+    }
     const currentClassObj = (db.classes || []).find(
       (c) => c.id === selectedClassId || c.name.toLowerCase() === selectedClassId.toLowerCase()
     );

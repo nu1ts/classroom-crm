@@ -19,6 +19,9 @@ export function roundToOneDecimal(value) {
  */
 export function filterLessons(lessons, options = {}) {
   let result = lessons || [];
+  if (options.classId) {
+    result = result.filter((l) => (l.classId || "class-7b") === options.classId);
+  }
   if (options.periodId) {
     result = result.filter((l) => l.periodId === options.periodId);
   }
@@ -430,11 +433,12 @@ export function getRiskZoneStudents(
 
   for (const st of students || []) {
     const sId = st.id;
+    const studentOptions = { ...options, classId: options.classId || st.classId || "class-7b" };
     const attStats = calculateStudentAttendance(
       lessons,
       attendance,
       sId,
-      options,
+      studentOptions,
     );
     const overallAvg = calculateStudentAverage(grades, sId, options);
 
@@ -483,6 +487,18 @@ export function getRiskZoneStudents(
       }
     }
 
+    const reminder = (options.parentContacts || []).find(
+      (c) => c.studentId === sId && (c.agreement === false || c.agreementReached === false) && c.reminderDate && c.reminderDate <= (options.today || "2024-10-28")
+    );
+    if (reminder) {
+      reasons.push({
+        type: "reminder",
+        title: "Повторный контакт",
+        description: `Повторный контакт (назначен на ${reminder.reminderDate})`,
+        value: 0,
+      });
+    }
+
     if (reasons.length > 0) {
       riskStudents.push({
         studentId: sId,
@@ -491,6 +507,8 @@ export function getRiskZoneStudents(
         gender: st.gender,
         attendanceRate: attStats.attendanceRate,
         absenceRate: attStats.absenceRate,
+        absentCount: attStats.absentCount,
+        totalLessons: attStats.totalLessons,
         overallAverage: overallAvg,
         riskLevel: isCritical ? "critical" : "moderate",
         riskLevelLabel: isCritical ? "Критический риск" : "Умеренный риск",
@@ -500,9 +518,9 @@ export function getRiskZoneStudents(
   }
 
   riskStudents.sort((a, b) => {
-    if (a.riskLevel === "critical" && b.riskLevel !== "critical") return -1;
-    if (a.riskLevel !== "critical" && b.riskLevel === "critical") return 1;
-    return (b.absenceRate || 0) - (a.absenceRate || 0);
+    const rateDiff = (b.absenceRate || 0) - (a.absenceRate || 0);
+    if (Math.abs(rateDiff) > 0.001) return rateDiff;
+    return (a.overallAverage || 0) - (b.overallAverage || 0);
   });
 
   return riskStudents;

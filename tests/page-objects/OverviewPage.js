@@ -34,6 +34,10 @@ export class OverviewPage {
     this.contactTopicSelect = page.locator('#contact-topic');
     this.contactSummaryTextarea = page.locator('#contact-summary');
     this.contactAgreementCheckbox = page.locator('#contact-agreement');
+    this.contactReminderContainer = page.locator('#contact-reminder-container');
+    this.contactReminderDateInput = page.locator('#contact-reminder-date');
+    this.emptyRiskZoneMessage = page.locator('#empty-risk-zone');
+    this.btnGoToReport = page.locator('#btn-overview-go-to-report');
     this.btnSaveContact = page.locator('#form-contact-parent button[type="submit"]');
     this.btnCancelContact = page.locator('#btn-cancel-contact, #btn-close-contact-x');
 
@@ -99,7 +103,7 @@ export class OverviewPage {
    * @param {string} options.summary
    * @param {boolean} [options.agreement=true]
    */
-  async submitContact({ channel = 'phone', topic = 'absence', summary = '', agreement = true } = {}) {
+  async submitContact({ channel = 'phone', topic = 'absence', summary = '', agreement = true, reminderDate = '' } = {}) {
     if (channel) await this.contactChannelSelect.selectOption(channel);
     if (topic) await this.contactTopicSelect.selectOption(topic);
     if (summary) await this.contactSummaryTextarea.fill(summary);
@@ -108,6 +112,9 @@ export class OverviewPage {
       if (isChecked !== agreement) {
         await this.contactAgreementCheckbox.setChecked(agreement);
       }
+    }
+    if (reminderDate && this.contactReminderDateInput) {
+      await this.contactReminderDateInput.fill(reminderDate);
     }
     await this.btnSaveContact.click();
     await expect(this.modalContact).toHaveClass(/opacity-0/);

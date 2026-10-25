@@ -226,10 +226,32 @@ export function setupOverviewListeners(onNavigate) {
   const closeContactX = document.getElementById("btn-close-contact-x");
   const cancelContactBtn = document.getElementById("btn-cancel-contact");
 
+  const contactAgreement = document.getElementById("contact-agreement");
+  const contactReminderContainer = document.getElementById("contact-reminder-container");
+  const contactReminderDate = document.getElementById("contact-reminder-date");
+
+  if (contactAgreement && contactReminderContainer) {
+    contactAgreement.addEventListener("change", () => {
+      if (!contactAgreement.checked) {
+        contactReminderContainer.classList.remove("hidden");
+        if (contactReminderDate && !contactReminderDate.value) {
+          const nextDay = new Date();
+          nextDay.setDate(nextDay.getDate() + 1);
+          contactReminderDate.value = nextDay.toISOString().split("T")[0];
+        }
+      } else {
+        contactReminderContainer.classList.add("hidden");
+      }
+    });
+  }
+
   function openContactModal(studentId, studentName) {
     if (!modalContact) return;
     if (contactStudentId) contactStudentId.value = studentId;
     if (contactStudentName) contactStudentName.value = studentName;
+    if (contactAgreement) contactAgreement.checked = true;
+    if (contactReminderContainer) contactReminderContainer.classList.add("hidden");
+    if (contactReminderDate) contactReminderDate.value = "";
 
     if (contactParentSelect) {
       contactParentSelect.innerHTML = "";
@@ -308,6 +330,8 @@ export function setupOverviewListeners(onNavigate) {
         meeting: "Личная встреча",
       };
 
+      const reminderDate = !agreement && contactReminderDate ? contactReminderDate.value : null;
+
       const newContact = {
         id: `pc-${Date.now()}`,
         studentId: sId,
@@ -321,12 +345,28 @@ export function setupOverviewListeners(onNavigate) {
         channel,
         channelLabel: channelLabels[channel] || "Звонок",
         summary,
+        agreement: agreement,
         agreementReached: agreement,
-        nextContactDate: null,
+        nextContactDate: reminderDate,
+        reminderDate: reminderDate,
       };
 
       if (!db.parentContacts) db.parentContacts = [];
       db.parentContacts.unshift(newContact);
+
+      if (!agreement && reminderDate) {
+        if (!db.notes) db.notes = [];
+        db.notes.unshift({
+          id: `note-${Date.now()}`,
+          studentId: sId,
+          author: "Смирнова М. В.",
+          date: `${reminderDate} 09:00`,
+          text: `Напоминание о повторном контакте: ${summary}`,
+          isPrivate: true,
+          isReminder: true,
+          reminderDate: reminderDate,
+        });
+      }
       saveDB(db);
 
       closeContactModal();
