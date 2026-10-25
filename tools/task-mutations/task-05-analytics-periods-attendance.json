@@ -1,0 +1,75 @@
+{
+  "task": "task-05-analytics-periods-attendance",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-ANL-03",
+      "expectFail": [
+        "test_anl_06_attendance_denominator"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "export function calculateStudentAttendance(\n  lessons,\n  attendance,\n  studentId,\n  options = {},\n) {\n  const opts = { classId: options.classId || \"class-7b\", ...options };\n  const markedLessons = filterLessons(lessons, opts);",
+          "replace": "export function calculateStudentAttendance(\n  lessons,\n  attendance,\n  studentId,\n  options = {},\n) {\n  const opts = { classId: options.classId || \"class-7b\", ...options };\n  const markedLessons = filterLessons(lessons, { ...opts, onlyMarked: false });"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-ANL-08",
+      "expectFail": [
+        "test_anl_08_student_without_grades"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  if (stGrades.length === 0) {\n    return null;\n  }",
+          "replace": "  if (stGrades.length === 0) {\n    return 0;\n  }"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-ANL-17",
+      "expectFail": [
+        "test_anl_09_period_switch_recalculates"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  const periodOptions = {\n    periodId,\n    classId: options.classId || \"class-7b\",\n    ...options,\n  };",
+          "replace": "  const periodOptions = {\n    periodId,\n    classId: options.classId || \"class-7b\",\n  };"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-ANL-12",
+      "expectFail": [
+        "test_anl_11_subject_averages"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/dataset.js",
+          "find": "  \"grades\": [\n    {\n      \"id\": \"grd-0001\",",
+          "replace": "  \"grades\": [\n    {\n      \"id\": \"grd-8a-01\",\n      \"lessonId\": \"lsn-8a-w8-01\",\n      \"studentId\": \"st-8a-01\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-22\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-02\",\n      \"lessonId\": \"lsn-8a-w8-02\",\n      \"studentId\": \"st-8a-02\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-23\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-03\",\n      \"lessonId\": \"lsn-8a-w8-03\",\n      \"studentId\": \"st-8a-03\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-25\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-04\",\n      \"lessonId\": \"lsn-8a-w8-01\",\n      \"studentId\": \"st-8a-01\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-22\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-05\",\n      \"lessonId\": \"lsn-8a-w8-02\",\n      \"studentId\": \"st-8a-02\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-23\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-06\",\n      \"lessonId\": \"lsn-8a-w8-03\",\n      \"studentId\": \"st-8a-03\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-25\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-07\",\n      \"lessonId\": \"lsn-8a-w8-01\",\n      \"studentId\": \"st-8a-01\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-22\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-08\",\n      \"lessonId\": \"lsn-8a-w8-02\",\n      \"studentId\": \"st-8a-02\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-23\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-09\",\n      \"lessonId\": \"lsn-8a-w8-03\",\n      \"studentId\": \"st-8a-03\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-25\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-10\",\n      \"lessonId\": \"lsn-8a-w8-01\",\n      \"studentId\": \"st-8a-01\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-22\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-11\",\n      \"lessonId\": \"lsn-8a-w8-02\",\n      \"studentId\": \"st-8a-02\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-23\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-12\",\n      \"lessonId\": \"lsn-8a-w8-03\",\n      \"studentId\": \"st-8a-03\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-25\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-13\",\n      \"lessonId\": \"lsn-8a-w8-01\",\n      \"studentId\": \"st-8a-01\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-22\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-14\",\n      \"lessonId\": \"lsn-8a-w8-02\",\n      \"studentId\": \"st-8a-02\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-23\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-15\",\n      \"lessonId\": \"lsn-8a-w8-03\",\n      \"studentId\": \"st-8a-03\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-25\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-16\",\n      \"lessonId\": \"lsn-8a-w8-01\",\n      \"studentId\": \"st-8a-01\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-22\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-17\",\n      \"lessonId\": \"lsn-8a-w8-02\",\n      \"studentId\": \"st-8a-02\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-23\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-18\",\n      \"lessonId\": \"lsn-8a-w8-03\",\n      \"studentId\": \"st-8a-03\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-25\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-19\",\n      \"lessonId\": \"lsn-8a-w8-01\",\n      \"studentId\": \"st-8a-01\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-22\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-20\",\n      \"lessonId\": \"lsn-8a-w8-02\",\n      \"studentId\": \"st-8a-02\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-23\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-0001\","
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-ANL-11",
+      "expectFail": [
+        "test_anl_12_weekly_absences"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "    const totalMarks = wAtt.length;",
+          "replace": "    const totalMarks = wAtt.length > 0 ? 7 * 28 : 0;"
+        }
+      ]
+    }
+  ]
+}
