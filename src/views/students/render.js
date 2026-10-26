@@ -35,12 +35,16 @@ export function renderStudentsView(options = {}) {
   const currentPage = parseInt(options.page || "1", 10);
   const pageSize = 10;
 
+  const selectedClassId =
+    currentUser?.role === "teacher"
+      ? currentUser.classId || "class-7b"
+      : requestedClassId || "class-7b";
   const rawStudents = (db.students || []).filter(
-    (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived",
+    (s) => (!s.classId || s.classId === selectedClassId) && s.status !== "archived",
   );
   const totalInClass = rawStudents.length;
 
-  const studentRows = prepareStudentRows(db, periodId);
+  const studentRows = prepareStudentRows(db, periodId, selectedClassId);
   const filteredRows = filterAndSortRows(studentRows, {
     searchQuery,
     filterAbsencesOnly,

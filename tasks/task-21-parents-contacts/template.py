@@ -20,36 +20,33 @@ def driver():
     browser.quit()
 
 
-def test_pr_01_02_list_and_phone_search(driver):
-    """Проверить состав базы родителей и поиск по фамилии и телефону."""
+def test_pr_13_summary_read_only(driver):
+    """Проверка TC-PR-13."""
 
 
-def test_pr_03_04_05_filter_add_and_phone_validation(driver):
-    """Проверить фильтр «Без связи», добавление родителя и обязательность
-    телефона."""
+def test_pr_14_summary_all_children(driver):
+    """Проверка TC-PR-14."""
 
 
-def test_pr_06_07_edit_phone_single_record(driver):
-    """Проверить изменение телефона и его отображение во всех разделах."""
+def test_pr_15_contact_agreement(driver):
+    """Проверка TC-PR-15."""
 
 
-def test_pr_08_09_link_and_primary_contact(driver):
-    """Проверить связывание родителя с учеником и перенос основного
-    контакта."""
+def test_pr_16_contact_required_fields(driver):
+    """Проверка TC-PR-16."""
 
 
-def test_pr_10_11_12_unlink_and_delete_rules(driver):
-    """Проверить снятие связи и правила удаления родителя."""
+def test_pr_17_contact_without_student(driver):
+    """Проверка TC-PR-17."""
 
 
-def test_pr_13_14_parent_summary_children(driver):
-    """Проверить состав сводки родителя и детей из разных классов."""
+def test_pr_18_history_order(driver):
+    """Проверка TC-PR-18."""
 
 
-def test_pr_15_16_17_18_contacts_history(driver):
-    """Проверить фиксацию контактов, их порядок и общий контакт без
-    ученика."""
+def test_pr_19_parents_route_denied(driver):
+    """Проверка TC-PR-19."""
 
 
-def test_pr_19_20_role_access_and_privacy(driver):
-    """Проверить доступ к базе родителей и приватность истории общения."""
+def test_pr_20_history_hidden_from_parent(driver):
+    """Проверка TC-PR-20."""

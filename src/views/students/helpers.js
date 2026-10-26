@@ -17,7 +17,7 @@ export const PERIODS = [
   { id: "year_2024_2025", name: "2024/2025 учебный год" },
 ];
 
-export function prepareStudentRows(db, periodId) {
+export function prepareStudentRows(db, periodId, classId = "class-7b") {
   const periodDateRanges = {
     sept_2024: { dateFrom: "2024-09-01", dateTo: "2024-09-30" },
     oct_2024: { dateFrom: "2024-10-01", dateTo: "2024-10-31" },
@@ -27,11 +27,11 @@ export function prepareStudentRows(db, periodId) {
   const periodOptions = {
     periodId: queryPeriodId,
     ...dateRange,
-    classId: "class-7b",
+    classId,
   };
 
   const rawStudents = (db.students || []).filter(
-    (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived",
+    (s) => (!s.classId || s.classId === classId) && s.status !== "archived",
   );
   const riskStudents = getRiskZoneStudents(
     db.students,

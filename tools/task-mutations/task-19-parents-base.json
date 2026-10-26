@@ -1,0 +1,95 @@
+{
+  "task": "task-19-parents-base",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-PR-10",
+      "expectFail": [
+        "test_pr_01_parents_list_counter"
+      ],
+      "patches": [
+        {
+          "file": "src/views/parents/list.js",
+          "find": "  const uniqueParentsCount = totalParentsCount;",
+          "replace": "  const uniqueParentsCount = relations.length;",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-PR-05",
+      "expectFail": [
+        "test_pr_02_search_name_phone"
+      ],
+      "patches": [
+        {
+          "file": "src/views/parents/list.js",
+          "find": "      if (!matchName && !matchPhone) {",
+          "replace": "      if (!matchName) {",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-PR-11",
+      "expectFail": [
+        "test_pr_03_filter_reset"
+      ],
+      "patches": [
+        {
+          "file": "src/views/parents/list.js",
+          "find": "      updateQueryUrl({ search: \"\", filter: \"all\", page: 1 });",
+          "replace": "      updateQueryUrl({ search: \"\", page: 1 });",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-PR-12",
+      "expectFail": [
+        "test_pr_04_add_parent_link"
+      ],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "  const isPrimary = Boolean(data.isPrimary);",
+          "replace": "  const isPrimary = true;",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-PR-03",
+      "expectFail": [
+        "test_pr_05_phone_required"
+      ],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "  if (!phone) {\n    return { success: false, error: \"Укажите телефон\" };\n  }",
+          "replace": "  if (false && !phone) {\n    return { success: false, error: \"Укажите телефон\" };\n  }",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 7,
+      "bug": "BUG-PR-04",
+      "expectFail": [
+        "test_pr_06_parent_card_edit"
+      ],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "    parent.phone = data.phone.trim();",
+          "replace": "    parent.phone = parent.phone;",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

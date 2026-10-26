@@ -2,6 +2,7 @@ import {
   getDB,
   getCurrentUser,
   confirmAbsenceRecord,
+  batchConfirmAbsences,
   addJournalComment,
   getJournalComments,
   validateGradeValue,
@@ -665,12 +666,32 @@ export function setupJournalListeners(onNavigate) {
       const reasonValue =
         notes || (isExcused ? "Болезнь / справка" : "Неуважительная причина");
 
-      confirmAbsenceRecord(attId, {
+      const confirmationData = {
         status: isExcused ? "excused" : "unexcused",
         reason: reasonValue,
         document: documentValue,
         confirmedBy: "Смирнова М. В.",
-      });
+      };
+      const relatedRecordIds = isExcused
+        ? (getDB().attendance || [])
+            .filter(
+              (record) =>
+                record.studentId === activeAttendanceRecord.studentId &&
+                record.value === "absent" &&
+                record.status === "unconfirmed",
+            )
+            .map((record) => record.id)
+        : [];
+      if (relatedRecordIds.length > 0) {
+        const batchConfirmation = batchConfirmAbsences(
+          relatedRecordIds,
+          confirmationData,
+        );
+        if (!batchConfirmation.success) return;
+      }
+
+      const confirmation = confirmAbsenceRecord(attId, confirmationData);
+      if (!confirmation.success) return;
 
       closeJournalConfirmModal();
       closeModal();

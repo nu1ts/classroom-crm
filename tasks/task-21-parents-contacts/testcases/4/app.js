@@ -16659,12 +16659,12 @@
         "studentId": "st-23",
         "date": "2024-10-25",
         "value": "absent",
-        "status": "confirmed",
-        "code": "УП",
-        "reason": "Справка",
-        "confirmedBy": "Смирнова М. В.",
-        "confirmedAt": "2024-10-25 15:00",
-        "document": "Справка ОРВИ"
+        "status": "unconfirmed",
+        "code": "Н (без)",
+        "reason": "По болезни (ОРВИ)",
+        "confirmedBy": null,
+        "confirmedAt": null,
+        "document": ""
       },
       {
         "id": "att-1114",
@@ -21822,6 +21822,13 @@
 
   // .build/task-21-parents-contacts/4/src/services/attendance-ops.js
   function confirmAbsenceRecord(recordId, data = {}) {
+    const currentUser = getCurrentUser();
+    if (!currentUser || currentUser.role !== "teacher") {
+      return {
+        success: false,
+        error: "Действие недоступно для вашей роли. Подтвердить причину пропуска может только классный руководитель."
+      };
+    }
     const db = getDB();
     const record = (db.attendance || []).find((a) => a.id === recordId);
     if (!record) {
@@ -21847,6 +21854,14 @@
     return { success: true, record };
   }
   function batchConfirmAbsences(recordIds, data = {}) {
+    const currentUser = getCurrentUser();
+    if (!currentUser || currentUser.role !== "teacher") {
+      return {
+        success: false,
+        error: "Действие недоступно для вашей роли. Подтвердить причины пропусков может только классный руководитель.",
+        updatedCount: 0
+      };
+    }
     const db = getDB();
     const idsSet = new Set(recordIds);
     let updatedCount = 0;
@@ -21953,7 +21968,7 @@
       channel,
       channelLabel: channelLabels[channel] || data.channelLabel || "Звонок",
       summary,
-      agreementReached,
+      agreementReached: false,
       nextContactDate
     };
     db.parentContacts.unshift(newContact);
@@ -31631,13 +31646,13 @@
           <div id="entry-modal-absence-details" class="hidden p-3.5 rounded-xl border text-xs">
           </div>
 
-          <div id="block-confirm-from-journal" class="hidden">
+          ${!isSubjectTeacher ? `<div id="block-confirm-from-journal" class="hidden">
             <button type="button" id="btn-quick-confirm-absence"
                     class="w-full py-2.5 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-semibold text-xs shadow-xs hover:shadow-sm transition-all flex items-center justify-center space-x-2 cursor-pointer border border-brand-600/30">
               ${renderIcon("check-square", "w-4 h-4 text-white")}
               <span>Подтвердить уважительную причину</span>
             </button>
-          </div>
+          </div>` : ""}
 
           <div class="rounded-2xl border border-slate-200 bg-slate-50/60 overflow-hidden shadow-sm">
             <div class="px-3.5 py-2.5 bg-white border-b border-slate-200 flex items-center justify-between">
@@ -32329,12 +32344,24 @@
         const isExcused = reasonType === "excused";
         const documentValue = isExcused ? hasDoc ? docText || "Медицинская справка" : "Заявление родителей" : null;
         const reasonValue = notes || (isExcused ? "Болезнь / справка" : "Неуважительная причина");
-        confirmAbsenceRecord(attId, {
+        const confirmationData = {
           status: isExcused ? "excused" : "unexcused",
           reason: reasonValue,
           document: documentValue,
           confirmedBy: "Смирнова М. В."
-        });
+        };
+        const relatedRecordIds = isExcused ? (getDB().attendance || []).filter(
+          (record) => record.studentId === activeAttendanceRecord.studentId && record.value === "absent" && record.status === "unconfirmed"
+        ).map((record) => record.id) : [];
+        if (relatedRecordIds.length > 0) {
+          const batchConfirmation = batchConfirmAbsences(
+            relatedRecordIds,
+            confirmationData
+          );
+          if (!batchConfirmation.success) return;
+        }
+        const confirmation = confirmAbsenceRecord(attId, confirmationData);
+        if (!confirmation.success) return;
         closeJournalConfirmModal();
         closeModal4();
         const currentHash = "/journal" + (window.location.search || "");
@@ -32671,7 +32698,7 @@
     { id: "q4_2024", name: "IV четверть (31.03 - 23.05.2025)" },
     { id: "year_2024_2025", name: "2024/2025 учебный год" }
   ];
-  function prepareStudentRows(db, periodId) {
+  function prepareStudentRows(db, periodId, classId = "class-7b") {
     const periodDateRanges = {
       sept_2024: { dateFrom: "2024-09-01", dateTo: "2024-09-30" },
       oct_2024: { dateFrom: "2024-10-01", dateTo: "2024-10-31" }
@@ -32681,10 +32708,10 @@
     const periodOptions = {
       periodId: queryPeriodId,
       ...dateRange,
-      classId: "class-7b"
+      classId
     };
     const rawStudents = (db.students || []).filter(
-      (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived"
+      (s) => (!s.classId || s.classId === classId) && s.status !== "archived"
     );
     const riskStudents = getRiskZoneStudents(
       db.students,
@@ -32968,11 +32995,12 @@
     const sortOrder = options.sortOrder || "asc";
     const currentPage = parseInt(options.page || "1", 10);
     const pageSize = 10;
+    const selectedClassId = currentUser?.role === "teacher" ? currentUser.classId || "class-7b" : requestedClassId || "class-7b";
     const rawStudents = (db.students || []).filter(
-      (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived"
+      (s) => (!s.classId || s.classId === selectedClassId) && s.status !== "archived"
     );
     const totalInClass = rawStudents.length;
-    const studentRows = prepareStudentRows(db, periodId);
+    const studentRows = prepareStudentRows(db, periodId, selectedClassId);
     const filteredRows = filterAndSortRows(studentRows, {
       searchQuery,
       filterAbsencesOnly,
@@ -34036,8 +34064,12 @@
   // .build/task-21-parents-contacts/4/src/views/student-summary/render.js
   function renderStudentSummaryView(options = {}) {
     const db = getDB();
+    const currentUser = getCurrentUser();
     const periodId = options.periodId || "q1_2024";
     const studentId = options.studentId || options.id || "st-23";
+    if (["parent", "student"].includes(currentUser?.role)) {
+      return renderForbiddenView();
+    }
     let student = (db.students || []).find((s) => s.id === studentId);
     let isOtherClassStudent = false;
     if (!student) {
@@ -35804,7 +35836,7 @@
         const studentId = selectAddStudent?.value || null;
         const relationRole = selectAddRole?.value || "Родитель";
         const isPrimary = checkAddPrimary?.checked || false;
-        if (false) {
+        if (!phone) {
           if (pPhoneError) pPhoneError.classList.remove("hidden");
           if (inputAddPhone) {
             inputAddPhone.classList.add(

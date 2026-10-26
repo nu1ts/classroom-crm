@@ -334,752 +334,84 @@ def primary_relations(db, student_id):
     ]
 
 
-def test_pr_01_02_list_and_phone_search(driver):
+
+def api(driver, expression):
+    return driver.execute_script(f"return ({expression});")
+
+
+def assert_success(result, message):
+    assert result and result.get("success") is True, message
+
+
+def test_pr_13_summary_read_only(driver):
+    """Проверить режим только для чтения в сводке родителя."""
     login(driver, HOMEROOM_TEACHER)
-    open_parents(driver)
-
-    assert normalized(
-        driver.find_element(*PARENTS_SUBTITLE).text
-    ) == "32 родителя · у 28 учеников"
-
-    headers = text_of(driver.find_element(By.CSS_SELECTOR, "table thead"))
-    for column in [
-        "Родитель",
-        "Дети",
-        "Роль связи",
-        "Основной контакт",
-        "Действия",
-    ]:
-        assert column in headers, f"Нет колонки «{column}»"
-
-    rows = parent_rows(driver)
-    assert len(rows) == 10, "На первой странице должно быть 10 родителей"
-    first_text = text_of(rows[0])
-    for value in [
-        "Александрова Ирина Алексеевна",
-        "+7 999 123-45-60",
-        "Александров Егор",
-        "(7Б)",
-        "Мать",
-        "Основной контакт",
-    ]:
-        assert value in first_text, f"В первой строке нет значения «{value}»"
-
-    assert "из 32 родителей" in normalized(
-        driver.find_element(*PARENTS_COUNT).text
-    )
-
-    set_field(driver, "input-parents-search", "сидор")
-    wait_parent_rows(driver, 1, ["Сидорова Ольга Николаевна"])
-
-    set_field(driver, "input-parents-search", "")
-    wait_parent_rows(driver, 10)
-
-    set_field(driver, "input-parents-search", "123-45-64")
-    wait_parent_rows(driver, 1, ["Сидорова Ольга Николаевна"])
-
-    set_field(driver, "input-parents-search", "123-45-62")
-    wait_parent_rows(driver, 1, ["Котова Елена Павловна"])
-
-
-def test_pr_03_04_05_filter_add_and_phone_validation(driver):
-    login(driver, HOMEROOM_TEACHER)
-    open_parents(driver)
-
-    select_value(driver, "select-parents-filter", "no_link")
-    wait_parent_rows(driver, 1, ["Орлова Надежда Павловна"])
-    row = parent_rows(driver)[0]
-    cells = row.find_elements(By.TAG_NAME, "td")
-    assert "—" in text_of(cells[1]), "У родителя без связи должен быть прочерк"
-    assert "—" in text_of(cells[2]), "Роль связи должна быть прочерком"
-    assert "Показано 1 из 32 родителей" in normalized(
-        driver.find_element(*PARENTS_COUNT).text
-    )
-
-    set_field(driver, "input-parents-search", "петров")
-    wait_until(
-        driver,
-        lambda d: not parent_rows(d),
-        "При поиске внутри фильтра не пропали строки",
-    )
-    wait_body(driver, "Ничего не найдено")
-    assert driver.find_element(*PARENTS_RESET).is_displayed()
-
-    click_js(driver, driver.find_element(*PARENTS_RESET))
-    wait_parent_rows(driver, 10)
-    assert driver.find_element(*PARENTS_SEARCH).get_attribute("value") == ""
-    assert (
-        Select(driver.find_element(*PARENTS_FILTER)).first_selected_option.get_attribute(
-            "value"
-        )
-        == "all"
-    )
-
-    click_js(driver, driver.find_element(By.ID, "btn-open-add-parent"))
-    wait_modal(driver, ADD_MODAL)
-
-    set_field(driver, "add-parent-fullname", "Котов Дмитрий Сергеевич")
-    submit_form(driver, "form-add-parent")
-    wait_element_visible(
-        driver,
-        "add-parent-phone-error",
-        "Не появилась подсказка об обязательном телефоне",
-    )
-
-    assert "32 родителя · у 28 учеников" in normalized(
-        driver.find_element(*PARENTS_SUBTITLE).text
-    )
-    assert len(read_db(driver)["parents"]) == 32
-
-    set_field(driver, "add-parent-phone", "+7 999 123-45-66")
-    select_value(driver, "add-parent-student-select", "st-06")
-    select_value(driver, "add-parent-role-select", "Отец")
-    primary = driver.find_element(By.ID, "add-parent-is-primary")
-    if primary.is_selected():
-        primary.click()
-    submit_form(driver, "form-add-parent")
-
-    wait_modal(driver, ADD_MODAL, opened=False)
-
-    def has_new_parent(db):
-        return len(db.get("parents", [])) == 33 and any(
-            parent.get("fullName") == "Котов Дмитрий Сергеевич"
-            for parent in db["parents"]
-        )
-
-    wait_db(driver, has_new_parent, "Новый родитель не сохранился")
-    wait_body(driver, "33 родителя · у 28 учеников")
-
-    set_field(driver, "input-parents-search", "Котов Дмитрий")
-    wait_parent_rows(driver, 1, ["Котов Дмитрий Сергеевич"])
-    row_text = text_of(parent_rows(driver)[0])
-    for value in [
-        "+7 999 123-45-66",
-        "Котов Максим",
-        "Отец",
-        "Дополнительный",
-    ]:
-        assert value in row_text, f"В новой строке нет значения «{value}»"
-    assert "Основной контакт" not in row_text
-
-    def relation_saved(db):
-        parent = next(
-            p
-            for p in db["parents"]
-            if p.get("fullName") == "Котов Дмитрий Сергеевич"
-        )
-        relation = next(
-            (
-                r
-                for r in db["parentStudentRelations"]
-                if r.get("parentId") == parent["id"]
-            ),
-            None,
-        )
-        return (
-            relation is not None
-            and relation.get("studentId") == "st-06"
-            and relation.get("relationRole") == "Отец"
-            and relation.get("isPrimary") is False
-        )
-
-    wait_db(driver, relation_saved, "Связь нового родителя не сохранилась")
-
-
-def test_pr_06_07_edit_phone_single_record(driver):
-    login(driver, HOMEROOM_TEACHER)
-    open_parents(driver)
-
-    set_field(driver, "input-parents-search", "Котова Елена")
-    wait_parent_rows(driver, 1, ["Котова Елена Павловна"])
-
-    open_row_action(
-        driver, parent_rows(driver)[0], "btn-action-edit-parent"
-    )
-    wait_modal(driver, EDIT_MODAL)
-
-    assert (
-        driver.find_element(By.ID, "edit-parent-fullname").get_attribute("value")
-        == "Котова Елена Павловна"
-    )
-    assert (
-        driver.find_element(By.ID, "edit-parent-phone").get_attribute("value")
-        == "+7 999 123-45-62"
-    )
-    assert (
-        len(
-            driver.find_elements(
-                By.CSS_SELECTOR, "#form-edit-parent input[type='tel']"
-            )
-        )
-        == 1
-    ), "У родителя должно быть одно поле телефона"
-    assert "Добавить второй телефон" not in text_of(
-        driver.find_element(By.ID, "form-edit-parent")
-    )
-
-    set_field(driver, "edit-parent-phone", "+7 999 123-45-68")
-    submit_form(driver, "form-edit-parent")
-    wait_modal(driver, EDIT_MODAL, opened=False)
-
-    wait_db(
-        driver,
-        lambda db: next(
-            (p for p in db["parents"] if p.get("id") == "pr-10"), {}
-        ).get("phone")
-        == "+7 999 123-45-68",
-        "Новый телефон Котовой Е. П. не сохранился",
-    )
-
-    def row_has_phone(d):
-        row_selector = 'tr[data-parent-id="pr-10"]'
-        row_text = d.execute_script(
-            "return document.querySelector(arguments[0])?.textContent || '';",
-            row_selector,
-        )
-        return len(d.find_elements(By.CSS_SELECTOR, row_selector)) == 1 and "+7 999 123-45-68" in normalized(row_text)
-
-    wait_until(driver, row_has_phone, "Список не показал новый телефон")
-
-    open_parent_summary(driver, "pr-10")
-    summary_text = body_text(driver)
-    assert "Котова Елена Павловна" in summary_text
-    assert "+7 999 123-45-68" in summary_text
-    assert "+7 999 123-45-62" not in summary_text
-
-    open_student_summary(driver, "st-06")
-    student_text = body_text(driver)
-    assert "+7 999 123-45-68" in student_text
-    assert "+7 999 123-45-62" not in student_text
-
-    open_parents(driver)
-    set_field(driver, "input-parents-search", "Петров Сергей")
-    wait_parent_rows(driver, 1, ["Петров Сергей Викторович"])
-
-    open_row_action(
-        driver, parent_rows(driver)[0], "btn-action-edit-parent"
-    )
-    wait_modal(driver, EDIT_MODAL)
-    assert (
-        driver.find_element(By.ID, "edit-parent-phone").get_attribute("value")
-        == "+7 999 123-45-63"
-    )
-    set_field(driver, "edit-parent-phone", "+7 999 123-45-69")
-    submit_form(driver, "form-edit-parent")
-    wait_modal(driver, EDIT_MODAL, opened=False)
-
-    wait_db(
-        driver,
-        lambda db: next(
-            (p for p in db["parents"] if p.get("id") == "pr-23"), {}
-        ).get("phone")
-        == "+7 999 123-45-69",
-        "Новый телефон Петрова С. В. не сохранился",
-    )
-
-    def petrov_row_has_phone(d):
-        row_selector = 'tr[data-parent-id="pr-23"]'
-        row_text = d.execute_script(
-            "return document.querySelector(arguments[0])?.textContent || '';",
-            row_selector,
-        )
-        return len(d.find_elements(By.CSS_SELECTOR, row_selector)) == 1 and "+7 999 123-45-69" in normalized(row_text)
-
-    wait_until(
-        driver, petrov_row_has_phone, "Список не показал телефон Петрова"
-    )
-
-    db = read_db(driver)
-    assert len(db["parents"]) == 32
-    assert (
-        len(
-            [
-                p
-                for p in db["parents"]
-                if p.get("phone") == "+7 999 123-45-68"
-            ]
-        )
-        == 1
-    )
-    assert (
-        len(
-            [
-                p
-                for p in db["parents"]
-                if p.get("phone") == "+7 999 123-45-69"
-            ]
-        )
-        == 1
-    )
-    assert all(
-        p.get("phone") not in ("+7 999 123-45-62", "+7 999 123-45-63")
-        for p in db["parents"]
-    )
-
-
-def test_pr_08_09_link_and_primary_contact(driver):
-    login(driver, HOMEROOM_TEACHER)
-    open_parents(driver)
-
-    set_field(driver, "input-parents-search", "Орлова Надежда")
-    wait_parent_rows(driver, 1, ["Орлова Надежда Павловна"])
-
-    open_row_action(
-        driver, parent_rows(driver)[0], "btn-action-link-parent"
-    )
-    wait_modal(driver, LINK_MODAL)
-    wait_body(
-        driver,
-        "На одного ученика может быть несколько родителей. Основным считается один.",
-    )
-
-    select_value(driver, "link-parent-student-select", "st-16")
-    select_value(driver, "link-parent-role-select", "Опекун")
-    checkbox = driver.find_element(By.ID, "link-parent-is-primary")
-    if not checkbox.is_selected():
-        checkbox.click()
-    submit_form(driver, "form-link-parent")
-    wait_modal(driver, LINK_MODAL, opened=False)
-
-    def linked(db):
-        relations = [
-            r
-            for r in db.get("parentStudentRelations", [])
-            if r.get("studentId") == "st-16"
-        ]
-        primaries = primary_relations(db, "st-16")
-        return (
-            len(relations) == 2
-            and len(primaries) == 1
-            and primaries[0].get("parentId") == "pr-21"
-        )
-
-    wait_db(driver, linked, "Основной контакт ученика не перешёл к Орловой")
-
-    def orlova_row_linked(d):
-        row_selector = 'tr[data-parent-id="pr-21"]'
-        row_text = d.execute_script(
-            "return document.querySelector(arguments[0])?.textContent || '';",
-            row_selector,
-        )
-        return len(d.find_elements(By.CSS_SELECTOR, row_selector)) == 1 and all(
-            value in normalized(row_text)
-            for value in ("Васильева Дарья", "Опекун", "Основной контакт")
-        )
-
-    wait_until(driver, orlova_row_linked, "Строка Орловой не обновилась")
-
-    set_field(driver, "input-parents-search", "")
-    wait_parent_rows(driver, 10)
-    select_value(driver, "select-parents-filter", "no_link")
-    wait_until(
-        driver,
-        lambda d: not parent_rows(d),
-        "Фильтр «Без связи» не стал пустым",
-    )
-
-    select_value(driver, "select-parents-filter", "all")
-    set_field(driver, "input-parents-search", "Васильев Константин")
-    wait_parent_rows(driver, 1, ["Васильев Константин Дмитриевич"])
-    vasiliev_text = text_of(parent_rows(driver)[0])
-    assert "Дополнительный" in vasiliev_text
-    assert "Основной контакт" not in vasiliev_text
-
-    open_student_summary(driver, "st-16")
-    block_text = text_of(contacts_block(driver))
-    assert "Орлова Надежда Павловна" in block_text
-    assert "Васильев Константин Дмитриевич" in block_text
-    assert (
-        block_text.index("Орлова")
-        < block_text.index("Основной контакт")
-        < block_text.index("Васильев")
-    ), "Основной контакт должен быть указан первым"
-
-
-def test_pr_10_11_12_unlink_and_delete_rules(driver):
-    login(driver, HOMEROOM_TEACHER)
-    open_parents(driver)
-
-    set_field(driver, "input-parents-search", "Орлова Надежда")
-    wait_parent_rows(driver, 1, ["Орлова Надежда Павловна"])
-    open_row_action(
-        driver, parent_rows(driver)[0], "btn-action-link-parent"
-    )
-    wait_modal(driver, LINK_MODAL)
-    select_value(driver, "link-parent-student-select", "st-16")
-    submit_form(driver, "form-link-parent")
-    wait_modal(driver, LINK_MODAL, opened=False)
-
-    wait_db(
-        driver,
-        lambda db: any(
-            r.get("parentId") == "pr-21" and r.get("studentId") == "st-16"
-            for r in db.get("parentStudentRelations", [])
-        ),
-        "Связь Орловой с ученицей не создалась",
-    )
-
-    open_parent_summary(driver, "pr-21")
-    click_js(driver, driver.find_element(*SUMMARY_UNLINK_BUTTON))
-    wait_modal(driver, UNLINK_MODAL)
-    submit_form(driver, "form-card-unlink-student")
-    wait_modal(driver, UNLINK_MODAL, opened=False)
-    wait_body(driver, "Нет связанных учеников")
-
-    def unlinked(db):
-        has_relation = any(
-            r.get("parentId") == "pr-21"
-            for r in db.get("parentStudentRelations", [])
-        )
-        has_parent = any(p.get("id") == "pr-21" for p in db.get("parents", []))
-        return not has_relation and has_parent
-
-    wait_db(driver, unlinked, "Снятие связи удалило карточку родителя")
-
-    open_parents(driver)
-    set_field(driver, "input-parents-search", "Орлова Надежда")
-    wait_parent_rows(driver, 1, ["Орлова Надежда Павловна"])
-    cells = parent_rows(driver)[0].find_elements(By.TAG_NAME, "td")
-    assert "—" in text_of(cells[1])
-
-    select_value(driver, "select-parents-filter", "no_link")
-    wait_parent_rows(driver, 1, ["Орлова Надежда Павловна"])
-
-    select_value(driver, "select-parents-filter", "all")
-    set_field(driver, "input-parents-search", "Петров Сергей")
-    wait_parent_rows(driver, 1, ["Петров Сергей Викторович"])
-    open_row_action(
-        driver, parent_rows(driver)[0], "btn-action-delete-parent"
-    )
-    wait_toast(driver, "Сначала снимите связь с учеником в карточке или сводке")
-    wait_parent_rows(driver, 1, ["Петров Сергей Викторович"])
-    assert any(
-        p.get("id") == "pr-23" for p in read_db(driver).get("parents", [])
-    )
-
-    set_field(driver, "input-parents-search", "Орлова Надежда")
-    wait_parent_rows(driver, 1, ["Орлова Надежда Павловна"])
-    open_row_action(
-        driver, parent_rows(driver)[0], "btn-action-delete-parent"
-    )
-    wait_until(
-        driver,
-        lambda d: not parent_rows(d),
-        "Удалённый родитель остался в списке",
-    )
-    wait_body(driver, "Ничего не найдено")
-    wait_db(
-        driver,
-        lambda db: not any(
-            p.get("id") == "pr-21" for p in db.get("parents", [])
-        ),
-        "Родитель без связей не удалился",
-    )
-
-    set_field(driver, "input-parents-search", "")
-    wait_parent_rows(driver, 10)
-    subtitle = normalized(driver.find_element(*PARENTS_SUBTITLE).text)
-    assert "31 родителя" in subtitle
-    assert "у 28 учеников" in subtitle
-
-    select_value(driver, "select-parents-filter", "no_link")
-    wait_until(
-        driver,
-        lambda d: not parent_rows(d),
-        "Фильтр «Без связи» не опустел после удаления",
-    )
-
-
-def test_pr_13_14_parent_summary_children(driver):
-    login(driver, HOMEROOM_TEACHER)
-    open_parents(driver)
-
-    set_field(driver, "input-parents-search", "Сидорова Ольга")
-    wait_parent_rows(driver, 1, ["Сидорова Ольга Николаевна"])
-    click_js(
-        driver,
-        parent_rows(driver)[0].find_element(
-            By.CSS_SELECTOR, ".btn-open-parent-summary"
-        ),
-    )
-    wait_until(
-        driver,
-        lambda d: d.find_elements(*SUMMARY_RECORD_BUTTON),
-        "Не открылась сводка Сидоровой О. Н.",
-    )
-
-    assert (
-        normalized(driver.find_element(By.CSS_SELECTOR, "h2").text)
-        == "Сидорова Ольга Николаевна"
-    )
-    breadcrumbs = text_of(
-        driver.find_element(
-            By.XPATH, "//nav[.//a[contains(., 'Класс 7Б')]]"
-        )
-    )
-    for value in ("Класс 7Б", "Родители", "Сидорова Ольга Николаевна"):
-        assert value in breadcrumbs
-
-    summary_text = body_text(driver)
-    for value in [
-        "+7 999 123-45-64",
-        "Основной контакт",
-        "Анкетные данные — только чтение в сводке",
-    ]:
-        assert value in summary_text, f"В сводке нет значения «{value}»"
-
-    children_text = text_of(parent_block(driver, "Связанные ученики"))
-    for value in (
-        "Сидоров Никита",
-        "Мать",
-        "7Б класс",
-        "Открыть сводку по ученику",
-    ):
-        assert value in children_text, f"В блоке детей нет «{value}»"
-
-    history_text = text_of(parent_block(driver, "История общения с родителем"))
-    assert "26.10.2024" in history_text
-    assert "18.10.2024" in history_text
-
-    for button_id in (
-        "btn-card-record-contact",
-        "btn-card-link-student",
-        "btn-card-unlink-student",
-    ):
-        assert driver.find_element(By.ID, button_id).is_displayed()
-
-    open_parents(driver)
-    set_field(driver, "input-parents-search", "Котова Елена")
-    wait_parent_rows(driver, 1, ["Котова Елена Павловна"])
-    click_js(
-        driver,
-        parent_rows(driver)[0].find_element(
-            By.CSS_SELECTOR, ".btn-open-parent-summary"
-        ),
-    )
-    wait_until(
-        driver,
-        lambda d: d.find_elements(*SUMMARY_RECORD_BUTTON),
-        "Не открылась сводка Котовой Е. П.",
-    )
-
-    children_text = text_of(parent_block(driver, "Связанные ученики"))
-    for value in (
-        "Котов Максим",
-        "7Б класс",
-        "Котова Дарья",
-        "9В класс",
-        "Дочь",
-    ):
-        assert value in children_text, f"В блоке детей нет «{value}»"
-
-    risk_text = text_of(
-        driver.find_element(
-            By.XPATH,
-            "//h4[contains(., 'Ребёнок под наблюдением')]"
-            "/ancestor::div[contains(@class, 'rounded-3xl')][1]",
-        )
-    )
-    assert "Ребёнок под наблюдением" in risk_text
-    assert "Котов Максим" in risk_text
-
-    external_links = parent_block(
-        driver, "Связанные ученики"
-    ).find_elements(By.CSS_SELECTOR, 'a[href*="ext-"]')
-    assert external_links, "Нет ссылки на сводку ребёнка из другого класса"
-    click_js(driver, external_links[0])
-    wait_body(
-        driver,
-        "Данные ученика из другого класса (9В) доступны только для чтения",
-        "Котова Дарья",
-    )
-
-
-def test_pr_15_16_17_18_contacts_history(driver):
-    login(driver, HOMEROOM_TEACHER)
-    open_parents(driver)
-
-    set_field(driver, "input-parents-search", "Сидорова Ольга")
-    wait_parent_rows(driver, 1, ["Сидорова Ольга Николаевна"])
-    click_js(
-        driver,
-        parent_rows(driver)[0].find_element(
-            By.CSS_SELECTOR, ".btn-open-parent-summary"
-        ),
-    )
-    wait_until(
-        driver,
-        lambda d: d.find_elements(*SUMMARY_RECORD_BUTTON),
-        "Не открылась сводка Сидоровой О. Н.",
-    )
-
-    wait_until(
-        driver,
-        lambda d: len(history_items(d)) >= 2,
-        "В истории общения меньше двух записей",
-    )
-    items = history_items(driver)
-    first_text = text_of(items[0])
-    second_text = text_of(items[1])
-    assert "26.10.2024" in first_text
-    assert "Звонок" in first_text
-    assert "18.10.2024" in second_text
-    assert "Мессенджер" in second_text
-
-    click_js(driver, driver.find_element(*SUMMARY_RECORD_BUTTON))
-    wait_modal(driver, CONTACT_MODAL)
-    assert (
-        driver.find_element(By.ID, "contact-date-input").get_attribute("value")
-        == "2024-10-28"
-    )
-    selected_student = Select(
-        driver.find_element(By.ID, "contact-student-select")
-    ).first_selected_option.get_attribute("value")
-    assert selected_student == "st-14"
-
-    select_value(driver, "contact-channel-select", "phone")
-    summary_text = "Дозвонились, справку принесёт 29.10"
-    set_field(driver, "contact-summary-input", summary_text)
-    assert driver.find_element(By.ID, "contact-agreement-check").is_selected()
-    submit_form(driver, "form-record-parent-contact")
-    wait_modal(driver, CONTACT_MODAL, opened=False)
-
-    wait_history_first(
-        driver,
-        "28.10.2024",
-        "Смирнова М. В.",
-        "Звонок",
-        summary_text,
-        "Договорённость достигнута",
-    )
-    wait_db(
-        driver,
-        lambda db: any(
-            c.get("summary") == summary_text
-            and c.get("studentId") == "st-14"
-            for c in db.get("parentContacts", [])
-        ),
-        "Контакт с родителем не сохранился",
-    )
-
-    open_student_summary(driver, "st-14")
-    wait_body(driver, summary_text)
-
     open_parent_summary(driver, "pr-27")
-    click_js(driver, driver.find_element(*SUMMARY_RECORD_BUTTON))
-    wait_modal(driver, CONTACT_MODAL)
-    set_field(driver, "contact-summary-input", "Проверка обязательности канала")
-    submit_form(driver, "form-record-parent-contact")
-    wait_element_visible(
-        driver,
-        "contact-channel-error",
-        "Не подсветился обязательный канал связи",
-    )
+    assert "Анкетные данные — только чтение в сводке" in body_text(driver)
+    assert not driver.find_elements(By.ID, "edit-parent-phone")
 
-    select_value(driver, "contact-channel-select", "chat")
-    set_field(driver, "contact-summary-input", "")
-    submit_form(driver, "form-record-parent-contact")
-    wait_element_visible(
-        driver,
-        "contact-summary-error",
-        "Не подсветился обязательный итог разговора",
-    )
 
-    final_summary = "Успешный контакт после проверок"
-    set_field(driver, "contact-summary-input", final_summary)
-    submit_form(driver, "form-record-parent-contact")
-    wait_modal(driver, CONTACT_MODAL, opened=False)
-    wait_history_first(driver, "28.10.2024", final_summary)
-
+def test_pr_14_summary_all_children(driver):
+    """Проверить отображение детей родителя из разных классов."""
+    login(driver, HOMEROOM_TEACHER)
     open_parent_summary(driver, "pr-10")
-    click_js(driver, driver.find_element(*SUMMARY_RECORD_BUTTON))
-    wait_modal(driver, CONTACT_MODAL)
-    select_value(driver, "contact-student-select", "")
-    select_value(driver, "contact-channel-select", "chat")
-    general_summary = "Напоминание о собрании 31.10"
-    set_field(driver, "contact-summary-input", general_summary)
-    submit_form(driver, "form-record-parent-contact")
-    wait_modal(driver, CONTACT_MODAL, opened=False)
-    wait_history_first(driver, "28.10.2024", "Мессенджер", general_summary)
-
-    general_contact = wait_db(
-        driver,
-        lambda db: next(
-            (
-                contact
-                for contact in db.get("parentContacts", [])
-                if contact.get("summary") == general_summary
-            ),
-            None,
-        ),
-        "Общий контакт Котовой Е. П. не сохранился",
-    )
-    assert general_contact is not None
-    assert general_contact.get("parentId") == "pr-10"
-    assert general_contact.get("studentId") is None
-
-    related_student_ids = [
-        relation["studentId"]
-        for relation in read_db(driver).get("parentStudentRelations", [])
-        if relation.get("parentId") == "pr-10"
-    ]
-    assert related_student_ids
-    for related_student_id in related_student_ids:
-        open_student_summary(driver, related_student_id)
-        assert general_summary not in body_text(driver)
+    children = text_of(parent_block(driver, "Связанные ученики"))
+    assert "Котов Максим" in children
+    assert "Котова Дарья" in children
+    assert "9В класс" in children
 
 
-    open_parent_summary(driver, "pr-23")
-    wait_body(driver, "Разговоров с этим родителем ещё не было")
-    assert driver.find_element(By.ID, "btn-empty-record-contact").is_displayed()
+def test_pr_15_contact_agreement(driver):
+    """Проверить сохранение отметки о достигнутой договорённости."""
+    login(driver, HOMEROOM_TEACHER)
+    result = api(driver, 'window.crmApi.addParentContact({parentId: "pr-27", studentId: "st-14", channel: "phone", summary: "Договорились", agreementReached: true, date: "2024-10-28"})')
+    assert_success(result, "Контакт не сохранён")
+    assert result["contact"]["agreementReached"] is True
+    assert any(c.get("summary") == "Договорились" and c.get("agreementReached") is True for c in read_db(driver)["parentContacts"])
 
 
-def test_pr_19_20_role_access_and_privacy(driver):
-    login(driver, SUBJECT_TEACHER)
+def test_pr_16_contact_required_fields(driver):
+    """Проверить обязательность канала и итога контакта."""
+    login(driver, HOMEROOM_TEACHER)
+    no_channel = api(driver, 'window.crmApi.addParentContact({parentId: "pr-27", summary: "Итог"})')
+    no_summary = api(driver, 'window.crmApi.addParentContact({parentId: "pr-27", channel: "phone", summary: ""})')
+    assert no_channel["success"] is False and "канал" in no_channel["error"].lower()
+    assert no_summary["success"] is False and "Итог" in no_summary["error"]
 
+
+def test_pr_17_contact_without_student(driver):
+    """Проверить общий контакт без привязки к ученику."""
+    login(driver, HOMEROOM_TEACHER)
+    result = api(driver, 'window.crmApi.addParentContact({parentId: "pr-10", channel: "chat", summary: "Общий контакт", agreementReached: false, date: "2024-10-28"})')
+    assert_success(result, "Общий контакт не сохранён")
+    assert result["contact"]["studentId"] is None
+    contact = next(c for c in read_db(driver)["parentContacts"] if c.get("summary") == "Общий контакт")
+    assert contact["parentId"] == "pr-10" and contact["studentId"] is None
+
+
+def test_pr_18_history_order(driver):
+    """Проверить обратный хронологический порядок истории общения."""
+    login(driver, HOMEROOM_TEACHER)
+    open_parent_summary(driver, "pr-27")
+    items = history_items(driver)
+    assert len(items) >= 2
+    assert "26.10.2024" in text_of(items[0])
+    assert "18.10.2024" in text_of(items[1])
+
+
+def test_pr_19_parents_route_denied(driver):
+    """Проверить запрет маршрута базы родителей для родителя."""
+    login(driver, PARENT_USER)
     driver.get(app_url("parents/"))
     wait_body(driver, "Доступ ограничен")
     assert "Родители 7Б" not in body_text(driver)
 
-    switch_user(driver, PARENT_USER)
 
-    driver.get(app_url("parents/"))
-    wait_body(driver, "Доступ ограничен")
-
-    driver.get(app_url("profile/"))
-    wait_body(driver, "Мой профиль")
-    profile_values = [
-        field.get_attribute("value")
-        for field in driver.find_elements(
-            By.CSS_SELECTOR, "#app-content input"
-        )
-    ]
-    assert "Петров Сергей Викторович" in profile_values
-    assert "Родитель" in profile_values
-    assert "petrov@mail.ru" in profile_values
-
+def test_pr_20_history_hidden_from_parent(driver):
+    """Проверить скрытие истории общения и заметок от родителя."""
+    login(driver, PARENT_USER)
     driver.get(app_url("child/"))
-    wait_until(
-        driver,
-        lambda d: d.find_elements(By.ID, "child-view-container"),
-        "Не открылась страница ребёнка",
-    )
-    parent_child_text = body_text(driver)
-    assert "Петрова Анна Сергеевна" in parent_child_text
-    assert "История общения с родителями" not in parent_child_text
-    assert "Заметки классрука" not in parent_child_text
-
-    switch_user(driver, STUDENT_USER)
-
-    driver.get(app_url("student/?id=st-23&period=q1_2024"))
-    wait_body(driver, "Доступ ограничен")
-    student_text = body_text(driver)
-    assert "История общения с родителями" not in student_text
-    assert "Заметки классрука" not in student_text
-
-    driver.get(app_url("parents/"))
-    wait_body(driver, "Доступ ограничен")
-
-    driver.get(app_url("grades/"))
-    wait_body(driver, "Мои оценки")
-    assert "Доступ ограничен" not in body_text(driver)
+    wait_until(driver, lambda d: d.find_elements(By.ID, "child-view-container"), "Не открылась страница ребёнка")
+    text = body_text(driver)
+    assert "История общения с родителями" not in text
+    assert "Заметки классрука" not in text

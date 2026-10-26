@@ -3,7 +3,7 @@
  * Подтверждение причин отсутствия (одиночное и массовое, «Справка» закрывает несколько дней), пересчёт счётчика неподтверждённых пропусков, комментарии предметника и классрука к записям журнала.
  */
 
-import { getDB, saveDB } from "./storage.js";
+import { getDB, getCurrentUser, saveDB } from "./storage.js";
 
 /**
  * Подтверждение пропуска урока (БП «Посещаемость: подтверждение пропусков»)
@@ -11,6 +11,15 @@ import { getDB, saveDB } from "./storage.js";
  * @param {Object} data { status: 'excused' | 'unexcused', reason, document, confirmedBy }
  */
 export function confirmAbsenceRecord(recordId, data = {}) {
+  const currentUser = getCurrentUser();
+  if (!currentUser || currentUser.role !== "teacher") {
+    return {
+      success: false,
+      error:
+        "Действие недоступно для вашей роли. Подтвердить причину пропуска может только классный руководитель.",
+    };
+  }
+
   const db = getDB();
   const record = (db.attendance || []).find((a) => a.id === recordId);
   if (!record) {
@@ -52,6 +61,16 @@ export function confirmAbsenceRecord(recordId, data = {}) {
  * Массовое подтверждение пропусков (например, за несколько уроков по одной справке)
  */
 export function batchConfirmAbsences(recordIds, data = {}) {
+  const currentUser = getCurrentUser();
+  if (!currentUser || currentUser.role !== "teacher") {
+    return {
+      success: false,
+      error:
+        "Действие недоступно для вашей роли. Подтвердить причины пропусков может только классный руководитель.",
+      updatedCount: 0,
+    };
+  }
+
   const db = getDB();
   const idsSet = new Set(recordIds);
   let updatedCount = 0;

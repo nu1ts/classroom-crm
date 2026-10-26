@@ -1,0 +1,70 @@
+{
+  "task": "task-04-role-navigation",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-RM-11",
+      "expectFail": ["test_rm_01_admin_navigation"],
+      "patches": [
+        {
+          "file": "src/config/navigation.js",
+          "find": "      {\n        id: \"nav-workload\",\n        title: \"Нагрузка\",\n        path: \"/workload\",\n        icon: \"briefcase\",\n      },\n",
+          "replace": ""
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-RM-02",
+      "expectFail": ["test_rm_02_teacher_navigation"],
+      "patches": [
+        {
+          "file": "src/config/navigation.js",
+          "find": "      {\n        id: \"nav-schedule\",\n        title: \"Расписание\",\n        path: \"/schedule\",\n        icon: \"calendar\",\n      },\n      { id: \"nav-parents\", title: \"Родители\", path: \"/parents\", icon: \"heart\" },",
+          "replace": "      {\n        id: \"nav-schedule\",\n        title: \"Расписание\",\n        path: \"/schedule\",\n        icon: \"calendar\",\n      },\n      { id: \"nav-directories\", title: \"Справочники\", path: \"/directories\", icon: \"book\" },\n      { id: \"nav-workload\", title: \"Нагрузка\", path: \"/workload\", icon: \"briefcase\" },\n      { id: \"nav-parents\", title: \"Родители\", path: \"/parents\", icon: \"heart\" },"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-RM-12",
+      "expectFail": ["test_rm_03_subject_teacher_navigation"],
+      "patches": [
+        {
+          "file": "src/config/navigation.js",
+          "find": "      {\n        id: \"nav-analytics\",\n        title: \"Аналитика\",\n        path: \"/analytics\",\n        icon: \"chart-bar\",\n      },\n    ],\n    allowedRoutes: [\n      \"/classes\",",
+          "replace": "      {\n        id: \"nav-analytics\",\n        title: \"Аналитика\",\n        path: \"/analytics\",\n        icon: \"chart-bar\",\n      },\n      { id: \"nav-meetings\", title: \"Собрания\", path: \"/meetings\", icon: \"users-group\" },\n      { id: \"nav-announcements\", title: \"Объявления\", path: \"/announcements\", icon: \"megaphone\" },\n    ],\n    allowedRoutes: [\n      \"/classes\","
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-RM-13",
+      "expectFail": ["test_rm_04_parent_navigation"],
+      "patches": [
+        {
+          "file": "src/config/navigation.js",
+          "find": "      {\n        id: \"nav-announcements\",\n        title: \"Объявления\",\n        path: \"/announcements\",\n        icon: \"megaphone\",\n      },\n    ],\n    allowedRoutes: [\"/child\", \"/schedule\", \"/announcements\", \"/profile\"],",
+          "replace": "      {\n        id: \"nav-announcements\",\n        title: \"Объявления\",\n        path: \"/announcements\",\n        icon: \"megaphone\",\n      },\n      { id: \"nav-meetings\", title: \"Собрания\", path: \"/meetings\", icon: \"users-group\" },\n    ],\n    allowedRoutes: [\"/child\", \"/schedule\", \"/announcements\", \"/meetings\", \"/profile\"],"
+        },
+        {
+          "file": "src/views/meetings/render.js",
+          "find": "  return `\n    <div id=\"meetings-view\" class=\"max-w-6xl mx-auto space-y-6 pb-12 animate-fadeIn\">",
+          "replace": "  const parentMeetingControls = currentUser?.role === \"parent\"\n    ? \"<button id=\\\"btn-create-meeting\\\">Создать собрание</button><button class=\\\"btn-mark-attendance\\\">Отметить явку</button>\"\n    : \"\";\n\n  return `\n    <div id=\"meetings-view\" class=\"max-w-6xl mx-auto space-y-6 pb-12 animate-fadeIn\">\n      ${parentMeetingControls}"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-RM-10",
+      "expectFail": ["test_rm_05_student_navigation"],
+      "patches": [
+        {
+          "file": "src/config/navigation.js",
+          "find": "      {\n        id: \"nav-schedule\",\n        title: \"Расписание\",\n        path: \"/schedule\",\n        icon: \"calendar\",\n      },\n      { id: \"nav-grades\", title: \"Оценки\", path: \"/grades\", icon: \"award\" },",
+          "replace": "      { id: \"nav-child\", title: \"Ребёнок\", path: \"/child\", icon: \"user\" },\n      {\n        id: \"nav-schedule\",\n        title: \"Расписание\",\n        path: \"/schedule\",\n        icon: \"calendar\",\n      },\n      { id: \"nav-grades\", title: \"Оценки\", path: \"/grades\", icon: \"award\" },"
+        }
+      ]
+    }
+  ]
+}
