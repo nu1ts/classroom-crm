@@ -1,0 +1,117 @@
+{
+  "task": "task-13-parents-contacts",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-PR-05",
+      "expectFail": [
+        "test_pr_01_02_list_and_phone_search"
+      ],
+      "patches": [
+        {
+          "file": "src/views/parents/list.js",
+          "find": "      if (!matchName && !matchPhone) {",
+          "replace": "      if (!matchName) {"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-PR-03",
+      "expectFail": [
+        "test_pr_03_04_05_filter_add_and_phone_validation"
+      ],
+      "patches": [
+        {
+          "file": "src/views/parents/list.js",
+          "find": "      if (!phone) {\n        if (pPhoneError) pPhoneError.classList.remove(\"hidden\");",
+          "replace": "      if (false && !phone) {\n        if (pPhoneError) pPhoneError.classList.remove(\"hidden\");"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-PR-04",
+      "expectFail": [
+        "test_pr_06_07_edit_phone_single_record"
+      ],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "  if (data.phone !== undefined) {\n    parent.phone = data.phone.trim();\n  }",
+          "replace": "  if (data.phone !== undefined) {\n    parent.phone = parent.phone;\n  }"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-PR-01",
+      "expectFail": [
+        "test_pr_08_09_link_and_primary_contact"
+      ],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "  if (isPrimary) {\n    db.parentStudentRelations.forEach((r) => {\n      if (r.studentId === studentId) {\n        r.isPrimary = false;\n      }\n    });\n  }",
+          "replace": "  if (false && isPrimary) {\n    db.parentStudentRelations.forEach((r) => {\n      if (r.studentId === studentId) {\n        r.isPrimary = false;\n      }\n    });\n  }"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-PR-06",
+      "expectFail": [
+        "test_pr_10_11_12_unlink_and_delete_rules"
+      ],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "  } else {\n    db.parentStudentRelations = db.parentStudentRelations.filter(\n      (r) => r.parentId !== parentId,\n    );\n  }\n\n  saveDB(db);\n  return { success: true };\n}",
+          "replace": "  } else {\n    db.parentStudentRelations = db.parentStudentRelations.filter(\n      (r) => r.parentId !== parentId,\n    );\n  }\n\n  db.parents = (db.parents || []).filter((p) => p.id !== parentId);\n  db.parentContacts = (db.parentContacts || []).filter(\n    (c) => c.parentId !== parentId,\n  );\n\n  saveDB(db);\n  return { success: true };\n}"
+        }
+      ]
+    },
+    {
+      "folder": 7,
+      "bug": "BUG-PR-16",
+      "expectFail": [
+        "test_pr_13_14_parent_summary_children"
+      ],
+      "patches": [
+        {
+          "file": "src/views/parents/summary.js",
+          "find": "  if (parent.otherChildren && parent.otherChildren.length > 0) {",
+          "replace": "  if (false && parent.otherChildren && parent.otherChildren.length > 0) {"
+        }
+      ]
+    },
+    {
+      "folder": 8,
+      "bug": "BUG-PR-19",
+      "expectFail": [
+        "test_pr_15_16_17_18_contacts_history"
+      ],
+      "patches": [
+        {
+          "file": "src/views/parents/summary.js",
+          "find": "    return dtB.localeCompare(dtA);",
+          "replace": "    return dtA.localeCompare(dtB);"
+        }
+      ]
+    },
+    {
+      "folder": 9,
+      "bug": "BUG-PR-20",
+      "expectFail": [
+        "test_pr_19_20_role_access_and_privacy"
+      ],
+      "patches": [
+        {
+          "file": "src/config/navigation.js",
+          "find": "    allowedRoutes: [\"/child\", \"/schedule\", \"/announcements\", \"/profile\"],",
+          "replace": "    allowedRoutes: [\n      \"/child\",\n      \"/schedule\",\n      \"/announcements\",\n      \"/parents\",\n      \"/profile\",\n    ],"
+        }
+      ]
+    }
+  ]
+}
