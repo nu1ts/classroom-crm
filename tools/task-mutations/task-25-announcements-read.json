@@ -1,0 +1,68 @@
+{
+  "task": "task-25-announcements-read",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-AN-02",
+      "expectFail": [
+        "test_an_06_parent_student_see",
+        "test_an_09_read_counter"
+      ],
+      "patches": [
+        {
+          "file": "src/services/announcements-ops.js",
+          "find": "  const list = (db.announcements || []).filter(\n    (a) =>",
+          "replace": "  const currentUser = getCurrentUser();\n  const list = (db.announcements || []).filter(\n    (a) =>\n      (!currentUser || currentUser.role !== \"parent\") &&"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-AN-03",
+      "expectFail": ["test_an_06_parent_student_see"],
+      "patches": [
+        {
+          "file": "src/services/announcements-ops.js",
+          "find": "      familyKey = currentUser.childStudentId;",
+          "replace": "      familyKey = userIdentifier;"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-AN-09",
+      "expectFail": ["test_an_08_publish_from_meeting"],
+      "patches": [
+        {
+          "file": "src/services/announcements-ops.js",
+          "find": "    classId: classId,\n    target: \"all\",",
+          "replace": "    classId: classId,\n    meetingId: \"mt-01\",\n    target: \"all\","
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-AN-10",
+      "expectFail": ["test_an_09_read_counter"],
+      "patches": [
+        {
+          "file": "src/services/announcements-ops.js",
+          "find": "  if (!item.readBy.includes(familyKey) && !item.readBy.includes(userIdentifier)) {\n    item.readBy.push(familyKey);\n    item.readCount = Math.min(item.totalCount || 28, item.readBy.length);",
+          "replace": "  if (true) {\n    item.readBy.push(familyKey);\n    item.readCount = (item.readCount || 0) + 1;"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-AN-11",
+      "expectFail": ["test_an_10_empty_state"],
+      "patches": [
+        {
+          "file": "src/views/announcements/render.js",
+          "find": "        announcements.length === 0\n          ? `",
+          "replace": "        announcements.length === 0 && announcements[0].title\n          ? `"
+        }
+      ]
+    }
+  ]
+}

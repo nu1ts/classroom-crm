@@ -1,0 +1,65 @@
+{
+  "task": "task-28-subject-averages-risk",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-BP-17",
+      "expectFail": ["test_bp_11_absences_breakdown"],
+      "patches": [
+        {
+          "file": "src/views/analytics/render.js",
+          "find": "  let periodAbsences = (db.attendance || []).filter(\n    (a) => a.value === \"absent\" && scopedLessonIds.has(a.lessonId),\n  );",
+          "replace": "  let periodAbsences = (db.attendance || []).filter(\n    (a) => a.value === \"absent\" && scopedLessonIds.has(a.lessonId),\n  );\n  periodAbsences = periodAbsences.concat(\n    (db.attendance || []).filter(\n      (a) =>\n        a.value === \"absent\" &&\n        a.status === \"confirmed\" &&\n        scopedLessonIds.has(a.lessonId),\n    ),\n  );"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-BP-18",
+      "expectFail": ["test_bp_12_subject_average_threshold"],
+      "patches": [
+        {
+          "file": "src/views/analytics/render.js",
+          "find": "            <span class=\"text-xs text-rose-600 font-medium\">Порог зоны риска: 3.5</span>",
+          "replace": "            <span class=\"text-xs text-rose-600 font-medium\"></span>"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-BP-19",
+      "expectFail": ["test_bp_13_risk_by_absences"],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "      attStats.absenceRate > absenceThreshold",
+          "replace": "      attStats.attendanceRate > 80"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-BP-20",
+      "expectFail": ["test_bp_14_risk_by_average"],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "    if (overallAvg !== null && overallAvg < gradeThreshold) {",
+          "replace": "    if (\n      attStats.absenceRate !== null &&\n      attStats.absenceRate > absenceThreshold &&\n      overallAvg !== null &&\n      overallAvg < gradeThreshold\n    ) {"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-BP-21",
+      "expectFail": ["test_bp_15_risk_both_reasons"],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  return riskStudents;",
+          "replace": "  return riskStudents.flatMap((student) => {\n    const hasAbsence = student.reasons.some((reason) => reason.type === \"absence\");\n    const hasGrade = student.reasons.some((reason) =>\n      [\"overall_grade\", \"subject_grade\"].includes(reason.type),\n    );\n    if (!hasAbsence || !hasGrade) {\n      return [student];\n    }\n    return [\n      { ...student, reasons: student.reasons.filter((reason) => reason.type === \"absence\") },\n      { ...student, reasons: student.reasons.filter((reason) => reason.type !== \"absence\") },\n    ];\n  });"
+        }
+      ]
+    }
+  ]
+}

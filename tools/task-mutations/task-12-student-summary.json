@@ -1,0 +1,132 @@
+{
+  "task": "task-12-student-summary",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-OV-11",
+      "expectFail": [
+        "test_ov_12_summary_content"
+      ],
+      "patches": [
+        {
+          "file": "src/views/student-summary/render.js",
+          "find": "              <div class=\"text-[11px] text-slate-400 mt-1\">${studentAbsences.length} уроков за период</div>\n",
+          "replace": ""
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-OV-15",
+      "expectFail": [
+        "test_ov_13_subject_threshold_highlight"
+      ],
+      "patches": [
+        {
+          "file": "src/views/student-summary/render.js",
+          "find": "                  const isSubRisk = sub.average !== null && sub.average < 3.5;",
+          "replace": "                  const isSubRisk =\n                    overallAverage !== null && overallAverage < 3.5;"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-OV-16",
+      "expectFail": [
+        "test_ov_14_last_absences_details"
+      ],
+      "patches": [
+        {
+          "file": "src/views/student-summary/render.js",
+          "find": "                    const isAllConfirmed = records.every(\n                      (r) =>\n                        r.record.status === \"confirmed\" ||\n                        r.record.status === \"excused\",\n                    );",
+          "replace": "                    const isAllConfirmed = false;"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-OV-17",
+      "expectFail": [
+        "test_ov_15_notes_persisted"
+      ],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "  db.notes.unshift(newNote);\n  saveDB(db);\n\n  return { success: true, note: newNote };",
+          "replace": "  db.notes.unshift(newNote);\n\n  return { success: true, note: newNote };"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-OV-18",
+      "expectFail": [
+        "test_ov_16_contact_history_order"
+      ],
+      "patches": [
+        {
+          "file": "src/views/student-summary/render.js",
+          "find": "  const contactsHistory = [...rawContacts].sort((a, b) => {\n    const dtA = `${a.date || \"\"} ${a.time || \"\"}`;\n    const dtB = `${b.date || \"\"} ${b.time || \"\"}`;\n    return dtB.localeCompare(dtA);\n  });",
+          "replace": "  const contactsHistory = [...rawContacts].sort((a, b) => {\n    const dtA = `${a.date || \"\"} ${a.time || \"\"}`;\n    const dtB = `${b.date || \"\"} ${b.time || \"\"}`;\n    return dtA.localeCompare(dtB);\n  });"
+        }
+      ]
+    },
+    {
+      "folder": 7,
+      "bug": "BUG-OV-08",
+      "expectFail": [
+        "test_ov_17_summary_read_only"
+      ],
+      "patches": [
+        {
+          "file": "src/views/student-summary/render.js",
+          "find": "              ${\n                !isOtherClassStudent\n                  ? `\n                <button type=\"button\" id=\"btn-open-contact-modal\"",
+          "replace": "              ${\n                true\n                  ? `\n                <button type=\"button\" id=\"btn-open-contact-modal\""
+        },
+        {
+          "file": "src/views/student-summary/render.js",
+          "find": "              ${\n                !isOtherClassStudent\n                  ? `\n                <button type=\"button\" id=\"btn-open-note-modal\"",
+          "replace": "              ${\n                true\n                  ? `\n                <button type=\"button\" id=\"btn-open-note-modal\""
+        }
+      ]
+    },
+    {
+      "folder": 8,
+      "bug": "BUG-OV-09",
+      "expectFail": [
+        "test_ov_18_parent_child_summary"
+      ],
+      "patches": [
+        {
+          "file": "src/views/child/render.js",
+          "find": "          <div id=\"child-meetings-section\" class=\"bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90 space-y-4\">",
+          "replace": "          <div id=\"child-notes-section\" class=\"bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90 space-y-4\">\n            <h3 class=\"text-base font-bold text-slate-900\">Заметки классрука</h3>\n            ${(db.notes || [])\n              .filter((n) => n.studentId === student.id)\n              .map(\n                (n) =>\n                  '<div class=\"p-4 rounded-2xl bg-slate-50/60 border border-slate-200/80\"><p class=\"text-xs text-slate-800 font-medium\">' +\n                  n.text +\n                  '</p></div>',\n              )\n              .join(\"\")}\n          </div>\n\n          <div id=\"child-meetings-section\" class=\"bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90 space-y-4\">"
+        }
+      ]
+    },
+    {
+      "folder": 9,
+      "bug": "BUG-OV-19",
+      "expectFail": [
+        "test_ov_19_student_and_parent_summary_denied"
+      ],
+      "patches": [
+        {
+          "file": "src/config/navigation.js",
+          "find": "    allowedRoutes: [\"/child\", \"/schedule\", \"/announcements\", \"/profile\"],",
+          "replace": "    allowedRoutes: [\"/child\", \"/student\", \"/schedule\", \"/announcements\", \"/profile\"],"
+        },
+        {
+          "file": "src/config/navigation.js",
+          "find": "    allowedRoutes: [\"/schedule\", \"/grades\", \"/announcements\", \"/profile\"],",
+          "replace": "    allowedRoutes: [\"/student\", \"/schedule\", \"/grades\", \"/announcements\", \"/profile\"],"
+        },
+        {
+          "file": "src/router.js",
+          "find": "    } else if (!isRouteAllowedForRole(user.role, path)) {\n      activePath = \"/forbidden\";\n    }",
+          "replace": "    } else if (!isRouteAllowedForRole(user.role, path) && path !== \"/student\") {\n      activePath = \"/forbidden\";\n    }"
+        }
+      ]
+    }
+  ]
+}

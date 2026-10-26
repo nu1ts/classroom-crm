@@ -135,33 +135,58 @@ export function calculateStudentAverage(grades, studentId, options = {}) {
 }
 
 /**
- * Расчёт среднего балла класса за период
- * Считается по ВСЕМ оценкам класса (сумма / количество оценок), НЕ как среднее из средних учеников!
+ * Отбирает оценки класса и периода. Для записей оценок без classId класс
+ * определяется по карточке ученика, поэтому чужие оценки не попадают в отчёт.
  * @param {Array} grades
- * @param {Object} options { periodId, dateFrom, dateTo, subjectId }
+ * @param {Object} options { classId, students, periodId, dateFrom, dateTo, subjectId }
+ * @returns {Array}
+ */
+export function filterGrades(grades, options = {}) {
+  let filtered = grades || [];
+
+  if (options.classId) {
+    const classStudentIds = new Set(
+      (options.students || [])
+        .filter((student) => (student.classId || "class-7b") === options.classId)
+        .map((student) => student.id),
+    );
+    filtered = filtered.filter(
+      (grade) =>
+        grade.classId === options.classId ||
+        (classStudentIds.size > 0 && classStudentIds.has(grade.studentId)),
+    );
+  }
+  if (options.subjectId) {
+    filtered = filtered.filter((grade) => grade.subjectId === options.subjectId);
+  }
+  if (options.periodId) {
+    filtered = filtered.filter((grade) => grade.periodId === options.periodId);
+  }
+  if (options.dateFrom) {
+    filtered = filtered.filter((grade) => grade.date >= options.dateFrom);
+  }
+  if (options.dateTo) {
+    filtered = filtered.filter((grade) => grade.date <= options.dateTo);
+  }
+  return filtered;
+}
+
+/**
+ * Расчёт среднего балла класса за период.
+ * Считается по всем оценкам выбранного класса (сумма / количество), а не как
+ * среднее из средних учеников.
+ * @param {Array} grades
+ * @param {Object} options { classId, students, periodId, dateFrom, dateTo, subjectId }
  * @returns {number|null}
  */
 export function calculateClassAverage(grades, options = {}) {
-  let filtered = grades || [];
-
-  if (options.subjectId) {
-    filtered = filtered.filter((g) => g.subjectId === options.subjectId);
-  }
-  if (options.periodId) {
-    filtered = filtered.filter((g) => g.periodId === options.periodId);
-  }
-  if (options.dateFrom) {
-    filtered = filtered.filter((g) => g.date >= options.dateFrom);
-  }
-  if (options.dateTo) {
-    filtered = filtered.filter((g) => g.date <= options.dateTo);
-  }
+  const filtered = filterGrades(grades, options);
 
   if (filtered.length === 0) {
     return null;
   }
 
-  const sum = filtered.reduce((acc, g) => acc + g.value, 0);
+  const sum = filtered.reduce((acc, grade) => acc + grade.value, 0);
   return roundToOneDecimal(sum / filtered.length);
 }
 
@@ -169,24 +194,25 @@ export function calculateClassAverage(grades, options = {}) {
  * Расчёт средних баллов класса по каждому предмету за период
  * @param {Array} grades
  * @param {Array} subjects
- * @param {Object} options { periodId, dateFrom, dateTo, threshold = 3.5 }
+ * @param {Object} options { classId, students, periodId, dateFrom, dateTo, threshold = 3.5 }
  * @returns {Array} Массив предметов со средними баллами и флагом выхода за порог
  */
 export function calculateSubjectAverages(grades, subjects, options = {}) {
   const threshold = options.threshold ?? 3.5;
 
   return (subjects || []).map((subj) => {
-    const avg = calculateClassAverage(grades, {
+    const subjectGrades = filterGrades(grades, {
       ...options,
       subjectId: subj.id,
     });
-    const count = (grades || []).filter((g) => {
-      let match = g.subjectId === subj.id;
-      if (options.periodId) match = match && g.periodId === options.periodId;
-      if (options.dateFrom) match = match && g.date >= options.dateFrom;
-      if (options.dateTo) match = match && g.date <= options.dateTo;
-      return match;
-    }).length;
+    const avg =
+      subjectGrades.length > 0
+        ? roundToOneDecimal(
+            subjectGrades.reduce((sum, grade) => sum + grade.value, 0) /
+              subjectGrades.length,
+          )
+        : null;
+    const count = subjectGrades.length;
 
     return {
       id: subj.id,
@@ -544,7 +570,8 @@ export function generateClassReport(dataset, options = {}) {
     ...options,
   };
 
-  const classAvg = calculateClassAverage(dataset.grades, periodOptions);
+  const reportOptions = { ...periodOptions, students: dataset.students };
+  const classAvg = calculateClassAverage(dataset.grades, reportOptions);
   const classAtt = calculateClassAttendance(
     dataset.lessons,
     dataset.attendance,
@@ -553,7 +580,7 @@ export function generateClassReport(dataset, options = {}) {
   const subjectAverages = calculateSubjectAverages(
     dataset.grades,
     dataset.subjects,
-    periodOptions,
+    reportOptions,
   );
   const riskZone = getRiskZoneStudents(
     dataset.students,
@@ -561,7 +588,7 @@ export function generateClassReport(dataset, options = {}) {
     dataset.attendance,
     dataset.grades,
     dataset.subjects,
-    periodOptions,
+    reportOptions,
   );
   const unconfirmed = getUnconfirmedAbsences(
     dataset.attendance,

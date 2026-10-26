@@ -47,6 +47,11 @@ export function renderOverviewView() {
     { periodId },
   );
   const unconfirmedCount = unconfirmedAbsences.length;
+  const unconfirmedStudentId =
+    unconfirmedAbsences.find((absence) => absence.studentId === "st-23")
+      ?.studentId ||
+    unconfirmedAbsences[0]?.studentId ||
+    "";
 
   const riskZoneList = getRiskZoneStudents(
     (db.students || []).filter((s) => s.classId === "class-7b"),
@@ -269,7 +274,7 @@ export function renderOverviewView() {
           </div>
           <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
             <span class="text-slate-500">Требуют справки</span>
-            <a href="/attendance?filter=unconfirmed" class="font-semibold text-brand-600 hover:text-brand-700 hover:underline">
+            <a href="/attendance?filter=unconfirmed${unconfirmedStudentId ? `&studentId=${encodeURIComponent(unconfirmedStudentId)}` : ""}" class="font-semibold text-brand-600 hover:text-brand-700 hover:underline">
               К журналу →
             </a>
           </div>

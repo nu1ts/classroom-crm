@@ -1,0 +1,108 @@
+{
+  "task": "task-23-meetings-attendance",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-MG-02",
+      "expectFail": ["test_mg_07_attendance_values"],
+      "patches": [
+        {
+          "file": "src/views/meetings/listeners.js",
+          "find": "                <option value=\"${ATTENDANCE_STATUSES.PRESENT}\" ${isPresent ? \"selected\" : \"\"}>Пришёл</option>\n                <option value=\"${ATTENDANCE_STATUSES.ABSENT}\" ${isAbsent ? \"selected\" : \"\"}>Не пришёл</option>\n                <option value=\"${ATTENDANCE_STATUSES.EXCUSED}\" ${isExcused ? \"selected\" : \"\"}>Уважительная причина</option>",
+          "replace": "                <option value=\"${ATTENDANCE_STATUSES.PRESENT}\" ${isPresent ? \"selected\" : \"\"}>Да</option>\n                <option value=\"${ATTENDANCE_STATUSES.ABSENT}\" ${isAbsent ? \"selected\" : \"\"}>Нет</option>\n                <option value=\"${ATTENDANCE_STATUSES.EXCUSED}\" ${isExcused ? \"selected\" : \"\"}>Не ответил</option>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-MG-04",
+      "expectFail": ["test_mg_08_absence_reason_required"],
+      "patches": [
+        {
+          "file": "src/services/meetings-ops.js",
+          "find": "    if (\n      (status === ATTENDANCE_STATUSES.ABSENT || status === ATTENDANCE_STATUSES.EXCUSED) &&\n      !note\n    ) {",
+          "replace": "    if (\n      false &&\n      (status === ATTENDANCE_STATUSES.ABSENT || status === ATTENDANCE_STATUSES.EXCUSED) &&\n      !note\n    ) {",
+          "count": 1
+        },
+        {
+          "file": "src/views/meetings/listeners.js",
+          "find": "        if (\n          (status === ATTENDANCE_STATUSES.ABSENT || status === ATTENDANCE_STATUSES.EXCUSED) &&\n          !note\n        ) {",
+          "replace": "        if (\n          false &&\n          (status === ATTENDANCE_STATUSES.ABSENT || status === ATTENDANCE_STATUSES.EXCUSED) &&\n          !note\n        ) {",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-MG-01",
+      "expectFail": ["test_mg_09_future_attendance_blocked"],
+      "patches": [
+        {
+          "file": "src/services/meetings-ops.js",
+          "find": "export function canMarkAttendance(meeting) {\n  if (!meeting) return false;\n  if (meeting.status === \"completed\") return true;\n  // Собрание прошло или идёт сегодня (date <= DEMO_TODAY)\n  return meeting.date <= DEMO_TODAY;\n}",
+          "replace": "export function canMarkAttendance(meeting) {\n  return Boolean(meeting);\n}",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-MG-03",
+      "expectFail": ["test_mg_10_summary_realtime"],
+      "patches": [
+        {
+          "file": "src/services/meetings-ops.js",
+          "find": "    if (item.status === ATTENDANCE_STATUSES.PRESENT) {\n      presentCount++;\n    } else {",
+          "replace": "    if (item.status !== ATTENDANCE_STATUSES.PRESENT) {\n      presentCount++;\n    } else {",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-MG-06",
+      "expectFail": ["test_mg_10_summary_realtime"],
+      "patches": [
+        {
+          "file": "src/services/meetings-ops.js",
+          "find": "export function getMeetingSummary(meetingId) {\n  const attendance = getMeetingAttendance(meetingId);",
+          "replace": "export function getMeetingSummary(meetingId) {\n  const cacheKey = `meeting-summary-${meetingId}`;\n  const cached = sessionStorage.getItem(cacheKey);\n  if (cached) return JSON.parse(cached);\n  const attendance = getMeetingAttendance(meetingId);",
+          "count": 1
+        },
+        {
+          "file": "src/services/meetings-ops.js",
+          "find": "  return {\n    total,\n    presentCount,\n    absentCount,\n    excusedCount,\n    ratioText: `${presentCount} из ${total}`,\n    absentList,\n  };\n}",
+          "replace": "  const summary = {\n    total,\n    presentCount,\n    absentCount,\n    excusedCount,\n    ratioText: `${presentCount} из ${total}`,\n    absentList,\n  };\n  sessionStorage.setItem(cacheKey, JSON.stringify(summary));\n  return summary;\n}",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 7,
+      "bug": "BUG-MG-12",
+      "expectFail": ["test_mg_11_parent_meetings"],
+      "patches": [
+        {
+          "file": "src/views/child/render.js",
+          "find": "              <span class=\"text-xs text-slate-400 font-medium\">Только просмотр приглашений</span>",
+          "replace": "              <span class=\"text-xs text-slate-400 font-medium\">Явка: 24 из 28</span>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 8,
+      "bug": "BUG-MG-14",
+      "expectFail": ["test_mg_13_all_present_counter"],
+      "patches": [
+        {
+          "file": "src/services/meetings-ops.js",
+          "find": "  const updatedList = items.map((item) => {",
+          "replace": "  const updatedList = items.filter((item) => item.note).map((item) => {",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

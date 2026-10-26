@@ -1,0 +1,73 @@
+{
+  "task": "task-32-class-report",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-BP-32",
+      "expectFail": ["test_bp_31_report_period"],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "      periodId === \"q1_2024\" ? \"I четверть (02.09–25.10.2024)\" : periodId,",
+          "replace": "      periodId === \"q1_2024\" ? \"I четверть (02.09–30.09.2024)\" : periodId,"
+        },
+        {
+          "file": "src/views/analytics/render.js",
+          "find": "      title: \"I четверть (02.09–25.10.2024)\",",
+          "replace": "      title: \"I четверть (02.09–30.09.2024)\","
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-BP-05",
+      "expectFail": ["test_bp_32_report_not_cached"],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  const reportOptions = { ...periodOptions, students: dataset.students };\n  const classAvg = calculateClassAverage(dataset.grades, reportOptions);",
+          "replace": "  const cacheKey = `report-${periodId}-${periodOptions.classId}`;\n  const storedReports = typeof localStorage !== \"undefined\"\n    ? JSON.parse(localStorage.getItem(\"classroom_crm_db\") || \"{}\").classReports\n    : null;\n  if (storedReports?.[cacheKey]) {\n    return storedReports[cacheKey];\n  }\n\n  const reportOptions = { ...periodOptions, students: dataset.students };\n  const classAvg = calculateClassAverage(dataset.grades, reportOptions);"
+        },
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  return {\n    periodId,",
+          "replace": "  const report = {\n    periodId,"
+        },
+        {
+          "file": "src/mock/calculations.js",
+          "find": "    unconfirmedAbsences: unconfirmed,\n  };\n}\n\n/**\n * Расчёт отчёта по опросу родителей / согласиям",
+          "replace": "    unconfirmedAbsences: unconfirmed,\n  };\n  if (typeof localStorage !== \"undefined\") {\n    const storedDataset = JSON.parse(localStorage.getItem(\"classroom_crm_db\") || \"{}\");\n    storedDataset.classReports = storedDataset.classReports || {};\n    storedDataset.classReports[cacheKey] = report;\n    localStorage.setItem(\"classroom_crm_db\", JSON.stringify(storedDataset));\n  }\n  return report;\n}\n\n/**\n * Расчёт отчёта по опросу родителей / согласиям"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-BP-33",
+      "expectFail": ["test_bp_33_report_period_boundaries"],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  if (options.dateTo) {\n    result = result.filter((l) => l.date <= options.dateTo);\n  }",
+          "replace": "  if (options.dateTo) {\n    result = result.filter((l) => l.date < options.dateTo);\n  }"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-BP-35",
+      "expectFail": ["test_bp_35_teacher_own_class"],
+      "patches": [
+        {
+          "file": "src/views/analytics/render.js",
+          "find": "  if (currentUser?.role === \"teacher\") {\n    const allowedClassId = currentUser.classId || \"class-7b\";\n    if (\n      requestedClassId &&\n      resolveClassId(requestedClassId) !== allowedClassId\n    ) {\n      return renderForbiddenView();\n    }\n  }",
+          "replace": "  if (currentUser?.role === \"teacher\") {\n    const allowedClassId = currentUser.classId || \"class-7b\";\n  }"
+        },
+        {
+          "file": "src/views/analytics/render.js",
+          "find": "  const selectedClassId = isSubjectTeacher\n    ? resolveClassId(requestedClassId) || workload[0]?.classId\n    : currentUser?.classId || \"class-7b\";",
+          "replace": "  const selectedClassId = isSubjectTeacher\n    ? resolveClassId(requestedClassId) || workload[0]?.classId\n    : resolveClassId(requestedClassId) || currentUser?.classId || \"class-7b\";"
+        }
+      ]
+    }
+  ]
+}

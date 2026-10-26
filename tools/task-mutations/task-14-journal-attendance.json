@@ -1,0 +1,75 @@
+{
+  "task": "task-14-journal-attendance",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-TCH-06 — снятие отметки отсутствия блокируется до подтверждения причины",
+      "expectFail": [
+        "test_tch_07_unconfirmed_absence_can_be_removed"
+      ],
+      "patches": [
+        {
+          "file": "src/services/grades-ops.js",
+          "find": "  if (\n    existing &&\n    existing.value === \"absent\" &&\n    (existing.status === \"confirmed\" || existing.status === \"excused\" || existing.code === \"УП\" || existing.code === \"Б\")\n  ) {\n    return {\n      success: false,\n      error: \"Причина подтверждена классным руководителем. Изменение отметки заблокировано.\",\n      isLockedByHomeroom: true,\n    };\n  }",
+          "replace": "  if (\n    existing &&\n    existing.value === \"absent\" &&\n    (existing.status === \"confirmed\" || existing.status === \"excused\" || existing.code === \"УП\" || existing.code === \"Б\")\n  ) {\n    return {\n      success: false,\n      error: \"Причина подтверждена классным руководителем. Изменение отметки заблокировано.\",\n      isLockedByHomeroom: true,\n    };\n  }\n  if (\n    !isAbsent &&\n    existing &&\n    existing.value === \"absent\" &&\n    (existing.status === \"unconfirmed\" || existing.code === \"Н\")\n  ) {\n    return {\n      success: false,\n      error: \"Причина подтверждена классным руководителем. Изменение отметки заблокировано.\",\n      isLockedByHomeroom: true,\n    };\n  }"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-TCH-16 — сетка журнала не перерисовывается после подтверждения причины",
+      "expectFail": [
+        "test_tch_08_confirmed_absence_locked_and_grid_refreshed"
+      ],
+      "patches": [
+        {
+          "file": "src/views/journal/listeners.js",
+          "find": "      closeJournalConfirmModal();\n      closeModal();\n\n      const currentHash = \"/journal\" + (window.location.search || \"\");\n      if (onNavigate) {\n        onNavigate(currentHash);\n      } else {\n        window.location.reload();\n      }",
+          "replace": "      closeJournalConfirmModal();\n      closeModal();"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-TCH-04 — повторное сохранение вставляет новые записи вместо обновления",
+      "expectFail": [
+        "test_tch_10_bulk_absence_saved_without_duplicates"
+      ],
+      "patches": [
+        {
+          "file": "src/services/grades-ops.js",
+          "find": "    if (existing) {\n      existing.value = \"absent\";\n      existing.status = \"unconfirmed\";\n      existing.code = \"Н\";\n      existing.reason = null;\n    } else {\n      db.attendance.push({",
+          "replace": "    if (false) {\n      existing.value = \"absent\";\n      existing.status = \"unconfirmed\";\n      existing.code = \"Н\";\n      existing.reason = null;\n    } else {\n      db.attendance.push({"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-TCH-14 — под классным руководителем отметки присутствия доступны для правки",
+      "expectFail": [
+        "test_tch_14_homeroom_journal_is_read_only"
+      ],
+      "patches": [
+        {
+          "file": "src/views/journal/render.js",
+          "find": "            } else if (isUnconfirmed) {\n              cellContent = `\n                <span class=\"inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-lg bg-rose-50 text-rose-700 border border-rose-300 shadow-2xs\"\n                      title=\"Отсутствовал (причина не подтверждена, требуется справка)\">\n                  Н\n                </span>\n              `;",
+          "replace": "            } else if (isUnconfirmed) {\n              cellContent = `\n                <button type=\"button\"\n                        class=\"btn-toggle-absence inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-lg bg-rose-50 text-rose-700 border border-rose-300 shadow-2xs cursor-pointer\"\n                        data-lesson-id=\"${l.id}\"\n                        data-student-id=\"${s.id}\"\n                        data-status=\"unconfirmed\"\n                        title=\"Отсутствовал (нажмите, чтобы снять отметку)\">\n                  Н\n                </button>\n              `;"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-TCH-10 — фильтр «Показывать только записи» скрывает отметки о присутствии",
+      "expectFail": [
+        "test_tch_16_only_entries_filter_keeps_marks"
+      ],
+      "patches": [
+        {
+          "file": "src/views/journal/render.js",
+          "find": "            if (isExcused) {\n              cellContent = `\n                <span class=\"inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200/80 shadow-2xs\"\n                      title=\"Уважительная причина: ${att.reason || 'Болезнь / справка'}\">\n                  Б\n                </span>\n              `;\n            } else if (isUnconfirmed) {\n              cellContent = `\n                <span class=\"inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-lg bg-rose-50 text-rose-700 border border-rose-300 shadow-2xs\"\n                      title=\"Отсутствовал (причина не подтверждена, требуется справка)\">\n                  Н\n                </span>\n              `;",
+          "replace": "            if (isExcused) {\n              cellContent = filterOnlyEntries\n                ? '<span class=\"text-slate-300 font-light select-none\">·</span>'\n                : `\n                <span class=\"inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200/80 shadow-2xs\"\n                      title=\"Уважительная причина: ${att.reason || 'Болезнь / справка'}\">\n                  Б\n                </span>\n              `;\n            } else if (isUnconfirmed) {\n              cellContent = filterOnlyEntries\n                ? '<span class=\"text-slate-300 font-light select-none\">·</span>'\n                : `\n                <span class=\"inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-lg bg-rose-50 text-rose-700 border border-rose-300 shadow-2xs\"\n                      title=\"Отсутствовал (причина не подтверждена, требуется справка)\">\n                  Н\n                </span>\n              `;"
+        }
+      ]
+    }
+  ]
+}

@@ -14,18 +14,74 @@ export function renderAnalyticsView(options = {}) {
   const db = getDB();
   const currentUser = getCurrentUser();
   const searchParams = new URLSearchParams(window.location.search || "");
-  const requestedClassId = options.classId || options.class || searchParams.get("classId") || searchParams.get("class");
-  if (currentUser && currentUser.role === "teacher") {
+  const requestedClassId =
+    options.classId ||
+    options.class ||
+    searchParams.get("classId") ||
+    searchParams.get("class");
+  const requestedSubjectId =
+    options.subjectId || options.subject || searchParams.get("subjectId") || searchParams.get("subject");
+  const isSubjectTeacher = currentUser?.role === "subject_teacher";
+  const currentTeacher = isSubjectTeacher
+    ? (db.teachers || []).find(
+        (teacher) =>
+          teacher.accountUserId === currentUser.id ||
+          teacher.fullName === currentUser.personName ||
+          teacher.shortName === currentUser.shortName,
+      )
+    : null;
+  const workload = currentTeacher?.workload || [];
+  const resolveClassId = (classValue) => {
+    const classItem = (db.classes || []).find(
+      (item) =>
+        item.id === classValue ||
+        item.name.toLowerCase() === String(classValue || "").toLowerCase(),
+    );
+    return classItem?.id || classValue;
+  };
+  const selectedClassId = isSubjectTeacher
+    ? resolveClassId(requestedClassId) || workload[0]?.classId
+    : currentUser?.classId || "class-7b";
+  const classWorkload = isSubjectTeacher
+    ? workload.filter((item) => item.classId === selectedClassId)
+    : [];
+
+  if (currentUser?.role === "teacher") {
     const allowedClassId = currentUser.classId || "class-7b";
     if (
       requestedClassId &&
-      requestedClassId !== allowedClassId &&
-      requestedClassId !== "class-7b" &&
-      requestedClassId !== "7Б" &&
-      requestedClassId !== "7б"
+      resolveClassId(requestedClassId) !== allowedClassId
     ) {
       return renderForbiddenView();
     }
+  }
+  if (isSubjectTeacher && (!selectedClassId || classWorkload.length === 0)) {
+    return renderForbiddenView();
+  }
+
+  const allowedSubjectIds = new Set(classWorkload.map((item) => item.subjectId));
+  const selectedSubjectId = isSubjectTeacher && allowedSubjectIds.has(requestedSubjectId)
+    ? requestedSubjectId
+    : isSubjectTeacher
+      ? null
+      : requestedSubjectId || null;
+  const scopedSubjects = isSubjectTeacher
+    ? (db.subjects || []).filter((subject) =>
+        selectedSubjectId
+          ? subject.id === selectedSubjectId
+          : allowedSubjectIds.has(subject.id),
+      )
+    : db.subjects || [];
+  const isForeignSubjectRequested = isSubjectTeacher && Boolean(requestedSubjectId) && !selectedSubjectId;
+  if (isForeignSubjectRequested) {
+    return `
+      <div id="analytics-view" class="p-6 sm:p-8 max-w-7xl mx-auto">
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xs text-center">
+          <h1 class="text-base font-bold text-slate-900">Аналитика класса</h1>
+          <p class="mt-3 text-sm text-slate-500">Нет данных по выбранному предмету.</p>
+        </div>
+      </div>
+    `;
   }
   const periodId = options.periodId || "q1_2024";
   const showReport = options.showReport === true;
@@ -71,11 +127,16 @@ export function renderAnalyticsView(options = {}) {
   const currentPeriod = periodConfigs[periodId] || periodConfigs.q1_2024;
   const isHolidayOrEmpty = periodId === "holidays_nov_2024" || periodId === "q2_2024";
   const periodOptions = {
-    classId: "class-7b",
+    classId: selectedClassId,
+    students: db.students.filter(
+      (student) => (student.classId || "class-7b") === selectedClassId,
+    ),
+    subjectId: selectedSubjectId,
     periodId: isHolidayOrEmpty ? periodId : "q1_2024",
     dateFrom: currentPeriod.dateFrom,
     dateTo: currentPeriod.dateTo,
   };
+  const analyticsSubjects = scopedSubjects;
 
   const classAvg = calculateClassAverage(db.grades, periodOptions);
   const classAtt = calculateClassAttendance(
@@ -85,21 +146,21 @@ export function renderAnalyticsView(options = {}) {
   );
   const subjectAverages = calculateSubjectAverages(
     db.grades,
-    db.subjects,
+    analyticsSubjects,
     periodOptions,
   );
   const riskStudents = getRiskZoneStudents(
-    db.students,
+    periodOptions.students,
     db.lessons,
     db.attendance,
     db.grades,
-    db.subjects,
+    analyticsSubjects,
     periodOptions,
   );
 
   const criticalRisk = riskStudents.filter((r) => r.riskLevel === "critical");
   const moderateRisk = riskStudents.filter((r) => r.riskLevel !== "critical");
-  const totalStudentsCount = (db.students || []).length || 28;
+  const totalStudentsCount = periodOptions.students.length;
   const successCount = Math.max(0, totalStudentsCount - riskStudents.length);
 
   const weeklyGradePoints = [
@@ -110,16 +171,41 @@ export function renderAnalyticsView(options = {}) {
     { label: "Окт (Нед 2)", value: 4.2, heightPercent: 80 },
   ];
 
-  const report = generateClassReport(db, periodOptions);
+  const report = generateClassReport(
+    {
+      ...db,
+      students: periodOptions.students,
+      subjects: analyticsSubjects,
+    },
+    periodOptions,
+  );
+  const scopeLabel = isSubjectTeacher
+    ? classWorkload
+        .filter((item) => !selectedSubjectId || item.subjectId === selectedSubjectId)
+        .map((item) => item.subjectLabel)
+        .filter(Boolean)
+        .join(", ")
+    : null;
 
-  const weeklyAbsences = calculateWeeklyAbsences(db.lessons, db.attendance, {
-    periodId: "q1_2024",
-  });
+  const weeklyAbsences = calculateWeeklyAbsences(
+    db.lessons,
+    db.attendance,
+    periodOptions,
+  );
 
   const lessonMap = new Map((db.lessons || []).map((l) => [l.id, l]));
   const studentMap = new Map((db.students || []).map((s) => [s.id, s]));
+  const scopedLessonIds = new Set(
+    (db.lessons || [])
+      .filter(
+        (lesson) =>
+          (lesson.classId || "class-7b") === selectedClassId &&
+          (!selectedSubjectId || lesson.subjectId === selectedSubjectId),
+      )
+      .map((lesson) => lesson.id),
+  );
   let periodAbsences = (db.attendance || []).filter(
-    (a) => a.value === "absent",
+    (a) => a.value === "absent" && scopedLessonIds.has(a.lessonId),
   );
   if (currentPeriod.dateFrom)
     periodAbsences = periodAbsences.filter(
@@ -141,6 +227,7 @@ export function renderAnalyticsView(options = {}) {
           </div>
           <div>
             <h1 class="text-base font-bold text-slate-900 leading-tight">Аналитика класса</h1>
+            ${scopeLabel ? `<p class="text-[11px] text-slate-500 mt-0.5">Доступ по нагрузке: ${scopeLabel}</p>` : ""}
             <div class="flex items-center space-x-2 mt-1">
               <span class="text-xs text-slate-500 font-medium">Период:</span>
               <div class="relative inline-block">
@@ -260,7 +347,10 @@ export function renderAnalyticsView(options = {}) {
             <span class="text-xs text-rose-600 font-medium">Порог зоны риска: 3.5</span>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          ${
+            isForeignSubjectRequested
+              ? `<div class="p-6 text-center text-xs text-slate-500 bg-slate-50 rounded-2xl border border-slate-200/80">Нет данных по выбранному предмету.</div>`
+              : `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             ${subjectAverages
               .filter((s) => s.average !== null)
               .map((s) => {
@@ -282,8 +372,9 @@ export function renderAnalyticsView(options = {}) {
               `;
               })
               .join("")}
-          </div>
-          <p class="text-[11px] text-slate-400 italic">Средний балл всех учеников 7Б по предмету за период. Пунктирный порог внимания установлен на уровне 3.5.</p>
+          </div>`
+          }
+          <p class="text-[11px] text-slate-400 italic">Средний балл всех учеников выбранного класса по предмету за период. Пунктирный порог внимания установлен на уровне 3.5.</p>
         </div>
 
         <div class="space-y-3 pt-2">
@@ -304,7 +395,7 @@ export function renderAnalyticsView(options = {}) {
               ${riskStudents
                 .map(
                   (st) => `
-                <div class="p-4 rounded-2xl border ${st.riskLevel === "critical" ? "border-rose-200 bg-rose-50/40" : "border-amber-200 bg-amber-50/40"} space-y-2">
+                <div class="risk-student-card p-4 rounded-2xl border ${st.riskLevel === "critical" ? "border-rose-200 bg-rose-50/40" : "border-amber-200 bg-amber-50/40"} space-y-2" data-student-id="${st.studentId}">
                   <div class="flex items-center justify-between">
                     <a href="/student?id=${st.studentId}" class="text-xs font-bold text-slate-900 hover:text-brand-600 hover:underline">
                       ${st.name}

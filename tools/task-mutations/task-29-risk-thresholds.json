@@ -1,0 +1,80 @@
+{
+  "task": "task-29-risk-thresholds",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-BP-01",
+      "expectFail": [
+        "test_bp_16_absence_threshold_20"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "      attStats.absenceRate > absenceThreshold",
+          "replace": "      attStats.absenceRate >= absenceThreshold"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-BP-02",
+      "expectFail": [
+        "test_bp_17_grade_threshold_3_5"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "    if (overallAvg !== null && overallAvg < gradeThreshold) {",
+          "replace": "    if (overallAvg !== null && overallAvg <= gradeThreshold) {"
+        },
+        {
+          "file": "src/mock/calculations.js",
+          "find": "      if (subjAvg !== null && subjAvg < gradeThreshold) {",
+          "replace": "      if (subjAvg !== null && subjAvg <= gradeThreshold) {"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-BP-22",
+      "expectFail": [
+        "test_bp_18_risk_not_cached"
+      ],
+      "patches": [
+        {
+          "file": "src/views/overview/render.js",
+          "find": "  const riskZoneList = getRiskZoneStudents(\n    (db.students || []).filter((s) => s.classId === \"class-7b\"),\n    db.lessons,\n    db.attendance,\n    db.grades,\n    db.subjects,\n    { periodId, classId: \"class-7b\", parentContacts: db.parentContacts, today: demoDate },\n  );",
+          "replace": "  const cachedRiskZone = sessionStorage.getItem(\"risk-zone-cache\");\n  const riskZoneList = cachedRiskZone ? JSON.parse(cachedRiskZone) : getRiskZoneStudents(\n    (db.students || []).filter((s) => s.classId === \"class-7b\"),\n    db.lessons,\n    db.attendance,\n    db.grades,\n    db.subjects,\n    { periodId, classId: \"class-7b\", parentContacts: db.parentContacts, today: demoDate },\n  );\n  sessionStorage.setItem(\"risk-zone-cache\", JSON.stringify(riskZoneList));"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-BP-23",
+      "expectFail": [
+        "test_bp_19_risk_order"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "    const rateDiff = (b.absenceRate || 0) - (a.absenceRate || 0);",
+          "replace": "    const rateDiff = (a.absenceRate || 0) - (b.absenceRate || 0);"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-BP-37",
+      "expectFail": [
+        "test_bp_37_single_student_report"
+      ],
+      "patches": [
+        {
+          "file": "src/views/overview/render.js",
+          "find": "                <a href=\"/analytics\" class=\"px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs whitespace-nowrap\">\n                  К отчёту →\n                </a>",
+          "replace": "                <span class=\"px-3 py-1.5 rounded-lg bg-emerald-700 text-white font-semibold text-xs whitespace-nowrap\">\n                  Отчёт доступен\n                </span>"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "task": "task-21-parents-contacts",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-PR-09",
+      "expectFail": [
+        "test_pr_13_summary_read_only"
+      ],
+      "patches": [
+        {
+          "file": "src/views/parents/summary.js",
+          "find": "              Анкетные данные — только чтение в сводке",
+          "replace": "              Анкетные данные доступны для редактирования",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-PR-16",
+      "expectFail": [
+        "test_pr_14_summary_all_children"
+      ],
+      "patches": [
+        {
+          "file": "src/views/parents/summary.js",
+          "find": "  if (parent.otherChildren && parent.otherChildren.length > 0) {",
+          "replace": "  if (false && parent.otherChildren && parent.otherChildren.length > 0) {",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-PR-17",
+      "expectFail": [
+        "test_pr_15_contact_agreement"
+      ],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "    agreementReached,\n    nextContactDate,",
+          "replace": "    agreementReached: false,\n    nextContactDate,",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-PR-18",
+      "expectFail": [
+        "test_pr_16_contact_required_fields"
+      ],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "  if (!summary) {\n    return { success: false, error: \"Поле «Итог» обязательно для заполнения\" };\n  }",
+          "replace": "  if (false && !summary) {\n    return { success: false, error: \"Поле «Итог» обязательно для заполнения\" };\n  }",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-PR-07",
+      "expectFail": [
+        "test_pr_17_contact_without_student"
+      ],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "    studentId,\n    parentId,\n    author: data.author || \"Смирнова М. В.\",",
+          "replace": "    studentId: \"st-06\",\n    parentId,\n    author: data.author || \"Смирнова М. В.\",",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 7,
+      "bug": "BUG-PR-19",
+      "expectFail": [
+        "test_pr_18_history_order"
+      ],
+      "patches": [
+        {
+          "file": "src/views/parents/summary.js",
+          "find": "    return dtB.localeCompare(dtA);",
+          "replace": "    return dtA.localeCompare(dtB);",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 8,
+      "bug": "BUG-PR-20",
+      "expectFail": [
+        "test_pr_19_parents_route_denied"
+      ],
+      "patches": [
+        {
+          "file": "src/config/navigation.js",
+          "find": "    allowedRoutes: [\"/child\", \"/schedule\", \"/announcements\", \"/profile\"],",
+          "replace": "    allowedRoutes: [\"/child\", \"/schedule\", \"/announcements\", \"/parents\", \"/profile\"],",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 9,
+      "bug": "BUG-PR-08",
+      "expectFail": [
+        "test_pr_20_history_hidden_from_parent"
+      ],
+      "patches": [
+        {
+          "file": "src/views/child/render.js",
+          "find": "    <div id=\"child-view-container\" class=\"space-y-6 pb-12 animate-fadeIn\">",
+          "replace": "    <div id=\"child-view-container\" class=\"space-y-6 pb-12 animate-fadeIn\">\n      <section>История общения с родителями</section><section>Заметки классрука</section>",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

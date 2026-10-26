@@ -16559,12 +16559,12 @@ export const INITIAL_DATASET = {
       "studentId": "st-23",
       "date": "2024-10-25",
       "value": "absent",
-      "status": "confirmed",
-      "code": "УП",
-      "reason": "Справка",
-      "confirmedBy": "Смирнова М. В.",
-      "confirmedAt": "2024-10-25 15:00",
-      "document": "Справка ОРВИ"
+      "status": "unconfirmed",
+      "code": "Н (без)",
+      "reason": "По болезни (ОРВИ)",
+      "confirmedBy": null,
+      "confirmedAt": null,
+      "document": ""
     },
     {
       "id": "att-1114",

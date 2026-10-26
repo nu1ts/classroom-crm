@@ -1,0 +1,103 @@
+{
+  "task": "task-17-schedule-week",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-SCH-06",
+      "expectFail": [
+        "test_sch_01_week_grid"
+      ],
+      "patches": [
+        {
+          "file": "src/views/schedule/render.js",
+          "find": "                                        <span class=\"font-bold text-brand-600\">\n                                          ${lesson.room || \"Каб. 204\"}\n                                        </span>",
+          "replace": "                                        <span class=\"font-bold text-brand-600\">\n                                          ${lesson.teacher ? \"\" : lesson.room}\n                                        </span>"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-SCH-07",
+      "expectFail": [
+        "test_sch_02_week_switch"
+      ],
+      "patches": [
+        {
+          "file": "src/views/schedule/render.js",
+          "find": "                Неделя: ${selectedWeek.label.replace(\" (Текущая неделя)\", \"\").replace(\" (Каникулы)\", \"\")}",
+          "replace": "                Неделя: ${SCHEDULE_WEEKS[7].label.replace(\" (Текущая неделя)\", \"\").replace(\" (Каникулы)\", \"\")}"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-SCH-08",
+      "expectFail": [
+        "test_sch_03_parent_readonly"
+      ],
+      "patches": [
+        {
+          "file": "src/views/schedule/render.js",
+          "find": "  const isTeacher = currentUser && (currentUser.role === \"teacher\" || currentUser.role === \"admin\");",
+          "replace": "  const isTeacher = currentUser && (currentUser.role === \"teacher\" || currentUser.role === \"admin\" || currentUser.role === \"parent\");"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-SCH-09",
+      "expectFail": [
+        "test_sch_04_student_today_highlight"
+      ],
+      "patches": [
+        {
+          "file": "src/views/schedule/render.js",
+          "find": "  const todayIso = \"2024-10-24\";",
+          "replace": "  const todayIso = \"2024-10-21\";"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-SCH-10",
+      "expectFail": [
+        "test_sch_05_foreign_class_denied"
+      ],
+      "patches": [
+        {
+          "file": "src/views/schedule/render.js",
+          "find": "    (isParent || isStudent) &&\n      requestedClassId &&",
+          "replace": "    isStudent &&\n      requestedClassId &&"
+        }
+      ]
+    },
+    {
+      "folder": 7,
+      "bug": "BUG-SCH-04",
+      "expectFail": [
+        "test_sch_06_same_schedule_all_roles"
+      ],
+      "patches": [
+        {
+          "file": "src/views/schedule/render.js",
+          "find": "  } else {\n    scheduleLessons = scheduleLessons.filter(\n      (l) => (l.classId || \"class-7b\") === allowedClassId\n    );\n  }",
+          "replace": "  } else {\n    scheduleLessons = scheduleLessons.filter(\n      (l) => (l.classId || \"class-7b\") === allowedClassId\n    );\n    if (isParent || isStudent) {\n      scheduleLessons = scheduleLessons.filter((l) => l.dayOfWeek !== 1);\n    }\n  }"
+        }
+      ]
+    },
+    {
+      "folder": 8,
+      "bug": "BUG-SCH-11",
+      "expectFail": [
+        "test_sch_07_subject_teacher_all_classes"
+      ],
+      "patches": [
+        {
+          "file": "src/views/schedule/render.js",
+          "find": "  if (isSubjectTeacher) {\n    scheduleLessons = scheduleLessons.filter(\n      (l) =>\n        l.teacher === currentUser.personName ||\n        l.teacher === currentUser.shortName ||\n        l.teacher === \"Козлов А. П.\"\n    );",
+          "replace": "  if (isSubjectTeacher) {\n    scheduleLessons = scheduleLessons.filter(\n      (l) =>\n        ((l.classId || \"class-7b\") === \"class-7b\") &&\n        (l.teacher === currentUser.personName ||\n          l.teacher === currentUser.shortName ||\n          l.teacher === \"Козлов А. П.\")\n    );"
+        }
+      ]
+    }
+  ]
+}

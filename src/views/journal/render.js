@@ -870,13 +870,17 @@ export function renderJournalView(options = {}) {
           <div id="entry-modal-absence-details" class="hidden p-3.5 rounded-xl border text-xs">
           </div>
 
-          <div id="block-confirm-from-journal" class="hidden">
+          ${
+            !isSubjectTeacher
+              ? `<div id="block-confirm-from-journal" class="hidden">
             <button type="button" id="btn-quick-confirm-absence"
                     class="w-full py-2.5 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-semibold text-xs shadow-xs hover:shadow-sm transition-all flex items-center justify-center space-x-2 cursor-pointer border border-brand-600/30">
               ${renderIcon("check-square", "w-4 h-4 text-white")}
               <span>Подтвердить уважительную причину</span>
             </button>
-          </div>
+          </div>`
+              : ""
+          }
 
           <div class="rounded-2xl border border-slate-200 bg-slate-50/60 overflow-hidden shadow-sm">
             <div class="px-3.5 py-2.5 bg-white border-b border-slate-200 flex items-center justify-between">

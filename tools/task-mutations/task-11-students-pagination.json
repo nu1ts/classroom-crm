@@ -1,0 +1,66 @@
+{
+  "task": "task-11-students-pagination",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-OV-01",
+      "expectFail": [
+        "test_ov_08_pagination_page_size"
+      ],
+      "patches": [
+        {
+          "file": "src/views/students/render.js",
+          "find": "  const currentPage = parseInt(options.page || \"1\", 10);\n  const pageSize = 10;",
+          "replace": "  const currentPage = parseInt(options.page || \"1\", 10);\n  const pageSize = 7;"
+        },
+        {
+          "file": "src/views/students/listeners.js",
+          "find": "  const state = getUrlParams();\n  const pageSize = 10;",
+          "replace": "  const state = getUrlParams();\n  const pageSize = 7;"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-OV-02",
+      "expectFail": [
+        "test_ov_09_pagination_keeps_state"
+      ],
+      "patches": [
+        {
+          "file": "src/views/students/listeners.js",
+          "find": "          if (!isNaN(p) && p >= 1 && p <= totalPages && p !== state.page) {\n            state.page = p;\n            syncRoute();\n            renderAndAttachTable();\n          }",
+          "replace": "          if (!isNaN(p) && p >= 1 && p <= totalPages && p !== state.page) {\n            state.page = p;\n            state.sortBy = \"name\";\n            state.sortOrder = \"asc\";\n            syncRoute();\n            renderAndAttachTable();\n          }"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-OV-14",
+      "expectFail": [
+        "test_ov_10_sort_columns"
+      ],
+      "patches": [
+        {
+          "file": "src/views/students/helpers.js",
+          "find": "      const gA = a.averageGrade !== null ? a.averageGrade : -1;\n      const gB = b.averageGrade !== null ? b.averageGrade : -1;",
+          "replace": "      const gA = a.attendance?.absentCount ?? 0;\n      const gB = b.attendance?.absentCount ?? 0;"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-OV-10",
+      "expectFail": [
+        "test_ov_11_back_keeps_state"
+      ],
+      "patches": [
+        {
+          "file": "src/views/students/listeners.js",
+          "find": "  function closeSummary() {\n    if (!modalSummary) return;\n    modalSummary.classList.remove(\"opacity-100\", \"pointer-events-auto\");",
+          "replace": "  function closeSummary() {\n    if (!modalSummary) return;\n    state.searchQuery = \"\";\n    state.filterAbsencesOnly = false;\n    state.sortBy = \"name\";\n    state.sortOrder = \"asc\";\n    state.page = 1;\n    if (inputSearch) inputSearch.value = \"\";\n    syncRoute();\n    renderAndAttachTable();\n    modalSummary.classList.remove(\"opacity-100\", \"pointer-events-auto\");"
+        }
+      ]
+    }
+  ]
+}

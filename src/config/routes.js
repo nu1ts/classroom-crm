@@ -321,8 +321,15 @@ export const ROUTE_HANDLERS = {
   "/analytics": {
     title: "Аналитика",
     render: () => {
+      const user = getCurrentUser();
+      if (user && user.role !== "teacher" && user.role !== "subject_teacher") {
+        return renderForbiddenView();
+      }
       const params = getRouteParams();
+      const requestedClassId = params.get("classId") || params.get("class");
       return renderAnalyticsView({
+        classId: requestedClassId,
+        subjectId: params.get("subjectId") || params.get("subject"),
         periodId: params.get("periodId") || params.get("period") || "q1_2024",
         showReport: params.get("showReport") === "true",
       });

@@ -22,9 +22,14 @@ export function setupAnalyticsListeners(onNavigate) {
       const isReportOpen =
         reportContainer && !reportContainer.classList.contains("hidden");
       if (onNavigate) {
-        onNavigate(
-          `/analytics?periodId=${selectedPeriod}${isReportOpen ? "&showReport=true" : ""}`,
-        );
+        const params = new URLSearchParams(window.location.search || "");
+        params.set("periodId", selectedPeriod);
+        if (isReportOpen) {
+          params.set("showReport", "true");
+        } else {
+          params.delete("showReport");
+        }
+        onNavigate(`/analytics?${params.toString()}`);
       }
     });
   }
