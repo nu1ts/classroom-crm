@@ -49,6 +49,38 @@ function fail(message) {
   process.exit(1);
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Повторяет файловую операцию, если Windows держит файл занятым:
+ * антивирус и индексатор поиска открывают свеже собранный app.js
+ * с memory-mapped section, и удаление/перезапись падает с EBUSY.
+ */
+async function withRetry(action, attempts = 8) {
+  let lastError = null;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await action();
+    } catch (error) {
+      lastError = error;
+      const message = (error && error.message) || '';
+      const busy =
+        error &&
+        (error.code === 'EBUSY' ||
+          error.code === 'EPERM' ||
+          error.code === 'EACCES' ||
+          /user-mapped section|being used by another process|resource busy or locked/i.test(
+            message,
+          ));
+      if (!busy || attempt === attempts) {
+        throw error;
+      }
+      await sleep(500 * attempt);
+    }
+  }
+  throw lastError;
+}
+
 function buildCleanSite() {
   console.log('[build-task] Сборка чистого reference/ ...');
   execFileSync(process.execPath, ['scripts/build-site.mjs'], {
@@ -85,32 +117,40 @@ function applyPatches(sourceDir, patches, mutationLabel) {
 
 async function buildMutation(taskName, mutation) {
   const destination = path.join(TASKS_DIR, taskName, 'testcases', String(mutation.folder));
-  mkdirSync(destination, { recursive: true });
-  cpSync(CLEAN_REFERENCE, destination, { recursive: true });
+  await withRetry(() => {
+    mkdirSync(destination, { recursive: true });
+    cpSync(CLEAN_REFERENCE, destination, { recursive: true });
+  });
 
   const tempSource = path.join(TEMP_DIR, taskName, String(mutation.folder), 'src');
-  rmSync(tempSource, { recursive: true, force: true });
-  mkdirSync(path.dirname(tempSource), { recursive: true });
-  cpSync(SRC, tempSource, { recursive: true });
+  await withRetry(() => {
+    rmSync(tempSource, { recursive: true, force: true });
+    mkdirSync(path.dirname(tempSource), { recursive: true });
+    cpSync(SRC, tempSource, { recursive: true });
+  });
 
   applyPatches(tempSource, mutation.patches, `${taskName}/${mutation.folder} ${mutation.bug}`);
 
-  await build({
-    entryPoints: [path.join(tempSource, 'app.js')],
-    bundle: true,
-    format: 'iife',
-    target: 'es2020',
-    charset: 'utf8',
-    minify: false,
-    legalComments: 'none',
-    outfile: path.join(destination, 'app.js'),
-    logLevel: 'silent',
-  });
+  await withRetry(() =>
+    build({
+      entryPoints: [path.join(tempSource, 'app.js')],
+      bundle: true,
+      format: 'iife',
+      target: 'es2020',
+      charset: 'utf8',
+      minify: false,
+      legalComments: 'none',
+      outfile: path.join(destination, 'app.js'),
+      logLevel: 'silent',
+    }),
+  );
 
-  rmSync(path.join(TEMP_DIR, taskName, String(mutation.folder)), {
-    recursive: true,
-    force: true,
-  });
+  await withRetry(() =>
+    rmSync(path.join(TEMP_DIR, taskName, String(mutation.folder)), {
+      recursive: true,
+      force: true,
+    }),
+  );
 }
 
 async function buildTask(taskName) {
@@ -128,14 +168,18 @@ async function buildTask(taskName) {
   const testcasesDir = path.join(taskDir, 'testcases');
 
   console.log(`\n[build-task] ${taskName}: чистый reference`);
-  rmSync(referenceDir, { recursive: true, force: true });
-  mkdirSync(referenceDir, { recursive: true });
-  cpSync(CLEAN_REFERENCE, referenceDir, { recursive: true });
+  await withRetry(() => {
+    rmSync(referenceDir, { recursive: true, force: true });
+    mkdirSync(referenceDir, { recursive: true });
+    cpSync(CLEAN_REFERENCE, referenceDir, { recursive: true });
+  });
 
   console.log(`[build-task] ${taskName}: testcases/1 (без дефектов)`);
-  rmSync(testcasesDir, { recursive: true, force: true });
-  mkdirSync(testcasesDir, { recursive: true });
-  cpSync(CLEAN_REFERENCE, path.join(testcasesDir, '1'), { recursive: true });
+  await withRetry(() => {
+    rmSync(testcasesDir, { recursive: true, force: true });
+    mkdirSync(testcasesDir, { recursive: true });
+    cpSync(CLEAN_REFERENCE, path.join(testcasesDir, '1'), { recursive: true });
+  });
 
   for (const mutation of config.mutations) {
     console.log(

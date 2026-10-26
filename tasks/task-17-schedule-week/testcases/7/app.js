@@ -5,7 +5,7 @@
       __defProp(target, name, { get: all[name], enumerable: true });
   };
 
-  // .build/task-10-schedule-roles/7/src/services/storage.js
+  // .build/task-17-schedule-week/7/src/services/storage.js
   var storage_exports = {};
   __export(storage_exports, {
     DEFAULT_ACADEMIC_YEARS: () => DEFAULT_ACADEMIC_YEARS,
@@ -97,7 +97,7 @@
     validateNewPassword: () => validateNewPassword
   });
 
-  // .build/task-10-schedule-roles/7/src/mock/dataset.js
+  // .build/task-17-schedule-week/7/src/mock/dataset.js
   var INITIAL_DATASET = {
     "meta": {
       "version": "1.2.0",
@@ -21119,7 +21119,7 @@
     ]
   };
 
-  // .build/task-10-schedule-roles/7/src/services/accounts.js
+  // .build/task-17-schedule-week/7/src/services/accounts.js
   function updateAccountRole(userId, newRole) {
     const db = getDB();
     const user = db.users.find((u) => u.id === userId);
@@ -21331,7 +21331,7 @@
     };
   }
 
-  // .build/task-10-schedule-roles/7/src/services/directories.js
+  // .build/task-17-schedule-week/7/src/services/directories.js
   function getKnownClassIds(db = getDB()) {
     const ids = /* @__PURE__ */ new Set();
     (db.teachers || []).forEach((t) => {
@@ -21537,7 +21537,7 @@
     return { success: true, schoolClass };
   }
 
-  // .build/task-10-schedule-roles/7/src/services/teachers.js
+  // .build/task-17-schedule-week/7/src/services/teachers.js
   function createTeacherCard(data = {}) {
     const db = getDB();
     if (!Array.isArray(db.teachers)) db.teachers = [];
@@ -21675,7 +21675,7 @@
     return { success: true, message: "Карточка учителя удалена" };
   }
 
-  // .build/task-10-schedule-roles/7/src/services/workload.js
+  // .build/task-17-schedule-week/7/src/services/workload.js
   function getWorkloadRows(db = getDB()) {
     const rows = [];
     (db.teachers || []).forEach((teacher) => {
@@ -21820,7 +21820,7 @@
     return { success: true, message: "Нагрузка снята" };
   }
 
-  // .build/task-10-schedule-roles/7/src/services/attendance-ops.js
+  // .build/task-17-schedule-week/7/src/services/attendance-ops.js
   function confirmAbsenceRecord(recordId, data = {}) {
     const db = getDB();
     const record = (db.attendance || []).find((a) => a.id === recordId);
@@ -21914,7 +21914,7 @@
     return { success: true, comment: newComment };
   }
 
-  // .build/task-10-schedule-roles/7/src/services/parents-ops.js
+  // .build/task-17-schedule-week/7/src/services/parents-ops.js
   function addParentContact(data = {}) {
     const summary = (data.summary || "").trim();
     const channel = (data.channel || "").trim();
@@ -22141,7 +22141,7 @@
     return { success: true };
   }
 
-  // .build/task-10-schedule-roles/7/src/services/school-year.js
+  // .build/task-17-schedule-week/7/src/services/school-year.js
   function getAcademicYears(db = getDB()) {
     return db.academicYears || [];
   }
@@ -22556,7 +22556,7 @@
     return { success: true };
   }
 
-  // .build/task-10-schedule-roles/7/src/services/grades-ops.js
+  // .build/task-17-schedule-week/7/src/services/grades-ops.js
   function validateGradeValue(val) {
     if (val === null || val === void 0 || val === "") return null;
     const num = typeof val === "number" ? val : parseInt(String(val).trim(), 10);
@@ -22757,7 +22757,7 @@
     return { success: errors.length === 0, errors };
   }
 
-  // .build/task-10-schedule-roles/7/src/services/meetings-ops.js
+  // .build/task-17-schedule-week/7/src/services/meetings-ops.js
   var DEMO_TODAY = "2024-10-28";
   var ATTENDANCE_STATUSES = {
     PRESENT: "present",
@@ -23005,7 +23005,7 @@
     };
   }
 
-  // .build/task-10-schedule-roles/7/src/services/storage.js
+  // .build/task-17-schedule-week/7/src/services/storage.js
   var STORAGE_KEYS = {
     DB: "classroom_crm_db",
     SESSION: "classroom_crm_session",
@@ -23445,7 +23445,7 @@
     return `${parts[0]} ${initials}`;
   }
 
-  // .build/task-10-schedule-roles/7/src/config/navigation.js
+  // .build/task-17-schedule-week/7/src/config/navigation.js
   var ROLE_NAVIGATION = {
     teacher: {
       label: "Классный руководитель",
@@ -23649,7 +23649,7 @@
     return config ? config.defaultRoute : "/login";
   }
 
-  // .build/task-10-schedule-roles/7/src/services/navigation.js
+  // .build/task-17-schedule-week/7/src/services/navigation.js
   var PUBLIC_ROUTES = ["login", "forbidden", "change-password"];
   var routeNames = new Set(PUBLIC_ROUTES);
   Object.values(ROLE_NAVIGATION).forEach((role) => {
@@ -23716,7 +23716,7 @@
     return buildUrl(pathWithQuery);
   }
 
-  // .build/task-10-schedule-roles/7/src/components/icons.js
+  // .build/task-17-schedule-week/7/src/components/icons.js
   function renderIcon(name, className = "w-5 h-5") {
     switch (name) {
       case "grid":
@@ -23954,7 +23954,7 @@
     }
   }
 
-  // .build/task-10-schedule-roles/7/src/services/env.js
+  // .build/task-17-schedule-week/7/src/services/env.js
   var DEBUG_STORAGE_KEY = "__app_debug_token__";
   var DEBUG_SECRET_KEY = "tsu_debug";
   function isDevMode() {
@@ -23984,7 +23984,7 @@
     }
   }
 
-  // .build/task-10-schedule-roles/7/src/components/sidebar.js
+  // .build/task-17-schedule-week/7/src/components/sidebar.js
   function renderSidebar(currentUser, currentPath2) {
     if (!currentUser) return "";
     const roleConfig = ROLE_NAVIGATION[currentUser.role] || ROLE_NAVIGATION.teacher;
@@ -24164,7 +24164,7 @@
     });
   }
 
-  // .build/task-10-schedule-roles/7/src/components/layout.js
+  // .build/task-17-schedule-week/7/src/components/layout.js
   function renderLayout(currentUser, currentPath2, contentHtml) {
     if (currentPath2 === "/login" || !currentUser) {
       return `
@@ -24189,7 +24189,7 @@
     setupSidebarListeners(onNavigate);
   }
 
-  // .build/task-10-schedule-roles/7/src/views/forbidden.js
+  // .build/task-17-schedule-week/7/src/views/forbidden.js
   function renderForbiddenView() {
     const user = getCurrentUser();
     const returnRoute = user ? getDefaultRouteForRole(user.role) : "/login";
@@ -24212,7 +24212,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/services/announcements-ops.js
+  // .build/task-17-schedule-week/7/src/services/announcements-ops.js
   var DEMO_ANNOUNCEMENT_DATE = "2024-10-28";
   function formatDateRu(isoDate) {
     if (!isoDate) return "";
@@ -24337,7 +24337,7 @@
     return false;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/announcements/render.js
+  // .build/task-17-schedule-week/7/src/views/announcements/render.js
   function pluralizeAnnouncements(count) {
     const mod10 = count % 10;
     const mod100 = count % 100;
@@ -24671,7 +24671,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/announcements/listeners.js
+  // .build/task-17-schedule-week/7/src/views/announcements/listeners.js
   function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
@@ -24949,7 +24949,7 @@
     }
   }
 
-  // .build/task-10-schedule-roles/7/src/views/classes/render.js
+  // .build/task-17-schedule-week/7/src/views/classes/render.js
   function renderClassesView() {
     const db = getDB();
     const currentUser = getCurrentUser();
@@ -25070,7 +25070,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/classes/listeners.js
+  // .build/task-17-schedule-week/7/src/views/classes/listeners.js
   function setupClassesListeners(navigate2) {
     const container = document.getElementById("classes-cards-grid");
     if (!container) return;
@@ -25096,7 +25096,7 @@
     });
   }
 
-  // .build/task-10-schedule-roles/7/src/mock/calculations.js
+  // .build/task-17-schedule-week/7/src/mock/calculations.js
   function roundToOneDecimal(value) {
     if (value === null || value === void 0 || Number.isNaN(value)) {
       return null;
@@ -25509,7 +25509,7 @@
     };
   }
 
-  // .build/task-10-schedule-roles/7/src/views/child/render.js
+  // .build/task-17-schedule-week/7/src/views/child/render.js
   function formatDateRu2(dateStr) {
     if (!dateStr) return "";
     const parts = dateStr.split("-");
@@ -25862,7 +25862,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/child/listeners.js
+  // .build/task-17-schedule-week/7/src/views/child/listeners.js
   function setupChildListeners(navigate2) {
     const container = document.getElementById("child-view-container");
     if (!container) return;
@@ -25877,7 +25877,7 @@
     });
   }
 
-  // .build/task-10-schedule-roles/7/src/views/login/render.js
+  // .build/task-17-schedule-week/7/src/views/login/render.js
   function renderLoginView() {
     const currentUser = getCurrentUser();
     if (currentUser) {
@@ -26074,7 +26074,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/login/listeners.js
+  // .build/task-17-schedule-week/7/src/views/login/listeners.js
   function setupLoginListeners(onLoginSuccess) {
     const currentUser = getCurrentUser();
     if (currentUser) {
@@ -26298,7 +26298,7 @@
     });
   }
 
-  // .build/task-10-schedule-roles/7/src/views/overview/render.js
+  // .build/task-17-schedule-week/7/src/views/overview/render.js
   function renderOverviewView() {
     const db = getDB();
     const currentUser = getCurrentUser();
@@ -26897,7 +26897,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/overview/listeners.js
+  // .build/task-17-schedule-week/7/src/views/overview/listeners.js
   function setupOverviewListeners(onNavigate) {
     const db = getDB();
     const modalSummary = document.getElementById("modal-student-summary");
@@ -27298,7 +27298,7 @@
     });
   }
 
-  // .build/task-10-schedule-roles/7/src/views/profile/render.js
+  // .build/task-17-schedule-week/7/src/views/profile/render.js
   function renderProfileView() {
     const user = getCurrentUser();
     if (!user) return "";
@@ -27430,7 +27430,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/profile/listeners.js
+  // .build/task-17-schedule-week/7/src/views/profile/listeners.js
   function setupProfileListeners(onNavigate) {
     const user = getCurrentUser();
     if (!user) return;
@@ -27508,7 +27508,7 @@
     }
   }
 
-  // .build/task-10-schedule-roles/7/src/views/grades/render.js
+  // .build/task-17-schedule-week/7/src/views/grades/render.js
   function getGradeBadgeClass(val) {
     const num = parseInt(val, 10);
     if (num === 5) return "bg-emerald-100 text-emerald-800 ring-emerald-600/20";
@@ -27794,7 +27794,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/grades/listeners.js
+  // .build/task-17-schedule-week/7/src/views/grades/listeners.js
   function setupGradesListeners(navigate2) {
     const periodSelect = document.getElementById("grades-period-select");
     if (periodSelect) {
@@ -27807,7 +27807,7 @@
     }
   }
 
-  // .build/task-10-schedule-roles/7/src/views/attendance/helpers.js
+  // .build/task-17-schedule-week/7/src/views/attendance/helpers.js
   function generateDaysOfWeek(fromStr) {
     const dayNames = ["ПН", "ВТ", "СР", "ЧТ", "ПТ"];
     const monthNames = [
@@ -27873,7 +27873,7 @@
     return `${items.join(", ")} и ${lastItem} имеют пропуски уроков без подтверждающих документов. Родители пока не предоставили справку или заявление.`;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/attendance/render.js
+  // .build/task-17-schedule-week/7/src/views/attendance/render.js
   function renderAttendanceView(options = {}) {
     const db = getDB();
     const currentUser = getCurrentUser();
@@ -28358,7 +28358,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/attendance/listeners.js
+  // .build/task-17-schedule-week/7/src/views/attendance/listeners.js
   function setupAttendanceListeners(onNavigate) {
     const db = getDB();
     const currentUser = getCurrentUser();
@@ -28548,7 +28548,7 @@
     }
   }
 
-  // .build/task-10-schedule-roles/7/src/views/schedule/helpers.js
+  // .build/task-17-schedule-week/7/src/views/schedule/helpers.js
   var SCHEDULE_WEEKS = [
     { id: "w1", label: "02.09.2024 – 06.09.2024", from: "2024-09-02", to: "2024-09-06" },
     { id: "w2", label: "09.09.2024 – 13.09.2024", from: "2024-09-09", to: "2024-09-13" },
@@ -28589,7 +28589,7 @@
     });
   }
 
-  // .build/task-10-schedule-roles/7/src/views/schedule/render.js
+  // .build/task-17-schedule-week/7/src/views/schedule/render.js
   function getClassBadgeStyle(className) {
     if (className.includes("7Б")) {
       return "bg-blue-50 text-blue-700 border border-blue-200/80";
@@ -29076,7 +29076,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/services/schedule-ops.js
+  // .build/task-17-schedule-week/7/src/services/schedule-ops.js
   function normalizeLessonTime(timeStr) {
     if (!timeStr) return "";
     const match = String(timeStr).trim().match(/^(\d{1,2}:\d{2})/);
@@ -29274,7 +29274,7 @@
     };
   }
 
-  // .build/task-10-schedule-roles/7/src/views/schedule/listeners.js
+  // .build/task-17-schedule-week/7/src/views/schedule/listeners.js
   function setupScheduleListeners(navigate2) {
     function refreshView() {
       if (navigate2) {
@@ -29636,7 +29636,7 @@
     });
   }
 
-  // .build/task-10-schedule-roles/7/src/views/meetings/render.js
+  // .build/task-17-schedule-week/7/src/views/meetings/render.js
   function formatDateRu3(dateStr) {
     if (!dateStr) return "";
     const parts = String(dateStr).split("-");
@@ -30233,7 +30233,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/meetings/listeners.js
+  // .build/task-17-schedule-week/7/src/views/meetings/listeners.js
   function escapeHtml(str) {
     if (!str) return "";
     return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -30909,7 +30909,7 @@
     });
   }
 
-  // .build/task-10-schedule-roles/7/src/views/journal/render.js
+  // .build/task-17-schedule-week/7/src/views/journal/render.js
   function renderJournalView(options = {}) {
     const db = getDB();
     const currentUser = getCurrentUser() || {
@@ -31761,7 +31761,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/journal/listeners.js
+  // .build/task-17-schedule-week/7/src/views/journal/listeners.js
   function setupJournalListeners(onNavigate) {
     const currentUser = getCurrentUser();
     const selectSubject = document.getElementById("select-journal-subject");
@@ -32647,7 +32647,7 @@
     }
   }
 
-  // .build/task-10-schedule-roles/7/src/views/students/helpers.js
+  // .build/task-17-schedule-week/7/src/views/students/helpers.js
   var PERIODS = [
     { id: "q1_2024", name: "I четверть (02.09 - 25.10.2024)" },
     { id: "sept_2024", name: "Сентябрь 2024 (02.09 - 30.09.2024)" },
@@ -32935,7 +32935,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/students/render.js
+  // .build/task-17-schedule-week/7/src/views/students/render.js
   function renderStudentsView(options = {}) {
     const db = getDB();
     const currentUser = getCurrentUser();
@@ -33280,7 +33280,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/students/listeners.js
+  // .build/task-17-schedule-week/7/src/views/students/listeners.js
   function setupStudentsListeners(onNavigate) {
     let db = getDB();
     function getUrlParams() {
@@ -33933,7 +33933,7 @@
     renderAndAttachTable();
   }
 
-  // .build/task-10-schedule-roles/7/src/views/student-summary/helpers.js
+  // .build/task-17-schedule-week/7/src/views/student-summary/helpers.js
   function formatDateRu4(isoDate) {
     if (!isoDate) return "";
     const parts = isoDate.split("-");
@@ -34019,7 +34019,7 @@
     return r || d || "Уважительная причина (подтверждено)";
   }
 
-  // .build/task-10-schedule-roles/7/src/views/student-summary/render.js
+  // .build/task-17-schedule-week/7/src/views/student-summary/render.js
   function renderStudentSummaryView(options = {}) {
     const db = getDB();
     const periodId = options.periodId || "q1_2024";
@@ -34757,7 +34757,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/student-summary/listeners.js
+  // .build/task-17-schedule-week/7/src/views/student-summary/listeners.js
   function setupStudentSummaryListeners(onNavigate) {
     const queryString = window.location.search || "";
     const params = new URLSearchParams(queryString);
@@ -35082,7 +35082,7 @@
     }
   }
 
-  // .build/task-10-schedule-roles/7/src/views/parents/list.js
+  // .build/task-17-schedule-week/7/src/views/parents/list.js
   function renderParentsView(options = {}) {
     const db = getDB();
     const rawParents = db.parents || [];
@@ -35958,7 +35958,7 @@
     });
   }
 
-  // .build/task-10-schedule-roles/7/src/views/parents/summary.js
+  // .build/task-17-schedule-week/7/src/views/parents/summary.js
   function renderParentSummaryView(options = {}) {
     const db = getDB();
     const parentId = options.parentId || options.id || "pr-27";
@@ -36662,7 +36662,7 @@
     }
   }
 
-  // .build/task-10-schedule-roles/7/src/views/analytics/render.js
+  // .build/task-17-schedule-week/7/src/views/analytics/render.js
   function renderAnalyticsView(options = {}) {
     const db = getDB();
     const currentUser = getCurrentUser();
@@ -37141,7 +37141,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/analytics/listeners.js
+  // .build/task-17-schedule-week/7/src/views/analytics/listeners.js
   function setupAnalyticsListeners(onNavigate) {
     const periodSelect = document.getElementById("select-analytics-period");
     const btnGenerateReport = document.getElementById("btn-generate-report");
@@ -37177,7 +37177,7 @@
     }
   }
 
-  // .build/task-10-schedule-roles/7/src/views/accounts/helpers.js
+  // .build/task-17-schedule-week/7/src/views/accounts/helpers.js
   var PAGE_SIZE = 10;
   var ROLE_OPTIONS = [
     "admin",
@@ -37268,7 +37268,7 @@
             class="px-3 py-1.5 rounded-lg text-[11px] font-semibold border border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 cursor-pointer">Разблок</button>`;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/accounts/render.js
+  // .build/task-17-schedule-week/7/src/views/accounts/render.js
   function renderAccountsView(options = {}) {
     const db = getDB();
     const currentUser = db.users.find(
@@ -37473,7 +37473,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/accounts/listeners.js
+  // .build/task-17-schedule-week/7/src/views/accounts/listeners.js
   function setupAccountsListeners() {
     const demoToday = getDB().meta && getDB().meta.demoToday || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
     const state = {
@@ -37964,7 +37964,7 @@
     updateSubtitle();
   }
 
-  // .build/task-10-schedule-roles/7/src/views/change-password/render.js
+  // .build/task-17-schedule-week/7/src/views/change-password/render.js
   function renderChangePasswordView() {
     const currentUser = getCurrentUser();
     if (!currentUser) {
@@ -38030,7 +38030,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/change-password/listeners.js
+  // .build/task-17-schedule-week/7/src/views/change-password/listeners.js
   function setupChangePasswordListeners(onNavigate) {
     const currentUser = getCurrentUser();
     if (!currentUser) return;
@@ -38066,7 +38066,7 @@
     }
   }
 
-  // .build/task-10-schedule-roles/7/src/views/teachers/helpers.js
+  // .build/task-17-schedule-week/7/src/views/teachers/helpers.js
   function escapeHtml3(text) {
     return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
@@ -38111,7 +38111,7 @@
     });
   }
 
-  // .build/task-10-schedule-roles/7/src/views/teachers/render.js
+  // .build/task-17-schedule-week/7/src/views/teachers/render.js
   function renderTeachersView(options = {}) {
     const db = getDB();
     const cards = getTeacherCards(db);
@@ -38361,7 +38361,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/teachers/listeners.js
+  // .build/task-17-schedule-week/7/src/views/teachers/listeners.js
   function setupTeachersListeners(onNavigate) {
     const state = {
       searchQuery: "",
@@ -38691,7 +38691,7 @@
     updateSubtitle();
   }
 
-  // .build/task-10-schedule-roles/7/src/views/directories/helpers.js
+  // .build/task-17-schedule-week/7/src/views/directories/helpers.js
   function escapeHtml4(text) {
     return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
@@ -38725,7 +38725,7 @@
     return ["subjects", "rooms", "classes"].includes(tab) ? tab : "subjects";
   }
 
-  // .build/task-10-schedule-roles/7/src/views/directories/render.js
+  // .build/task-17-schedule-week/7/src/views/directories/render.js
   function tableHead(cols) {
     return `
     <thead>
@@ -38990,7 +38990,7 @@
     return "записей";
   }
 
-  // .build/task-10-schedule-roles/7/src/views/directories/listeners.js
+  // .build/task-17-schedule-week/7/src/views/directories/listeners.js
   var TAB_TITLES = {
     subjects: "предмет",
     rooms: "аудиторию",
@@ -39233,7 +39233,7 @@
     });
   }
 
-  // .build/task-10-schedule-roles/7/src/views/workload/helpers.js
+  // .build/task-17-schedule-week/7/src/views/workload/helpers.js
   function escapeHtml5(text) {
     return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
@@ -39287,7 +39287,7 @@
     });
   }
 
-  // .build/task-10-schedule-roles/7/src/views/workload/render.js
+  // .build/task-17-schedule-week/7/src/views/workload/render.js
   function renderWorkloadView(options = {}) {
     const db = getDB();
     const activeYear = getActiveAcademicYear(db);
@@ -39528,7 +39528,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/workload/listeners.js
+  // .build/task-17-schedule-week/7/src/views/workload/listeners.js
   function setupWorkloadListeners() {
     const tableArea = document.getElementById("workload-table-area");
     const searchInput = document.getElementById("input-workload-search");
@@ -39757,7 +39757,7 @@
     });
   }
 
-  // .build/task-10-schedule-roles/7/src/views/school-year/helpers.js
+  // .build/task-17-schedule-week/7/src/views/school-year/helpers.js
   function escapeHtml6(text) {
     return String(text ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
@@ -39886,7 +39886,7 @@
     ).join("");
   }
 
-  // .build/task-10-schedule-roles/7/src/views/school-year/render.js
+  // .build/task-17-schedule-week/7/src/views/school-year/render.js
   function renderSchoolYearView(options = {}) {
     const db = getDB();
     const years = getAcademicYears(db);
@@ -40257,7 +40257,7 @@
   `;
   }
 
-  // .build/task-10-schedule-roles/7/src/views/school-year/ui.js
+  // .build/task-17-schedule-week/7/src/views/school-year/ui.js
   var toastTimer = null;
   function showToast(message, isError = false) {
     const toast = document.getElementById("school-year-toast");
@@ -40311,7 +40311,7 @@
     ].forEach((id) => closeModal3(id));
   }
 
-  // .build/task-10-schedule-roles/7/src/views/school-year/listeners.js
+  // .build/task-17-schedule-week/7/src/views/school-year/listeners.js
   function setupSchoolYearListeners(navigate2) {
     const view = document.getElementById("school-year-view");
     if (!view) return;
@@ -40675,7 +40675,7 @@
     }
   }
 
-  // .build/task-10-schedule-roles/7/src/config/routes.js
+  // .build/task-17-schedule-week/7/src/config/routes.js
   var ROUTE_HANDLERS = {
     "/login": {
       title: "Вход в систему",
@@ -40981,7 +40981,7 @@
     }
   };
 
-  // .build/task-10-schedule-roles/7/src/router.js
+  // .build/task-17-schedule-week/7/src/router.js
   var Router = class {
     constructor(rootElementId = "app") {
       this.rootElementId = rootElementId;
@@ -41063,7 +41063,7 @@
   };
   var router = new Router("app");
 
-  // .build/task-10-schedule-roles/7/src/app.js
+  // .build/task-17-schedule-week/7/src/app.js
   if (typeof window !== "undefined") {
     window.crmApi = storage_exports;
   }
