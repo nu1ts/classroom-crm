@@ -7,12 +7,12 @@ import { getDB, saveDB } from "./storage.js";
 
 /**
  * Фиксация контакта с родителем
- * @param {Object} data { studentId, parentId, author, date, time, channel, summary, agreementReached, nextContactDate }
+ * @param {Object} data { studentId?, parentId, author, date, time, channel, summary, agreementReached, nextContactDate }
  */
 export function addParentContact(data = {}) {
   const summary = (data.summary || "").trim();
   const channel = (data.channel || "").trim();
-  const studentId = (data.studentId || "").trim();
+  const studentId = (data.studentId || "").trim() || null;
   const parentId = (data.parentId || "").trim();
 
   if (!summary) {
@@ -21,8 +21,8 @@ export function addParentContact(data = {}) {
   if (!channel) {
     return { success: false, error: "Выберите канал связи" };
   }
-  if (!studentId) {
-    return { success: false, error: "Ученик не указан" };
+  if (!parentId) {
+    return { success: false, error: "Родитель не указан" };
   }
 
   const db = getDB();
@@ -43,11 +43,7 @@ export function addParentContact(data = {}) {
   const newContact = {
     id: `pc-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     studentId,
-    parentId:
-      parentId ||
-      db.parentStudentRelations?.find((r) => r.studentId === studentId)
-        ?.parentId ||
-      "pr-unknown",
+    parentId,
     author: data.author || "Смирнова М. В.",
     date: data.date || new Date().toISOString().slice(0, 10),
     time:

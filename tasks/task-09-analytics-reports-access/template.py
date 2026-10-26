@@ -36,8 +36,8 @@ def test_anl_16_teacher_own_class_only(driver):
 
 
 def test_anl_17_subject_teacher_subjects(driver):
-    """Проверить, что учитель-предметник не получает доступ к аналитике
-    класса."""
+    """Проверить, что учитель-предметник видит аналитику только по
+    своим предметам и классам нагрузки."""
 
 
 def test_anl_18_parent_child_metrics(driver):

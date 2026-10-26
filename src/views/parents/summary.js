@@ -5,9 +5,9 @@ import {
   getRiskZoneStudents,
 } from "../../mock/calculations.js";
 import {
+  addParentContact,
   getDB,
   linkParentToStudent,
-  saveDB,
   unlinkParentFromStudent,
 } from "../../services/storage.js";
 import { currentPath } from "../../services/navigation.js";
@@ -644,31 +644,17 @@ export function setupParentSummaryListeners(onNavigate) {
 
       if (hasError) return;
 
-      const db = getDB();
-      if (!db.parentContacts) db.parentContacts = [];
-
-      const channelLabels = {
-        phone: "Звонок",
-        chat: "Мессенджер",
-        personal: "Личная беседа",
-      };
-
-      const newContact = {
-        id: `pc-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        studentId: studentId || null,
+      const result = addParentContact({
+        studentId,
         parentId,
         author: "Смирнова М. В.",
         date,
         time: "15:30",
         channel,
-        channelLabel: channelLabels[channel] || "Звонок",
         summary,
         agreementReached,
-        nextContactDate: null,
-      };
-
-      db.parentContacts.unshift(newContact);
-      saveDB(db);
+      });
+      if (!result.success) return;
 
       closeContactModal();
       showSummaryToast("Контакт успешно зафиксирован");

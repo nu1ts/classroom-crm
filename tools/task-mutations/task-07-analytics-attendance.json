@@ -10,13 +10,13 @@
       "patches": [
         {
           "file": "src/views/students/helpers.js",
-          "find": "                    const isAbsentAlert =\n                      row.attendance && row.attendance.absentCount > 0;",
-          "replace": "                    const isAbsentAlert =\n                      row.attendance && row.attendance.absenceRate > 20;"
+          "find": "                    const isAbsentAlert =\n                      row.attendance && row.attendance.absenceRate > 20;",
+          "replace": "                    const isAbsentAlert =\n                      row.attendance && row.attendance.absentCount > 0;"
         },
         {
           "file": "src/views/students/helpers.js",
           "find": "                    <span class=\"font-bold ${isAbsentAlert ? \"text-amber-700\" : \"text-slate-800\"} text-xs\">\n                      ${row.attendance.absentCount} из ${row.attendance.totalLessons}\n                    </span>",
-          "replace": "                    <span class=\"font-bold ${isAbsentAlert ? \"text-amber-700\" : \"text-slate-800\"} text-xs\">\n                      ${isAbsentAlert ? row.attendance.absentCount : 0} из ${row.attendance.totalLessons}\n                    </span>"
+          "replace": "                    <span class=\"font-bold ${isAbsentAlert ? \"text-amber-700\" : \"text-slate-800\"} text-xs\">\n                      ${row.attendance.absentCount} из ${row.attendance.totalLessons}\n                    </span>"
         }
       ]
     },

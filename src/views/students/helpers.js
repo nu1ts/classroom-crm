@@ -187,7 +187,7 @@ export function renderTableHtml({
                   .map((row) => {
                     const s = row.student;
                     const isAbsentAlert =
-                      row.attendance && row.attendance.absentCount > 0;
+                      row.attendance && row.attendance.absenceRate > 20;
 
                     let gradeColor = "text-slate-900";
                     if (row.averageGrade !== null) {
@@ -301,7 +301,7 @@ export function renderTableHtml({
 
     <div class="px-6 py-4 bg-slate-50/60 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div class="text-xs text-slate-500 font-medium" id="students-counter-label">
-        ${totalFiltered === 1 && searchQuery ? `Показано 1 из ${totalInClass} учеников 7Б класса` : `Показано ${startShown}–${endShown} из ${totalFiltered} учеников 7Б класса`}
+        ${totalFiltered === 1 && searchQuery ? `Показано 1 из ${totalInClass} учеников 7Б класса` : `Показано ${startShown}–${endShown} из ${totalInClass} учеников 7Б класса`}
       </div>
 
       ${

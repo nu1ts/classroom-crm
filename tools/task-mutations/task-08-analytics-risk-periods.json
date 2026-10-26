@@ -24,8 +24,8 @@
       "patches": [
         {
           "file": "src/views/analytics/render.js",
-          "find": "  const periodOptions = {\n    classId: \"class-7b\",\n    periodId: isHolidayOrEmpty ? periodId : \"q1_2024\",\n    dateFrom: currentPeriod.dateFrom,\n    dateTo: currentPeriod.dateTo,\n  };",
-          "replace": "  const periodOptions = {\n    classId: \"class-7b\",\n  };"
+          "find": "  const periodOptions = {\n    classId: selectedClassId,\n    students: db.students.filter(\n      (student) => (student.classId || \"class-7b\") === selectedClassId,\n    ),\n    subjectId: selectedSubjectId,\n    periodId: isHolidayOrEmpty ? periodId : \"q1_2024\",\n    dateFrom: currentPeriod.dateFrom,\n    dateTo: currentPeriod.dateTo,\n  };",
+          "replace": "  const periodOptions = {\n    classId: selectedClassId,\n    students: db.students.filter(\n      (student) => (student.classId || \"class-7b\") === selectedClassId,\n    ),\n    subjectId: selectedSubjectId,\n  };"
         }
       ]
     },
@@ -36,6 +36,11 @@
         "test_anl_11_subject_averages_threshold"
       ],
       "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  if (options.classId) {\n    const classStudentIds = new Set(\n      (options.students || [])\n        .filter((student) => (student.classId || \"class-7b\") === options.classId)\n        .map((student) => student.id),\n    );\n    filtered = filtered.filter(\n      (grade) =>\n        grade.classId === options.classId ||\n        (classStudentIds.size > 0 && classStudentIds.has(grade.studentId)),\n    );\n  }",
+          "replace": ""
+        },
         {
           "file": "src/mock/dataset.js",
           "find": "  \"grades\": [\n    {\n      \"id\": \"grd-0001\",",
@@ -52,18 +57,18 @@
       "patches": [
         {
           "file": "src/mock/calculations.js",
-          "find": "export function getRiskZoneStudents(\n  students,\n  lessons,\n  attendance,\n  grades,\n  subjects,\n  options = {},\n) {\n  const absenceThreshold = options.absenceThreshold ?? 20.0;",
-          "replace": "export function getRiskZoneStudents(\n  students,\n  lessons,\n  attendance,\n  grades,\n  subjects,\n  options = {},\n) {\n  if (Array.isArray(options.savedRiskZone) && options.savedRiskZone.length > 0) {\n    return options.savedRiskZone;\n  }\n  const absenceThreshold = options.absenceThreshold ?? 20.0;"
+          "find": "  const absenceThreshold = options.absenceThreshold ?? 20.0;",
+          "replace": "  if (Array.isArray(options.savedRiskZone) && options.savedRiskZone.length > 0) {\n    return options.savedRiskZone;\n  }\n  const absenceThreshold = options.absenceThreshold ?? 20.0;"
         },
         {
           "file": "src/views/analytics/render.js",
-          "find": "  const riskStudents = getRiskZoneStudents(\n    db.students,\n    db.lessons,\n    db.attendance,\n    db.grades,\n    db.subjects,\n    periodOptions,\n  );",
-          "replace": "  const riskStudents = getRiskZoneStudents(\n    db.students,\n    db.lessons,\n    db.attendance,\n    db.grades,\n    db.subjects,\n    { ...periodOptions, savedRiskZone: db.riskZone },\n  );"
+          "find": "  const riskStudents = getRiskZoneStudents(\n    periodOptions.students,\n    db.lessons,\n    db.attendance,\n    db.grades,\n    analyticsSubjects,\n    periodOptions,\n  );",
+          "replace": "  const riskStudents = getRiskZoneStudents(\n    periodOptions.students,\n    db.lessons,\n    db.attendance,\n    db.grades,\n    analyticsSubjects,\n    { ...periodOptions, savedRiskZone: db.riskZone },\n  );"
         },
         {
           "file": "src/mock/calculations.js",
-          "find": "  const riskZone = getRiskZoneStudents(\n    dataset.students,\n    dataset.lessons,\n    dataset.attendance,\n    dataset.grades,\n    dataset.subjects,\n    periodOptions,\n  );",
-          "replace": "  const riskZone = getRiskZoneStudents(\n    dataset.students,\n    dataset.lessons,\n    dataset.attendance,\n    dataset.grades,\n    dataset.subjects,\n    { ...periodOptions, savedRiskZone: dataset.riskZone },\n  );"
+          "find": "  const riskZone = getRiskZoneStudents(\n    dataset.students,\n    dataset.lessons,\n    dataset.attendance,\n    dataset.grades,\n    dataset.subjects,\n    reportOptions,\n  );",
+          "replace": "  const riskZone = getRiskZoneStudents(\n    dataset.students,\n    dataset.lessons,\n    dataset.attendance,\n    dataset.grades,\n    dataset.subjects,\n    { ...reportOptions, savedRiskZone: dataset.riskZone },\n  );"
         }
       ]
     },

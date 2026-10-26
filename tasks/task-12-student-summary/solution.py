@@ -15,6 +15,7 @@ SELENIUM = os.getenv("SELENIUM_HUB")
 BASE_URL = (TEST_URL or "").rstrip("/")
 TEACHER = "smirnova@school.ru"
 PARENT = "petrov@mail.ru"
+STUDENT = "petrova.a@school.ru"
 PASSWORD = "Test#2024"
 PETROVA_ID = "st-23"
 NOTE_TEXT = "Приватная заметка классрука для проверки"
@@ -544,22 +545,39 @@ def test_ov_18_parent_child_summary(driver):
     )
 
 
-def test_ov_19_student_foreign_summary_denied(driver):
-    """Проверяет, что родителю карточка ученика недоступна."""
+def test_ov_19_student_and_parent_summary_denied(driver):
+    """Проверяет запрет ученику смотреть чужую карточку и родителю — маршрут
+    карточки ученика."""
     reset_all(driver)
-    submit_login(driver, PARENT, PASSWORD)
+    submit_login(driver, STUDENT, PASSWORD)
     wait_for_app(driver)
 
     driver.get(app_url("student/?id=st-01"))
     WebDriverWait(driver, 10).until(
-        lambda d: d.find_elements(By.ID, "student-summary-view")
-        or "Доступ ограничен" in d.page_source
+        lambda d: "Доступ ограничен" in d.page_source
+        or d.find_elements(By.ID, "student-summary-view")
     )
-
     assert "Доступ ограничен" in driver.page_source, (
-        "Родитель должен получить сообщение «Доступ ограничен», "
-        f"получено: «{normalized(driver.page_source)[:400]}»"
+        "Ученик должен получить сообщение «Доступ ограничен» при открытии "
+        f"чужой карточки, получено: «{normalized(driver.page_source)[:400]}»"
     )
     assert not driver.find_elements(By.ID, "student-summary-view"), (
-        "Родителю не должна открываться карточка ученика"
+        "Ученику не должна открываться карточка другого ученика"
+    )
+
+    logout(driver)
+    submit_login(driver, PARENT, PASSWORD)
+    wait_for_app(driver)
+
+    driver.get(app_url(f"student/?id={PETROVA_ID}"))
+    WebDriverWait(driver, 10).until(
+        lambda d: "Доступ ограничен" in d.page_source
+        or d.find_elements(By.ID, "student-summary-view")
+    )
+    assert "Доступ ограничен" in driver.page_source, (
+        "Родитель должен получить сообщение «Доступ ограничен» при открытии "
+        f"/student, получено: «{normalized(driver.page_source)[:400]}»"
+    )
+    assert not driver.find_elements(By.ID, "student-summary-view"), (
+        "Родителю не должна открываться карточка даже собственного ребёнка"
     )

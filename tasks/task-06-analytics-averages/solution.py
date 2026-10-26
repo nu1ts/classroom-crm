@@ -34,10 +34,11 @@ return db.grades.length;
 
 PREPARE_HALF_AVERAGE = """
 const db = window.crmApi.getDB();
+db.grades = db.grades.filter((grade) => grade.studentId !== "st-13");
 const values = [];
-for (let i = 0; i < 14; i += 1) values.push(4);
-for (let i = 0; i < 4; i += 1) values.push(5);
-values.push(2);
+for (let i = 0; i < 13; i += 1) values.push(4);
+for (let i = 0; i < 5; i += 1) values.push(5);
+values.push(3, 3);
 values.forEach((value, index) => {
   db.grades.push({
     id: "grd-half-" + index,
@@ -51,7 +52,11 @@ values.forEach((value, index) => {
   });
 });
 window.crmApi.saveDB(db);
-return db.grades.filter((g) => g.studentId === "st-13").length;
+const romanovGrades = db.grades.filter((grade) => grade.studentId === "st-13");
+return {
+  count: romanovGrades.length,
+  sum: romanovGrades.reduce((sum, grade) => sum + grade.value, 0)
+};
 """
 
 ADD_THREE_TWOS = """
@@ -393,9 +398,10 @@ def test_anl_04_half_rounding(driver):
     wait_for_app(driver)
     open_students(driver)
 
-    count = driver.execute_script(PREPARE_HALF_AVERAGE)
-    assert count == 20, (
-        f"У Романова И. должно быть 20 оценок с суммой 83 балла, получено {count}"
+    prepared = driver.execute_script(PREPARE_HALF_AVERAGE)
+    assert prepared["count"] == 20 and prepared["sum"] == 83, (
+        "Для проверки округления у Романова И. должны быть 20 оценок "
+        f"с суммой 83 балла (83 / 20 = 4,15): {prepared}"
     )
 
     open_students(driver)

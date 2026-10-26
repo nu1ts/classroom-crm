@@ -54,5 +54,6 @@ def test_ov_18_parent_child_summary(driver):
     заметок классрука."""
 
 
-def test_ov_19_student_foreign_summary_denied(driver):
-    """Проверить, что родителю карточка ученика недоступна."""
+def test_ov_19_student_and_parent_summary_denied(driver):
+    """Проверить запрет ученику смотреть чужую карточку и родителю — маршрут
+    карточки ученика."""

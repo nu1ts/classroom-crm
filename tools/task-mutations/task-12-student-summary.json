@@ -108,13 +108,23 @@
       "folder": 9,
       "bug": "BUG-OV-19",
       "expectFail": [
-        "test_ov_19_student_foreign_summary_denied"
+        "test_ov_19_student_and_parent_summary_denied"
       ],
       "patches": [
         {
           "file": "src/config/navigation.js",
           "find": "    allowedRoutes: [\"/child\", \"/schedule\", \"/announcements\", \"/profile\"],",
           "replace": "    allowedRoutes: [\"/child\", \"/student\", \"/schedule\", \"/announcements\", \"/profile\"],"
+        },
+        {
+          "file": "src/config/navigation.js",
+          "find": "    allowedRoutes: [\"/schedule\", \"/grades\", \"/announcements\", \"/profile\"],",
+          "replace": "    allowedRoutes: [\"/student\", \"/schedule\", \"/grades\", \"/announcements\", \"/profile\"],"
+        },
+        {
+          "file": "src/router.js",
+          "find": "    } else if (!isRouteAllowedForRole(user.role, path)) {\n      activePath = \"/forbidden\";\n    }",
+          "replace": "    } else if (!isRouteAllowedForRole(user.role, path) && path !== \"/student\") {\n      activePath = \"/forbidden\";\n    }"
         }
       ]
     }

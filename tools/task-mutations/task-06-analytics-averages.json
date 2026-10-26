@@ -53,7 +53,7 @@
         {
           "file": "src/mock/calculations.js",
           "find": "  return Math.round((Number(value) + Number.EPSILON) * 10) / 10;",
-          "replace": "  const scaled = Number(value) * 10;\n  const floored = Math.floor(scaled);\n  const isExactHalf = Math.abs(scaled - floored - 0.5) < 1e-9;\n  return (isExactHalf ? floored : Math.round(scaled)) / 10;"
+          "replace": "  return Math.floor((Number(value) + Number.EPSILON) * 10) / 10;"
         }
       ]
     },
@@ -66,8 +66,8 @@
       "patches": [
         {
           "file": "src/mock/calculations.js",
-          "find": "  const sum = filtered.reduce((acc, g) => acc + g.value, 0);\n  return roundToOneDecimal(sum / filtered.length);\n}",
-          "replace": "  const studentIds = Array.from(new Set(filtered.map((g) => g.studentId)));\n  const studentAverages = studentIds.map((sid) => {\n    const studentGrades = filtered.filter((g) => g.studentId === sid);\n    return (\n      studentGrades.reduce((acc, g) => acc + g.value, 0) / studentGrades.length\n    );\n  });\n  const sum = studentAverages.reduce((acc, value) => acc + value, 0);\n  return roundToOneDecimal(sum / studentAverages.length);\n}"
+          "find": "  const sum = filtered.reduce((acc, grade) => acc + grade.value, 0);\n  return roundToOneDecimal(sum / filtered.length);\n}",
+          "replace": "  const studentIds = Array.from(new Set(filtered.map((grade) => grade.studentId)));\n  const studentAverages = studentIds.map((studentId) => {\n    const studentGrades = filtered.filter((grade) => grade.studentId === studentId);\n    return (\n      studentGrades.reduce((sum, grade) => sum + grade.value, 0) /\n      studentGrades.length\n    );\n  });\n  const sum = studentAverages.reduce((total, value) => total + value, 0);\n  return roundToOneDecimal(sum / studentAverages.length);\n}"
         }
       ]
     },
@@ -104,8 +104,8 @@
         },
         {
           "file": "src/views/analytics/render.js",
-          "find": "  const report = generateClassReport(db, periodOptions);",
-          "replace": "  const __reportKey = `${periodOptions.periodId}|${periodOptions.dateFrom || \"\"}|${periodOptions.dateTo || \"\"}`;\n  let report = __analyticsReportCache.get(__reportKey);\n  if (!report) {\n    report = generateClassReport(db, periodOptions);\n    __analyticsReportCache.set(__reportKey, report);\n  }"
+          "find": "  const report = generateClassReport(\n    {\n      ...db,\n      students: periodOptions.students,\n      subjects: analyticsSubjects,\n    },\n    periodOptions,\n  );",
+          "replace": "  const __reportKey = `${periodOptions.periodId}|${periodOptions.dateFrom || \"\"}|${periodOptions.dateTo || \"\"}`;\n  let report = __analyticsReportCache.get(__reportKey);\n  if (!report) {\n    report = generateClassReport(\n      {\n        ...db,\n        students: periodOptions.students,\n        subjects: analyticsSubjects,\n      },\n      periodOptions,\n    );\n    __analyticsReportCache.set(__reportKey, report);\n  }"
         }
       ]
     }

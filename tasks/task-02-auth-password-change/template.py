@@ -26,8 +26,8 @@ def test_auth_07_lockout_after_failed_attempts(driver):
 
 
 def test_auth_10_change_password_success(driver):
-    """Проверить успешную смену пароля, сохранение сессии и отсутствие нового
-    пароля на экране."""
+    """Проверить успешную смену пароля, сохранение сессии, вход с новым
+    паролем через интерфейс и отсутствие пароля на экране."""
 
 
 def test_auth_11_change_password_wrong_current(driver):

@@ -21918,16 +21918,13 @@
   function addParentContact(data = {}) {
     const summary = (data.summary || "").trim();
     const channel = (data.channel || "").trim();
-    const studentId = (data.studentId || "").trim();
+    const studentId = (data.studentId || "").trim() || null;
     const parentId = (data.parentId || "").trim();
     if (!summary) {
       return { success: false, error: "Поле «Итог» обязательно для заполнения" };
     }
     if (!channel) {
       return { success: false, error: "Выберите канал связи" };
-    }
-    if (!studentId) {
-      return { success: false, error: "Ученик не указан" };
     }
     const db = getDB();
     if (!db.parentContacts) db.parentContacts = [];
@@ -21943,7 +21940,7 @@
     const newContact = {
       id: `pc-${Date.now()}-${Math.floor(Math.random() * 1e3)}`,
       studentId,
-      parentId: parentId || db.parentStudentRelations?.find((r) => r.studentId === studentId)?.parentId || "pr-unknown",
+      parentId: parentId || (studentId ? db.parentStudentRelations?.find((r) => r.studentId === studentId)?.parentId : null) || "pr-unknown",
       author: data.author || "Смирнова М. В.",
       date: data.date || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
       time: data.time || (/* @__PURE__ */ new Date()).toLocaleTimeString("ru-RU", {
@@ -25167,40 +25164,49 @@
     const sum = stGrades.reduce((acc, g) => acc + g.value, 0);
     return roundToOneDecimal(sum / stGrades.length);
   }
-  function calculateClassAverage(grades, options = {}) {
+  function filterGrades(grades, options = {}) {
     let filtered = grades || [];
+    if (options.classId) {
+      const classStudentIds = new Set(
+        (options.students || []).filter((student) => (student.classId || "class-7b") === options.classId).map((student) => student.id)
+      );
+      filtered = filtered.filter(
+        (grade) => grade.classId === options.classId || classStudentIds.size > 0 && classStudentIds.has(grade.studentId)
+      );
+    }
     if (options.subjectId) {
-      filtered = filtered.filter((g) => g.subjectId === options.subjectId);
+      filtered = filtered.filter((grade) => grade.subjectId === options.subjectId);
     }
     if (options.periodId) {
-      filtered = filtered.filter((g) => g.periodId === options.periodId);
+      filtered = filtered.filter((grade) => grade.periodId === options.periodId);
     }
     if (options.dateFrom) {
-      filtered = filtered.filter((g) => g.date >= options.dateFrom);
+      filtered = filtered.filter((grade) => grade.date >= options.dateFrom);
     }
     if (options.dateTo) {
-      filtered = filtered.filter((g) => g.date <= options.dateTo);
+      filtered = filtered.filter((grade) => grade.date <= options.dateTo);
     }
+    return filtered;
+  }
+  function calculateClassAverage(grades, options = {}) {
+    const filtered = filterGrades(grades, options);
     if (filtered.length === 0) {
       return null;
     }
-    const sum = filtered.reduce((acc, g) => acc + g.value, 0);
+    const sum = filtered.reduce((acc, grade) => acc + grade.value, 0);
     return roundToOneDecimal(sum / filtered.length);
   }
   function calculateSubjectAverages(grades, subjects, options = {}) {
     const threshold = options.threshold ?? 3.5;
     return (subjects || []).map((subj) => {
-      const avg = calculateClassAverage(grades, {
+      const subjectGrades = filterGrades(grades, {
         ...options,
         subjectId: subj.id
       });
-      const count = (grades || []).filter((g) => {
-        let match = g.subjectId === subj.id;
-        if (options.periodId) match = match && g.periodId === options.periodId;
-        if (options.dateFrom) match = match && g.date >= options.dateFrom;
-        if (options.dateTo) match = match && g.date <= options.dateTo;
-        return match;
-      }).length;
+      const avg = subjectGrades.length > 0 ? roundToOneDecimal(
+        subjectGrades.reduce((sum, grade) => sum + grade.value, 0) / subjectGrades.length
+      ) : null;
+      const count = subjectGrades.length;
       return {
         id: subj.id,
         name: subj.name,
@@ -25445,7 +25451,8 @@
       classId: options.classId || "class-7b",
       ...options
     };
-    const classAvg = calculateClassAverage(dataset.grades, periodOptions);
+    const reportOptions = { ...periodOptions, students: dataset.students };
+    const classAvg = calculateClassAverage(dataset.grades, reportOptions);
     const classAtt = calculateClassAttendance(
       dataset.lessons,
       dataset.attendance,
@@ -25454,7 +25461,7 @@
     const subjectAverages = calculateSubjectAverages(
       dataset.grades,
       dataset.subjects,
-      periodOptions
+      reportOptions
     );
     const riskZone = getRiskZoneStudents(
       dataset.students,
@@ -25462,7 +25469,7 @@
       dataset.attendance,
       dataset.grades,
       dataset.subjects,
-      periodOptions
+      reportOptions
     );
     const unconfirmed = getUnconfirmedAbsences(
       dataset.attendance,
@@ -32782,7 +32789,7 @@
         <tbody class="divide-y divide-slate-100 text-xs">
           ${pageRows.length > 0 ? pageRows.map((row) => {
       const s = row.student;
-      const isAbsentAlert = row.attendance && row.attendance.absentCount > 0;
+      const isAbsentAlert = row.attendance && row.attendance.absenceRate > 20;
       let gradeColor = "text-slate-900";
       if (row.averageGrade !== null) {
         if (row.averageGrade >= 4.5)
@@ -32883,7 +32890,7 @@
 
     <div class="px-6 py-4 bg-slate-50/60 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div class="text-xs text-slate-500 font-medium" id="students-counter-label">
-        ${totalFiltered === 1 && searchQuery ? `Показано 1 из ${totalInClass} учеников 7Б класса` : `Показано ${startShown}–${endShown} из ${totalFiltered} учеников 7Б класса`}
+        ${totalFiltered === 1 && searchQuery ? `Показано 1 из ${totalInClass} учеников 7Б класса` : `Показано ${startShown}–${endShown} из ${totalInClass} учеников 7Б класса`}
       </div>
 
       ${totalPages > 1 ? `
@@ -36501,28 +36508,17 @@
           inputSummary?.classList.remove("border-rose-500");
         }
         if (hasError) return;
-        const db = getDB();
-        if (!db.parentContacts) db.parentContacts = [];
-        const channelLabels = {
-          phone: "Звонок",
-          chat: "Мессенджер",
-          personal: "Личная беседа"
-        };
-        const newContact = {
-          id: `pc-${Date.now()}-${Math.floor(Math.random() * 1e3)}`,
-          studentId: studentId || null,
+        const result = addParentContact({
+          studentId,
           parentId,
           author: "Смирнова М. В.",
           date,
           time: "15:30",
           channel,
-          channelLabel: channelLabels[channel] || "Звонок",
           summary,
-          agreementReached,
-          nextContactDate: null
-        };
-        db.parentContacts.unshift(newContact);
-        saveDB(db);
+          agreementReached
+        });
+        if (!result.success) return;
         closeContactModal();
         showSummaryToast("Контакт успешно зафиксирован");
         setTimeout(() => {
@@ -36696,9 +36692,11 @@
       }
     };
     const currentPeriod = periodConfigs[periodId] || periodConfigs.q1_2024;
+    const selectedClassId = currentUser?.classId || "class-7b";
     const isHolidayOrEmpty = periodId === "holidays_nov_2024" || periodId === "q2_2024";
     const periodOptions = {
-      classId: "class-7b",
+      classId: selectedClassId,
+      students: db.students,
       periodId: isHolidayOrEmpty ? periodId : "q1_2024",
       dateFrom: currentPeriod.dateFrom,
       dateTo: currentPeriod.dateTo
@@ -36734,9 +36732,11 @@
       { label: "Окт (Нед 2)", value: 4.2, heightPercent: 80 }
     ];
     const report = generateClassReport(db, periodOptions);
-    const weeklyAbsences = calculateWeeklyAbsences(db.lessons, db.attendance, {
-      periodId: "q1_2024"
-    });
+    const weeklyAbsences = calculateWeeklyAbsences(
+      db.lessons,
+      db.attendance,
+      periodOptions
+    );
     const lessonMap = new Map((db.lessons || []).map((l) => [l.id, l]));
     const studentMap = new Map((db.students || []).map((s) => [s.id, s]));
     let periodAbsences = (db.attendance || []).filter(
@@ -40851,8 +40851,14 @@
     "/analytics": {
       title: "Аналитика",
       render: () => {
+        const user = getCurrentUser();
+        if (user && user.role !== "teacher") {
+          return renderForbiddenView();
+        }
         const params = getRouteParams();
+        const requestedClassId = params.get("classId") || params.get("class");
         return renderAnalyticsView({
+          classId: requestedClassId,
           periodId: params.get("periodId") || params.get("period") || "q1_2024",
           showReport: params.get("showReport") === "true"
         });

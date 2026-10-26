@@ -136,6 +136,13 @@ def open_profile(driver):
     )
 
 
+def logout_via_sidebar(driver):
+    driver.find_element(By.ID, "btn-sidebar-logout").click()
+    WebDriverWait(driver, 10).until(EC.alert_is_present()).accept()
+    assert_route(driver, "/login")
+    wait_for_login_form(driver)
+
+
 def fill_password_form(driver, current, new, confirm):
     for field_id, value in (
         ("pwd-current", current),
@@ -240,6 +247,22 @@ def test_auth_10_change_password_success(driver):
         "Поле нового пароля не очищено после сохранения"
     )
 
+    logout_via_sidebar(driver)
+    submit_login(driver, TEACHER, NEW_PASSWORD)
+    wait_for_app(driver)
+    assert_route(driver, "/overview")
+    restored_profile = driver.find_element(By.ID, "sidebar-profile-link").text
+    assert "Смирнова М. В." in restored_profile, (
+        f"Вход с новым паролем открыл не ту учётную запись: «{restored_profile}»"
+    )
+    assert "Классный руководитель" in restored_profile, (
+        f"После входа с новым паролем пропала роль: «{restored_profile}»"
+    )
+
+    # Последующая проверка начинает с чистого localStorage, поэтому изменённый
+    # пароль не влияет на независимые сценарии этой задачи.
+    reset_all(driver)
+
 
 def test_auth_11_change_password_wrong_current(driver):
     """Проверяет отказ при неверном текущем пароле."""
@@ -313,7 +336,22 @@ def test_auth_13_old_password_invalid(driver):
         "После смены пароля изменилась привязка к классу"
     )
 
-    nav_links = driver.find_elements(By.CSS_SELECTOR, "#app-sidebar nav a[href]")
-    assert len(nav_links) == 9, (
-        f"Набор разделов изменился: найдено {len(nav_links)} вместо 9"
+    nav_titles = [
+        link.text.strip()
+        for link in driver.find_elements(By.CSS_SELECTOR, "#app-sidebar nav a[href]")
+    ]
+    expected_nav_titles = {
+        "Обзор класса",
+        "Ученики",
+        "Журнал",
+        "Посещаемость",
+        "Расписание",
+        "Родители",
+        "Собрания",
+        "Объявления",
+        "Аналитика",
+    }
+    assert set(nav_titles) == expected_nav_titles, (
+        "После смены пароля изменился состав доступных разделов: "
+        f"{nav_titles}"
     )

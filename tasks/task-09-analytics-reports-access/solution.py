@@ -215,17 +215,18 @@ def test_anl_14_unconfirmed_counter(driver):
 
 
 def test_anl_15_report_not_cached(driver):
-    """Проверяет, что отчёт строится по актуальным данным журнала."""
+    """Проверяет UI и данные: отчёт заново строится после изменения журнала."""
     reset_all(driver)
     submit_login(driver, TEACHER, PASSWORD)
     wait_for_app(driver)
 
     open_analytics(driver, "q1_2024")
     generate_report(driver)
-    value = report_metric_text(driver, "report-metric-att")
-    assert value == "93.6%", (
-        f"1048 посещений из 1120 отметок дают 93,6 %, получено «{value}»"
+    assert report_metric_text(driver, "report-metric-att") == "93.6%", (
+        "1048 посещений из 1120 отметок дают 93,6 %"
     )
+    report = driver.execute_script("return window.crmApi.getDB().classReports || null;")
+    assert not report, "Динамический отчёт не должен сохраняться в classroom_crm_db"
 
     marked = driver.execute_script(MARK_ONE_ABSENCE)
     assert marked, "Не удалось изменить отметку о посещаемости"
@@ -236,6 +237,14 @@ def test_anl_15_report_not_cached(driver):
     assert value == "93.5%", (
         f"После нового пропуска отчёт должен показать 93,5 %, получено «{value}»"
     )
+    report = driver.execute_script("return window.crmApi.getDB().classReports || null;")
+    assert not report, "Повторное формирование отчёта не должно создавать кэш в БД"
+    assert "Отчёт сформирован динамически" in driver.find_element(
+        By.ID, "report-container"
+    ).text, "На экране должна быть подпись о динамическом расчёте"
+    assert "classReports" not in driver.execute_script(
+        "return window.localStorage.getItem('classroom_crm_db');"
+    ), "В localStorage не должна появиться сохранённая копия отчёта"
 
 
 def test_anl_16_teacher_own_class_only(driver):
@@ -262,21 +271,54 @@ def test_anl_16_teacher_own_class_only(driver):
 
 
 def test_anl_17_subject_teacher_subjects(driver):
-    """Проверяет, что учитель-предметник не получает аналитику класса."""
+    """Проверяет аналитику предметника только в пределах его нагрузки."""
     reset_all(driver)
     submit_login(driver, SUBJECT_TEACHER, PASSWORD)
     wait_for_app(driver)
 
-    open_analytics(driver, "q1_2024")
+    open_analytics(driver, "q1_2024", "&classId=class-7b&subjectId=math")
+    assert analytics_view_shown(driver), (
+        "Предметник должен открывать аналитику своего предмета в своём классе"
+    )
+    assert not forbidden_shown(driver), "Своя нагрузка не должна быть запрещена"
+    report_text = driver.find_element(By.ID, "analytics-view").text
+    assert "Математика (Алгебра)" in report_text, (
+        "В аналитике 7Б должна быть доступна математика из нагрузки Козлова"
+    )
+    assert "Физика" not in report_text and "Русский язык" not in report_text, (
+        "В аналитике предметника не должны отображаться чужие предметы"
+    )
+
+    open_analytics(driver, "q1_2024", "&classId=class-8a&subjectId=math")
+    assert analytics_view_shown(driver), (
+        "Предметник должен открывать математику в другом своём классе"
+    )
+    assert not forbidden_shown(driver), "Класс из нагрузки не должен быть запрещён"
+
+    open_analytics(driver, "q1_2024", "&classId=class-7b&subjectId=phys")
+    assert analytics_view_shown(driver), (
+        "Запрос чужого предмета должен остаться на безопасном экране аналитики"
+    )
+    report_text = driver.find_element(By.ID, "analytics-view").text
+    assert "Нет данных по выбранному предмету" in report_text, (
+        "Для предмета вне нагрузки должно быть сообщение об отсутствии данных"
+    )
+    assert "Физика" not in report_text and "Русский язык" not in report_text, (
+        "Запрос чужого предмета не должен раскрывать его оценки или показатели"
+    )
+
+    open_analytics(driver, "q1_2024", "&classId=class-9v&subjectId=math")
+    assert analytics_view_shown(driver), "Предметнику доступен класс 9В из нагрузки"
+    assert "Алгебра" in driver.find_element(By.ID, "analytics-view").text, (
+        "Для 9В должна отображаться алгебра из нагрузки Козлова"
+    )
+
+    open_analytics(driver, "q1_2024", "&classId=class-7v&subjectId=math")
     assert forbidden_shown(driver), (
-        "Учителю-предметнику раздел «Аналитика» недоступен, "
-        "ожидалось сообщение «Доступ ограничен»"
+        "Класс вне нагрузки предметника должен быть полностью запрещён"
     )
     assert not analytics_view_shown(driver), (
-        "Учителю-предметнику нельзя показывать аналитику класса"
-    )
-    assert "Средние баллы по предметам" not in driver.page_source, (
-        "Учителю-предметнику нельзя показывать средние баллы по предметам класса"
+        "При запросе чужого класса аналитика не должна раскрывать данные"
     )
 
 

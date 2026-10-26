@@ -177,26 +177,34 @@ def confirm_absence(driver, date_value):
 
 
 def test_anl_05_student_attendance_percent(driver):
-    """Проверяет число пропусков ученика и его выделение в списке."""
+    """Проверяет порог 20 % и показатели посещаемости ученика."""
     reset_all(driver)
     submit_login(driver, TEACHER, PASSWORD)
     wait_for_app(driver)
     open_students(driver)
 
-    search_student(driver, "Котов", "st-06")
-    cell = row_cell(wait_student_row(driver, "st-06"), 4)
+    search_student(driver, "Сидоров", "st-14")
+    cell = row_cell(wait_student_row(driver, "st-14"), 4)
     text = cell.text
-    assert "1 из 40" in text, (
-        f"У Котова М. ожидался один пропуск из 40 уроков, получено «{text}»"
+    assert "12 из 40" in text and "12 дней" in text, (
+        f"У Сидорова Н. ожидались 12 пропусков из 40: «{text}»"
     )
-    assert "1 день" in text, (
-        f"У Котова М. ожидалась подпись «1 день», получено «{text}»"
-    )
-
     highlight = cell.find_element(By.CSS_SELECTOR, "span.font-bold")
     classes = highlight.get_attribute("class") or ""
     assert "text-amber-700" in classes, (
-        f"Пропуск ученика должен выделяться особым оформлением: «{classes}»"
+        "Пропуски 30 % должны выделяться особым оформлением"
+    )
+
+    search_student(driver, "Котов", "st-06")
+    cell = row_cell(wait_student_row(driver, "st-06"), 4)
+    text = cell.text
+    assert "1 из 40" in text and "1 день" in text, (
+        f"У Котова М. ожидался один пропуск из 40 уроков: «{text}»"
+    )
+    highlight = cell.find_element(By.CSS_SELECTOR, "span.font-bold")
+    classes = highlight.get_attribute("class") or ""
+    assert "text-amber-700" not in classes, (
+        "Пропуск 2,5 % не должен выделяться как превышение порога 20 %"
     )
 
 

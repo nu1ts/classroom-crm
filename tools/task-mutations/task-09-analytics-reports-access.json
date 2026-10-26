@@ -53,13 +53,8 @@
       "patches": [
         {
           "file": "src/views/analytics/render.js",
-          "find": "  if (currentUser && currentUser.role === \"teacher\") {\n    const allowedClassId = currentUser.classId || \"class-7b\";\n    if (\n      requestedClassId &&\n      requestedClassId !== allowedClassId &&\n      requestedClassId !== \"class-7b\" &&\n      requestedClassId !== \"7Б\" &&\n      requestedClassId !== \"7б\"\n    ) {\n      return renderForbiddenView();\n    }\n  }",
-          "replace": "  if (currentUser && currentUser.role === \"teacher\") {\n    const allowedClassId = requestedClassId || currentUser.classId || \"class-7b\";\n    if (requestedClassId && requestedClassId !== allowedClassId) {\n      return renderForbiddenView();\n    }\n  }"
-        },
-        {
-          "file": "src/views/analytics/render.js",
-          "find": "  const periodOptions = {\n    classId: \"class-7b\",",
-          "replace": "  const periodOptions = {\n    classId: requestedClassId || \"class-7b\","
+          "find": "  if (currentUser?.role === \"teacher\") {\n    const allowedClassId = currentUser.classId || \"class-7b\";\n    if (\n      requestedClassId &&\n      resolveClassId(requestedClassId) !== allowedClassId\n    ) {\n      return renderForbiddenView();\n    }\n  }",
+          "replace": "  if (currentUser?.role === \"teacher\") {\n    const allowedClassId = resolveClassId(requestedClassId) || currentUser.classId || \"class-7b\";\n    if (requestedClassId && resolveClassId(requestedClassId) !== allowedClassId) {\n      return renderForbiddenView();\n    }\n  }"
         }
       ]
     },
@@ -71,9 +66,9 @@
       ],
       "patches": [
         {
-          "file": "src/config/navigation.js",
-          "find": "    allowedRoutes: [\n      \"/classes\",\n      \"/journal\",\n      \"/schedule\",\n      \"/attendance\",\n      \"/profile\",\n    ],",
-          "replace": "    allowedRoutes: [\n      \"/classes\",\n      \"/journal\",\n      \"/schedule\",\n      \"/attendance\",\n      \"/analytics\",\n      \"/profile\",\n    ],"
+          "file": "src/views/analytics/render.js",
+          "find": "  const allowedSubjectIds = new Set(classWorkload.map((item) => item.subjectId));\n  const selectedSubjectId = isSubjectTeacher && allowedSubjectIds.has(requestedSubjectId)\n    ? requestedSubjectId\n    : isSubjectTeacher\n      ? null\n      : requestedSubjectId || null;\n  const scopedSubjects = isSubjectTeacher\n    ? (db.subjects || []).filter((subject) =>\n        selectedSubjectId\n          ? subject.id === selectedSubjectId\n          : allowedSubjectIds.has(subject.id),\n      )\n    : db.subjects || [];\n  const isForeignSubjectRequested = isSubjectTeacher && Boolean(requestedSubjectId) && !selectedSubjectId;",
+          "replace": "  const allowedSubjectIds = new Set(classWorkload.map((item) => item.subjectId));\n  const selectedSubjectId = requestedSubjectId || null;\n  const scopedSubjects = db.subjects || [];\n  const isForeignSubjectRequested = false;"
         }
       ]
     },
