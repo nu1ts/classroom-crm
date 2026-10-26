@@ -10,8 +10,8 @@
       "patches": [
         {
           "file": "src/services/attendance-ops.js",
-          "find": "  record.document = data.document || (isExcused ? \"Медицинская справка\" : null);\n  record.confirmedBy = data.confirmedBy || \"Смирнова М. В.\";\n  record.confirmedAt = new Date().toISOString();",
-          "replace": "  record.document = null;\n  record.confirmedBy = null;\n  record.confirmedAt = new Date().toISOString();"
+          "find": "  record.document = data.document || (isExcused ? \"Медицинская справка\" : null);\n  record.confirmedBy = isExcused\n    ? data.confirmedBy ||\n      currentUser.shortName ||\n      currentUser.personName ||\n      \"Смирнова М. В.\"\n    : null;\n  record.confirmedAt = isExcused ? new Date().toISOString() : null;",
+          "replace": "  record.document = null;\n  record.confirmedBy = null;\n  record.confirmedAt = isExcused ? new Date().toISOString() : null;"
         }
       ]
     },

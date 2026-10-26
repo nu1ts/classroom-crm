@@ -21833,8 +21833,8 @@
     record.value = "absent";
     record.reason = data.reason || (isExcused ? "Уважительная причина (справка / заявление)" : "Неуважительная причина");
     record.document = data.document || (isExcused ? "Медицинская справка" : null);
-    record.confirmedBy = data.confirmedBy || "Смирнова М. В.";
-    record.confirmedAt = (/* @__PURE__ */ new Date()).toISOString();
+    record.confirmedBy = isExcused ? data.confirmedBy || currentUser.shortName || currentUser.personName || "Смирнова М. В." : null;
+    record.confirmedAt = isExcused ? (/* @__PURE__ */ new Date()).toISOString() : null;
     if (db.meta) {
       const q1LessonIds = new Set(
         (db.lessons || []).filter((l) => l.periodId === "q1_2024").map((l) => l.id)
@@ -21847,8 +21847,8 @@
     return { success: true, record };
   }
   function batchConfirmAbsences(recordIds, data = {}) {
-    const currentUser = getCurrentUser();
-    if (!currentUser || currentUser.role !== "teacher") {
+    const currentUser2 = getCurrentUser();
+    if (!currentUser2 || currentUser2.role !== "teacher") {
       return {
         success: false,
         error: "Действие недоступно для вашей роли. Подтвердить причины пропусков может только классный руководитель.",
@@ -21939,6 +21939,14 @@
     }
     const db = getDB();
     if (!db.parentContacts) db.parentContacts = [];
+    if (studentId && !(db.parentStudentRelations || []).some(
+      (relation) => relation.parentId === parentId && relation.studentId === studentId
+    )) {
+      return {
+        success: false,
+        error: "Родитель не связан с указанным учеником"
+      };
+    }
     const channelLabels = {
       phone: "Звонок",
       chat: "Мессенджер",
@@ -22576,8 +22584,8 @@
     if (!lessonId || !studentId) {
       return { success: false, error: "Не указан урок или ученик" };
     }
-    const currentUser = getCurrentUser();
-    if (currentUser && currentUser.role && currentUser.role !== "subject_teacher") {
+    const currentUser2 = getCurrentUser();
+    if (currentUser2 && currentUser2.role && currentUser2.role !== "subject_teacher") {
       return {
         success: false,
         error: "Действие недоступно для вашей роли. Только учитель-предметник может выставлять или изменять оценки."
@@ -22616,7 +22624,7 @@
       };
     }
     if (!db.grades) db.grades = [];
-    const teacherName = teacher || currentUser && (currentUser.shortName || currentUser.personName) || lesson.teacher || "Учитель";
+    const teacherName = teacher || currentUser2 && (currentUser2.shortName || currentUser2.personName) || lesson.teacher || "Учитель";
     const existingGradeIndex = db.grades.findIndex(
       (g) => g.lessonId === lessonId && g.studentId === studentId
     );
@@ -22647,8 +22655,8 @@
     if (!lessonId || !studentId) {
       return { success: false, error: "Не указан урок или ученик" };
     }
-    const currentUser = getCurrentUser();
-    if (currentUser && currentUser.role && currentUser.role !== "subject_teacher") {
+    const currentUser2 = getCurrentUser();
+    if (currentUser2 && currentUser2.role && currentUser2.role !== "subject_teacher") {
       return {
         success: false,
         error: "Действие недоступно для вашей роли. Только учитель-предметник может удалять оценки."
@@ -24000,26 +24008,26 @@
   }
 
   // .build/task-16-medical-certificates/5/src/components/sidebar.js
-  function renderSidebar(currentUser, currentPath2) {
-    if (!currentUser) return "";
-    const roleConfig = ROLE_NAVIGATION[currentUser.role] || ROLE_NAVIGATION.teacher;
+  function renderSidebar(currentUser2, currentPath2) {
+    if (!currentUser2) return "";
+    const roleConfig = ROLE_NAVIGATION[currentUser2.role] || ROLE_NAVIGATION.teacher;
     const items = roleConfig.items || [];
-    let roleSubtitle = currentUser.className || currentUser.roleLabel || "Пользователь";
-    if (currentUser.role === "teacher") {
+    let roleSubtitle = currentUser2.className || currentUser2.roleLabel || "Пользователь";
+    if (currentUser2.role === "teacher") {
       roleSubtitle = "Классный руководитель 7Б";
-    } else if (currentUser.role === "subject_teacher") {
-      roleSubtitle = `${currentUser.subject || "Предметник"} (7Б, 8А, 9В)`;
-    } else if (currentUser.role === "parent") {
-      roleSubtitle = currentUser.childName || "Родитель 7Б";
-    } else if (currentUser.role === "student") {
+    } else if (currentUser2.role === "subject_teacher") {
+      roleSubtitle = `${currentUser2.subject || "Предметник"} (7Б, 8А, 9В)`;
+    } else if (currentUser2.role === "parent") {
+      roleSubtitle = currentUser2.childName || "Родитель 7Б";
+    } else if (currentUser2.role === "student") {
       roleSubtitle = "Ученик 7Б класса";
-    } else if (currentUser.role === "admin") {
+    } else if (currentUser2.role === "admin") {
       roleSubtitle = "Администратор школы";
     }
     const navHtml = items.map((item) => {
       const cleanPath = (currentPath2 || "").split("?")[0];
       const isStudentDetail = item.path === "/students" && (cleanPath === "/student" || cleanPath === "/student-summary");
-      const isClassJournal = item.path === "/classes" && currentUser?.role === "subject_teacher" && cleanPath === "/journal";
+      const isClassJournal = item.path === "/classes" && currentUser2?.role === "subject_teacher" && cleanPath === "/journal";
       const isActive = cleanPath === item.path || isStudentDetail || isClassJournal || item.path === roleConfig.defaultRoute && (!cleanPath || cleanPath === "/" || cleanPath === "");
       const activeClasses = isActive ? "bg-brand-sidebarActive text-white shadow-sm" : "text-slate-300 hover:text-white hover:bg-brand-sidebarHover";
       return `
@@ -24037,7 +24045,7 @@
         Только для просмотра
       </div>
     ` : "";
-    const initials = (currentUser.shortName || currentUser.personName || "П").split(" ").filter(Boolean).map((p) => p[0]).join("").slice(0, 2);
+    const initials = (currentUser2.shortName || currentUser2.personName || "П").split(" ").filter(Boolean).map((p) => p[0]).join("").slice(0, 2);
     return `
     <aside id="app-sidebar" class="w-64 bg-brand-sidebar text-white flex flex-col flex-shrink-0 h-screen border-r border-slate-800 select-none">
       <div class="p-5 flex items-center space-x-3 border-b border-slate-800/80">
@@ -24068,7 +24076,7 @@
       ];
       const roleOptionsHtml = demoRoles.map(
         (r) => `
-          <option value="${r.key}" ${currentUser.role === r.key ? "selected" : ""} class="bg-slate-900 text-white">
+          <option value="${r.key}" ${currentUser2.role === r.key ? "selected" : ""} class="bg-slate-900 text-white">
             ${r.name}
           </option>
         `
@@ -24089,17 +24097,17 @@
 
       <div class="p-3 border-t border-slate-800/80 bg-slate-900/40">
         <div class="flex items-center justify-between p-2 rounded-xl hover:bg-brand-sidebarHover/80 transition-colors">
-          <a href="/profile" id="sidebar-profile-link" data-profile-card class="flex items-center space-x-3 overflow-hidden flex-1 group ${currentUser.role === "subject_teacher" || currentUser.role === "parent" || currentUser.role === "student" ? "nav-profile-alias" : ""}">
-            ${currentUser.role === "subject_teacher" || currentUser.role === "parent" || currentUser.role === "student" ? '<span id="nav-profile" class="sr-only">Профиль</span>' : ""}
+          <a href="/profile" id="sidebar-profile-link" data-profile-card class="flex items-center space-x-3 overflow-hidden flex-1 group ${currentUser2.role === "subject_teacher" || currentUser2.role === "parent" || currentUser2.role === "student" ? "nav-profile-alias" : ""}">
+            ${currentUser2.role === "subject_teacher" || currentUser2.role === "parent" || currentUser2.role === "student" ? '<span id="nav-profile" class="sr-only">Профиль</span>' : ""}
             <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-600 to-sky-500 flex items-center justify-center text-white font-semibold text-xs shadow-inner flex-shrink-0">
               ${initials}
             </div>
             <div class="overflow-hidden">
               <div class="text-xs font-semibold text-white truncate group-hover:text-brand-300 transition-colors">
-                ${currentUser.shortName || currentUser.personName}
+                ${currentUser2.shortName || currentUser2.personName}
               </div>
               <div class="text-[11px] text-slate-400 truncate">
-                ${currentUser.roleLabel || "Профиль"}
+                ${currentUser2.roleLabel || "Профиль"}
               </div>
             </div>
           </a>
@@ -24149,13 +24157,13 @@
   function updateSidebarActiveItem(currentPath2) {
     const sidebar = document.getElementById("app-sidebar");
     if (!sidebar) return;
-    const currentUser = getCurrentUser();
+    const currentUser2 = getCurrentUser();
     const cleanPath = (currentPath2 || "").split("?")[0];
     const links = sidebar.querySelectorAll("nav a[href]");
     links.forEach((link) => {
       const href = link.getAttribute("href");
       const isStudentDetail = href === "/students" && (cleanPath === "/student" || cleanPath === "/student-summary");
-      const isClassJournal = href === "/classes" && currentUser?.role === "subject_teacher" && cleanPath === "/journal";
+      const isClassJournal = href === "/classes" && currentUser2?.role === "subject_teacher" && cleanPath === "/journal";
       const isActive = href === cleanPath || isStudentDetail || isClassJournal || href === "/overview" && (!cleanPath || cleanPath === "/" || cleanPath === "");
       if (isActive) {
         link.classList.remove(
@@ -24180,8 +24188,8 @@
   }
 
   // .build/task-16-medical-certificates/5/src/components/layout.js
-  function renderLayout(currentUser, currentPath2, contentHtml) {
-    if (currentPath2 === "/login" || !currentUser) {
+  function renderLayout(currentUser2, currentPath2, contentHtml) {
+    if (currentPath2 === "/login" || !currentUser2) {
       return `
       <div id="auth-layout" class="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         ${contentHtml}
@@ -24190,7 +24198,7 @@
     }
     return `
     <div id="main-layout" class="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-800">
-      ${renderSidebar(currentUser, currentPath2)}
+      ${renderSidebar(currentUser2, currentPath2)}
 
       <main id="app-content" class="flex-1 overflow-y-auto p-6 lg:p-8 scrollbar-thin">
         <div class="max-w-7xl mx-auto">
@@ -24276,8 +24284,8 @@
       return { success: false, errors: validation.errors };
     }
     const db = getDB();
-    const currentUser = getCurrentUser();
-    const authorName = author || currentUser && currentUser.name || "Смирнова М. В.";
+    const currentUser2 = getCurrentUser();
+    const authorName = author || currentUser2 && currentUser2.name || "Смирнова М. В.";
     const totalCount = (db.students || []).filter((s) => s.classId === classId).length || 28;
     const newAnnouncement = {
       id: `anc-${Date.now()}`,
@@ -24325,8 +24333,8 @@
   }
   function markAnnouncementRead(id, userIdentifier) {
     if (!userIdentifier) return false;
-    const currentUser = getCurrentUser();
-    if (currentUser && currentUser.role !== "parent" && currentUser.role !== "student") {
+    const currentUser2 = getCurrentUser();
+    if (currentUser2 && currentUser2.role !== "parent" && currentUser2.role !== "student") {
       return false;
     }
     const db = getDB();
@@ -24336,11 +24344,11 @@
       item.readBy = [];
     }
     let familyKey = userIdentifier;
-    if (currentUser) {
-      if (currentUser.role === "parent" && currentUser.childStudentId) {
-        familyKey = currentUser.childStudentId;
-      } else if (currentUser.role === "student" && currentUser.studentId) {
-        familyKey = currentUser.studentId;
+    if (currentUser2) {
+      if (currentUser2.role === "parent" && currentUser2.childStudentId) {
+        familyKey = currentUser2.childStudentId;
+      } else if (currentUser2.role === "student" && currentUser2.studentId) {
+        familyKey = currentUser2.studentId;
       }
     }
     if (!item.readBy.includes(familyKey) && !item.readBy.includes(userIdentifier)) {
@@ -24362,17 +24370,17 @@
     return `${count} объявлений`;
   }
   function renderAnnouncementsView() {
-    const currentUser = getCurrentUser();
-    const isTeacher = currentUser && currentUser.role === "teacher";
-    const isParent = currentUser && currentUser.role === "parent";
-    const isStudent = currentUser && currentUser.role === "student";
+    const currentUser2 = getCurrentUser();
+    const isTeacher = currentUser2 && currentUser2.role === "teacher";
+    const isParent = currentUser2 && currentUser2.role === "parent";
+    const isStudent = currentUser2 && currentUser2.role === "student";
     let targetClassId = "class-7b";
     if (isParent) {
-      targetClassId = currentUser.childClassId || currentUser.classId || "class-7b";
-    } else if (currentUser && currentUser.classId) {
-      targetClassId = currentUser.classId;
+      targetClassId = currentUser2.childClassId || currentUser2.classId || "class-7b";
+    } else if (currentUser2 && currentUser2.classId) {
+      targetClassId = currentUser2.classId;
     }
-    const rawClass = currentUser && currentUser.className || "7Б";
+    const rawClass = currentUser2 && currentUser2.className || "7Б";
     const className = rawClass.replace(/\s*\([^)]*\)/g, "").replace(/\s*класс/i, "").trim() || "7Б";
     const announcements = getAnnouncements(targetClassId);
     const formattedToday = formatDateRu(DEMO_ANNOUNCEMENT_DATE);
@@ -24425,9 +24433,9 @@
         <div id="announcements-list" class="space-y-4">
           ${announcements.map((item) => {
       const dateStr = item.date.includes("-") ? formatDateRu(item.date) : item.date;
-      const userIdentifier = currentUser && (currentUser.id || currentUser.email) || "";
-      const isRecipient = currentUser && (currentUser.role === "parent" || currentUser.role === "student");
-      const hasRead = isRecipient && item.readBy && (item.readBy.includes(userIdentifier) || currentUser.childStudentId && item.readBy.includes(currentUser.childStudentId));
+      const userIdentifier = currentUser2 && (currentUser2.id || currentUser2.email) || "";
+      const isRecipient = currentUser2 && (currentUser2.role === "parent" || currentUser2.role === "student");
+      const hasRead = isRecipient && item.readBy && (item.readBy.includes(userIdentifier) || currentUser2.childStudentId && item.readBy.includes(currentUser2.childStudentId));
       const currentReads = Math.min(item.totalCount || 28, item.readCount || 0);
       return `
               <article class="announcement-card bg-white rounded-3xl p-6 shadow-xs border border-slate-200/90 transition-all hover:border-slate-300 relative"
@@ -24714,7 +24722,7 @@
     });
   }
   function setupAnnouncementsListeners(navigate2) {
-    const currentUser = getCurrentUser();
+    const currentUser2 = getCurrentUser();
     const allModalIds = [
       "modal-announcement-detail",
       "modal-announcement-create",
@@ -24967,9 +24975,9 @@
   // .build/task-16-medical-certificates/5/src/views/classes/render.js
   function renderClassesView() {
     const db = getDB();
-    const currentUser = getCurrentUser();
+    const currentUser2 = getCurrentUser();
     const teacher = (db.teachers || []).find(
-      (t) => currentUser && t.accountUserId === currentUser.id || currentUser && currentUser.personName && t.fullName === currentUser.personName || currentUser && currentUser.shortName && t.shortName === currentUser.shortName
+      (t) => currentUser2 && t.accountUserId === currentUser2.id || currentUser2 && currentUser2.personName && t.fullName === currentUser2.personName || currentUser2 && currentUser2.shortName && t.shortName === currentUser2.shortName
     );
     const workload = teacher && Array.isArray(teacher.workload) ? teacher.workload : [];
     const totalHours = workload.reduce((sum, w) => sum + (Number(w.hours) || 0), 0);
@@ -25904,9 +25912,9 @@
 
   // .build/task-16-medical-certificates/5/src/views/login/render.js
   function renderLoginView() {
-    const currentUser = getCurrentUser();
-    if (currentUser) {
-      const defRoute = getDefaultRouteForRole(currentUser.role);
+    const currentUser2 = getCurrentUser();
+    if (currentUser2) {
+      const defRoute = getDefaultRouteForRole(currentUser2.role);
       return `
       <div class="w-full max-w-md mx-auto my-auto animate-fadeIn">
         <div class="text-center mb-8">
@@ -25935,9 +25943,9 @@
           </p>
 
           <div class="bg-slate-50 rounded-xl p-4 border border-slate-200/80 text-left mb-6">
-            <div class="font-bold text-sm text-slate-900">${currentUser.shortName || currentUser.personName}</div>
-            <div class="text-xs text-brand-600 font-semibold mt-0.5">${currentUser.roleLabel}</div>
-            <div class="text-[11px] text-slate-400 mt-1">${currentUser.username}</div>
+            <div class="font-bold text-sm text-slate-900">${currentUser2.shortName || currentUser2.personName}</div>
+            <div class="text-xs text-brand-600 font-semibold mt-0.5">${currentUser2.roleLabel}</div>
+            <div class="text-[11px] text-slate-400 mt-1">${currentUser2.username}</div>
           </div>
 
           <div class="space-y-2.5">
@@ -26101,13 +26109,13 @@
 
   // .build/task-16-medical-certificates/5/src/views/login/listeners.js
   function setupLoginListeners(onLoginSuccess) {
-    const currentUser = getCurrentUser();
-    if (currentUser) {
+    const currentUser2 = getCurrentUser();
+    if (currentUser2) {
       const toCabinetBtn = document.getElementById("btn-login-to-cabinet");
       if (toCabinetBtn) {
         toCabinetBtn.addEventListener("click", (e) => {
           e.preventDefault();
-          const defRoute = getDefaultRouteForRole(currentUser.role);
+          const defRoute = getDefaultRouteForRole(currentUser2.role);
           navigate(defRoute);
         });
       }
@@ -26326,8 +26334,8 @@
   // .build/task-16-medical-certificates/5/src/views/overview/render.js
   function renderOverviewView() {
     const db = getDB();
-    const currentUser = getCurrentUser();
-    const classId = currentUser && currentUser.role === "teacher" && currentUser.classId ? currentUser.classId : "class-7b";
+    const currentUser2 = getCurrentUser();
+    const classId = currentUser2 && currentUser2.role === "teacher" && currentUser2.classId ? currentUser2.classId : "class-7b";
     const currentClass = (db.classes || []).find((c) => c.id === classId);
     const className = currentClass ? currentClass.name : "7Б";
     const demoDate = db.meta?.demoToday || "2024-10-28";
@@ -26345,7 +26353,7 @@
     const todayAttendanceRate = todayAtt.totalMarks > 0 && todayAtt.attendanceRate !== null ? todayAtt.attendanceRate : 0;
     const todayPresent = todayAtt.totalMarks > 0 ? Math.round(todayAttendanceRate / 100 * totalStudents) : 0;
     const todayAbsent = todayAtt.totalMarks > 0 ? Math.max(0, totalStudents - todayPresent) : 0;
-    const teacherName = currentUser?.personName || "Смирнова Марина Васильевна";
+    const teacherName = currentUser2?.personName || "Смирнова Марина Васильевна";
     const room = currentClass?.room || "Кабинет 302";
     const classAvg = calculateClassAverage(db.grades, { periodId }) || 4.2;
     const unconfirmedAbsences = getUnconfirmedAbsences(
@@ -26355,6 +26363,7 @@
       { periodId }
     );
     const unconfirmedCount = unconfirmedAbsences.length;
+    const unconfirmedStudentId = unconfirmedAbsences.find((absence) => absence.studentId === "st-23")?.studentId || unconfirmedAbsences[0]?.studentId || "";
     const riskZoneList = getRiskZoneStudents(
       (db.students || []).filter((s) => s.classId === "class-7b"),
       db.lessons,
@@ -26548,7 +26557,7 @@
           </div>
           <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
             <span class="text-slate-500">Требуют справки</span>
-            <a href="/attendance?filter=unconfirmed" class="font-semibold text-brand-600 hover:text-brand-700 hover:underline">
+            <a href="/attendance?filter=unconfirmed${unconfirmedStudentId ? `&studentId=${encodeURIComponent(unconfirmedStudentId)}` : ""}" class="font-semibold text-brand-600 hover:text-brand-700 hover:underline">
               К журналу →
             </a>
           </div>
@@ -27901,21 +27910,21 @@
   // .build/task-16-medical-certificates/5/src/views/attendance/render.js
   function renderAttendanceView(options = {}) {
     const db = getDB();
-    const currentUser = getCurrentUser();
-    const isSubjectTeacher = currentUser && currentUser.role === "subject_teacher";
+    const currentUser2 = getCurrentUser();
+    const isSubjectTeacher = currentUser2 && currentUser2.role === "subject_teacher";
     const periodId = "q1_2024";
     let teacherWorkload = [];
     if (isSubjectTeacher) {
       const teacherProfile = (db.teachers || []).find(
-        (t) => t.accountUserId === currentUser.id || t.fullName === currentUser.name || t.fullName === currentUser.personName
+        (t) => t.accountUserId === currentUser2.id || t.fullName === currentUser2.name || t.fullName === currentUser2.personName
       );
       teacherWorkload = teacherProfile && teacherProfile.workload || [];
     }
     const queryString = window.location.search || "";
     const urlParams = new URLSearchParams(queryString);
     let selectedClassId = options.classId || urlParams.get("class") || (isSubjectTeacher ? "class-7b" : "class-7b");
-    if (currentUser && currentUser.role === "teacher" && currentUser.classId) {
-      selectedClassId = currentUser.classId;
+    if (currentUser2 && currentUser2.role === "teacher" && currentUser2.classId) {
+      selectedClassId = currentUser2.classId;
     }
     const currentClassObj = (db.classes || []).find(
       (c) => c.id === selectedClassId || c.name.toLowerCase() === selectedClassId.toLowerCase()
@@ -27983,6 +27992,7 @@
         to: "2024-09-06"
       }
     ];
+    const highlightedStudentId = urlParams.get("studentId");
     const activeWeekId = options.weekId || urlParams.get("week") || "w8";
     const selectedWeek = weeks.find((w) => w.id === activeWeekId) || weeks[0];
     const daysOfWeek = generateDaysOfWeek(selectedWeek.from);
@@ -27991,7 +28001,7 @@
     if (isSubjectTeacher) {
       const workloadClasses = new Set(teacherWorkload.map((w) => w.classId));
       weekLessons = weekLessons.filter(
-        (l) => (!l.classId || l.classId === selectedClassId) && (l.teacher === currentUser.personName || l.teacher === currentUser.shortName || l.subjectId === "math")
+        (l) => (!l.classId || l.classId === selectedClassId) && (l.teacher === currentUser2.personName || l.teacher === currentUser2.shortName || l.subjectId === "math")
       );
     }
     const weekLessonsCount = weekLessons.length > 0 ? weekLessons.length : isSubjectTeacher ? 5 : 20;
@@ -28040,7 +28050,7 @@
             <td class="py-3 px-3 text-center">
               <span title="Пропущено уроков: ${dayAbsenceRecords.length}. Не подтверждено"
                     class="inline-block px-3 py-1 rounded-lg text-xs font-bold bg-rose-500 text-white shadow-2xs">
-                Н (Нп)${countBadge}
+                Н (без)${countBadge}
               </span>
             </td>
           `;
@@ -28056,7 +28066,7 @@
                     data-lesson-id="${unconfirmedRec.lessonId}"
                     title="Пропущено уроков: ${dayAbsenceRecords.length}. Кликните для подтверждения уважительной причины"
                     class="btn-open-confirm-cell inline-block px-3 py-1 rounded-lg text-xs font-bold bg-rose-500 hover:bg-rose-600 text-white shadow-2xs hover:scale-105 transition-transform cursor-pointer">
-              Н (Нп)${countBadge}
+              Н (без)${countBadge}
             </button>
           </td>
         `;
@@ -28104,7 +28114,7 @@
         hasUnconfirmed,
         weekAbsenceLessons,
         html: `
-        <tr class="student-row hover:bg-slate-50/80 transition-colors border-b border-slate-100 ${hasUnconfirmed ? "bg-rose-50/20" : ""}" data-has-absences="${weekAbsenceLessons > 0}">
+        <tr class="student-row hover:bg-slate-50/80 transition-colors border-b border-slate-100 ${hasUnconfirmed ? "bg-rose-50/20" : ""} ${st.id === highlightedStudentId ? "ring-2 ring-brand-500 bg-brand-50/40" : ""}" data-student-id="${st.id}" data-has-absences="${weekAbsenceLessons > 0}">
           <td class="py-3.5 px-4 font-semibold text-xs text-slate-400 text-center w-12">
             ${index + 1}
           </td>
@@ -28194,7 +28204,7 @@
         ` : ""}
       </div>
 
-      ${!isSubjectTeacher ? unconfirmedCount > 0 ? `
+      ${!isSubjectTeacher && unconfirmedCount > 0 ? `
         <div id="banner-unconfirmed" class="bg-rose-50/80 border border-rose-200/90 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div class="flex items-start space-x-3">
             <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 mt-0.5 border border-rose-200">
@@ -28216,16 +28226,6 @@
                   class="self-start sm:self-center py-2 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs shadow-xs transition-colors whitespace-nowrap">
             Подтвердить причину
           </button>
-        </div>
-      ` : `
-        <div id="banner-unconfirmed" class="bg-emerald-50/80 border border-emerald-200/90 rounded-2xl p-4 flex items-center justify-between shadow-xs">
-          <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">✓</div>
-            <div>
-              <h4 class="text-xs font-bold text-emerald-950">Все пропуски подтверждены</h4>
-              <p class="text-[11px] text-emerald-700">Неподтверждённых пропусков за период нет. Метрики в норме.</p>
-            </div>
-          </div>
         </div>
       ` : ""}
 
@@ -28263,7 +28263,7 @@
             <span>Присутствовал</span>
           </div>
           <div class="flex items-center space-x-2">
-            <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-rose-500 text-white shadow-2xs">Н (Нп)</span>
+            <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-rose-500 text-white shadow-2xs">Н (без)</span>
             <span>Неуважительная причина (Неподтверждено)</span>
           </div>
           <div class="flex items-center space-x-2">
@@ -28386,8 +28386,8 @@
   // .build/task-16-medical-certificates/5/src/views/attendance/listeners.js
   function setupAttendanceListeners(onNavigate) {
     const db = getDB();
-    const currentUser = getCurrentUser();
-    const isSubjectTeacher = currentUser && currentUser.role === "subject_teacher";
+    const currentUser2 = getCurrentUser();
+    const isSubjectTeacher = currentUser2 && currentUser2.role === "subject_teacher";
     const periodId = "q1_2024";
     const modal = document.getElementById("modal-confirm-absence");
     const modalDialog = document.getElementById("modal-confirm-dialog");
@@ -28628,18 +28628,18 @@
     return "bg-slate-100 text-slate-700 border border-slate-200";
   }
   function renderScheduleView(options = {}) {
-    const currentUser = getCurrentUser();
+    const currentUser2 = getCurrentUser();
     const db = getDB();
-    const isSubjectTeacher = currentUser && currentUser.role === "subject_teacher";
-    const isParent = currentUser && currentUser.role === "parent";
-    const isStudent = currentUser && currentUser.role === "student";
-    const isTeacher = currentUser && (currentUser.role === "teacher" || currentUser.role === "admin");
+    const isSubjectTeacher = currentUser2 && currentUser2.role === "subject_teacher";
+    const isParent = currentUser2 && currentUser2.role === "parent";
+    const isStudent = currentUser2 && currentUser2.role === "student";
+    const isTeacher = currentUser2 && (currentUser2.role === "teacher" || currentUser2.role === "admin");
     let allowedClassId = "class-7b";
     if (isParent) {
-      const child = (db.students || []).find((s) => s.id === currentUser.childStudentId);
-      allowedClassId = child && child.classId || currentUser.classId || "class-7b";
-    } else if (currentUser && currentUser.classId) {
-      allowedClassId = currentUser.classId;
+      const child = (db.students || []).find((s) => s.id === currentUser2.childStudentId);
+      allowedClassId = child && child.classId || currentUser2.classId || "class-7b";
+    } else if (currentUser2 && currentUser2.classId) {
+      allowedClassId = currentUser2.classId;
     }
     const requestedClassId = options.classId || new URLSearchParams(window.location.search || "").get("classId") || new URLSearchParams(window.location.search || "").get("class");
     const isAccessDenied = Boolean(
@@ -28658,7 +28658,7 @@
     let scheduleLessons = (db.lessons || []).filter((l) => weekDateSet.has(l.date));
     if (isSubjectTeacher) {
       scheduleLessons = scheduleLessons.filter(
-        (l) => l.teacher === currentUser.personName || l.teacher === currentUser.shortName || l.teacher === "Козлов А. П."
+        (l) => l.teacher === currentUser2.personName || l.teacher === currentUser2.shortName || l.teacher === "Козлов А. П."
       );
     } else {
       scheduleLessons = scheduleLessons.filter(
@@ -28956,10 +28956,10 @@
                   <label for="lesson-class-select" class="block text-xs font-semibold text-slate-700 mb-1.5">Класс</label>
                   <div class="relative">
                     <select id="lesson-class-select" required
-                            ${!currentUser || currentUser.role !== "admin" ? "disabled" : ""}
-                            class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all ${!currentUser || currentUser.role !== "admin" ? "bg-slate-100/90 text-slate-600 cursor-not-allowed" : "bg-white hover:border-slate-300 cursor-pointer"}">
+                            ${!currentUser2 || currentUser2.role !== "admin" ? "disabled" : ""}
+                            class="w-full h-10 appearance-none pl-3.5 pr-10 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 shadow-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all ${!currentUser2 || currentUser2.role !== "admin" ? "bg-slate-100/90 text-slate-600 cursor-not-allowed" : "bg-white hover:border-slate-300 cursor-pointer"}">
                       <option value="${allowedClassId}" selected>${classesMap.get(allowedClassId) || "7Б"}</option>
-                      ${currentUser && currentUser.role === "admin" ? `
+                      ${currentUser2 && currentUser2.role === "admin" ? `
                         <option value="class-8a">8А</option>
                         <option value="class-8b">8Б</option>
                         <option value="class-9v">9В</option>
@@ -29668,9 +29668,9 @@
     return dateStr;
   }
   function renderMeetingsView(options = {}) {
-    const currentUser = getCurrentUser();
-    const classId = currentUser && currentUser.classId || "class-7b";
-    const rawClassName = currentUser && currentUser.className || (classId.includes("8a") ? "8А" : "7Б");
+    const currentUser2 = getCurrentUser();
+    const classId = currentUser2 && currentUser2.classId || "class-7b";
+    const rawClassName = currentUser2 && currentUser2.className || (classId.includes("8a") ? "8А" : "7Б");
     const className = rawClassName.replace(/\s*\([^)]*\)/g, "").replace(/\s*класс/i, "").trim() || "7Б";
     const db = getDB();
     const classStudents = (db.students || []).filter(
@@ -30934,11 +30934,11 @@
   // .build/task-16-medical-certificates/5/src/views/journal/render.js
   function renderJournalView(options = {}) {
     const db = getDB();
-    const currentUser = getCurrentUser() || {
+    const currentUser2 = getCurrentUser() || {
       role: "teacher",
       shortName: "Смирнова М. В."
     };
-    const isSubjectTeacher = currentUser && currentUser.role === "subject_teacher";
+    const isSubjectTeacher = currentUser2 && currentUser2.role === "subject_teacher";
     const selectedClassId = options.classId || "class-7b";
     const classObj = (db.classes || []).find(
       (c) => c.id === selectedClassId || c.name === selectedClassId
@@ -30949,7 +30949,7 @@
     ).slice().sort((a, b) => a.fullName.localeCompare(b.fullName, "ru"));
     const subjects = db.subjects || [];
     const teacherObj = isSubjectTeacher ? (db.teachers || []).find(
-      (t) => t.accountUserId === currentUser.id || t.id === currentUser.teacherId || currentUser.personName && t.fullName === currentUser.personName || currentUser.shortName && t.shortName === currentUser.shortName
+      (t) => t.accountUserId === currentUser2.id || t.id === currentUser2.teacherId || currentUser2.personName && t.fullName === currentUser2.personName || currentUser2.shortName && t.shortName === currentUser2.shortName
     ) : null;
     const fullTeacherWorkload = teacherObj && Array.isArray(teacherObj.workload) ? teacherObj.workload : [];
     const teacherWorkload = fullTeacherWorkload.filter(
@@ -31785,7 +31785,7 @@
 
   // .build/task-16-medical-certificates/5/src/views/journal/listeners.js
   function setupJournalListeners(onNavigate) {
-    const currentUser = getCurrentUser();
+    const currentUser2 = getCurrentUser();
     const selectSubject = document.getElementById("select-journal-subject");
     const selectWeek = document.getElementById("select-journal-week");
     const selectStatus = document.getElementById("select-journal-status");
@@ -32036,7 +32036,7 @@
       if (formComment) formComment.reset();
     }
     function openJournalConfirmModal() {
-      const isSubjTeacher = currentUser && currentUser.role === "subject_teacher";
+      const isSubjTeacher = currentUser2 && currentUser2.role === "subject_teacher";
       if (isSubjTeacher) return;
       if (!modalConfirm || !activeAttendanceRecord) return;
       const currentDB = getDB();
@@ -32153,7 +32153,7 @@
         elStudentAvatar.textContent = initials.toUpperCase();
       }
       if (elStudentLink) {
-        const isSubj = currentUser && currentUser.role === "subject_teacher";
+        const isSubj = currentUser2 && currentUser2.role === "subject_teacher";
         if (isSubj) {
           elStudentLink.classList.add("hidden");
         } else if (student) {
@@ -32236,7 +32236,7 @@
               elAbsenceDetails.innerHTML = "";
             }
             if (elConfirmBlock) {
-              const isSubjTeacher = currentUser && currentUser.role === "subject_teacher";
+              const isSubjTeacher = currentUser2 && currentUser2.role === "subject_teacher";
               if (isSubjTeacher) {
                 elConfirmBlock.classList.add("hidden");
               } else {
@@ -32371,9 +32371,9 @@
         if (!activeLessonId || !activeStudentId || !inputCommentText) return;
         const text = inputCommentText.value.trim();
         if (!text) return;
-        const currentUser2 = getCurrentUser();
-        const authorName = currentUser2 && (currentUser2.shortName || currentUser2.personName) ? currentUser2.shortName || currentUser2.personName : "Смирнова М. В.";
-        const authorRole = currentUser2 ? currentUser2.role : "teacher";
+        const currentUser3 = getCurrentUser();
+        const authorName = currentUser3 && (currentUser3.shortName || currentUser3.personName) ? currentUser3.shortName || currentUser3.personName : "Смирнова М. В.";
+        const authorRole = currentUser3 ? currentUser3.role : "teacher";
         const res = addJournalComment({
           lessonId: activeLessonId,
           studentId: activeStudentId,
@@ -32635,8 +32635,8 @@
           return;
         }
         const db = getDB();
-        const currentUser2 = getCurrentUser();
-        const teacherName = currentUser2 && (currentUser2.shortName || currentUser2.personName) ? currentUser2.shortName || currentUser2.personName : "Козлов А. П.";
+        const currentUser3 = getCurrentUser();
+        const teacherName = currentUser3 && (currentUser3.shortName || currentUser3.personName) ? currentUser3.shortName || currentUser3.personName : "Козлов А. П.";
         const lessonEntries = /* @__PURE__ */ new Map();
         document.querySelectorAll(".grade-input").forEach((input) => {
           const lessonId = input.getAttribute("data-lesson-id");
@@ -32972,11 +32972,11 @@
   // .build/task-16-medical-certificates/5/src/views/students/render.js
   function renderStudentsView(options = {}) {
     const db = getDB();
-    const currentUser = getCurrentUser();
+    const currentUser2 = getCurrentUser();
     const searchParams = new URLSearchParams(window.location.search || "");
     const requestedClassId = options.classId || options.class || searchParams.get("classId") || searchParams.get("class");
-    if (currentUser && currentUser.role === "teacher") {
-      const allowedClassId = currentUser.classId || "class-7b";
+    if (currentUser2 && currentUser2.role === "teacher") {
+      const allowedClassId = currentUser2.classId || "class-7b";
       if (requestedClassId && requestedClassId !== allowedClassId && requestedClassId !== "class-7b" && requestedClassId !== "7Б" && requestedClassId !== "7б") {
         return renderForbiddenView();
       }
@@ -32988,7 +32988,7 @@
     const sortOrder = options.sortOrder || "asc";
     const currentPage = parseInt(options.page || "1", 10);
     const pageSize = 10;
-    const selectedClassId = currentUser?.role === "teacher" ? currentUser.classId || "class-7b" : requestedClassId || "class-7b";
+    const selectedClassId = currentUser2?.role === "teacher" ? currentUser2.classId || "class-7b" : requestedClassId || "class-7b";
     const rawStudents = (db.students || []).filter(
       (s) => (!s.classId || s.classId === selectedClassId) && s.status !== "archived"
     );
@@ -34057,10 +34057,10 @@
   // .build/task-16-medical-certificates/5/src/views/student-summary/render.js
   function renderStudentSummaryView(options = {}) {
     const db = getDB();
-    const currentUser = getCurrentUser();
+    const currentUser2 = getCurrentUser();
     const periodId = options.periodId || "q1_2024";
     const studentId = options.studentId || options.id || "st-23";
-    if (["parent", "student"].includes(currentUser?.role)) {
+    if (["parent", "student"].includes(currentUser2?.role)) {
       return renderForbiddenView();
     }
     let student = (db.students || []).find((s) => s.id === studentId);
@@ -36693,13 +36693,13 @@
   // .build/task-16-medical-certificates/5/src/views/analytics/render.js
   function renderAnalyticsView(options = {}) {
     const db = getDB();
-    const currentUser = getCurrentUser();
+    const currentUser2 = getCurrentUser();
     const searchParams = new URLSearchParams(window.location.search || "");
     const requestedClassId = options.classId || options.class || searchParams.get("classId") || searchParams.get("class");
     const requestedSubjectId = options.subjectId || options.subject || searchParams.get("subjectId") || searchParams.get("subject");
-    const isSubjectTeacher = currentUser?.role === "subject_teacher";
+    const isSubjectTeacher = currentUser2?.role === "subject_teacher";
     const currentTeacher = isSubjectTeacher ? (db.teachers || []).find(
-      (teacher) => teacher.accountUserId === currentUser.id || teacher.fullName === currentUser.personName || teacher.shortName === currentUser.shortName
+      (teacher) => teacher.accountUserId === currentUser2.id || teacher.fullName === currentUser2.personName || teacher.shortName === currentUser2.shortName
     ) : null;
     const workload = currentTeacher?.workload || [];
     const resolveClassId = (classValue) => {
@@ -36708,10 +36708,10 @@
       );
       return classItem?.id || classValue;
     };
-    const selectedClassId = isSubjectTeacher ? resolveClassId(requestedClassId) || workload[0]?.classId : currentUser?.classId || "class-7b";
+    const selectedClassId = isSubjectTeacher ? resolveClassId(requestedClassId) || workload[0]?.classId : currentUser2?.classId || "class-7b";
     const classWorkload = isSubjectTeacher ? workload.filter((item) => item.classId === selectedClassId) : [];
-    if (currentUser?.role === "teacher") {
-      const allowedClassId = currentUser.classId || "class-7b";
+    if (currentUser2?.role === "teacher") {
+      const allowedClassId = currentUser2.classId || "class-7b";
       if (requestedClassId && resolveClassId(requestedClassId) !== allowedClassId) {
         return renderForbiddenView();
       }
@@ -37015,7 +37015,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               ${riskStudents.map(
       (st) => `
-                <div class="p-4 rounded-2xl border ${st.riskLevel === "critical" ? "border-rose-200 bg-rose-50/40" : "border-amber-200 bg-amber-50/40"} space-y-2">
+                <div class="risk-student-card p-4 rounded-2xl border ${st.riskLevel === "critical" ? "border-rose-200 bg-rose-50/40" : "border-amber-200 bg-amber-50/40"} space-y-2" data-student-id="${st.studentId}">
                   <div class="flex items-center justify-between">
                     <a href="/student?id=${st.studentId}" class="text-xs font-bold text-slate-900 hover:text-brand-600 hover:underline">
                       ${st.name}
@@ -37358,14 +37358,14 @@
   // .build/task-16-medical-certificates/5/src/views/accounts/render.js
   function renderAccountsView(options = {}) {
     const db = getDB();
-    const currentUser = db.users.find(
+    const currentUser2 = db.users.find(
       (u) => u.id === (options.currentUserId || "")
     );
     const searchQuery = (options.searchQuery || "").trim();
     const filterRole = options.filterRole || "all";
     const rows = (db.users || []).map((user) => ({
       user,
-      isSelf: Boolean(currentUser && currentUser.id === user.id)
+      isSelf: Boolean(currentUser2 && currentUser2.id === user.id)
     }));
     const activeCount = rows.filter((r) => r.user.status === "active").length;
     const blockedCount = rows.length - activeCount;
@@ -38053,8 +38053,8 @@
 
   // .build/task-16-medical-certificates/5/src/views/change-password/render.js
   function renderChangePasswordView() {
-    const currentUser = getCurrentUser();
-    if (!currentUser) {
+    const currentUser2 = getCurrentUser();
+    if (!currentUser2) {
       return "";
     }
     return `
@@ -38119,8 +38119,8 @@
 
   // .build/task-16-medical-certificates/5/src/views/change-password/listeners.js
   function setupChangePasswordListeners(onNavigate) {
-    const currentUser = getCurrentUser();
-    if (!currentUser) return;
+    const currentUser2 = getCurrentUser();
+    if (!currentUser2) return;
     const form = document.getElementById("change-password-form");
     const errorBox = document.getElementById("cp-error-box");
     function showError(msg) {
@@ -38135,12 +38135,12 @@
         const current = (document.getElementById("cp-current") || {}).value || "";
         const next = (document.getElementById("cp-new") || {}).value || "";
         const confirm2 = (document.getElementById("cp-confirm") || {}).value || "";
-        const res = changePassword(currentUser.id, current, next, confirm2, true);
+        const res = changePassword(currentUser2.id, current, next, confirm2, true);
         if (!res.success) {
           showError(res.error);
           return;
         }
-        const defRoute = getDefaultRouteForRole(currentUser.role);
+        const defRoute = getDefaultRouteForRole(currentUser2.role);
         navigate(defRoute);
       });
     }
@@ -41013,12 +41013,12 @@
       title: "Учётные записи",
       render: () => {
         const params = getRouteParams();
-        const currentUser = getCurrentUser();
+        const currentUser2 = getCurrentUser();
         return renderAccountsView({
           searchQuery: params.get("search") || "",
           filterRole: params.get("role") || "all",
           page: params.get("page") || "1",
-          currentUserId: currentUser ? currentUser.id : null
+          currentUserId: currentUser2 ? currentUser2.id : null
         });
       },
       setup: (navigate2) => setupAccountsListeners(navigate2)

@@ -395,7 +395,7 @@ export function renderAnalyticsView(options = {}) {
               ${riskStudents
                 .map(
                   (st) => `
-                <div class="p-4 rounded-2xl border ${st.riskLevel === "critical" ? "border-rose-200 bg-rose-50/40" : "border-amber-200 bg-amber-50/40"} space-y-2">
+                <div class="risk-student-card p-4 rounded-2xl border ${st.riskLevel === "critical" ? "border-rose-200 bg-rose-50/40" : "border-amber-200 bg-amber-50/40"} space-y-2" data-student-id="${st.studentId}">
                   <div class="flex items-center justify-between">
                     <a href="/student?id=${st.studentId}" class="text-xs font-bold text-slate-900 hover:text-brand-600 hover:underline">
                       ${st.name}

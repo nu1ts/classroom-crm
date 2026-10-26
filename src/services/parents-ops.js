@@ -28,6 +28,19 @@ export function addParentContact(data = {}) {
   const db = getDB();
   if (!db.parentContacts) db.parentContacts = [];
 
+  if (
+    studentId &&
+    !(db.parentStudentRelations || []).some(
+      (relation) =>
+        relation.parentId === parentId && relation.studentId === studentId,
+    )
+  ) {
+    return {
+      success: false,
+      error: "Родитель не связан с указанным учеником",
+    };
+  }
+
   const channelLabels = {
     phone: "Звонок",
     chat: "Мессенджер",

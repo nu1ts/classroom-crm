@@ -21840,8 +21840,8 @@
     record.value = "absent";
     record.reason = data.reason || (isExcused ? "Уважительная причина (справка / заявление)" : "Неуважительная причина");
     record.document = data.document || (isExcused ? "Медицинская справка" : null);
-    record.confirmedBy = data.confirmedBy || "Смирнова М. В.";
-    record.confirmedAt = (/* @__PURE__ */ new Date()).toISOString();
+    record.confirmedBy = isExcused ? data.confirmedBy || currentUser.shortName || currentUser.personName || "Смирнова М. В." : null;
+    record.confirmedAt = isExcused ? (/* @__PURE__ */ new Date()).toISOString() : null;
     if (db.meta) {
       const q1LessonIds = new Set(
         (db.lessons || []).filter((l) => l.periodId === "q1_2024").map((l) => l.id)
@@ -21946,6 +21946,14 @@
     }
     const db = getDB();
     if (!db.parentContacts) db.parentContacts = [];
+    if (studentId && !(db.parentStudentRelations || []).some(
+      (relation) => relation.parentId === parentId && relation.studentId === studentId
+    )) {
+      return {
+        success: false,
+        error: "Родитель не связан с указанным учеником"
+      };
+    }
     const channelLabels = {
       phone: "Звонок",
       chat: "Мессенджер",
@@ -26365,6 +26373,7 @@
       { periodId }
     );
     const unconfirmedCount = unconfirmedAbsences.length;
+    const unconfirmedStudentId = unconfirmedAbsences.find((absence) => absence.studentId === "st-23")?.studentId || unconfirmedAbsences[0]?.studentId || "";
     const riskZoneList = getRiskZoneStudents(
       (db.students || []).filter((s) => s.classId === "class-7b"),
       db.lessons,
@@ -26558,7 +26567,7 @@
           </div>
           <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
             <span class="text-slate-500">Требуют справки</span>
-            <a href="/attendance?filter=unconfirmed" class="font-semibold text-brand-600 hover:text-brand-700 hover:underline">
+            <a href="/attendance?filter=unconfirmed${unconfirmedStudentId ? `&studentId=${encodeURIComponent(unconfirmedStudentId)}` : ""}" class="font-semibold text-brand-600 hover:text-brand-700 hover:underline">
               К журналу →
             </a>
           </div>
@@ -27993,6 +28002,7 @@
         to: "2024-09-06"
       }
     ];
+    const highlightedStudentId = urlParams.get("studentId");
     const activeWeekId = options.weekId || urlParams.get("week") || "w8";
     const selectedWeek = weeks.find((w) => w.id === activeWeekId) || weeks[0];
     const daysOfWeek = generateDaysOfWeek(selectedWeek.from);
@@ -28050,7 +28060,7 @@
             <td class="py-3 px-3 text-center">
               <span title="Пропущено уроков: ${dayAbsenceRecords.length}. Не подтверждено"
                     class="inline-block px-3 py-1 rounded-lg text-xs font-bold bg-rose-500 text-white shadow-2xs">
-                Н (Нп)${countBadge}
+                Н (без)${countBadge}
               </span>
             </td>
           `;
@@ -28066,7 +28076,7 @@
                     data-lesson-id="${unconfirmedRec.lessonId}"
                     title="Пропущено уроков: ${dayAbsenceRecords.length}. Кликните для подтверждения уважительной причины"
                     class="btn-open-confirm-cell inline-block px-3 py-1 rounded-lg text-xs font-bold bg-rose-500 hover:bg-rose-600 text-white shadow-2xs hover:scale-105 transition-transform cursor-pointer">
-              Н (Нп)${countBadge}
+              Н (без)${countBadge}
             </button>
           </td>
         `;
@@ -28114,7 +28124,7 @@
         hasUnconfirmed,
         weekAbsenceLessons,
         html: `
-        <tr class="student-row hover:bg-slate-50/80 transition-colors border-b border-slate-100 ${hasUnconfirmed ? "bg-rose-50/20" : ""}" data-has-absences="${weekAbsenceLessons > 0}">
+        <tr class="student-row hover:bg-slate-50/80 transition-colors border-b border-slate-100 ${hasUnconfirmed ? "bg-rose-50/20" : ""} ${st.id === highlightedStudentId ? "ring-2 ring-brand-500 bg-brand-50/40" : ""}" data-student-id="${st.id}" data-has-absences="${weekAbsenceLessons > 0}">
           <td class="py-3.5 px-4 font-semibold text-xs text-slate-400 text-center w-12">
             ${index + 1}
           </td>
@@ -28204,7 +28214,7 @@
         ` : ""}
       </div>
 
-      ${!isSubjectTeacher ? unconfirmedCount > 0 ? `
+      ${!isSubjectTeacher && unconfirmedCount > 0 ? `
         <div id="banner-unconfirmed" class="bg-rose-50/80 border border-rose-200/90 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div class="flex items-start space-x-3">
             <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 mt-0.5 border border-rose-200">
@@ -28226,16 +28236,6 @@
                   class="self-start sm:self-center py-2 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs shadow-xs transition-colors whitespace-nowrap">
             Подтвердить причину
           </button>
-        </div>
-      ` : `
-        <div id="banner-unconfirmed" class="bg-emerald-50/80 border border-emerald-200/90 rounded-2xl p-4 flex items-center justify-between shadow-xs">
-          <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">✓</div>
-            <div>
-              <h4 class="text-xs font-bold text-emerald-950">Все пропуски подтверждены</h4>
-              <p class="text-[11px] text-emerald-700">Неподтверждённых пропусков за период нет. Метрики в норме.</p>
-            </div>
-          </div>
         </div>
       ` : ""}
 
@@ -28273,7 +28273,7 @@
             <span>Присутствовал</span>
           </div>
           <div class="flex items-center space-x-2">
-            <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-rose-500 text-white shadow-2xs">Н (Нп)</span>
+            <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-rose-500 text-white shadow-2xs">Н (без)</span>
             <span>Неуважительная причина (Неподтверждено)</span>
           </div>
           <div class="flex items-center space-x-2">
@@ -37025,7 +37025,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               ${riskStudents.map(
       (st) => `
-                <div class="p-4 rounded-2xl border ${st.riskLevel === "critical" ? "border-rose-200 bg-rose-50/40" : "border-amber-200 bg-amber-50/40"} space-y-2">
+                <div class="risk-student-card p-4 rounded-2xl border ${st.riskLevel === "critical" ? "border-rose-200 bg-rose-50/40" : "border-amber-200 bg-amber-50/40"} space-y-2" data-student-id="${st.studentId}">
                   <div class="flex items-center justify-between">
                     <a href="/student?id=${st.studentId}" class="text-xs font-bold text-slate-900 hover:text-brand-600 hover:underline">
                       ${st.name}

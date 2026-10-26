@@ -106,6 +106,7 @@ export function renderAttendanceView(options = {}) {
     },
   ];
 
+  const highlightedStudentId = urlParams.get("studentId");
   const activeWeekId = options.weekId || urlParams.get("week") || "w8";
   const selectedWeek = weeks.find((w) => w.id === activeWeekId) || weeks[0];
 
@@ -192,7 +193,7 @@ export function renderAttendanceView(options = {}) {
             <td class="py-3 px-3 text-center">
               <span title="Пропущено уроков: ${dayAbsenceRecords.length}. Не подтверждено"
                     class="inline-block px-3 py-1 rounded-lg text-xs font-bold bg-rose-500 text-white shadow-2xs">
-                Н (Нп)${countBadge}
+                Н (без)${countBadge}
               </span>
             </td>
           `;
@@ -208,7 +209,7 @@ export function renderAttendanceView(options = {}) {
                     data-lesson-id="${unconfirmedRec.lessonId}"
                     title="Пропущено уроков: ${dayAbsenceRecords.length}. Кликните для подтверждения уважительной причины"
                     class="btn-open-confirm-cell inline-block px-3 py-1 rounded-lg text-xs font-bold bg-rose-500 hover:bg-rose-600 text-white shadow-2xs hover:scale-105 transition-transform cursor-pointer">
-              Н (Нп)${countBadge}
+              Н (без)${countBadge}
             </button>
           </td>
         `;
@@ -265,7 +266,7 @@ export function renderAttendanceView(options = {}) {
       hasUnconfirmed,
       weekAbsenceLessons,
       html: `
-        <tr class="student-row hover:bg-slate-50/80 transition-colors border-b border-slate-100 ${hasUnconfirmed ? "bg-rose-50/20" : ""}" data-has-absences="${weekAbsenceLessons > 0}">
+        <tr class="student-row hover:bg-slate-50/80 transition-colors border-b border-slate-100 ${hasUnconfirmed ? "bg-rose-50/20" : ""} ${st.id === highlightedStudentId ? "ring-2 ring-brand-500 bg-brand-50/40" : ""}" data-student-id="${st.id}" data-has-absences="${weekAbsenceLessons > 0}">
           <td class="py-3.5 px-4 font-semibold text-xs text-slate-400 text-center w-12">
             ${index + 1}
           </td>
@@ -373,9 +374,8 @@ export function renderAttendanceView(options = {}) {
       </div>
 
       ${
-        !isSubjectTeacher
-          ? unconfirmedCount > 0
-            ? `
+        !isSubjectTeacher && unconfirmedCount > 0
+          ? `
         <div id="banner-unconfirmed" class="bg-rose-50/80 border border-rose-200/90 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div class="flex items-start space-x-3">
             <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 mt-0.5 border border-rose-200">
@@ -397,17 +397,6 @@ export function renderAttendanceView(options = {}) {
                   class="self-start sm:self-center py-2 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs shadow-xs transition-colors whitespace-nowrap">
             Подтвердить причину
           </button>
-        </div>
-      `
-            : `
-        <div id="banner-unconfirmed" class="bg-emerald-50/80 border border-emerald-200/90 rounded-2xl p-4 flex items-center justify-between shadow-xs">
-          <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">✓</div>
-            <div>
-              <h4 class="text-xs font-bold text-emerald-950">Все пропуски подтверждены</h4>
-              <p class="text-[11px] text-emerald-700">Неподтверждённых пропусков за период нет. Метрики в норме.</p>
-            </div>
-          </div>
         </div>
       `
           : ""
@@ -447,7 +436,7 @@ export function renderAttendanceView(options = {}) {
             <span>Присутствовал</span>
           </div>
           <div class="flex items-center space-x-2">
-            <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-rose-500 text-white shadow-2xs">Н (Нп)</span>
+            <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-rose-500 text-white shadow-2xs">Н (без)</span>
             <span>Неуважительная причина (Неподтверждено)</span>
           </div>
           <div class="flex items-center space-x-2">

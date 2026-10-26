@@ -1,0 +1,80 @@
+{
+  "task": "task-30-attention-cycle",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-BP-24",
+      "expectFail": [
+        "test_bp_20_empty_attention_report"
+      ],
+      "patches": [
+        {
+          "file": "src/views/overview/render.js",
+          "find": "                <a href=\"/analytics\" id=\"btn-overview-go-to-report\" class=\"inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-xs transition-colors\">",
+          "replace": "                <button type=\"button\" id=\"btn-overview-go-to-report\" disabled class=\"inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-slate-300 text-white text-xs font-semibold cursor-not-allowed\">",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-BP-25",
+      "expectFail": [
+        "test_bp_21_attention_cycle"
+      ],
+      "patches": [
+        {
+          "file": "src/views/overview/render.js",
+          "find": "      .filter((n) => !n.isReminder || (n.reminderDate && n.reminderDate > demoDate))",
+          "replace": "      .filter((n) => n.isReminder && n.reminderDate && n.reminderDate > demoDate)",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-BP-26",
+      "expectFail": [
+        "test_bp_22_student_journal_all_subjects"
+      ],
+      "patches": [
+        {
+          "file": "src/views/student-summary/render.js",
+          "find": "        g.studentId === student.id && (!g.periodId || g.periodId === periodId),",
+          "replace": "        g.studentId === student.id && g.subjectId === \"math\" && (!g.periodId || g.periodId === periodId),",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-BP-27",
+      "expectFail": [
+        "test_bp_23_contacts_by_student"
+      ],
+      "patches": [
+        {
+          "file": "src/views/student-summary/render.js",
+          "find": "    (c) => c.studentId === student.id,",
+          "replace": "    (c) => c.parentId === \"pr-23\",",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-BP-07",
+      "expectFail": [
+        "test_bp_24_primary_contact_first"
+      ],
+      "patches": [
+        {
+          "file": "src/views/student-summary/render.js",
+          "find": "    (a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0),",
+          "replace": "    (a, b) => (b.parent.id || \"\").localeCompare(a.parent.id || \"\"),",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

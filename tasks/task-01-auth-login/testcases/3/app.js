@@ -16659,12 +16659,12 @@
         "studentId": "st-23",
         "date": "2024-10-25",
         "value": "absent",
-        "status": "confirmed",
-        "code": "УП",
-        "reason": "Справка",
-        "confirmedBy": "Смирнова М. В.",
-        "confirmedAt": "2024-10-25 15:00",
-        "document": "Справка ОРВИ"
+        "status": "unconfirmed",
+        "code": "Н (без)",
+        "reason": "По болезни (ОРВИ)",
+        "confirmedBy": null,
+        "confirmedAt": null,
+        "document": ""
       },
       {
         "id": "att-1114",
@@ -21822,6 +21822,13 @@
 
   // .build/task-01-auth-login/3/src/services/attendance-ops.js
   function confirmAbsenceRecord(recordId, data = {}) {
+    const currentUser = getCurrentUser();
+    if (!currentUser || currentUser.role !== "teacher") {
+      return {
+        success: false,
+        error: "Действие недоступно для вашей роли. Подтвердить причину пропуска может только классный руководитель."
+      };
+    }
     const db = getDB();
     const record = (db.attendance || []).find((a) => a.id === recordId);
     if (!record) {
@@ -21833,8 +21840,8 @@
     record.value = "absent";
     record.reason = data.reason || (isExcused ? "Уважительная причина (справка / заявление)" : "Неуважительная причина");
     record.document = data.document || (isExcused ? "Медицинская справка" : null);
-    record.confirmedBy = data.confirmedBy || "Смирнова М. В.";
-    record.confirmedAt = (/* @__PURE__ */ new Date()).toISOString();
+    record.confirmedBy = isExcused ? data.confirmedBy || currentUser.shortName || currentUser.personName || "Смирнова М. В." : null;
+    record.confirmedAt = isExcused ? (/* @__PURE__ */ new Date()).toISOString() : null;
     if (db.meta) {
       const q1LessonIds = new Set(
         (db.lessons || []).filter((l) => l.periodId === "q1_2024").map((l) => l.id)
@@ -21847,6 +21854,14 @@
     return { success: true, record };
   }
   function batchConfirmAbsences(recordIds, data = {}) {
+    const currentUser = getCurrentUser();
+    if (!currentUser || currentUser.role !== "teacher") {
+      return {
+        success: false,
+        error: "Действие недоступно для вашей роли. Подтвердить причины пропусков может только классный руководитель.",
+        updatedCount: 0
+      };
+    }
     const db = getDB();
     const idsSet = new Set(recordIds);
     let updatedCount = 0;
@@ -21926,8 +21941,19 @@
     if (!channel) {
       return { success: false, error: "Выберите канал связи" };
     }
+    if (!parentId) {
+      return { success: false, error: "Родитель не указан" };
+    }
     const db = getDB();
     if (!db.parentContacts) db.parentContacts = [];
+    if (studentId && !(db.parentStudentRelations || []).some(
+      (relation) => relation.parentId === parentId && relation.studentId === studentId
+    )) {
+      return {
+        success: false,
+        error: "Родитель не связан с указанным учеником"
+      };
+    }
     const channelLabels = {
       phone: "Звонок",
       chat: "Мессенджер",
@@ -21940,7 +21966,7 @@
     const newContact = {
       id: `pc-${Date.now()}-${Math.floor(Math.random() * 1e3)}`,
       studentId,
-      parentId: parentId || (studentId ? db.parentStudentRelations?.find((r) => r.studentId === studentId)?.parentId : null) || "pr-unknown",
+      parentId,
       author: data.author || "Смирнова М. В.",
       date: data.date || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
       time: data.time || (/* @__PURE__ */ new Date()).toLocaleTimeString("ru-RU", {
@@ -23536,6 +23562,12 @@
           title: "Расписание",
           path: "/schedule",
           icon: "calendar"
+        },
+        {
+          id: "nav-analytics",
+          title: "Аналитика",
+          path: "/analytics",
+          icon: "chart-bar"
         }
       ],
       allowedRoutes: [
@@ -23543,6 +23575,7 @@
         "/journal",
         "/schedule",
         "/attendance",
+        "/analytics",
         "/profile"
       ]
     },
@@ -25484,7 +25517,7 @@
       dataset.attendance,
       dataset.grades,
       dataset.subjects,
-      periodOptions
+      reportOptions
     );
     const unconfirmed = getUnconfirmedAbsences(
       dataset.attendance,
@@ -26338,6 +26371,7 @@
       { periodId }
     );
     const unconfirmedCount = unconfirmedAbsences.length;
+    const unconfirmedStudentId = unconfirmedAbsences.find((absence) => absence.studentId === "st-23")?.studentId || unconfirmedAbsences[0]?.studentId || "";
     const riskZoneList = getRiskZoneStudents(
       (db.students || []).filter((s) => s.classId === "class-7b"),
       db.lessons,
@@ -26531,7 +26565,7 @@
           </div>
           <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
             <span class="text-slate-500">Требуют справки</span>
-            <a href="/attendance?filter=unconfirmed" class="font-semibold text-brand-600 hover:text-brand-700 hover:underline">
+            <a href="/attendance?filter=unconfirmed${unconfirmedStudentId ? `&studentId=${encodeURIComponent(unconfirmedStudentId)}` : ""}" class="font-semibold text-brand-600 hover:text-brand-700 hover:underline">
               К журналу →
             </a>
           </div>
@@ -27966,6 +28000,7 @@
         to: "2024-09-06"
       }
     ];
+    const highlightedStudentId = urlParams.get("studentId");
     const activeWeekId = options.weekId || urlParams.get("week") || "w8";
     const selectedWeek = weeks.find((w) => w.id === activeWeekId) || weeks[0];
     const daysOfWeek = generateDaysOfWeek(selectedWeek.from);
@@ -28023,7 +28058,7 @@
             <td class="py-3 px-3 text-center">
               <span title="Пропущено уроков: ${dayAbsenceRecords.length}. Не подтверждено"
                     class="inline-block px-3 py-1 rounded-lg text-xs font-bold bg-rose-500 text-white shadow-2xs">
-                Н (Нп)${countBadge}
+                Н (без)${countBadge}
               </span>
             </td>
           `;
@@ -28039,7 +28074,7 @@
                     data-lesson-id="${unconfirmedRec.lessonId}"
                     title="Пропущено уроков: ${dayAbsenceRecords.length}. Кликните для подтверждения уважительной причины"
                     class="btn-open-confirm-cell inline-block px-3 py-1 rounded-lg text-xs font-bold bg-rose-500 hover:bg-rose-600 text-white shadow-2xs hover:scale-105 transition-transform cursor-pointer">
-              Н (Нп)${countBadge}
+              Н (без)${countBadge}
             </button>
           </td>
         `;
@@ -28087,7 +28122,7 @@
         hasUnconfirmed,
         weekAbsenceLessons,
         html: `
-        <tr class="student-row hover:bg-slate-50/80 transition-colors border-b border-slate-100 ${hasUnconfirmed ? "bg-rose-50/20" : ""}" data-has-absences="${weekAbsenceLessons > 0}">
+        <tr class="student-row hover:bg-slate-50/80 transition-colors border-b border-slate-100 ${hasUnconfirmed ? "bg-rose-50/20" : ""} ${st.id === highlightedStudentId ? "ring-2 ring-brand-500 bg-brand-50/40" : ""}" data-student-id="${st.id}" data-has-absences="${weekAbsenceLessons > 0}">
           <td class="py-3.5 px-4 font-semibold text-xs text-slate-400 text-center w-12">
             ${index + 1}
           </td>
@@ -28177,7 +28212,7 @@
         ` : ""}
       </div>
 
-      ${!isSubjectTeacher ? unconfirmedCount > 0 ? `
+      ${!isSubjectTeacher && unconfirmedCount > 0 ? `
         <div id="banner-unconfirmed" class="bg-rose-50/80 border border-rose-200/90 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div class="flex items-start space-x-3">
             <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 mt-0.5 border border-rose-200">
@@ -28199,16 +28234,6 @@
                   class="self-start sm:self-center py-2 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs shadow-xs transition-colors whitespace-nowrap">
             Подтвердить причину
           </button>
-        </div>
-      ` : `
-        <div id="banner-unconfirmed" class="bg-emerald-50/80 border border-emerald-200/90 rounded-2xl p-4 flex items-center justify-between shadow-xs">
-          <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">✓</div>
-            <div>
-              <h4 class="text-xs font-bold text-emerald-950">Все пропуски подтверждены</h4>
-              <p class="text-[11px] text-emerald-700">Неподтверждённых пропусков за период нет. Метрики в норме.</p>
-            </div>
-          </div>
         </div>
       ` : ""}
 
@@ -28246,7 +28271,7 @@
             <span>Присутствовал</span>
           </div>
           <div class="flex items-center space-x-2">
-            <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-rose-500 text-white shadow-2xs">Н (Нп)</span>
+            <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-rose-500 text-white shadow-2xs">Н (без)</span>
             <span>Неуважительная причина (Неподтверждено)</span>
           </div>
           <div class="flex items-center space-x-2">
@@ -31622,13 +31647,13 @@
           <div id="entry-modal-absence-details" class="hidden p-3.5 rounded-xl border text-xs">
           </div>
 
-          <div id="block-confirm-from-journal" class="hidden">
+          ${!isSubjectTeacher ? `<div id="block-confirm-from-journal" class="hidden">
             <button type="button" id="btn-quick-confirm-absence"
                     class="w-full py-2.5 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-semibold text-xs shadow-xs hover:shadow-sm transition-all flex items-center justify-center space-x-2 cursor-pointer border border-brand-600/30">
               ${renderIcon("check-square", "w-4 h-4 text-white")}
               <span>Подтвердить уважительную причину</span>
             </button>
-          </div>
+          </div>` : ""}
 
           <div class="rounded-2xl border border-slate-200 bg-slate-50/60 overflow-hidden shadow-sm">
             <div class="px-3.5 py-2.5 bg-white border-b border-slate-200 flex items-center justify-between">
@@ -32320,12 +32345,24 @@
         const isExcused = reasonType === "excused";
         const documentValue = isExcused ? hasDoc ? docText || "Медицинская справка" : "Заявление родителей" : null;
         const reasonValue = notes || (isExcused ? "Болезнь / справка" : "Неуважительная причина");
-        confirmAbsenceRecord(attId, {
+        const confirmationData = {
           status: isExcused ? "excused" : "unexcused",
           reason: reasonValue,
           document: documentValue,
           confirmedBy: "Смирнова М. В."
-        });
+        };
+        const relatedRecordIds = isExcused ? (getDB().attendance || []).filter(
+          (record) => record.studentId === activeAttendanceRecord.studentId && record.value === "absent" && record.status === "unconfirmed"
+        ).map((record) => record.id) : [];
+        if (relatedRecordIds.length > 0) {
+          const batchConfirmation = batchConfirmAbsences(
+            relatedRecordIds,
+            confirmationData
+          );
+          if (!batchConfirmation.success) return;
+        }
+        const confirmation = confirmAbsenceRecord(attId, confirmationData);
+        if (!confirmation.success) return;
         closeJournalConfirmModal();
         closeModal4();
         const currentHash = "/journal" + (window.location.search || "");
@@ -32662,7 +32699,7 @@
     { id: "q4_2024", name: "IV четверть (31.03 - 23.05.2025)" },
     { id: "year_2024_2025", name: "2024/2025 учебный год" }
   ];
-  function prepareStudentRows(db, periodId) {
+  function prepareStudentRows(db, periodId, classId = "class-7b") {
     const periodDateRanges = {
       sept_2024: { dateFrom: "2024-09-01", dateTo: "2024-09-30" },
       oct_2024: { dateFrom: "2024-10-01", dateTo: "2024-10-31" }
@@ -32672,10 +32709,10 @@
     const periodOptions = {
       periodId: queryPeriodId,
       ...dateRange,
-      classId: "class-7b"
+      classId
     };
     const rawStudents = (db.students || []).filter(
-      (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived"
+      (s) => (!s.classId || s.classId === classId) && s.status !== "archived"
     );
     const riskStudents = getRiskZoneStudents(
       db.students,
@@ -32959,11 +32996,12 @@
     const sortOrder = options.sortOrder || "asc";
     const currentPage = parseInt(options.page || "1", 10);
     const pageSize = 10;
+    const selectedClassId = currentUser?.role === "teacher" ? currentUser.classId || "class-7b" : requestedClassId || "class-7b";
     const rawStudents = (db.students || []).filter(
-      (s) => (!s.classId || s.classId === "class-7b") && s.status !== "archived"
+      (s) => (!s.classId || s.classId === selectedClassId) && s.status !== "archived"
     );
     const totalInClass = rawStudents.length;
-    const studentRows = prepareStudentRows(db, periodId);
+    const studentRows = prepareStudentRows(db, periodId, selectedClassId);
     const filteredRows = filterAndSortRows(studentRows, {
       searchQuery,
       filterAbsencesOnly,
@@ -34027,8 +34065,12 @@
   // .build/task-01-auth-login/3/src/views/student-summary/render.js
   function renderStudentSummaryView(options = {}) {
     const db = getDB();
+    const currentUser = getCurrentUser();
     const periodId = options.periodId || "q1_2024";
     const studentId = options.studentId || options.id || "st-23";
+    if (["parent", "student"].includes(currentUser?.role)) {
+      return renderForbiddenView();
+    }
     let student = (db.students || []).find((s) => s.id === studentId);
     let isOtherClassStudent = false;
     if (!student) {
@@ -36662,11 +36704,44 @@
     const currentUser = getCurrentUser();
     const searchParams = new URLSearchParams(window.location.search || "");
     const requestedClassId = options.classId || options.class || searchParams.get("classId") || searchParams.get("class");
-    if (currentUser && currentUser.role === "teacher") {
+    const requestedSubjectId = options.subjectId || options.subject || searchParams.get("subjectId") || searchParams.get("subject");
+    const isSubjectTeacher = currentUser?.role === "subject_teacher";
+    const currentTeacher = isSubjectTeacher ? (db.teachers || []).find(
+      (teacher) => teacher.accountUserId === currentUser.id || teacher.fullName === currentUser.personName || teacher.shortName === currentUser.shortName
+    ) : null;
+    const workload = currentTeacher?.workload || [];
+    const resolveClassId = (classValue) => {
+      const classItem = (db.classes || []).find(
+        (item) => item.id === classValue || item.name.toLowerCase() === String(classValue || "").toLowerCase()
+      );
+      return classItem?.id || classValue;
+    };
+    const selectedClassId = isSubjectTeacher ? resolveClassId(requestedClassId) || workload[0]?.classId : currentUser?.classId || "class-7b";
+    const classWorkload = isSubjectTeacher ? workload.filter((item) => item.classId === selectedClassId) : [];
+    if (currentUser?.role === "teacher") {
       const allowedClassId = currentUser.classId || "class-7b";
-      if (requestedClassId && requestedClassId !== allowedClassId && requestedClassId !== "class-7b" && requestedClassId !== "7Б" && requestedClassId !== "7б") {
+      if (requestedClassId && resolveClassId(requestedClassId) !== allowedClassId) {
         return renderForbiddenView();
       }
+    }
+    if (isSubjectTeacher && (!selectedClassId || classWorkload.length === 0)) {
+      return renderForbiddenView();
+    }
+    const allowedSubjectIds = new Set(classWorkload.map((item) => item.subjectId));
+    const selectedSubjectId = isSubjectTeacher && allowedSubjectIds.has(requestedSubjectId) ? requestedSubjectId : isSubjectTeacher ? null : requestedSubjectId || null;
+    const scopedSubjects = isSubjectTeacher ? (db.subjects || []).filter(
+      (subject) => selectedSubjectId ? subject.id === selectedSubjectId : allowedSubjectIds.has(subject.id)
+    ) : db.subjects || [];
+    const isForeignSubjectRequested = isSubjectTeacher && Boolean(requestedSubjectId) && !selectedSubjectId;
+    if (isForeignSubjectRequested) {
+      return `
+      <div id="analytics-view" class="p-6 sm:p-8 max-w-7xl mx-auto">
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xs text-center">
+          <h1 class="text-base font-bold text-slate-900">Аналитика класса</h1>
+          <p class="mt-3 text-sm text-slate-500">Нет данных по выбранному предмету.</p>
+        </div>
+      </div>
+    `;
     }
     const periodId = options.periodId || "q1_2024";
     const showReport = options.showReport === true;
@@ -36708,15 +36783,18 @@
       }
     };
     const currentPeriod = periodConfigs[periodId] || periodConfigs.q1_2024;
-    const selectedClassId = currentUser?.classId || "class-7b";
     const isHolidayOrEmpty = periodId === "holidays_nov_2024" || periodId === "q2_2024";
     const periodOptions = {
       classId: selectedClassId,
-      students: db.students,
+      students: db.students.filter(
+        (student) => (student.classId || "class-7b") === selectedClassId
+      ),
+      subjectId: selectedSubjectId,
       periodId: isHolidayOrEmpty ? periodId : "q1_2024",
       dateFrom: currentPeriod.dateFrom,
       dateTo: currentPeriod.dateTo
     };
+    const analyticsSubjects = scopedSubjects;
     const classAvg = calculateClassAverage(db.grades, periodOptions);
     const classAtt = calculateClassAttendance(
       db.lessons,
@@ -36725,20 +36803,20 @@
     );
     const subjectAverages = calculateSubjectAverages(
       db.grades,
-      db.subjects,
+      analyticsSubjects,
       periodOptions
     );
     const riskStudents = getRiskZoneStudents(
-      db.students,
+      periodOptions.students,
       db.lessons,
       db.attendance,
       db.grades,
-      db.subjects,
+      analyticsSubjects,
       periodOptions
     );
     const criticalRisk = riskStudents.filter((r) => r.riskLevel === "critical");
     const moderateRisk = riskStudents.filter((r) => r.riskLevel !== "critical");
-    const totalStudentsCount = (db.students || []).length || 28;
+    const totalStudentsCount = periodOptions.students.length;
     const successCount = Math.max(0, totalStudentsCount - riskStudents.length);
     const weeklyGradePoints = [
       { label: "Сен (Нед 1)", value: 4, heightPercent: 65 },
@@ -36747,7 +36825,15 @@
       { label: "Окт (Нед 1)", value: 4.1, heightPercent: 72 },
       { label: "Окт (Нед 2)", value: 4.2, heightPercent: 80 }
     ];
-    const report = generateClassReport(db, periodOptions);
+    const report = generateClassReport(
+      {
+        ...db,
+        students: periodOptions.students,
+        subjects: analyticsSubjects
+      },
+      periodOptions
+    );
+    const scopeLabel = isSubjectTeacher ? classWorkload.filter((item) => !selectedSubjectId || item.subjectId === selectedSubjectId).map((item) => item.subjectLabel).filter(Boolean).join(", ") : null;
     const weeklyAbsences = calculateWeeklyAbsences(
       db.lessons,
       db.attendance,
@@ -36755,8 +36841,13 @@
     );
     const lessonMap = new Map((db.lessons || []).map((l) => [l.id, l]));
     const studentMap = new Map((db.students || []).map((s) => [s.id, s]));
+    const scopedLessonIds = new Set(
+      (db.lessons || []).filter(
+        (lesson) => (lesson.classId || "class-7b") === selectedClassId && (!selectedSubjectId || lesson.subjectId === selectedSubjectId)
+      ).map((lesson) => lesson.id)
+    );
     let periodAbsences = (db.attendance || []).filter(
-      (a) => a.value === "absent"
+      (a) => a.value === "absent" && scopedLessonIds.has(a.lessonId)
     );
     if (currentPeriod.dateFrom)
       periodAbsences = periodAbsences.filter(
@@ -36777,6 +36868,7 @@
           </div>
           <div>
             <h1 class="text-base font-bold text-slate-900 leading-tight">Аналитика класса</h1>
+            ${scopeLabel ? `<p class="text-[11px] text-slate-500 mt-0.5">Доступ по нагрузке: ${scopeLabel}</p>` : ""}
             <div class="flex items-center space-x-2 mt-1">
               <span class="text-xs text-slate-500 font-medium">Период:</span>
               <div class="relative inline-block">
@@ -36894,7 +36986,7 @@
             <span class="text-xs text-rose-600 font-medium">Порог зоны риска: 3.5</span>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          ${isForeignSubjectRequested ? `<div class="p-6 text-center text-xs text-slate-500 bg-slate-50 rounded-2xl border border-slate-200/80">Нет данных по выбранному предмету.</div>` : `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             ${subjectAverages.filter((s) => s.average !== null).map((s) => {
       const isBelow = s.average < 3.5;
       return `
@@ -36913,8 +37005,8 @@
                 </div>
               `;
     }).join("")}
-          </div>
-          <p class="text-[11px] text-slate-400 italic">Средний балл всех учеников 7Б по предмету за период. Пунктирный порог внимания установлен на уровне 3.5.</p>
+          </div>`}
+          <p class="text-[11px] text-slate-400 italic">Средний балл всех учеников выбранного класса по предмету за период. Пунктирный порог внимания установлен на уровне 3.5.</p>
         </div>
 
         <div class="space-y-3 pt-2">
@@ -36931,7 +37023,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               ${riskStudents.map(
       (st) => `
-                <div class="p-4 rounded-2xl border ${st.riskLevel === "critical" ? "border-rose-200 bg-rose-50/40" : "border-amber-200 bg-amber-50/40"} space-y-2">
+                <div class="risk-student-card p-4 rounded-2xl border ${st.riskLevel === "critical" ? "border-rose-200 bg-rose-50/40" : "border-amber-200 bg-amber-50/40"} space-y-2" data-student-id="${st.studentId}">
                   <div class="flex items-center justify-between">
                     <a href="/student?id=${st.studentId}" class="text-xs font-bold text-slate-900 hover:text-brand-600 hover:underline">
                       ${st.name}
@@ -37151,9 +37243,14 @@
         const selectedPeriod = periodSelect.value;
         const isReportOpen = reportContainer && !reportContainer.classList.contains("hidden");
         if (onNavigate) {
-          onNavigate(
-            `/analytics?periodId=${selectedPeriod}${isReportOpen ? "&showReport=true" : ""}`
-          );
+          const params = new URLSearchParams(window.location.search || "");
+          params.set("periodId", selectedPeriod);
+          if (isReportOpen) {
+            params.set("showReport", "true");
+          } else {
+            params.delete("showReport");
+          }
+          onNavigate(`/analytics?${params.toString()}`);
         }
       });
     }
@@ -40868,13 +40965,14 @@
       title: "Аналитика",
       render: () => {
         const user = getCurrentUser();
-        if (user && user.role !== "teacher") {
+        if (user && user.role !== "teacher" && user.role !== "subject_teacher") {
           return renderForbiddenView();
         }
         const params = getRouteParams();
         const requestedClassId = params.get("classId") || params.get("class");
         return renderAnalyticsView({
           classId: requestedClassId,
+          subjectId: params.get("subjectId") || params.get("subject"),
           periodId: params.get("periodId") || params.get("period") || "q1_2024",
           showReport: params.get("showReport") === "true"
         });

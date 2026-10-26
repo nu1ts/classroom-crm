@@ -241,7 +241,7 @@ def test_med_02_certificate_multiple_days(driver):
     )
     row_text = normalized(row.text)
     assert "УП" in row_text
-    assert "Н (Нп)" not in row_text
+    assert "Н (без)" not in row_text
 
 
 def test_med_03_refuse_confirmation(driver):

@@ -36,8 +36,13 @@ export function confirmAbsenceRecord(recordId, data = {}) {
       ? "Уважительная причина (справка / заявление)"
       : "Неуважительная причина");
   record.document = data.document || (isExcused ? "Медицинская справка" : null);
-  record.confirmedBy = data.confirmedBy || "Смирнова М. В.";
-  record.confirmedAt = new Date().toISOString();
+  record.confirmedBy = isExcused
+    ? data.confirmedBy ||
+      currentUser.shortName ||
+      currentUser.personName ||
+      "Смирнова М. В."
+    : null;
+  record.confirmedAt = isExcused ? new Date().toISOString() : null;
 
   if (db.meta) {
     const q1LessonIds = new Set(
