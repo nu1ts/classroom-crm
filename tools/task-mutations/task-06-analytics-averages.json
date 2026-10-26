@@ -1,0 +1,113 @@
+{
+  "task": "task-06-analytics-averages",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-ANL-13",
+      "expectFail": [
+        "test_anl_01_student_average_period"
+      ],
+      "patches": [
+        {
+          "file": "src/views/students/helpers.js",
+          "find": "    const avg = calculateStudentAverage(db.grades, student.id, studentOpts);",
+          "replace": "    const avg = calculateStudentAverage(db.grades, student.id);"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-ANL-14",
+      "expectFail": [
+        "test_anl_02_single_grade_average"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  if (stGrades.length === 0) {\n    return null;\n  }",
+          "replace": "  if (stGrades.length < 2) {\n    return null;\n  }"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-ANL-01",
+      "expectFail": [
+        "test_anl_03_average_rounding"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  return Math.round((Number(value) + Number.EPSILON) * 10) / 10;",
+          "replace": "  return Math.floor(Number(value) * 10) / 10;"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-ANL-21",
+      "expectFail": [
+        "test_anl_04_half_rounding"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  return Math.round((Number(value) + Number.EPSILON) * 10) / 10;",
+          "replace": "  const scaled = Number(value) * 10;\n  const floored = Math.floor(scaled);\n  const isExactHalf = Math.abs(scaled - floored - 0.5) < 1e-9;\n  return (isExactHalf ? floored : Math.round(scaled)) / 10;"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-ANL-02",
+      "expectFail": [
+        "test_anl_10_class_average_method"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  const sum = filtered.reduce((acc, g) => acc + g.value, 0);\n  return roundToOneDecimal(sum / filtered.length);\n}",
+          "replace": "  const studentIds = Array.from(new Set(filtered.map((g) => g.studentId)));\n  const studentAverages = studentIds.map((sid) => {\n    const studentGrades = filtered.filter((g) => g.studentId === sid);\n    return (\n      studentGrades.reduce((acc, g) => acc + g.value, 0) / studentGrades.length\n    );\n  });\n  const sum = studentAverages.reduce((acc, value) => acc + value, 0);\n  return roundToOneDecimal(sum / studentAverages.length);\n}"
+        }
+      ]
+    },
+    {
+      "folder": 7,
+      "bug": "BUG-ANL-05",
+      "expectFail": [
+        "test_anl_19_presence_not_grade"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  const sum = stGrades.reduce((acc, g) => acc + g.value, 0);\n  return roundToOneDecimal(sum / stGrades.length);\n}",
+          "replace": "  if (options.attendance) {\n    const presentMarks = (options.attendance || []).filter(\n      (a) => a.studentId === studentId && a.value === \"present\",\n    );\n    stGrades = stGrades.concat(\n      presentMarks.map((mark, index) => ({\n        studentId,\n        subjectId: \"attendance\",\n        date: mark.date,\n        value: 2,\n        periodId: options.periodId,\n        index,\n      })),\n    );\n  }\n\n  const sum = stGrades.reduce((acc, g) => acc + g.value, 0);\n  return roundToOneDecimal(sum / stGrades.length);\n}"
+        },
+        {
+          "file": "src/views/student-summary/render.js",
+          "find": "  const overallAverage = calculateStudentAverage(db.grades, student.id, {\n    periodId,\n  });",
+          "replace": "  const overallAverage = calculateStudentAverage(db.grades, student.id, {\n    periodId,\n    attendance: db.attendance,\n  });"
+        }
+      ]
+    },
+    {
+      "folder": 8,
+      "bug": "BUG-ANL-06",
+      "expectFail": [
+        "test_anl_21_recalc_after_new_grade"
+      ],
+      "patches": [
+        {
+          "file": "src/views/analytics/render.js",
+          "find": "export function renderAnalyticsView(options = {}) {",
+          "replace": "const __analyticsReportCache = new Map();\n\nexport function renderAnalyticsView(options = {}) {"
+        },
+        {
+          "file": "src/views/analytics/render.js",
+          "find": "  const report = generateClassReport(db, periodOptions);",
+          "replace": "  const __reportKey = `${periodOptions.periodId}|${periodOptions.dateFrom || \"\"}|${periodOptions.dateTo || \"\"}`;\n  let report = __analyticsReportCache.get(__reportKey);\n  if (!report) {\n    report = generateClassReport(db, periodOptions);\n    __analyticsReportCache.set(__reportKey, report);\n  }"
+        }
+      ]
+    }
+  ]
+}

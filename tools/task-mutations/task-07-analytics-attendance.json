@@ -1,0 +1,80 @@
+{
+  "task": "task-07-analytics-attendance",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-ANL-15",
+      "expectFail": [
+        "test_anl_05_student_attendance_percent"
+      ],
+      "patches": [
+        {
+          "file": "src/views/students/helpers.js",
+          "find": "                    const isAbsentAlert =\n                      row.attendance && row.attendance.absentCount > 0;",
+          "replace": "                    const isAbsentAlert =\n                      row.attendance && row.attendance.absenceRate > 20;"
+        },
+        {
+          "file": "src/views/students/helpers.js",
+          "find": "                    <span class=\"font-bold ${isAbsentAlert ? \"text-amber-700\" : \"text-slate-800\"} text-xs\">\n                      ${row.attendance.absentCount} из ${row.attendance.totalLessons}\n                    </span>",
+          "replace": "                    <span class=\"font-bold ${isAbsentAlert ? \"text-amber-700\" : \"text-slate-800\"} text-xs\">\n                      ${isAbsentAlert ? row.attendance.absentCount : 0} из ${row.attendance.totalLessons}\n                    </span>"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-ANL-03",
+      "expectFail": [
+        "test_anl_06_unmarked_not_absent"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  const totalLessons = markedLessons.length;\n  if (totalLessons === 0) {",
+          "replace": "  const totalLessons = filterLessons(lessons, {\n    ...opts,\n    onlyMarked: false,\n  }).length;\n  if (totalLessons === 0) {"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-ANL-16",
+      "expectFail": [
+        "test_anl_07_class_attendance_share"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  const presentCount = totalMarks - absentCount;\n\n  const attendanceRate = roundToOneDecimal((presentCount / totalMarks) * 100);\n  const absenceRate = roundToOneDecimal((absentCount / totalMarks) * 100);",
+          "replace": "  const presentCount = totalMarks - absentCount;\n\n  const studentIds = Array.from(\n    new Set((attendance || []).map((a) => a.studentId)),\n  );\n  const studentRates = studentIds.map((studentId) => {\n    const stats = calculateStudentAttendance(lessons, attendance, studentId, opts);\n    return Math.round(stats.attendanceRate);\n  });\n  const averageRate =\n    studentRates.reduce((acc, value) => acc + value, 0) / studentRates.length;\n  const attendanceRate = roundToOneDecimal(averageRate);\n  const absenceRate = roundToOneDecimal(100 - averageRate);"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-ANL-11",
+      "expectFail": [
+        "test_anl_12_weekly_absences_share"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "    const totalMarks = wAtt.length;",
+          "replace": "    const totalMarks =\n      wAtt.length > 0\n        ? 7 * new Set((attendance || []).map((a) => a.studentId)).size\n        : 0;"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-ANL-04",
+      "expectFail": [
+        "test_anl_20_excused_is_absence"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  const absentCount = stAttendance.filter((a) => a.value === \"absent\").length;",
+          "replace": "  const absentCount = stAttendance.filter(\n    (a) => a.value === \"absent\" && a.code === \"Н (без)\",\n  ).length;"
+        }
+      ]
+    }
+  ]
+}
