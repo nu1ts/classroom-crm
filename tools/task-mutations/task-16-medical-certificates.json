@@ -25,7 +25,7 @@
         {
           "file": "src/views/journal/listeners.js",
           "find": "      const confirmation = confirmAbsenceRecord(attId, confirmationData);",
-          "replace": "      const relatedRecordIds = (getDB().attendance || []).filter((record) => record.studentId === activeAttendanceRecord.studentId && record.value === \"absent\" && record.status === \"unconfirmed\").map((record) => record.id);\n      batchConfirmAbsences(relatedRecordIds, confirmationData);\n      const confirmation = confirmAbsenceRecord(attId, confirmationData);"
+          "replace": "      const confirmation = confirmAbsenceRecord(attId, confirmationData);\n      const relatedRecord = (getDB().attendance || []).find((record) => record.id !== attId && record.studentId === activeAttendanceRecord.studentId && record.value === \"absent\" && record.status === \"unconfirmed\");\n      if (relatedRecord) confirmAbsenceRecord(relatedRecord.id, confirmationData);"
         }
       ]
     },

@@ -23,7 +23,7 @@
     addSubject: () => addSubject,
     addVacation: () => addVacation,
     addWorkloadRow: () => addWorkloadRow,
-    batchConfirmAbsences: () => batchConfirmAbsences2,
+    batchConfirmAbsences: () => batchConfirmAbsences,
     batchSaveLessonJournal: () => batchSaveLessonJournal,
     canMarkAttendance: () => canMarkAttendance,
     cancelMeeting: () => cancelMeeting,
@@ -21879,7 +21879,7 @@
     saveDB(db);
     return { success: true, record };
   }
-  function batchConfirmAbsences2(recordIds, data = {}) {
+  function batchConfirmAbsences(recordIds, data = {}) {
     const currentUser = getCurrentUser();
     if (!currentUser || currentUser.role !== "teacher") {
       return {
@@ -32376,9 +32376,9 @@
           document: documentValue,
           confirmedBy: "Смирнова М. В."
         };
-        const relatedRecordIds = (getDB().attendance || []).filter((record) => record.studentId === activeAttendanceRecord.studentId && record.value === "absent" && record.status === "unconfirmed").map((record) => record.id);
-        batchConfirmAbsences(relatedRecordIds, confirmationData);
         const confirmation = confirmAbsenceRecord(attId, confirmationData);
+        const relatedRecord = (getDB().attendance || []).find((record) => record.id !== attId && record.studentId === activeAttendanceRecord.studentId && record.value === "absent" && record.status === "unconfirmed");
+        if (relatedRecord) confirmAbsenceRecord(relatedRecord.id, confirmationData);
         if (!confirmation.success) return;
         closeJournalConfirmModal();
         closeModal4();

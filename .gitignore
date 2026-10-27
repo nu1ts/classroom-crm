@@ -8,6 +8,7 @@ repomix-output.md
 playwright-report/
 test-results/
 build/
+.build/
 scratch
 
 # Результаты прогонов и кэш Python в учебных задачах

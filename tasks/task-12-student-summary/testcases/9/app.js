@@ -34118,7 +34118,7 @@
     const currentUser = getCurrentUser();
     const periodId = options.periodId || "q1_2024";
     const studentId = options.studentId || options.id || "st-23";
-    if (["parent", "student"].includes(currentUser?.role)) {
+    if (false) {
       return renderForbiddenView();
     }
     let student = (db.students || []).find((s) => s.id === studentId);

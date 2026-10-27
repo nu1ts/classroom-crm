@@ -50,6 +50,11 @@
           "file": "src/views/journal/listeners.js",
           "find": "        if (!Number.isInteger(val) || val < 2 || val > 5) {",
           "replace": "        if (!Number.isInteger(val) || val < 1 || val > 6) {"
+        },
+        {
+          "file": "src/views/journal/listeners.js",
+          "find": "              num < 2 ||\n              num > 5 ||",
+          "replace": "              num < 1 ||\n              num > 6 ||"
         }
       ]
     },

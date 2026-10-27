@@ -25,7 +25,7 @@ def test_med_01_confirm_certificate(driver):
 
 
 def test_med_02_certificate_multiple_days(driver):
-    """Проверить, что одна справка подтверждает несколько дней болезни."""
+    """Проверить отдельное подтверждение каждого дня болезни своей справкой."""
 
 
 def test_med_03_refuse_confirmation(driver):

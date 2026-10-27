@@ -167,11 +167,17 @@ def confirm_absence(driver, reason_type="excused", document=CERTIFICATE_TEXT):
         reason_type,
     )
     if reason_type == "excused":
+        certificate_checkbox = driver.find_element(
+            By.ID, "journal-confirm-has-certificate"
+        )
+        if not certificate_checkbox.is_selected():
+            certificate_checkbox.click()
         document_input = driver.find_element(
             By.ID, "journal-confirm-document-text"
         )
         document_input.clear()
         document_input.send_keys(document)
+        assert document_input.get_attribute("value") == document
     driver.find_element(
         By.CSS_SELECTOR,
         "#form-journal-confirm-absence button[type='submit']",
@@ -237,9 +243,10 @@ def test_med_02_certificate_multiple_days(driver):
     assert second_day, "Не найдена запись Сидорова Никиты за 25.10.2024"
     assert "Н" in normalized(second_day[0].text)
 
+    second_day_cell = second_day[0]
     driver.execute_script(
         "arguments[0].scrollIntoView({block: 'center'}); arguments[0].click();",
-        second_day[0],
+        second_day_cell,
     )
     wait_until(
         driver,
@@ -247,7 +254,14 @@ def test_med_02_certificate_multiple_days(driver):
         "Не открылась карточка второго дня болезни",
     )
     confirm_absence(driver, document=SECOND_CERTIFICATE_TEXT)
-    assert "Б" in normalized(second_day[0].text)
+    second_day_after_confirmation = driver.find_elements(
+        By.CSS_SELECTOR,
+        "td.cell-journal-entry"
+        f"[data-lesson-id='{SECOND_DAY_LESSON}']"
+        f"[data-student-id='{SIDOROV_ID}']",
+    )
+    assert second_day_after_confirmation, "Не найдена обновлённая запись Сидорова за 25.10.2024"
+    assert "Б" in normalized(second_day_after_confirmation[0].text)
 
     open_attendance(driver, "week=w8")
     row = driver.find_element(By.XPATH, "//tr[contains(., 'Сидоров Никита')]")

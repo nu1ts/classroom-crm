@@ -38,8 +38,8 @@
       "patches": [
         {
           "file": "src/views/student-summary/render.js",
-          "find": "                    const isAllConfirmed = records.every(\n                      (r) =>\n                        r.record.status === \"confirmed\" ||\n                        r.record.status === \"excused\",\n                    );",
-          "replace": "                    const isAllConfirmed = false;"
+          "find": "                          isAllConfirmed\n                            ? `\n                          <span class=\"inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500 text-white shadow-2xs\">\n                            Подтверждено\n                          </span>\n                        `\n                            : isOtherClassStudent",
+          "replace": "                          isAllConfirmed\n                            ? `\n                          <button type=\"button\"\n                                  class=\"btn-confirm-absence-action inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 hover:border-amber-400 shadow-2xs transition-all cursor-pointer group\"\n                                  data-absence-ids=\"${records.map((r) => r.record.id).join(\",\")}\"\n                                  data-student-name=\"${student.fullName}\"\n                                  data-date=\"${date}\"\n                                  title=\"Нажмите для подтверждения уважительной причины\">\n                            <span class=\"w-1.5 h-1.5 rounded-full bg-amber-500\"></span>\n                            <span>Подтвердить причину</span>\n                            ${renderIcon(\"chevron-right\", \"w-3 h-3 text-amber-600 group-hover:translate-x-0.5 transition-transform\")}\n                          </button>\n                        `\n                            : isOtherClassStudent"
         }
       ]
     },
@@ -125,6 +125,11 @@
           "file": "src/router.js",
           "find": "    } else if (!isRouteAllowedForRole(user.role, path)) {\n      activePath = \"/forbidden\";\n    }",
           "replace": "    } else if (!isRouteAllowedForRole(user.role, path) && path !== \"/student\") {\n      activePath = \"/forbidden\";\n    }"
+        },
+        {
+          "file": "src/views/student-summary/render.js",
+          "find": "  if ([\"parent\", \"student\"].includes(currentUser?.role)) {\n    return renderForbiddenView();\n  }",
+          "replace": "  if (false) {\n    return renderForbiddenView();\n  }"
         }
       ]
     }

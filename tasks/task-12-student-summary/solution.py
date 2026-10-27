@@ -342,7 +342,7 @@ def test_ov_14_last_absences_details(driver):
         f"{[normalized(row.text) for row in rows]}"
     )
 
-    for date_text in ("13.09.2024", "26.09.2024", "25.10.2024"):
+    for date_text in ("13.09.2024", "26.09.2024"):
         row = absence_row(driver, date_text)
         row_text = normalized(row.text)
         assert "Подтверждено" in row_text, (
@@ -353,23 +353,44 @@ def test_ov_14_last_absences_details(driver):
             By.CSS_SELECTOR, ".btn-confirm-absence-action"
         ), f"У подтверждённого пропуска {date_text} есть кнопка"
 
-    pending = absence_row(driver, "24.10.2024")
-    pending_text = normalized(pending.text)
-    assert "Подтвердить причину" in pending_text, (
-        f"У пропуска 24.10.2024 нет кнопки подтверждения: «{pending_text}»"
+    pending_button_ids = []
+    for date_text in ("24.10.2024", "25.10.2024"):
+        pending = absence_row(driver, date_text)
+        pending_text = normalized(pending.text)
+        assert "Подтверждено" not in pending_text, (
+            f"У неподтверждённого пропуска {date_text} ошибочно показан статус «Подтверждено»: "
+            f"«{pending_text}»"
+        )
+        assert "Подтвердить причину" in pending_text, (
+            f"У неподтверждённого пропуска {date_text} нет кнопки подтверждения: "
+            f"«{pending_text}»"
+        )
+        pending_buttons = pending.find_elements(
+            By.CSS_SELECTOR, ".btn-confirm-absence-action"
+        )
+        assert len(pending_buttons) == 1, (
+            f"У пропуска {date_text} кнопок: {len(pending_buttons)}"
+        )
+        absence_ids = pending_buttons[0].get_attribute("data-absence-ids")
+        assert absence_ids, (
+            f"У кнопки пропуска {date_text} нет идентификатора записи"
+        )
+        pending_button_ids.extend(absence_ids.split(","))
+
+    assert len(pending_button_ids) == 2, (
+        "У обеих неподтверждённых записей должны быть отдельные кнопки подтверждения: "
+        f"{pending_button_ids}"
     )
-    pending_buttons = pending.find_elements(
-        By.CSS_SELECTOR, ".btn-confirm-absence-action"
-    )
-    assert len(pending_buttons) == 1, (
-        f"У пропуска 24.10.2024 кнопок: {len(pending_buttons)}"
+    assert len(set(pending_button_ids)) == 2, (
+        "Кнопки подтверждения должны работать с отдельными записями, получено: "
+        f"{pending_button_ids}"
     )
 
     all_buttons = driver.find_elements(
         By.CSS_SELECTOR, "#student-summary-view .btn-confirm-absence-action"
     )
-    assert len(all_buttons) == 1, (
-        f"В карточке должна быть одна кнопка подтверждения, "
+    assert len(all_buttons) == 2, (
+        "В карточке должны быть две кнопки подтверждения для 24.10 и 25.10, "
         f"найдено: {len(all_buttons)}"
     )
 

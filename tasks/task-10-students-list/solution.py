@@ -444,7 +444,7 @@ def test_ov_04_absences_filter(driver):
 
     toggle_absences_filter(driver)
     wait_filter_active(driver, True)
-    wait_counter_contains(driver, "из 25")
+    wait_counter_contains(driver, "Показано 1–10 из 28 учеников 7Б класса")
     assert student_rows(driver), "После включения фильтра список пуст"
 
     surnames = [
@@ -533,7 +533,7 @@ def test_ov_07_empty_result_state(driver):
     wait_filter_active(driver, True)
 
     search_students(driver, "александров")
-    wait_counter_contains(driver, "из 0")
+    wait_counter_contains(driver, "Показано 0–0 из 28 учеников 7Б класса")
 
     table_text = normalized(
         driver.find_element(By.ID, "students-table-wrapper").text

@@ -34466,7 +34466,9 @@
               <div class="divide-y divide-slate-100">
                 ${sortedDates.map((date) => {
       const records = absencesByDateMap.get(date);
-      const isAllConfirmed = false;
+      const isAllConfirmed = records.every(
+        (r) => r.record.status === "confirmed" || r.record.status === "excused"
+      );
       const firstRecord = records[0].record;
       const displayText = formatAbsenceDisplayText(firstRecord);
       const totalLessonsCount = records.length;
@@ -34483,9 +34485,16 @@
 
                       <div class="flex items-center flex-shrink-0">
                         ${isAllConfirmed ? `
-                          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500 text-white shadow-2xs">
-                            Подтверждено
-                          </span>
+                          <button type="button"
+                                  class="btn-confirm-absence-action inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 hover:border-amber-400 shadow-2xs transition-all cursor-pointer group"
+                                  data-absence-ids="${records.map((r) => r.record.id).join(",")}"
+                                  data-student-name="${student.fullName}"
+                                  data-date="${date}"
+                                  title="Нажмите для подтверждения уважительной причины">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                            <span>Подтвердить причину</span>
+                            ${renderIcon("chevron-right", "w-3 h-3 text-amber-600 group-hover:translate-x-0.5 transition-transform")}
+                          </button>
                         ` : isOtherClassStudent ? `
                           <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-100 text-slate-500 border border-slate-200">
                             Только просмотр

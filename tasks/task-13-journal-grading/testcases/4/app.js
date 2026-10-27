@@ -32674,7 +32674,7 @@
           const val = input.value.trim();
           if (val !== "") {
             const num = parseInt(val, 10);
-            if (!Number.isInteger(num) || num < 2 || num > 5 || val.length !== 1) {
+            if (!Number.isInteger(num) || num < 1 || num > 6 || val.length !== 1) {
               hasInvalidValues = true;
               input.classList.add(
                 "border-rose-500",

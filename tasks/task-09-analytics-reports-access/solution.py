@@ -193,24 +193,24 @@ def test_anl_14_unconfirmed_counter(driver):
     wait_for_app(driver)
 
     before = driver.execute_script(COUNT_UNCONFIRMED)
-    assert before == 4, (
-        f"За I четверть ожидалось 4 неподтверждённых пропуска, получено {before}"
+    assert before == 7, (
+        f"За I четверть ожидалось 7 неподтверждённых пропусков, получено {before}"
     )
 
     open_student_page(driver, "st-23")
     confirm_absence(driver, "2024-10-24")
 
     after = driver.execute_script(COUNT_UNCONFIRMED)
-    assert after == 3, (
-        f"После подтверждения пропуска ожидалось 3 неподтверждённых пропуска, "
+    assert after == 6, (
+        f"После подтверждения пропуска ожидалось 6 неподтверждённых пропусков, "
         f"получено {after}"
     )
 
     open_analytics(driver, "q1_2024")
     generate_report(driver)
     value = report_metric_text(driver, "report-metric-unconfirmed")
-    assert value == "3", (
-        f"В отчёте должно остаться 3 неподтверждённых пропуска, получено «{value}»"
+    assert value == "6", (
+        f"В отчёте должно остаться 6 неподтверждённых пропусков, получено «{value}»"
     )
 
 
