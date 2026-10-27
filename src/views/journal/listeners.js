@@ -2,7 +2,6 @@ import {
   getDB,
   getCurrentUser,
   confirmAbsenceRecord,
-  batchConfirmAbsences,
   addJournalComment,
   getJournalComments,
   validateGradeValue,
@@ -290,7 +289,6 @@ export function setupJournalListeners(onNavigate) {
   let activeAttendanceRecord = null;
 
   function closeModal() {
-    
     if (!modal) return;
     modal.classList.remove("opacity-100", "pointer-events-auto");
     modal.classList.add("opacity-0", "pointer-events-none");
@@ -389,7 +387,6 @@ export function setupJournalListeners(onNavigate) {
   });
 
   function openJournalEntryModal(lessonId, studentId) {
-    
     if (!modal) return;
     activeLessonId = lessonId;
     activeStudentId = studentId;
@@ -531,7 +528,8 @@ export function setupJournalListeners(onNavigate) {
             elAbsenceDetails.innerHTML = "";
           }
           if (elConfirmBlock) {
-            const isSubjTeacher = currentUser && currentUser.role === "subject_teacher";
+            const isSubjTeacher =
+              currentUser && currentUser.role === "subject_teacher";
             if (isSubjTeacher) {
               elConfirmBlock.classList.add("hidden");
             } else {
@@ -560,7 +558,7 @@ export function setupJournalListeners(onNavigate) {
 
     modal.classList.remove("opacity-0", "pointer-events-none");
     modal.classList.add("opacity-100", "pointer-events-auto");
-    
+
     if (modalDialog) {
       modalDialog.classList.remove("scale-95");
       modalDialog.classList.add("scale-100");
@@ -619,7 +617,6 @@ export function setupJournalListeners(onNavigate) {
 
   document.querySelectorAll(".cell-journal-entry").forEach((cell) => {
     cell.addEventListener("click", (e) => {
-      
       if (
         e.target.closest(".grade-input:not([disabled])") ||
         e.target.closest(".btn-toggle-absence")
@@ -672,24 +669,6 @@ export function setupJournalListeners(onNavigate) {
         document: documentValue,
         confirmedBy: "Смирнова М. В.",
       };
-      const relatedRecordIds = isExcused
-        ? (getDB().attendance || [])
-            .filter(
-              (record) =>
-                record.studentId === activeAttendanceRecord.studentId &&
-                record.value === "absent" &&
-                record.status === "unconfirmed",
-            )
-            .map((record) => record.id)
-        : [];
-      if (relatedRecordIds.length > 0) {
-        const batchConfirmation = batchConfirmAbsences(
-          relatedRecordIds,
-          confirmationData,
-        );
-        if (!batchConfirmation.success) return;
-      }
-
       const confirmation = confirmAbsenceRecord(attId, confirmationData);
       if (!confirmation.success) return;
 
@@ -775,24 +754,42 @@ export function setupJournalListeners(onNavigate) {
         const valStr = input.value.trim();
         if (valStr !== "") {
           const val = parseInt(valStr, 10);
-          if (Number.isInteger(val) && val >= 2 && val <= 5 && !input.disabled) {
+          if (
+            Number.isInteger(val) &&
+            val >= 2 &&
+            val <= 5 &&
+            !input.disabled
+          ) {
             studentSum += val;
             studentGradesCount++;
-          } else if (Number.isInteger(val) && val >= 2 && val <= 5 && input.disabled && !input.classList.contains("cursor-pointer")) {
+          } else if (
+            Number.isInteger(val) &&
+            val >= 2 &&
+            val <= 5 &&
+            input.disabled &&
+            !input.classList.contains("cursor-pointer")
+          ) {
             studentSum += val;
             studentGradesCount++;
           }
         }
       });
 
-      row.querySelectorAll(".cell-journal-entry > div > span").forEach((span) => {
-        const text = span.textContent.trim();
-        const num = parseInt(text, 10);
-        if (Number.isInteger(num) && num >= 2 && num <= 5 && text.length === 1) {
-          studentSum += num;
-          studentGradesCount++;
-        }
-      });
+      row
+        .querySelectorAll(".cell-journal-entry > div > span")
+        .forEach((span) => {
+          const text = span.textContent.trim();
+          const num = parseInt(text, 10);
+          if (
+            Number.isInteger(num) &&
+            num >= 2 &&
+            num <= 5 &&
+            text.length === 1
+          ) {
+            studentSum += num;
+            studentGradesCount++;
+          }
+        });
 
       row.querySelectorAll(".btn-toggle-absence").forEach((btn) => {
         const status = btn.getAttribute("data-status");
@@ -804,15 +801,17 @@ export function setupJournalListeners(onNavigate) {
         }
       });
 
-      row.querySelectorAll(".cell-journal-entry > div > span").forEach((span) => {
-        const text = span.textContent.trim();
-        if (text === "Н") {
-          studentAbsences++;
-          studentUnconfirmed++;
-        } else if (text === "Б" || text === "УП") {
-          studentAbsences++;
-        }
-      });
+      row
+        .querySelectorAll(".cell-journal-entry > div > span")
+        .forEach((span) => {
+          const text = span.textContent.trim();
+          if (text === "Н") {
+            studentAbsences++;
+            studentUnconfirmed++;
+          } else if (text === "Б" || text === "УП") {
+            studentAbsences++;
+          }
+        });
 
       const avgCell = row.querySelector(".student-avg-cell");
       if (avgCell) {
@@ -856,36 +855,48 @@ export function setupJournalListeners(onNavigate) {
     const elTotalGrades = document.getElementById("stat-total-grades");
     if (elTotalGrades) elTotalGrades.textContent = totalGradesCount;
 
-    const elTotalGradesLabel = document.getElementById("stat-total-grades-label");
+    const elTotalGradesLabel = document.getElementById(
+      "stat-total-grades-label",
+    );
     if (elTotalGradesLabel) {
       elTotalGradesLabel.textContent =
         totalGradesCount % 10 === 1 && totalGradesCount % 100 !== 11
           ? "оценка"
-          : totalGradesCount % 10 >= 2 && totalGradesCount % 10 <= 4 && (totalGradesCount % 100 < 10 || totalGradesCount % 100 >= 20)
+          : totalGradesCount % 10 >= 2 &&
+              totalGradesCount % 10 <= 4 &&
+              (totalGradesCount % 100 < 10 || totalGradesCount % 100 >= 20)
             ? "оценки"
             : "оценок";
     }
 
     const elAvgGrade = document.getElementById("stat-avg-grade");
     if (elAvgGrade) {
-      elAvgGrade.textContent = totalGradesCount > 0 ? (totalGradesSum / totalGradesCount).toFixed(1) : "—";
+      elAvgGrade.textContent =
+        totalGradesCount > 0
+          ? (totalGradesSum / totalGradesCount).toFixed(1)
+          : "—";
     }
 
     const elTotalAbsences = document.getElementById("stat-total-absences");
     if (elTotalAbsences) elTotalAbsences.textContent = totalAbsencesCount;
 
-    const elUnconfirmedAbsences = document.getElementById("stat-unconfirmed-absences");
+    const elUnconfirmedAbsences = document.getElementById(
+      "stat-unconfirmed-absences",
+    );
     if (elUnconfirmedAbsences) {
       if (totalUnconfirmedCount > 0) {
         elUnconfirmedAbsences.textContent = `${totalUnconfirmedCount} не подтверждено`;
         elUnconfirmedAbsences.className = "text-xs font-semibold text-rose-600";
       } else {
         elUnconfirmedAbsences.textContent = "Все подтверждены";
-        elUnconfirmedAbsences.className = "text-xs font-semibold text-emerald-600";
+        elUnconfirmedAbsences.className =
+          "text-xs font-semibold text-emerald-600";
       }
     }
 
-    const elHighlightBadge = document.querySelector("#btn-toggle-highlight-unconfirmed .badge-unconfirmed-count");
+    const elHighlightBadge = document.querySelector(
+      "#btn-toggle-highlight-unconfirmed .badge-unconfirmed-count",
+    );
     if (elHighlightBadge) {
       elHighlightBadge.textContent = totalUnconfirmedCount;
     }
@@ -911,14 +922,27 @@ export function setupJournalListeners(onNavigate) {
       const change = localChanges.get(key) || { lessonId, studentId };
 
       if (rawVal === "") {
-        input.classList.remove("border-rose-400", "bg-rose-50", "text-rose-700");
+        input.classList.remove(
+          "border-rose-400",
+          "bg-rose-50",
+          "text-rose-700",
+        );
         input.classList.add("border-amber-300", "bg-amber-50/40");
         change.grade = "";
         localChanges.set(key, change);
       } else {
         const val = parseInt(rawVal, 10);
-        if (Number.isInteger(val) && val >= 2 && val <= 5 && rawVal.length === 1) {
-          input.classList.remove("border-rose-400", "bg-rose-50", "text-rose-700");
+        if (
+          Number.isInteger(val) &&
+          val >= 2 &&
+          val <= 5 &&
+          rawVal.length === 1
+        ) {
+          input.classList.remove(
+            "border-rose-400",
+            "bg-rose-50",
+            "text-rose-700",
+          );
           input.classList.add("border-emerald-400", "bg-emerald-50/40");
           change.grade = val;
           localChanges.set(key, change);
@@ -952,10 +976,14 @@ export function setupJournalListeners(onNavigate) {
       const studentId = btn.getAttribute("data-student-id");
       const currentStatus = btn.getAttribute("data-status");
       const key = `${lessonId}_${studentId}`;
-      const input = document.querySelector(`.grade-input[data-lesson-id="${lessonId}"][data-student-id="${studentId}"]`);
+      const input = document.querySelector(
+        `.grade-input[data-lesson-id="${lessonId}"][data-student-id="${studentId}"]`,
+      );
 
       if (currentStatus === "confirmed") {
-        alert("Причина подтверждена классным руководителем. Изменение отметки заблокировано.");
+        alert(
+          "Причина подтверждена классным руководителем. Изменение отметки заблокировано.",
+        );
         return;
       }
 
@@ -963,14 +991,19 @@ export function setupJournalListeners(onNavigate) {
 
       if (currentStatus === "unconfirmed") {
         btn.setAttribute("data-status", "present");
-        btn.className = "btn-toggle-absence inline-flex items-center justify-center w-5 h-6 text-[10px] font-bold text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer";
+        btn.className =
+          "btn-toggle-absence inline-flex items-center justify-center w-5 h-6 text-[10px] font-bold text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer";
         btn.title = "Отметить отсутствие ('Н')";
 
         if (input) {
           input.disabled = false;
           input.placeholder = "—";
           input.title = "Оценка (2, 3, 4, 5)";
-          input.classList.remove("bg-slate-100", "cursor-not-allowed", "pointer-events-none");
+          input.classList.remove(
+            "bg-slate-100",
+            "cursor-not-allowed",
+            "pointer-events-none",
+          );
           input.classList.add("bg-white", "text-slate-900");
           input.focus();
         }
@@ -978,7 +1011,8 @@ export function setupJournalListeners(onNavigate) {
         localChanges.set(key, change);
       } else {
         btn.setAttribute("data-status", "unconfirmed");
-        btn.className = "btn-toggle-absence inline-flex items-center justify-center min-w-[22px] h-6 px-1 text-xs font-bold rounded-lg border shadow-2xs transition-all bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100 cursor-pointer";
+        btn.className =
+          "btn-toggle-absence inline-flex items-center justify-center min-w-[22px] h-6 px-1 text-xs font-bold rounded-lg border shadow-2xs transition-all bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100 cursor-pointer";
         btn.title = "Отсутствовал (нажмите, чтобы снять отметку)";
 
         if (input) {
@@ -986,7 +1020,12 @@ export function setupJournalListeners(onNavigate) {
           input.disabled = true;
           input.placeholder = "—";
           input.title = "Ученик отсутствовал";
-          input.classList.remove("bg-white", "text-slate-900", "border-emerald-400", "bg-emerald-50/40");
+          input.classList.remove(
+            "bg-white",
+            "text-slate-900",
+            "border-emerald-400",
+            "bg-emerald-50/40",
+          );
           input.classList.add("bg-slate-100", "cursor-not-allowed");
         }
         change.isAbsent = true;
@@ -1001,19 +1040,32 @@ export function setupJournalListeners(onNavigate) {
   if (btnSaveJournal) {
     btnSaveJournal.addEventListener("click", () => {
       let hasInvalidValues = false;
-      document.querySelectorAll(".grade-input:not([disabled])").forEach((input) => {
-        const val = input.value.trim();
-        if (val !== "") {
-          const num = parseInt(val, 10);
-          if (!Number.isInteger(num) || num < 2 || num > 5 || val.length !== 1) {
-            hasInvalidValues = true;
-            input.classList.add("border-rose-500", "ring-2", "ring-rose-500/30");
+      document
+        .querySelectorAll(".grade-input:not([disabled])")
+        .forEach((input) => {
+          const val = input.value.trim();
+          if (val !== "") {
+            const num = parseInt(val, 10);
+            if (
+              !Number.isInteger(num) ||
+              num < 2 ||
+              num > 5 ||
+              val.length !== 1
+            ) {
+              hasInvalidValues = true;
+              input.classList.add(
+                "border-rose-500",
+                "ring-2",
+                "ring-rose-500/30",
+              );
+            }
           }
-        }
-      });
+        });
 
       if (hasInvalidValues) {
-        alert("Недопустимое значение оценки! Разрешены только оценки от 2 до 5.");
+        alert(
+          "Недопустимое значение оценки! Разрешены только оценки от 2 до 5.",
+        );
         return;
       }
 
@@ -1038,8 +1090,13 @@ export function setupJournalListeners(onNavigate) {
           lessonEntries.set(lessonId, []);
         }
 
-        const btnAbsence = document.querySelector(`.btn-toggle-absence[data-lesson-id="${lessonId}"][data-student-id="${studentId}"]`);
-        const isAbsent = btnAbsence && (btnAbsence.getAttribute("data-status") === "unconfirmed" || btnAbsence.getAttribute("data-status") === "confirmed");
+        const btnAbsence = document.querySelector(
+          `.btn-toggle-absence[data-lesson-id="${lessonId}"][data-student-id="${studentId}"]`,
+        );
+        const isAbsent =
+          btnAbsence &&
+          (btnAbsence.getAttribute("data-status") === "unconfirmed" ||
+            btnAbsence.getAttribute("data-status") === "confirmed");
         const gradeVal = input.disabled ? "" : input.value.trim();
 
         lessonEntries.get(lessonId).push({
@@ -1075,5 +1132,4 @@ export function setupJournalListeners(onNavigate) {
       recalculateJournalStats();
     });
   }
-
 }

@@ -428,7 +428,7 @@ def test_tch_07_unconfirmed_absence_can_be_removed(driver):
         f"После снятия пропуска должен остаться один пропуск: {absent}"
     )
     assert absent[0].get("studentId") == "st-14"
-    assert absent[0].get("status") == "confirmed"
+    assert absent[0].get("status") == "unconfirmed"
 
     reload_journal(driver)
     button = absence_button(driver, OPEN_LESSON, "st-23")
@@ -440,7 +440,20 @@ def test_tch_07_unconfirmed_absence_can_be_removed(driver):
 def test_tch_08_confirmed_absence_locked_and_grid_refreshed(driver):
     """Проверить блокировку подтверждённой отметки отсутствия и обновление
     сетки журнала после подтверждения причины."""
-    login(driver, SUBJECT_TEACHER)
+    login(driver, HOMEROOM_TEACHER)
+    db = read_db(driver)
+    sid_record = next(
+        record for record in attendance_records(db, OPEN_LESSON, "st-14")
+        if record.get("value") == "absent"
+    )
+    result = driver.execute_script(
+        "return window.crmApi.confirmAbsenceRecord(arguments[0], {"
+        "status: 'excused', reason: 'ОРВИ', document: 'Справка № 142'});",
+        sid_record["id"],
+    )
+    assert result["success"] is True
+
+    switch_user(driver, SUBJECT_TEACHER)
     open_journal(driver, "subject=math")
 
     confirmed = absence_button(driver, OPEN_LESSON, "st-14")

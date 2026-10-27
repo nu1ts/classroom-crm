@@ -15,10 +15,12 @@ BASE_URL = (TEST_URL or "").rstrip("/")
 HOMEROOM_TEACHER = "smirnova@school.ru"
 SUBJECT_TEACHER = "kozlov@school.ru"
 PASSWORD = "Test#2024"
-PETROVA = "Петрова Анна Сергеевна"
+SIDOROV = "Сидоров Никита Артёмович"
 OPEN_LESSON = "lsn-39"
-PETROVA_ID = "st-23"
+SECOND_DAY_LESSON = "lsn-40"
+SIDOROV_ID = "st-14"
 CERTIFICATE_TEXT = "Справка № 142 от 25.10.2024 (ДГП № 1)"
+SECOND_CERTIFICATE_TEXT = "Справка № 143 от 26.10.2024 (ДГП № 1)"
 
 
 @pytest.fixture(scope="module")
@@ -117,10 +119,10 @@ def get_journal_cell(driver):
         By.CSS_SELECTOR,
         "td.cell-journal-entry"
         f"[data-lesson-id='{OPEN_LESSON}']"
-        f"[data-student-id='{PETROVA_ID}']",
+        f"[data-student-id='{SIDOROV_ID}']",
     )
     if not cells:
-        pytest.fail("Не найдена запись Петровой Анны за 24.10.2024")
+        pytest.fail("Не найдена запись Сидорова Никиты за 24.10.2024")
     return cells[0]
 
 
@@ -165,11 +167,17 @@ def confirm_absence(driver, reason_type="excused", document=CERTIFICATE_TEXT):
         reason_type,
     )
     if reason_type == "excused":
+        certificate_checkbox = driver.find_element(
+            By.ID, "journal-confirm-has-certificate"
+        )
+        if not certificate_checkbox.is_selected():
+            certificate_checkbox.click()
         document_input = driver.find_element(
             By.ID, "journal-confirm-document-text"
         )
         document_input.clear()
         document_input.send_keys(document)
+        assert document_input.get_attribute("value") == document
     driver.find_element(
         By.CSS_SELECTOR,
         "#form-journal-confirm-absence button[type='submit']",
@@ -219,29 +227,45 @@ def test_med_01_confirm_certificate(driver):
 
 
 def test_med_02_certificate_multiple_days(driver):
-    """Справка закрывает два дня болезни без неподтверждённых отметок."""
+    """Каждый день болезни подтверждается отдельной справкой."""
     login(driver, HOMEROOM_TEACHER)
     open_journal(driver)
     open_entry_modal(driver)
-    confirm_absence(driver)
+    confirm_absence(driver, document=CERTIFICATE_TEXT)
 
     assert "Б" in normalized(get_journal_cell(driver).text)
     second_day = driver.find_elements(
         By.CSS_SELECTOR,
         "td.cell-journal-entry"
-        "[data-lesson-id='lsn-40']"
-        f"[data-student-id='{PETROVA_ID}']",
+        f"[data-lesson-id='{SECOND_DAY_LESSON}']"
+        f"[data-student-id='{SIDOROV_ID}']",
     )
-    assert second_day, "Не найдена запись Петровой Анны за 25.10.2024"
-    assert "Б" in normalized(second_day[0].text)
+    assert second_day, "Не найдена запись Сидорова Никиты за 25.10.2024"
+    assert "Н" in normalized(second_day[0].text)
+
+    second_day_cell = second_day[0]
+    driver.execute_script(
+        "arguments[0].scrollIntoView({block: 'center'}); arguments[0].click();",
+        second_day_cell,
+    )
+    wait_until(
+        driver,
+        lambda d: modal_is_open(d, "modal-journal-entry"),
+        "Не открылась карточка второго дня болезни",
+    )
+    confirm_absence(driver, document=SECOND_CERTIFICATE_TEXT)
+    second_day_after_confirmation = driver.find_elements(
+        By.CSS_SELECTOR,
+        "td.cell-journal-entry"
+        f"[data-lesson-id='{SECOND_DAY_LESSON}']"
+        f"[data-student-id='{SIDOROV_ID}']",
+    )
+    assert second_day_after_confirmation, "Не найдена обновлённая запись Сидорова за 25.10.2024"
+    assert "Б" in normalized(second_day_after_confirmation[0].text)
 
     open_attendance(driver, "week=w8")
-    row = driver.find_element(
-        By.XPATH, "//tr[contains(., 'Петрова Анна')]"
-    )
-    row_text = normalized(row.text)
-    assert "УП" in row_text
-    assert "Н (без)" not in row_text
+    row = driver.find_element(By.XPATH, "//tr[contains(., 'Сидоров Никита')]")
+    assert normalized(row.text).count("УП") == 2
 
 
 def test_med_03_refuse_confirmation(driver):

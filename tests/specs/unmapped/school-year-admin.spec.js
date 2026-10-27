@@ -1,3 +1,4 @@
+// ВНЕ ТАБЛИЦЫ ТЕСТ-КЕЙСОВ — внести в таблицу вручную.
 import { test, expect } from '../../fixtures/base-test.js';
 import { LoginPage } from '../../page-objects/LoginPage.js';
 

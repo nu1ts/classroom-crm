@@ -10,7 +10,7 @@
       "patches": [
         {
           "file": "src/views/journal/listeners.js",
-          "find": "      document.querySelectorAll(\".grade-input\").forEach((input) => {\n        const lessonId = input.getAttribute(\"data-lesson-id\");\n        const studentId = input.getAttribute(\"data-student-id\");\n        if (!lessonId || !studentId) return;",
+          "find": "      document.querySelectorAll(\".grade-input\").forEach((input) => {\n        const lessonId = input.getAttribute(\"data-lesson-id\");\n        const studentId = input.getAttribute(\"data-student-id\");\n        if (!lessonId || !studentId) return;\n\n        const lesson = (db.lessons || []).find((l) => l.id === lessonId);\n        if (lesson && lesson.status === \"closed\") return; // закрытые не сохраняем",
           "replace": "      const journalStudentOrder = Array.from(\n        document.querySelectorAll(\"tr.student-row\"),\n      ).map((row) => {\n        const avgCell = row.querySelector(\".student-avg-cell\");\n        return avgCell ? avgCell.getAttribute(\"data-student-id\") : null;\n      });\n\n      document.querySelectorAll(\".grade-input\").forEach((input) => {\n        const lessonId = input.getAttribute(\"data-lesson-id\");\n        const ownStudentId = input.getAttribute(\"data-student-id\");\n        const ownRowIndex = journalStudentOrder.indexOf(ownStudentId);\n        const studentId =\n          ownRowIndex >= 0 && journalStudentOrder[ownRowIndex + 1]\n            ? journalStudentOrder[ownRowIndex + 1]\n            : ownStudentId;\n        if (!lessonId || !studentId) return;"
         }
       ]
@@ -43,13 +43,18 @@
         },
         {
           "file": "src/views/journal/listeners.js",
-          "find": "        if (Number.isInteger(val) && val >= 2 && val <= 5 && rawVal.length === 1) {",
-          "replace": "        if (Number.isInteger(val) && val >= 1 && val <= 6 && rawVal.length === 1) {"
+          "find": "        if (\n          Number.isInteger(val) &&\n          val >= 2 &&\n          val <= 5 &&\n          rawVal.length === 1\n        ) {",
+          "replace": "        if (\n          Number.isInteger(val) &&\n          val >= 1 &&\n          val <= 6 &&\n          rawVal.length === 1\n        ) {"
         },
         {
           "file": "src/views/journal/listeners.js",
-          "find": "          if (!Number.isInteger(num) || num < 2 || num > 5 || val.length !== 1) {",
-          "replace": "          if (!Number.isInteger(num) || num < 1 || num > 6 || val.length !== 1) {"
+          "find": "        if (!Number.isInteger(val) || val < 2 || val > 5) {",
+          "replace": "        if (!Number.isInteger(val) || val < 1 || val > 6) {"
+        },
+        {
+          "file": "src/views/journal/listeners.js",
+          "find": "              num < 2 ||\n              num > 5 ||",
+          "replace": "              num < 1 ||\n              num > 6 ||"
         }
       ]
     },

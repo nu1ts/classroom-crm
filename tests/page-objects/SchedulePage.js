@@ -10,8 +10,7 @@ export class SchedulePage {
     this.title = page.locator('h1');
     this.scheduleGrid = page.locator('#schedule-grid');
     this.weekSelect = page.locator('#select-schedule-week');
-    this.classSelect = page.locator('#select-schedule-class');
-    this.roleNotice = page.locator('#schedule-role-notice');
+    this.roleNotice = page.locator('#schedule-forbidden-alert');
     this.emptyState = page.locator('#schedule-empty-state');
 
     this.btnAddLesson = page.locator('#btn-add-lesson');
@@ -31,7 +30,8 @@ export class SchedulePage {
     this.conflictErrorBox = page.locator('#lesson-room-conflict-error');
     this.conflictErrorText = page.locator('#lesson-conflict-error-text');
 
-    this.deleteModal = page.locator('#modal-delete-lesson');
+    this.deleteModal = page.locator('#modal-confirm-delete-lesson');
+    this.btnCloseDelete = page.locator('#btn-close-delete-x');
     this.btnConfirmDelete = page.locator('#btn-confirm-delete-lesson');
     this.btnCancelDelete = page.locator('#btn-cancel-delete-lesson');
 

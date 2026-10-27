@@ -4,11 +4,11 @@ node_modules/
 dist/
 scripts/*
 !scripts/build-site.mjs
-!scripts/build-site.mjs
 repomix-output.md
 playwright-report/
 test-results/
 build/
+.build/
 scratch
 
 # Результаты прогонов и кэш Python в учебных задачах

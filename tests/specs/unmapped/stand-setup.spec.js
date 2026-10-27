@@ -1,3 +1,4 @@
+// ВНЕ ТАБЛИЦЫ ТЕСТ-КЕЙСОВ — служебная проверка стенда.
 import { test, expect } from '../../fixtures/base-test.js';
 import { TEST_USERS } from '../../config/test-users.js';
 

@@ -5,16 +5,20 @@
  * Запуск:
  *   node tools/build-task.mjs --task task-01-auth-login
  *   node tools/build-task.mjs --task task-01-auth-login --verify
- *   node tools/build-task.mjs --all
+ *   node tools/build-task.mjs --all --verify --skip-build
+ *
+ * --skip-build проверяет уже собранные taskcases и не пересобирает reference.
  *
  * Конфигурации мутаций лежат в tools/task-mutations/<task>.json и не попадают
  * в папку задачи, которую получают студенты.
  */
 import { build } from 'esbuild';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import {
   cpSync,
   existsSync,
+  lstatSync,
   mkdirSync,
   readFileSync,
   readdirSync,
@@ -31,6 +35,7 @@ const TASKS_DIR = path.join(ROOT, 'tasks');
 const CONFIG_DIR = path.join(ROOT, 'tools', 'task-mutations');
 const TEMP_DIR = path.join(ROOT, '.build');
 const DOCKER_IMAGE = 'auto-tests-runner:latest';
+const VERIFY_MANIFEST = path.join(TEMP_DIR, 'task-verification-manifest.json');
 
 const args = process.argv.slice(2);
 
@@ -42,7 +47,16 @@ function optionValue(name) {
 
 const verify = args.includes('--verify');
 const buildAll = args.includes('--all');
+const skipBuild = args.includes('--skip-build');
 const requestedTask = optionValue('--task');
+
+const summary = {
+  tasks: 0,
+  baselineChecks: 0,
+  expectedMutationFailures: 0,
+  extraFailures: 0,
+  failedTasks: [],
+};
 
 function fail(message) {
   console.error(`\n[build-task] ${message}`);
@@ -153,7 +167,97 @@ async function buildMutation(taskName, mutation) {
   );
 }
 
-async function buildTask(taskName) {
+function listFiles(directory, base = directory, output = []) {
+  for (const entry of readdirSync(directory)) {
+    const fullPath = path.join(directory, entry);
+    const stat = lstatSync(fullPath);
+    if (stat.isDirectory()) {
+      listFiles(fullPath, base, output);
+    } else if (stat.isFile()) {
+      output.push(path.relative(base, fullPath));
+    }
+  }
+  return output.sort();
+}
+
+function hasCurrentBaseline(taskName) {
+  const baseline = path.join(TASKS_DIR, taskName, 'testcases', '1');
+  if (!existsSync(CLEAN_REFERENCE) || !existsSync(baseline)) return false;
+
+  const referenceFiles = listFiles(CLEAN_REFERENCE);
+  const baselineFiles = listFiles(baseline);
+  if (referenceFiles.length !== baselineFiles.length) return false;
+
+  return referenceFiles.every(
+    (relativePath, index) =>
+      relativePath === baselineFiles[index] &&
+      readFileSync(path.join(CLEAN_REFERENCE, relativePath)).equals(
+        readFileSync(path.join(baseline, relativePath)),
+      ),
+  );
+}
+
+function taskVerificationFingerprint() {
+  const hash = createHash('sha256');
+  const allTaskNames = readdirSync(CONFIG_DIR)
+    .filter((file) => file.endsWith('.json'))
+    .map((file) => file.replace(/\.json$/, ''))
+    .sort();
+  const sources = [
+    SRC,
+    CONFIG_DIR,
+    ...allTaskNames.flatMap((taskName) => [
+      path.join(TASKS_DIR, taskName, 'task.md'),
+      path.join(TASKS_DIR, taskName, 'template.py'),
+      path.join(TASKS_DIR, taskName, 'solution.py'),
+    ]),
+  ];
+
+  for (const source of sources) {
+    if (!existsSync(source)) {
+      hash.update(`missing:${source}\n`);
+      continue;
+    }
+    if (lstatSync(source).isDirectory()) {
+      for (const relativePath of listFiles(source)) {
+        hash.update(`${source}:${relativePath}\n`);
+        hash.update(readFileSync(path.join(source, relativePath)));
+      }
+    } else {
+      hash.update(`${source}\n`);
+      hash.update(readFileSync(source));
+    }
+  }
+  return hash.digest('hex');
+}
+
+function assertFastModeReady(taskNames) {
+  const stale = taskNames.filter((taskName) => !hasCurrentBaseline(taskName));
+  if (stale.length) {
+    fail(
+      'Быстрый режим недоступен: baseline устарел для задач:\n' +
+        stale.map((taskName) => `  - ${taskName}`).join('\n') +
+        '\nЗапустите npm run test:tasks без --skip-build.',
+    );
+  }
+  if (!existsSync(VERIFY_MANIFEST)) {
+    fail('Быстрый режим недоступен: нет результата полного прогона. Запустите npm run test:tasks без --skip-build.');
+  }
+  const manifest = JSON.parse(readFileSync(VERIFY_MANIFEST, 'utf8'));
+  if (manifest.fingerprint !== taskVerificationFingerprint()) {
+    fail('Быстрый режим недоступен: исходники, решения или конфигурации изменились после полного прогона. Запустите npm run test:tasks без --skip-build.');
+  }
+}
+
+function saveVerificationManifest(taskNames) {
+  mkdirSync(TEMP_DIR, { recursive: true });
+  writeFileSync(
+    VERIFY_MANIFEST,
+    JSON.stringify({ fingerprint: taskVerificationFingerprint() }, null, 2),
+  );
+}
+
+function loadTaskConfig(taskName) {
   const configPath = path.join(CONFIG_DIR, `${taskName}.json`);
   if (!existsSync(configPath)) {
     fail(`Нет конфигурации мутаций: ${path.relative(ROOT, configPath)}`);
@@ -162,7 +266,10 @@ async function buildTask(taskName) {
   if (config.task !== taskName) {
     fail(`В конфигурации указана задача ${config.task}, а запрошена ${taskName}`);
   }
+  return config;
+}
 
+async function buildTask(taskName, config = loadTaskConfig(taskName)) {
   const taskDir = path.join(TASKS_DIR, taskName);
   const referenceDir = path.join(taskDir, 'reference');
   const testcasesDir = path.join(taskDir, 'testcases');
@@ -213,12 +320,24 @@ function runDocker(taskName) {
 function verifyTask(taskName, config) {
   const taskDir = path.join(TASKS_DIR, taskName);
   const resultsDir = path.join(taskDir, 'results');
+  if (!existsSync(resultsDir)) {
+    return {
+      taskName,
+      problems: [`отсутствует каталог results/. Запустите без --skip-build.`],
+      baselineChecks: 0,
+      expectedMutationFailures: 0,
+      extraFailures: 0,
+    };
+  }
   const expectedByFolder = new Map(
     config.mutations.map((mutation) => [String(mutation.folder), mutation.expectFail]),
   );
 
   const problems = [];
   let checked = 0;
+  let baselineChecks = 0;
+  let expectedMutationFailures = 0;
+  let extraFailures = 0;
 
   for (const entry of readdirSync(resultsDir).sort()) {
     const match = entry.match(/^results_(\d+)\.json$/);
@@ -235,6 +354,7 @@ function verifyTask(taskName, config) {
         `[verify] testcases/1: ${Object.keys(result).length - failed.length}/` +
           `${Object.keys(result).length} проверок пройдено`,
       );
+      baselineChecks += Object.keys(result).length - failed.length;
       if (failed.length) {
         problems.push(`testcases/1: не прошли ${failed.join(', ')}`);
       }
@@ -254,6 +374,8 @@ function verifyTask(taskName, config) {
         (extra.length ? `, дополнительно упали: ${extra.join(', ')}` : ''),
     );
 
+    expectedMutationFailures += expected.filter((name) => failed.includes(name)).length;
+    extraFailures += extra.length;
     if (missing.length) {
       problems.push(`testcases/${folder}: не упали ${missing.join(', ')}`);
     }
@@ -270,12 +392,34 @@ function verifyTask(taskName, config) {
     rmSync(path.join(taskDir, cache), { recursive: true, force: true });
   }
 
-  if (problems.length) {
-    console.error('\n[verify] ОШИБКИ:');
-    for (const problem of problems) console.error(`  - ${problem}`);
+  return {
+    taskName,
+    problems,
+    baselineChecks,
+    expectedMutationFailures,
+    extraFailures,
+  };
+}
+
+function printSummary(taskNames, shouldSaveManifest) {
+  console.log('\n[verify] ИТОГОВАЯ СВОДКА');
+  console.log(`  Задач проверено: ${summary.tasks}`);
+  console.log(`  Baseline-проверок пройдено: ${summary.baselineChecks}`);
+  console.log(`  Ожидаемых падений мутаций: ${summary.expectedMutationFailures}`);
+  console.log(`  Дополнительных падений: ${summary.extraFailures}`);
+  if (summary.failedTasks.length) {
+    console.error(`  Задач с ошибками: ${summary.failedTasks.length}`);
+    for (const item of summary.failedTasks) {
+      console.error(`    - ${item.taskName}: ${item.problems.join('; ')}`);
+    }
     process.exit(1);
   }
-  console.log('\n[verify] Все проверки соответствуют матрице мутаций.');
+  console.log('  Задач с ошибками: 0');
+  if (shouldSaveManifest) {
+    saveVerificationManifest(taskNames);
+    console.log('[verify] Сохранён manifest полного прогона для быстрого режима.');
+  }
+  console.log('[verify] Все проверки соответствуют матрице мутаций.');
 }
 
 async function main() {
@@ -289,20 +433,44 @@ async function main() {
   if (!taskNames[0]) {
     fail('Укажите --task <имя задачи> или --all');
   }
-
-  buildCleanSite();
+  if (skipBuild && !verify) {
+    fail('--skip-build доступен только вместе с --verify.');
+  }
 
   const configs = new Map();
-  for (const taskName of taskNames) {
-    const config = await buildTask(taskName);
-    configs.set(taskName, config);
+  if (skipBuild) {
+    assertFastModeReady(taskNames);
+    console.log('[build-task] Быстрый режим: baseline актуален, пересборка taskcases пропущена.');
+    for (const taskName of taskNames) {
+      configs.set(taskName, loadTaskConfig(taskName));
+    }
+  } else {
+    buildCleanSite();
+    for (const taskName of taskNames) {
+      const config = await buildTask(taskName);
+      configs.set(taskName, config);
+    }
   }
 
   if (verify) {
     for (const taskName of taskNames) {
-      runDocker(taskName);
-      verifyTask(taskName, configs.get(taskName));
+      try {
+        runDocker(taskName);
+        const result = verifyTask(taskName, configs.get(taskName));
+        summary.tasks += 1;
+        summary.baselineChecks += result.baselineChecks;
+        summary.expectedMutationFailures += result.expectedMutationFailures;
+        summary.extraFailures += result.extraFailures;
+        if (result.problems.length) summary.failedTasks.push(result);
+      } catch (error) {
+        summary.tasks += 1;
+        summary.failedTasks.push({
+          taskName,
+          problems: [error.message || String(error)],
+        });
+      }
     }
+    printSummary(taskNames, !skipBuild && buildAll);
   }
 }
 

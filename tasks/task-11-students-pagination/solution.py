@@ -278,7 +278,7 @@ def test_ov_09_pagination_keeps_state(driver):
     open_students(driver)
 
     search_students(driver, "ов")
-    wait_counter_contains(driver, "из 12")
+    wait_counter_contains(driver, "Показано 1–10 из 28 учеников 7Б класса")
 
     before_sort = row_ids(driver)
     click_sort(driver, "grade")
@@ -286,7 +286,7 @@ def test_ov_09_pagination_keeps_state(driver):
     page_one_ids = row_ids(driver)
 
     go_to_page(driver, 2)
-    wait_counter_contains(driver, "из 12")
+    wait_counter_contains(driver, "Показано 11–12 из 28 учеников 7Б класса")
     page_two_ids = row_ids(driver)
 
     assert not set(page_one_ids) & set(page_two_ids), (
@@ -298,7 +298,7 @@ def test_ov_09_pagination_keeps_state(driver):
     )
 
     go_to_page(driver, 1)
-    wait_counter_contains(driver, "из 12")
+    wait_counter_contains(driver, "Показано 1–10 из 28 учеников 7Б класса")
     assert search_value(driver) == "ов", (
         f"Поиск сбросился при переходе по страницам: «{search_value(driver)}»"
     )
@@ -308,7 +308,7 @@ def test_ov_09_pagination_keeps_state(driver):
     )
 
     go_to_page(driver, 2)
-    wait_counter_contains(driver, "из 12")
+    wait_counter_contains(driver, "Показано 11–12 из 28 учеников 7Б класса")
     assert row_ids(driver) == page_two_ids, (
         "Состав второй страницы изменился после возврата: "
         f"{row_ids(driver)} вместо {page_two_ids}"
@@ -360,14 +360,14 @@ def test_ov_11_back_keeps_state(driver):
     open_students(driver)
 
     search_students(driver, "ов")
-    wait_counter_contains(driver, "из 12")
+    wait_counter_contains(driver, "Показано 1–10 из 28 учеников 7Б класса")
 
     before_sort = row_ids(driver)
     click_sort(driver, "absences")
     wait_order_changed(driver, before_sort)
 
     go_to_page(driver, 2)
-    wait_counter_contains(driver, "из 12")
+    wait_counter_contains(driver, "Показано 11–12 из 28 учеников 7Б класса")
     page_two_ids = row_ids(driver)
     expected_id = student_rows(driver)[0].get_attribute("data-student-id")
 
@@ -382,7 +382,7 @@ def test_ov_11_back_keeps_state(driver):
         "После закрытия сводки поиск сбросился: "
         f"«{search_value(driver)}»"
     )
-    wait_counter_contains(driver, "из 12")
+    wait_counter_contains(driver, "Показано 11–12 из 28 учеников 7Б класса")
     assert active_page(driver) == 2, (
         f"После закрытия сводки открыта страница {active_page(driver)} вместо 2"
     )

@@ -56,9 +56,9 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await loginPage.loginAs('subject_teacher');
     await page.waitForURL(/\/classes\/?/, { timeout: 7000 });
     await navigationPage.expectVisibleMenuItems([
-      'nav-classes', 'nav-schedule', 'nav-attendance', 'nav-profile'
+      'nav-classes', 'nav-schedule', 'nav-attendance', 'nav-analytics', 'nav-profile'
     ]);
-    await navigationPage.expectHiddenMenuItems(['nav-parents', 'nav-meetings', 'nav-announcements', 'nav-analytics']);
+    await navigationPage.expectHiddenMenuItems(['nav-parents', 'nav-meetings', 'nav-announcements']);
     await navigationPage.logout();
 
     await loginPage.goto();
@@ -359,11 +359,11 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await page.waitForURL(/\/classes\/?/, { timeout: 7000 });
 
     await navigationPage.expectVisibleMenuItems([
-      'nav-classes', 'nav-schedule', 'nav-attendance', 'nav-profile'
+      'nav-classes', 'nav-schedule', 'nav-attendance', 'nav-analytics', 'nav-profile'
     ]);
 
     await navigationPage.expectHiddenMenuItems([
-      'nav-parents', 'nav-meetings', 'nav-announcements', 'nav-analytics'
+      'nav-parents', 'nav-meetings', 'nav-announcements'
     ]);
   });
 
@@ -513,16 +513,18 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await expect(page.locator('#students-counter-label')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('#students-counter-label')).toContainText('28');
 
-    await navigationPage.gotoRoute('#/students?class=8A');
+    await navigationPage.gotoRoute('#/students?classId=class-8a');
+    await expect(page.locator('h2')).toContainText('Доступ ограничен');
+    await expect(page.locator('#students-table-wrapper')).toHaveCount(0);
+
+    await navigationPage.gotoRoute('#/analytics?classId=class-8a');
+    await expect(page.locator('h2')).toContainText('Доступ ограничен');
+    await expect(page.locator('#analytics-view')).toHaveCount(0);
+
+    await navigationPage.gotoRoute('#/students?classId=class-9v');
     await expect(page.locator('h2')).toContainText('Доступ ограничен');
 
-    await navigationPage.gotoRoute('#/analytics?class=8A');
-    await expect(page.locator('h2')).toContainText('Доступ ограничен');
-
-    await navigationPage.gotoRoute('#/students?class=9В');
-    await expect(page.locator('h2')).toContainText('Доступ ограничен');
-
-    await navigationPage.gotoRoute('#/analytics?class=9В');
+    await navigationPage.gotoRoute('#/analytics?classId=class-9v');
     await expect(page.locator('h2')).toContainText('Доступ ограничен');
 
     await navigationPage.gotoRoute('#/students');
@@ -550,8 +552,8 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
     await loginPage.login(TEST_USERS.subject_teacher.username, TEST_USERS.subject_teacher.password);
     await page.waitForURL(/\/classes\/?/, { timeout: 7000 });
 
-    await navigationPage.expectVisibleMenuItems(['nav-classes', 'nav-schedule', 'nav-attendance', 'nav-profile']);
-    await navigationPage.expectHiddenMenuItems(['nav-overview', 'nav-journal', 'nav-students', 'nav-parents', 'nav-analytics']);
+    await navigationPage.expectVisibleMenuItems(['nav-classes', 'nav-schedule', 'nav-attendance', 'nav-analytics', 'nav-profile']);
+    await navigationPage.expectHiddenMenuItems(['nav-overview', 'nav-journal', 'nav-students', 'nav-parents']);
 
     await expect(page.locator('h1')).toContainText('Мои классы');
     const classCards = page.locator('[data-class-card]');
@@ -663,8 +665,8 @@ test.describe('Автотесты TC-AUTH и TC-RM: авторизация и р
 
     await loginPage.loginAs('teacher');
     await page.waitForURL(/\/classes\/?/, { timeout: 7000 });
-    await navigationPage.expectVisibleMenuItems(['nav-classes', 'nav-profile']);
-    await navigationPage.expectHiddenMenuItems(['nav-journal', 'nav-analytics']);
+    await navigationPage.expectVisibleMenuItems(['nav-classes', 'nav-analytics', 'nav-profile']);
+    await navigationPage.expectHiddenMenuItems(['nav-journal']);
 
     await navigationPage.logout();
     await loginPage.loginAs('admin');

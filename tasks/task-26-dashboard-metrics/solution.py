@@ -232,9 +232,9 @@ def test_bp_04_unconfirmed_metric(driver):
     submit_login(driver)
     open_overview(driver)
 
-    assert unconfirmed_count(driver) == 5, "В I четверти должно быть 5 неподтверждённых пропусков"
-    assert unconfirmed_metric_count(driver) == 5, (
-        "Метрика «Без подтверждения» должна показывать 5 пропусков I четверти"
+    assert unconfirmed_count(driver) == 7, "В I четверти должно быть 7 неподтверждённых пропусков"
+    assert unconfirmed_metric_count(driver) == 7, (
+        "Метрика «Без подтверждения» должна показывать 7 пропусков I четверти"
     )
 
     link = metric_card(driver, "Без подтверждения").find_element(
@@ -255,7 +255,7 @@ def test_bp_05_metrics_recalculated(driver):
 
     confirmed_id = driver.execute_script(CONFIRM_ONE_ABSENCE)
     assert confirmed_id, "Не удалось подтвердить один неподтверждённый пропуск"
-    assert unconfirmed_count(driver) == 4, "После изменения в I четверти должно остаться 4 пропуска"
+    assert unconfirmed_count(driver) == 6, "После изменения в I четверти должно остаться 6 пропусков"
 
     open_overview(driver)
     assert unconfirmed_metric_count(driver) == initial_metric_count - 1, (

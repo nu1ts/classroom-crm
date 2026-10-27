@@ -1,3 +1,4 @@
+// ВНЕ ТАБЛИЦЫ ТЕСТ-КЕЙСОВ — внести в таблицу вручную.
 import { test, expect } from '../../fixtures/base-test.js';
 
 test.describe('Недокументированные проверки: учётные записи и карточки учителей', () => {
@@ -75,11 +76,11 @@ test.describe('Недокументированные проверки: учёт
 
   test.describe('Учителя: карточка учителя', () => {
 
-    test('[TC-TCH-01] Создание карточки учителя (Позитивный)', async ({ page, loginPage, navigationPage }) => {
+    test('[TC-UMT-01] Создание карточки учителя (Позитивный)', async ({ page, loginPage, navigationPage }) => {
       await loginPage.goto();
       await loginPage.loginAs('admin');
       await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
-      await navigationPage.gotoRoute('#/teachers');
+      await navigationPage.gotoRoute('/teachers');
       await expect(page.locator('h1')).toContainText('Учителя');
 
       await page.click('#btn-open-create-teacher');
@@ -94,11 +95,11 @@ test.describe('Недокументированные проверки: учёт
       await expect(card).toContainText('0 ч');
     });
 
-    test('[TC-TCH-02] Изменение карточки учителя (Позитивный)', async ({ page, loginPage, navigationPage }) => {
+    test('[TC-UMT-02] Изменение карточки учителя (Позитивный)', async ({ page, loginPage, navigationPage }) => {
       await loginPage.goto();
       await loginPage.loginAs('admin');
       await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
-      await navigationPage.gotoRoute('#/teachers');
+      await navigationPage.gotoRoute('/teachers');
       await expect(page.locator('h1')).toContainText('Учителя');
 
       const card = page.locator('[data-teacher-card]', { hasText: 'Иванова Елена Сергеевна' });
@@ -115,11 +116,11 @@ test.describe('Недокументированные проверки: учёт
       await expect(updated).toContainText('В архиве');
     });
 
-    test('[TC-TCH-03] Удаление карточки учителя без нагрузки и привязки (Позитивный)', async ({ page, loginPage, navigationPage }) => {
+    test('[TC-UMT-03] Удаление карточки учителя без нагрузки и привязки (Позитивный)', async ({ page, loginPage, navigationPage }) => {
       await loginPage.goto();
       await loginPage.loginAs('admin');
       await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
-      await navigationPage.gotoRoute('#/teachers');
+      await navigationPage.gotoRoute('/teachers');
       await expect(page.locator('h1')).toContainText('Учителя');
 
       await page.click('#btn-open-create-teacher');
@@ -135,11 +136,11 @@ test.describe('Недокументированные проверки: учёт
       await expect(page.locator('[data-teacher-card]', { hasText: 'Временный Учитель' })).toHaveCount(0);
     });
 
-    test('[TC-TCH-04] Карточку с нагрузкой удалить нельзя (Негативный)', async ({ page, loginPage, navigationPage }) => {
+    test('[TC-UMT-04] Карточку с нагрузкой удалить нельзя (Негативный)', async ({ page, loginPage, navigationPage }) => {
       await loginPage.goto();
       await loginPage.loginAs('admin');
       await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
-      await navigationPage.gotoRoute('#/teachers');
+      await navigationPage.gotoRoute('/teachers');
       await expect(page.locator('h1')).toContainText('Учителя');
 
       await page.locator('[data-teacher-card]', { hasText: 'Смирнова Марина Васильевна' })

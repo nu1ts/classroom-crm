@@ -243,7 +243,7 @@ test.describe('Аналитика и Обзор класса', () => {
     await analyticsPage.goto();
     await analyticsPage.generateReport();
 
-    await expect(analyticsPage.reportMetricUnconfirmed).toHaveText('4');
+    await expect(analyticsPage.reportMetricUnconfirmed).toHaveText('7');
   });
 
   test('[TC-ANL-15] Отчёт по классу не хранится', async ({ page }) => {
@@ -278,9 +278,9 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(page.locator('#analytics-view')).toBeVisible();
     await expect(page.locator('#analytics-view')).not.toContainText('8А класс');
 
-    await page.goto('analytics?class=8A');
+    await page.goto('analytics?classId=class-8a');
     await expect(page.locator('text=Доступ ограничен')).toBeVisible();
-    await expect(page.locator('text=8А класс')).toHaveCount(0);
+    await expect(page.locator('#analytics-view')).toHaveCount(0);
   });
 
   test('[TC-ANL-17] Права: предметник видит только свои предметы и классы', async ({ page }) => {
@@ -288,8 +288,23 @@ test.describe('Аналитика и Обзор класса', () => {
     await loginPage.goto();
     await loginPage.loginAs('subject_teacher');
 
-    await page.goto('analytics');
-    await expect(page.locator('text=Доступ ограничен')).toBeVisible();
+    const analyticsPage = new AnalyticsPage(page);
+    await analyticsPage.goto('classId=class-7b&subjectId=math');
+    await expect(page.locator('#analytics-view')).toContainText('Доступ по нагрузке');
+    await expect(page.locator('#analytics-view')).toContainText('7Б');
+    await expect(page.locator('#analytics-view')).toContainText('Математика');
+    await analyticsPage.generateReport();
+    await expect(analyticsPage.reportContainer).toContainText('Средние баллы по предметам');
+    await expect(analyticsPage.reportContainer).toContainText('Математика');
+    await expect(analyticsPage.reportContainer).not.toContainText('Физика');
+
+    await page.goto('analytics?classId=class-7b&subjectId=phys');
+    await expect(page.locator('#analytics-view')).toContainText('Нет данных по выбранному предмету.');
+    await expect(page.locator('#report-container')).toHaveCount(0);
+
+    await page.goto('analytics?classId=class-7v&subjectId=math');
+    await expect(page.locator('h2')).toContainText('Доступ ограничен');
+    await expect(page.locator('#analytics-view')).toHaveCount(0);
   });
 
   test('[TC-ANL-18] Права: родитель видит показатели только своего ребёнка', async ({ page }) => {
@@ -384,7 +399,7 @@ test.describe('Аналитика и Обзор класса', () => {
     const analyticsPage = new AnalyticsPage(page);
     await analyticsPage.goto();
     await analyticsPage.generateReport();
-    await expect(analyticsPage.reportMetricUnconfirmed).toHaveText('3');
+    await expect(analyticsPage.reportMetricUnconfirmed).toHaveText('6');
   });
 
   test('[TC-ANL-21] Показатели пересчитываются после новой оценки', async ({ page }) => {
@@ -526,11 +541,13 @@ test.describe('Аналитика и Обзор класса', () => {
 
     await studentsPage.toggleAbsencesFilter();
     await expect(studentsPage.studentRows.filter({ hasText: 'Александров Егор' })).toHaveCount(0);
-    await expect(studentsPage.counterLabel).toContainText('из 25');
+    await expect(studentsPage.counterLabel).toContainText('из 28');
+    await expect(studentsPage.counterLabel).toContainText('учеников 7Б класса');
 
     await studentsPage.search('Сидоров');
     await expect(studentsPage.studentRows).toHaveCount(1);
     await expect(studentsPage.studentRows.first()).toContainText('Сидоров Никита');
+    await expect(studentsPage.counterLabel).toContainText('Показано 1 из 28 учеников 7Б класса');
 
     await studentsPage.clearSearch();
     await studentsPage.toggleAbsencesFilter();
@@ -737,9 +754,12 @@ test.describe('Аналитика и Обзор класса', () => {
     await expect(detailPage.recentAbsencesBlock).toContainText('25.10.2024');
     await expect(detailPage.recentAbsencesBlock).toContainText('Подтверждено');
 
-    await expect(detailPage.recentAbsencesBlock).toContainText('24.10.2024');
-    await expect(detailPage.recentAbsencesBlock).toContainText('По болезни (ОРВИ)');
-    await expect(detailPage.recentAbsencesBlock.locator('.btn-confirm-absence-action')).toBeVisible();
+    const confirmButton = detailPage.recentAbsencesBlock
+      .locator('.btn-confirm-absence-action[data-date="2024-10-24"]');
+    const unconfirmedAbsence = confirmButton.locator('xpath=../..');
+    await expect(unconfirmedAbsence).toContainText('24.10.2024');
+    await expect(unconfirmedAbsence).toContainText('По болезни (ОРВИ)');
+    await expect(confirmButton).toHaveText('Подтвердить причину');
   });
 
   test('[TC-OV-15] Заметки классрука', async ({ page }) => {

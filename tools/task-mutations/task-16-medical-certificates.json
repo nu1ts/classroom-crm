@@ -23,9 +23,9 @@
       ],
       "patches": [
         {
-          "file": "src/services/attendance-ops.js",
-          "find": "    if (idsSet.has(record.id)) {\n      record.status = isExcused ? \"excused\" : \"unexcused\";\n      record.code = isExcused ? \"УП\" : \"Н\";\n      record.value = \"absent\";\n      record.reason = reason;\n      record.document = document;\n      record.confirmedBy = confirmedBy;\n      record.confirmedAt = confirmedAt;\n      updatedCount++;\n    }",
-          "replace": "    if (idsSet.has(record.id) && updatedCount === 0) {\n      record.status = isExcused ? \"excused\" : \"unexcused\";\n      record.code = isExcused ? \"УП\" : \"Н\";\n      record.value = \"absent\";\n      record.reason = reason;\n      record.document = document;\n      record.confirmedBy = confirmedBy;\n      record.confirmedAt = confirmedAt;\n      updatedCount++;\n    }"
+          "file": "src/views/journal/listeners.js",
+          "find": "      const confirmation = confirmAbsenceRecord(attId, confirmationData);",
+          "replace": "      const confirmation = confirmAbsenceRecord(attId, confirmationData);\n      const relatedRecord = (getDB().attendance || []).find((record) => record.id !== attId && record.studentId === activeAttendanceRecord.studentId && record.value === \"absent\" && record.status === \"unconfirmed\");\n      if (relatedRecord) confirmAbsenceRecord(relatedRecord.id, confirmationData);"
         }
       ]
     },
