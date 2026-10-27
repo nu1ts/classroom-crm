@@ -197,14 +197,45 @@ test.describe('Тест-кейсы «Журнал» и «Расписание» 
       const journalPage = new JournalPage(page);
 
       await loginPage.goto();
-      await loginPage.login('kozlov@school.ru', 'Test#2024');
+      await loginPage.login('smirnova@school.ru', 'Test#2024');
+      await journalPage.goto();
 
+      const preparation = await page.evaluate(() => {
+        const record = window.crmApi
+          .getDB()
+          .attendance.find((item) => item.lessonId === 'lsn-39' && item.studentId === 'st-14');
+        return window.crmApi.confirmAbsenceRecord(record.id, {
+          status: 'excused',
+          reason: 'ОРВИ',
+          document: 'Справка № 142 от 24.10.2024',
+        });
+      });
+      expect(preparation.success).toBeTruthy();
+
+      await page.evaluate(() => {
+        window.localStorage.setItem('classroom_crm_session', JSON.stringify({
+          userId: 'kozlov@school.ru',
+          username: 'kozlov@school.ru',
+          role: 'subject_teacher',
+          roleLabel: 'Учитель',
+          personName: 'Козлов Андрей Павлович',
+          shortName: 'Козлов А. П.',
+          loginAt: new Date().toISOString(),
+        }));
+      });
       await journalPage.goto('class=class-7b&subject=math');
-      const btn = journalPage.getAbsenceBtn('Сидоров Никита', '2024-10-24');
-      await expect(btn).toContainText('Н');
-      await btn.click();
-      await journalPage.saveJournal();
-      await expect(btn).toHaveAttribute('data-status', 'present');
+      const confirmed = journalPage.getAbsenceBtn('Сидоров Никита', '2024-10-24');
+      await expect(confirmed).toContainText('Б');
+      await expect(confirmed).toHaveAttribute('data-status', 'confirmed');
+
+      page.once('dialog', async (dialog) => {
+        expect(dialog.message()).toMatch(/причина.*подтверждена/i);
+        expect(dialog.message()).toMatch(/заблокирован/i);
+        await dialog.accept();
+      });
+      await confirmed.click();
+      await expect(confirmed).toContainText('Б');
+      await expect(confirmed).toHaveAttribute('data-status', 'confirmed');
     });
 
     test('[TC-TCH-09] Оценка не ставится ученику, отмеченному отсутствующим', async ({
