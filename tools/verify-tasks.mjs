@@ -3,6 +3,7 @@
  *
  * Запуск:
  *   npm run test:tasks
+ *   npm run test:tasks -- --skip-build
  *   npm run test:tasks -- --task task-14-journal-attendance
  */
 import { execFileSync } from 'node:child_process';
@@ -25,6 +26,7 @@ if (!existsSync(path.join(RUNNER_DIR, 'Dockerfile'))) {
 }
 
 const hasAll = args.includes('--all');
+const skipBuild = args.includes('--skip-build');
 const taskIndex = args.indexOf('--task');
 const hasTask = taskIndex !== -1 && Boolean(args[taskIndex + 1]);
 
@@ -37,17 +39,26 @@ if (taskIndex !== -1 && !hasTask) {
 }
 
 const taskArgs = hasTask ? ['--task', args[taskIndex + 1], '--verify'] : ['--all', '--verify'];
+if (skipBuild) taskArgs.push('--skip-build');
 
-console.log(`[test:tasks] Сборка Docker-образа ${IMAGE} ...`);
-execFileSync('docker', ['build', '-t', IMAGE, '.'], {
-  cwd: RUNNER_DIR,
-  stdio: 'inherit',
-  env: { ...process.env, MSYS_NO_PATHCONV: '1' },
-});
+if (!skipBuild) {
+  console.log(`[test:tasks] Сборка Docker-образа ${IMAGE} ...`);
+  execFileSync('docker', ['build', '-t', IMAGE, '.'], {
+    cwd: RUNNER_DIR,
+    stdio: 'inherit',
+    env: { ...process.env, MSYS_NO_PATHCONV: '1' },
+  });
+} else {
+  console.log(`[test:tasks] Быстрый режим: используется образ ${IMAGE} и существующие taskcases.`);
+}
 
-console.log('[test:tasks] Сборка задач и проверка baseline/мутаций ...');
-execFileSync(process.execPath, ['tools/build-task.mjs', ...taskArgs], {
-  cwd: ROOT,
-  stdio: 'inherit',
-  env: { ...process.env, MSYS_NO_PATHCONV: '1' },
-});
+console.log('[test:tasks] Проверка baseline/мутаций ...');
+try {
+  execFileSync(process.execPath, ['tools/build-task.mjs', ...taskArgs], {
+    cwd: ROOT,
+    stdio: 'inherit',
+    env: { ...process.env, MSYS_NO_PATHCONV: '1' },
+  });
+} catch (error) {
+  process.exit(error.status || 1);
+}

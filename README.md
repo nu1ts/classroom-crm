@@ -98,6 +98,14 @@ The command:
 3. runs Selenium/Pytest in Docker for each package;
 4. checks that each baseline passes and each defect variant produces its expected failures.
 
+### Fast repeat verification
+
+```bash
+npm run test:tasks -- --skip-build
+```
+
+This mode skips rebuilding the Docker image, `reference/`, and `testcases/`. Before running Docker, it compares every task baseline with the current `reference/` and requires a successful previous full run of all tasks with unchanged sources, task packages, and mutation configurations. Otherwise, it stops immediately and requests a regular `npm run test:tasks` run.
+
 ### Verify one task
 
 ```bash
