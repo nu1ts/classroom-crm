@@ -1,13 +1,7 @@
-import { test, expect } from '@playwright/test';
-import { LoginPage } from '../../page-objects/LoginPage.js';
-import { NavigationPage } from '../../page-objects/NavigationPage.js';
+// ВНЕ ТАБЛИЦЫ ТЕСТ-КЕЙСОВ — внести в таблицу вручную.
+import { test, expect } from '../../fixtures/base-test.js';
 
-// ────────────────────────
-// ВНЕ ТАБЛИЦЫ ТЕСТ-КЕЙСОВ
-// ────────────────────────
-
-async function openWorkloadAsAdmin(page) {
-  const loginPage = new LoginPage(page);
+async function openWorkloadAsAdmin(page, loginPage) {
   await loginPage.goto();
   await loginPage.loginAs('admin');
   await page.waitForURL(/\/accounts\/?/, { timeout: 7000 });
@@ -17,8 +11,8 @@ async function openWorkloadAsAdmin(page) {
 
 test.describe('Админ: страница «Нагрузка» (TC-WL, вне таблицы — перенести в таблицу тест-кейсов)', () => {
 
-  test('[TC-WL-01] Матрица нагрузки: учитель × предмет × класс, часов в неделю', async ({ page }) => {
-    await openWorkloadAsAdmin(page);
+  test('[TC-WL-01] Матрица нагрузки: учитель × предмет × класс, часов в неделю', async ({ page, loginPage }) => {
+    await openWorkloadAsAdmin(page, loginPage);
 
     const rows = page.locator('[data-workload-row]');
     await expect(rows).toHaveCount(11);
@@ -30,8 +24,8 @@ test.describe('Админ: страница «Нагрузка» (TC-WL, вне 
     await expect(page.locator('#workload-total-subtitle')).toContainText('часов в неделю');
   });
 
-  test('[TC-WL-02] Назначение нагрузки: новая строка появляется в матрице', async ({ page }) => {
-    await openWorkloadAsAdmin(page);
+  test('[TC-WL-02] Назначение нагрузки: новая строка появляется в матрице', async ({ page, loginPage }) => {
+    await openWorkloadAsAdmin(page, loginPage);
     const before = await page.locator('[data-workload-row]').count();
 
     await page.click('#btn-open-add-workload');
@@ -49,8 +43,8 @@ test.describe('Админ: страница «Нагрузка» (TC-WL, вне 
     await expect(added).toContainText('4');
   });
 
-  test('[TC-WL-03] Изменение строки нагрузки: часы обновляются', async ({ page }) => {
-    await openWorkloadAsAdmin(page);
+  test('[TC-WL-03] Изменение строки нагрузки: часы обновляются', async ({ page, loginPage }) => {
+    await openWorkloadAsAdmin(page, loginPage);
 
     const row = page.locator('[data-workload-row]').filter({ hasText: 'Иванова' }).first();
     await row.locator('[data-action="edit-workload"]').click();
@@ -62,8 +56,8 @@ test.describe('Админ: страница «Нагрузка» (TC-WL, вне 
     await expect(updated).toContainText('8');
   });
 
-  test('[TC-WL-04] Снятие нагрузки: строка удаляется', async ({ page }) => {
-    await openWorkloadAsAdmin(page);
+  test('[TC-WL-04] Снятие нагрузки: строка удаляется', async ({ page, loginPage }) => {
+    await openWorkloadAsAdmin(page, loginPage);
     const before = await page.locator('[data-workload-row]').count();
 
     const row = page.locator('[data-workload-row]').filter({ hasText: 'Дмитриев' }).first();
@@ -73,8 +67,8 @@ test.describe('Админ: страница «Нагрузка» (TC-WL, вне 
     await expect(page.locator('[data-workload-row]')).toHaveCount(before - 1);
   });
 
-  test('[TC-WL-05] Дубликат нагрузки (учитель × предмет × класс) отклоняется', async ({ page }) => {
-    await openWorkloadAsAdmin(page);
+  test('[TC-WL-05] Дубликат нагрузки (учитель × предмет × класс) отклоняется', async ({ page, loginPage }) => {
+    await openWorkloadAsAdmin(page, loginPage);
 
     await page.click('#btn-open-add-workload');
     await page.selectOption('#select-workload-teacher', 't-04');
@@ -86,13 +80,12 @@ test.describe('Админ: страница «Нагрузка» (TC-WL, вне 
     await expect(page.locator('#workload-error')).toContainText('уже назначена');
   });
 
-  test('[TC-WL-06] Поиск фильтрует строки без перерисовки страницы', async ({ page }) => {
-    await openWorkloadAsAdmin(page);
+  test('[TC-WL-06] Поиск фильтрует строки без перерисовки страницы', async ({ page, loginPage }) => {
+    await openWorkloadAsAdmin(page, loginPage);
     const before = await page.locator('[data-workload-row]').count();
 
     await page.click('#input-workload-search');
     await page.fill('#input-workload-search', 'Козлов');
-    await page.waitForTimeout(300);
 
     await expect(page.locator('[data-workload-row]')).toHaveCount(3);
     await expect(page).toHaveURL(/search=/);
@@ -100,7 +93,6 @@ test.describe('Админ: страница «Нагрузка» (TC-WL, вне 
     await expect(page.locator('#input-workload-search')).toBeFocused();
 
     await page.click('#btn-clear-workload-search');
-    await page.waitForTimeout(300);
     await expect(page.locator('[data-workload-row]')).toHaveCount(before);
     await expect(page.locator('#input-workload-search')).toBeFocused();
   });

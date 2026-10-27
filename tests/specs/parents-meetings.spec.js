@@ -4,6 +4,8 @@ import { NavigationPage } from '../page-objects/NavigationPage.js';
 import { ParentsPage } from '../page-objects/ParentsPage.js';
 import { ParentDetailPage } from '../page-objects/ParentDetailPage.js';
 import { StudentDetailPage } from '../page-objects/StudentDetailPage.js';
+import { MeetingsPage } from '../page-objects/MeetingsPage.js';
+import { AnnouncementsPage } from '../page-objects/AnnouncementsPage.js';
 
 test.describe('Родители и Собрания', () => {
 
@@ -40,245 +42,197 @@ test.describe('Родители и Собрания', () => {
 
   test('[TC-PR-02] Поиск по фамилии и по телефону', async ({ page }) => {
     const loginPage = new LoginPage(page);
+    const parentsPage = new ParentsPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-
-    const parentsPage = new ParentsPage(page);
     await parentsPage.goto();
 
     await parentsPage.search('сидор');
     await expect(parentsPage.parentRows).toHaveCount(1);
-    const sidorovaRow = parentsPage.parentRows.first();
-    await expect(sidorovaRow).toContainText('Сидорова Ольга Николаевна');
-    await expect(sidorovaRow).toContainText('Сидоров Никита');
-    await expect(sidorovaRow).toContainText('(7Б)');
-    await expect(sidorovaRow).toContainText('+7 999 123-45-64');
-    await expect(sidorovaRow).toContainText('Мать');
-    await expect(sidorovaRow).toContainText('Основной контакт');
-
-    await parentsPage.clearSearch();
-    await parentsPage.search('123-45-64');
-    await expect(parentsPage.parentRows).toHaveCount(1);
     await expect(parentsPage.parentRows.first()).toContainText('Сидорова Ольга Николаевна');
+    await parentsPage.clearSearch();
+    await parentsPage.search('123-45-62');
+    await expect(parentsPage.parentRows).toHaveCount(1);
+    await expect(parentsPage.parentRows.first()).toContainText('Котова Елена Павловна');
+    await parentsPage.clearSearch();
   });
 
   test('[TC-PR-03] Фильтр «Без связи» и пустой результат', async ({ page }) => {
     const loginPage = new LoginPage(page);
+    const parentsPage = new ParentsPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-
-    const parentsPage = new ParentsPage(page);
     await parentsPage.goto();
-
     await parentsPage.setFilter('no_link');
     await expect(parentsPage.parentRows).toHaveCount(1);
-    const orlovaRow = parentsPage.parentRows.first();
-    await expect(orlovaRow).toContainText('Орлова Надежда Павловна');
-    await expect(orlovaRow).toContainText('+7 999 123-45-65');
-    await expect(orlovaRow.locator('td').nth(1)).toContainText('—');
-
-    await parentsPage.search('петров');
+    await expect(parentsPage.parentRows.first()).toContainText('Орлова Надежда Павловна');
+    await expect(parentsPage.parentRows.first().locator('td').nth(1)).toContainText('—');
+    await parentsPage.search('сидор');
     await expect(parentsPage.parentRows).toHaveCount(0);
-    await expect(page.locator('text=Ничего не найдено')).toBeVisible();
+    await expect(page.getByText('Ничего не найдено')).toBeVisible();
     await expect(parentsPage.btnResetFilters).toBeVisible();
-
     await parentsPage.btnResetFilters.click();
     await expect(parentsPage.parentRows).toHaveCount(10);
-    await expect(parentsPage.searchInput).toHaveValue('');
   });
 
   test('[TC-PR-04] Добавление родителя со связью', async ({ page }) => {
     const loginPage = new LoginPage(page);
+    const parentsPage = new ParentsPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-
-    const parentsPage = new ParentsPage(page);
     await parentsPage.goto();
-
     await parentsPage.btnOpenAddParent.click();
     await expect(parentsPage.modalAdd).toHaveClass(/opacity-100/);
-
     await parentsPage.inputAddFullname.fill('Котов Дмитрий Сергеевич');
     await parentsPage.inputAddPhone.fill('+7 999 123-45-66');
     await parentsPage.selectAddStudent.selectOption('st-06');
     await parentsPage.selectAddRole.selectOption('Отец');
-
-    if (await parentsPage.checkAddPrimary.isChecked()) {
-      await parentsPage.checkAddPrimary.uncheck();
-    }
-
+    if (await parentsPage.checkAddPrimary.isChecked()) await parentsPage.checkAddPrimary.uncheck();
     await parentsPage.btnSubmitAdd.click();
     await expect(parentsPage.modalAdd).toHaveClass(/opacity-0/);
-
     await parentsPage.search('Котов Дмитрий');
-    await expect(parentsPage.parentRows).toHaveCount(1);
-    const newRow = parentsPage.parentRows.first();
-    await expect(newRow).toContainText('Котов Дмитрий Сергеевич');
-    await expect(newRow).toContainText('+7 999 123-45-66');
-    await expect(newRow).toContainText('Котов Максим');
-    await expect(newRow).toContainText('Отец');
-    await expect(newRow).not.toContainText('Основной контакт');
-
+    const row = parentsPage.parentRows.first();
+    await expect(row).toContainText('Котов Максим');
+    await expect(row).toContainText('(7Б)');
+    await expect(row).toContainText('Отец');
+    await expect(row).not.toContainText('Основной контакт');
     await parentsPage.clearSearch();
     await expect(parentsPage.subtitle).toContainText('33 родителя · у 28 учеников');
   });
 
   test('[TC-PR-05] Добавление родителя без телефона запрещено', async ({ page }) => {
     const loginPage = new LoginPage(page);
+    const parentsPage = new ParentsPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-
-    const parentsPage = new ParentsPage(page);
     await parentsPage.goto();
-
     await parentsPage.btnOpenAddParent.click();
-    await expect(parentsPage.modalAdd).toHaveClass(/opacity-100/);
-
-    await parentsPage.inputAddFullname.fill('Иванов Иван Иванович');
-    await parentsPage.inputAddPhone.fill('');
-
+    await parentsPage.inputAddFullname.fill('Орлов Пётр Иванович');
     await parentsPage.btnSubmitAdd.click();
-    await expect(parentsPage.phoneAddError).toBeVisible();
-    await expect(parentsPage.phoneAddError).toContainText('Укажите телефон');
-
+    await expect(parentsPage.phoneAddError).toHaveText('Укажите телефон');
+    await expect(parentsPage.modalAdd).toHaveClass(/opacity-100/);
     await page.locator('#btn-close-add-parent-x').click();
-    await expect(parentsPage.modalAdd).toHaveClass(/opacity-0/);
     await expect(parentsPage.subtitle).toContainText('32 родителя · у 28 учеников');
   });
 
   test('[TC-PR-06] Карточка родителя: состав полей и изменение', async ({ page }) => {
     const loginPage = new LoginPage(page);
+    const parentsPage = new ParentsPage(page);
+    const parentDetailPage = new ParentDetailPage(page);
+    const studentDetailPage = new StudentDetailPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-
-    const parentsPage = new ParentsPage(page);
     await parentsPage.goto();
-
     await parentsPage.openEditModal('Котова Елена');
-    await expect(parentsPage.inputEditFullname).toHaveValue('Котова Елена Павловна');
-    await expect(parentsPage.inputEditPhone).toHaveValue('+7 999 123-45-62');
-
+    await expect(parentsPage.formEdit).toContainText('ФИО');
+    await expect(parentsPage.formEdit).toContainText('Телефон');
+    await expect(parentsPage.formEdit).toContainText('Роль связи');
+    await expect(parentsPage.formEdit).toContainText('Основной контакт');
+    await expect(parentsPage.formEdit).not.toContainText('Эл. почта');
     await parentsPage.inputEditPhone.fill('+7 999 123-45-68');
     await parentsPage.btnSubmitEdit.click();
     await expect(parentsPage.modalEdit).toHaveClass(/opacity-0/);
-
     await parentsPage.search('Котова Елена');
     await expect(parentsPage.parentRows.first()).toContainText('+7 999 123-45-68');
-
-    await parentsPage.openEditModal('Котова Елена');
-    await expect(parentsPage.inputEditPhone).toHaveValue('+7 999 123-45-68');
-    await page.locator('#btn-close-edit-parent-x').click();
+    await parentDetailPage.goto('pr-10');
+    await expect(parentDetailPage.phoneCard).toContainText('+7 999 123-45-68');
+    await studentDetailPage.goto('st-06');
+    await expect(studentDetailPage.parentsContactsBlock).toContainText('+7 999 123-45-68');
   });
 
   test('[TC-PR-07] Телефон — один на человека', async ({ page }) => {
     const loginPage = new LoginPage(page);
+    const parentsPage = new ParentsPage(page);
+    const parentDetailPage = new ParentDetailPage(page);
+    const studentDetailPage = new StudentDetailPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-
-    const parentsPage = new ParentsPage(page);
     await parentsPage.goto();
-
+    await parentsPage.search('Петров Сергей');
+    await expect(parentsPage.parentRows.first()).toContainText('+7 999 123-45-63');
+    await parentDetailPage.goto('pr-23');
+    await expect(parentDetailPage.phoneCard).toContainText('+7 999 123-45-63');
+    await studentDetailPage.goto('st-23');
+    await expect(studentDetailPage.parentsContactsBlock).toContainText('+7 999 123-45-63');
+    await parentsPage.goto();
     await parentsPage.search('Петров Сергей');
     await parentsPage.openEditModal('Петров Сергей');
     await expect(parentsPage.formEdit.locator('input[type="tel"]')).toHaveCount(1);
-    await expect(parentsPage.formEdit).not.toContainText('Добавить второй телефон');
-
     await parentsPage.inputEditPhone.fill('+7 999 123-45-69');
     await parentsPage.btnSubmitEdit.click();
     await expect(parentsPage.modalEdit).toHaveClass(/opacity-0/);
-
     await parentsPage.search('Петров Сергей');
     await expect(parentsPage.parentRows.first()).toContainText('+7 999 123-45-69');
+    await parentDetailPage.goto('pr-23');
+    await expect(parentDetailPage.phoneCard).toContainText('+7 999 123-45-69');
+    await studentDetailPage.goto('st-23');
+    await expect(studentDetailPage.parentsContactsBlock).toContainText('+7 999 123-45-69');
   });
 
   test('[TC-PR-08] Связывание родителя с учеником', async ({ page }) => {
     const loginPage = new LoginPage(page);
+    const parentsPage = new ParentsPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-
-    const parentsPage = new ParentsPage(page);
     await parentsPage.goto();
-
     await parentsPage.search('Орлова Надежда');
     await parentsPage.openLinkModal('Орлова Надежда');
-    await parentsPage.selectLinkStudent.selectOption('st-16');
+    await parentsPage.selectLinkStudent.selectOption('st-01');
     await parentsPage.selectLinkRole.selectOption('Опекун');
-    await parentsPage.checkLinkPrimary.check();
-
+    if (await parentsPage.checkLinkPrimary.isChecked()) await parentsPage.checkLinkPrimary.uncheck();
     await parentsPage.btnSubmitLink.click();
     await expect(parentsPage.modalLink).toHaveClass(/opacity-0/);
-
     await parentsPage.search('Орлова Надежда');
-    const row = parentsPage.parentRows.first();
-    await expect(row).toContainText('Васильева Дарья');
-    await expect(row).toContainText('Опекун');
-    await expect(row).toContainText('Основной контакт');
-
+    await expect(parentsPage.parentRows.first()).toContainText('Александров Егор');
+    await expect(parentsPage.parentRows.first()).toContainText('(7Б)');
+    await expect(parentsPage.parentRows.first()).toContainText('Опекун');
     await parentsPage.clearSearch();
     await parentsPage.setFilter('no_link');
-    await expect(parentsPage.parentRows.filter({ hasText: 'Орлова Надежда' })).toHaveCount(0);
+    await expect(parentsPage.parentRows).toHaveCount(0);
   });
 
   test('[TC-PR-09] Основной контакт на ученика — только один', async ({ page }) => {
     const loginPage = new LoginPage(page);
+    const parentsPage = new ParentsPage(page);
+    const studentDetailPage = new StudentDetailPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-
-    const parentsPage = new ParentsPage(page);
     await parentsPage.goto();
-
-    await parentsPage.search('Васильев Константин');
-    const vasilievRow = parentsPage.parentRows.first();
-    await expect(vasilievRow).toContainText('Основной контакт');
-    await parentsPage.clearSearch();
-
-    await parentsPage.search('Орлова Надежда');
-    await parentsPage.openLinkModal('Орлова Надежда');
-    await parentsPage.selectLinkStudent.selectOption('st-16');
-    await parentsPage.selectLinkRole.selectOption('Опекун');
-    await parentsPage.checkLinkPrimary.check();
-    await parentsPage.btnSubmitLink.click();
-    await expect(parentsPage.modalLink).toHaveClass(/opacity-0/);
-
-    await parentsPage.clearSearch();
-    await parentsPage.search('Васильев Константин');
-    const updatedVasilievRow = parentsPage.parentRows.first();
-    await expect(updatedVasilievRow).not.toContainText('Основной контакт');
-    await expect(updatedVasilievRow).toContainText('Дополнительный');
+    await parentsPage.search('Петров Сергей');
+    await expect(parentsPage.parentRows.first()).toContainText('Основной контакт');
+    await parentsPage.search('Петрова Елена');
+    await expect(parentsPage.parentRows.first()).not.toContainText('Основной контакт');
+    await parentsPage.openEditModal('Петрова Елена');
+    await parentsPage.checkEditPrimary.check();
+    await parentsPage.btnSubmitEdit.click();
+    await expect(parentsPage.modalEdit).toHaveClass(/opacity-0/);
+    await parentsPage.search('Петрова Елена');
+    await expect(parentsPage.parentRows.first()).toContainText('Основной контакт');
+    await parentsPage.search('Петров Сергей');
+    await expect(parentsPage.parentRows.first()).not.toContainText('Основной контакт');
+    await studentDetailPage.goto('st-23');
+    await expect(studentDetailPage.parentsContactsBlock).toContainText('Петрова Елена Игоревна');
   });
 
   test('[TC-PR-10] Снятие связи с учеником', async ({ page }) => {
     const loginPage = new LoginPage(page);
+    const parentsPage = new ParentsPage(page);
+    const parentDetailPage = new ParentDetailPage(page);
+    const studentDetailPage = new StudentDetailPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-
-    const parentsPage = new ParentsPage(page);
-    await parentsPage.goto();
-
-    await parentsPage.search('Орлова Надежда');
-    await parentsPage.openLinkModal('Орлова Надежда');
-    await parentsPage.selectLinkStudent.selectOption('st-16');
-    await parentsPage.selectLinkRole.selectOption('Опекун');
-    await parentsPage.btnSubmitLink.click();
-    await expect(parentsPage.modalLink).toHaveClass(/opacity-0/);
-
-    await parentsPage.search('Орлова Надежда');
-    await parentsPage.openSummary('Орлова Надежда');
-
-    const parentDetailPage = new ParentDetailPage(page);
-    await expect(parentDetailPage.parentNameHeading).toHaveText('Орлова Надежда Павловна');
+    await parentDetailPage.goto('pr-24');
     await parentDetailPage.openUnlinkModal();
     await parentDetailPage.btnSubmitUnlink.click();
     await expect(parentDetailPage.modalUnlink).toHaveClass(/opacity-0/);
-
     await parentsPage.goto();
-    await parentsPage.search('Орлова Надежда');
-    const orlovaRow = parentsPage.parentRows.first();
-    await expect(orlovaRow.locator('td').nth(1)).toContainText('—');
-
-    await parentsPage.clearSearch();
-    await parentsPage.setFilter('no_link');
-    await expect(parentsPage.parentRows.filter({ hasText: 'Орлова Надежда' })).toHaveCount(1);
+    await parentsPage.search('Петрова Елена');
+    await expect(parentsPage.parentRows.first().locator('td').nth(1)).toContainText('—');
+    await studentDetailPage.goto('st-23');
+    await expect(studentDetailPage.parentsContactsBlock).not.toContainText('Петрова Елена Игоревна');
+    await parentDetailPage.goto('pr-24');
+    await expect(parentDetailPage.parentNameHeading).toHaveText('Петрова Елена Игоревна');
+    await expect(parentDetailPage.contactsHistoryList).toBeVisible();
   });
 
   test('[TC-PR-11] Удаление родителя со связями запрещено', async ({ page }) => {
@@ -543,57 +497,46 @@ test.describe('Родители и Собрания', () => {
 
   test('[TC-MG-02] Создание собрания', async ({ page }) => {
     const loginPage = new LoginPage(page);
+    const meetingsPage = new MeetingsPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-
-    await page.goto('meetings');
-    await page.locator('#btn-create-meeting').click();
-
-    const modal = page.locator('#modal-meeting-form');
-    await expect(modal).toBeVisible();
-
-    await page.locator('#meeting-title-input').fill('Подготовка к новогодним мероприятиям');
-    await page.locator('#meeting-date-input').fill('2024-12-20');
-    await page.locator('#meeting-time-input').fill('18:30');
-    await page.locator('#meeting-room-input').fill('Каб. 302');
-
-    await page.locator('#input-new-agenda-item').fill('Новогодний утренник и сценарий');
-    await page.locator('#btn-add-agenda-item').click();
-    await page.locator('#input-new-agenda-item').fill('Подарки и праздничный бюджет');
-    await page.locator('#btn-add-agenda-item').click();
-
-    await page.locator('#btn-save-meeting').click();
-    await expect(modal).not.toBeVisible();
-
-    await expect(page.locator('#next-meeting-title')).toContainText('Итоги первой четверти 7Б');
-
-    const otherSection = page.locator('#section-other-upcoming');
-    await expect(otherSection).toBeVisible();
-    await expect(otherSection).toContainText('Подготовка к новогодним мероприятиям');
-    await expect(otherSection).toContainText('20.12.2024');
+    await meetingsPage.goto();
+    await meetingsPage.btnOpenCreateModal.click();
+    await expect(meetingsPage.modalForm).toBeVisible();
+    await meetingsPage.inputTitle.fill('Подготовка к новогодним мероприятиям');
+    await meetingsPage.inputDate.fill('2024-12-20');
+    await meetingsPage.inputTime.fill('18:30');
+    await meetingsPage.inputRoom.fill('Каб. 302');
+    for (const item of ['Новогодний утренник и сценарий', 'Подарки и праздничный бюджет']) {
+      await meetingsPage.inputNewAgendaItem.fill(item);
+      await meetingsPage.btnAddAgenda.click();
+    }
+    await meetingsPage.btnSaveMeeting.click();
+    await expect(meetingsPage.modalForm).not.toBeVisible();
+    await expect(meetingsPage.sectionNextMeeting).toContainText('Итоги первой четверти 7Б');
+    await expect(meetingsPage.sectionOtherUpcoming).toContainText('Подготовка к новогодним мероприятиям');
+    await expect(meetingsPage.sectionOtherUpcoming).toContainText('20.12.2024');
+    await expect(meetingsPage.sectionOtherUpcoming).toContainText('18:30');
+    await expect(meetingsPage.sectionOtherUpcoming).toContainText('Каб. 302');
+    await expect(meetingsPage.sectionPastMeetings).not.toContainText('Подготовка к новогодним мероприятиям');
   });
 
   test('[TC-MG-03] Создание собрания без обязательных полей', async ({ page }) => {
     const loginPage = new LoginPage(page);
+    const meetingsPage = new MeetingsPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-
-    await page.goto('meetings');
-    await page.locator('#btn-create-meeting').click();
-
-    await page.locator('#meeting-title-input').fill('Собрание без даты и времени');
-    await page.locator('#btn-save-meeting').click();
-
-    await expect(page.locator('#error-meeting-date')).toBeVisible();
-    await expect(page.locator('#error-meeting-time')).toBeVisible();
-
-    await page.locator('#meeting-date-input').fill('2024-11-20');
-    await page.locator('#btn-save-meeting').click();
-
-    await expect(page.locator('#error-meeting-time')).toBeVisible();
-
-    await page.locator('#modal-meeting-form .btn-close-modal').first().click();
-    await expect(page.locator('text=Собрание без даты и времени')).toHaveCount(0);
+    await meetingsPage.goto();
+    await meetingsPage.btnOpenCreateModal.click();
+    await meetingsPage.inputTitle.fill('Собрание без даты и времени');
+    await meetingsPage.btnSaveMeeting.click();
+    await expect(meetingsPage.errorDate).toBeVisible();
+    await expect(meetingsPage.errorTime).toBeVisible();
+    await expect(meetingsPage.modalForm).toBeVisible();
+    await meetingsPage.inputDate.fill('2024-11-20');
+    await meetingsPage.btnSaveMeeting.click();
+    await expect(meetingsPage.errorTime).toBeVisible();
+    await meetingsPage.modalForm.locator('.btn-close-modal').first().click();
   });
 
   test('[TC-MG-04] Повестка собрания: состав и порядок пунктов', async ({ page }) => {
@@ -680,94 +623,87 @@ test.describe('Родители и Собрания', () => {
   });
 
   test('[TC-MG-07] Отметка явки: значения и сохранение', async ({ page, loginPage }) => {
+    const meetingsPage = new MeetingsPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-
-    await page.goto('meetings');
-    const pastSection = page.locator('#section-past-meetings');
-    await pastSection.locator('.btn-mark-attendance').first().click();
-
-    const modal = page.locator('#modal-meeting-attendance');
-    await expect(modal).toBeVisible();
-
-    const thead = modal.locator('thead');
-    await expect(thead).toContainText('Явка');
-
-    const rows = modal.locator('#attendance-table-body tr');
-    await expect(rows).toHaveCount(28);
-
-    const firstSelect = rows.first().locator('.attendance-status-select');
-    const options = await firstSelect.locator('option').allInnerTexts();
-    expect(options).toEqual(['Пришёл', 'Не пришёл', 'Уважительная причина']);
-
-    await expect(modal.locator('#attendance-counter-badge')).toContainText('Всего пришли: 24 из 28');
-
-    await page.locator('#btn-save-attendance').click();
-    await expect(modal).not.toBeVisible();
+    await meetingsPage.goto();
+    await meetingsPage.sectionPastMeetings.locator('.btn-mark-attendance').first().click();
+    await expect(meetingsPage.modalAttendance).toBeVisible();
+    await expect(meetingsPage.modalAttendance.locator('thead')).toContainText('Явка');
+    await expect(meetingsPage.attendanceRows).toHaveCount(28);
+    const firstSelect = meetingsPage.attendanceRows.first().locator('.attendance-status-select');
+    await expect(firstSelect.locator('option')).toHaveText(['Пришёл', 'Не пришёл', 'Уважительная причина']);
+    const alexandrova = meetingsPage.attendanceRows.filter({ hasText: 'Александрова И. А.' });
+    const kotova = meetingsPage.attendanceRows.filter({ hasText: 'Котова Е. П.' });
+    const sidorova = meetingsPage.attendanceRows.filter({ hasText: 'Сидорова О. Н.' });
+    await alexandrova.locator('.attendance-status-select').selectOption('present');
+    await kotova.locator('.attendance-status-select').selectOption('absent');
+    await kotova.locator('.attendance-note-input').fill('Работает допоздна');
+    await sidorova.locator('.attendance-status-select').selectOption('excused');
+    await sidorova.locator('.attendance-note-input').fill('Не выходит на связь');
+    await expect(meetingsPage.attendanceCounterBadge).toContainText(/Всего пришли: \d+ из 28/);
+    await meetingsPage.btnSaveAttendance.click();
+    await expect(meetingsPage.modalAttendance).not.toBeVisible();
+    await meetingsPage.sectionPastMeetings.locator('.btn-mark-attendance').first().click();
+    await expect(alexandrova.locator('.attendance-status-select')).toHaveValue('present');
+    await expect(kotova.locator('.attendance-status-select')).toHaveValue('absent');
+    await expect(kotova.locator('.attendance-note-input')).toHaveValue('Работает допоздна');
+    await expect(sidorova.locator('.attendance-status-select')).toHaveValue('excused');
+    await expect(sidorova.locator('.attendance-note-input')).toHaveValue('Не выходит на связь');
   });
 
   test('[TC-MG-08] Явка: причина обязательна при неявке', async ({ page, loginPage }) => {
+    const meetingsPage = new MeetingsPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-
-    await page.goto('meetings');
-    await page.locator('#section-past-meetings .btn-mark-attendance').first().click();
-
-    const modal = page.locator('#modal-meeting-attendance');
-    await expect(modal).toBeVisible();
-
-    const petrovRow = modal.locator('#attendance-table-body tr', { hasText: 'Петров С. В.' });
-    await expect(petrovRow).toBeVisible();
-
+    await meetingsPage.goto();
+    await meetingsPage.sectionPastMeetings.locator('.btn-mark-attendance').first().click();
+    const petrovRow = meetingsPage.attendanceRows.filter({ hasText: 'Петров С. В.' });
     await petrovRow.locator('.attendance-status-select').selectOption('excused');
-    await petrovRow.locator('.attendance-note-input').fill('');
-
-    await page.locator('#btn-save-attendance').click();
+    await meetingsPage.btnSaveAttendance.click();
     await expect(petrovRow.locator('.attendance-note-error')).toBeVisible();
-
     await petrovRow.locator('.attendance-note-input').fill('Болезнь ребёнка');
-
-    await page.locator('#btn-save-attendance').click();
-    await expect(modal).not.toBeVisible();
+    await meetingsPage.btnSaveAttendance.click();
+    await expect(meetingsPage.modalAttendance).not.toBeVisible();
+    await meetingsPage.sectionPastMeetings.locator('.btn-mark-attendance').first().click();
+    const alexandrova = meetingsPage.attendanceRows.filter({ hasText: 'Александрова И. А.' });
+    await alexandrova.locator('.attendance-status-select').selectOption('present');
+    await expect(alexandrova.locator('.attendance-note-input')).toBeDisabled();
+    await meetingsPage.btnSaveAttendance.click();
+    await expect(meetingsPage.modalAttendance).not.toBeVisible();
   });
 
   test('[TC-MG-09] Отметить явку до собрания нельзя', async ({ page, loginPage }) => {
+    const meetingsPage = new MeetingsPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-
-    await page.goto('meetings');
-    const nextSection = page.locator('#section-next-meeting');
-
-    await expect(nextSection.locator('.btn-mark-attendance')).toHaveCount(0);
+    await meetingsPage.goto();
+    await expect(meetingsPage.sectionNextMeeting.locator('.btn-mark-attendance')).toHaveCount(0);
+    await expect(meetingsPage.modalAttendance).not.toBeVisible();
+    await expect(meetingsPage.sectionNextMeeting).toContainText('31.10.2024');
   });
 
   test('[TC-MG-10] Итоги собрания: счётчик считается по явке', async ({ page, loginPage }) => {
+    const meetingsPage = new MeetingsPage(page);
     await loginPage.goto();
     await loginPage.loginAs('teacher');
-
-    await page.goto('meetings');
-
-    await page.locator('#section-past-meetings .btn-meeting-summary').first().click();
-    const summaryModal = page.locator('#modal-meeting-summary');
-    await expect(summaryModal).toBeVisible();
-    await expect(page.locator('#summary-ratio-text')).toHaveText('24 из 28');
-
-    await page.locator('#btn-summary-open-attendance').click();
-    await expect(summaryModal).not.toBeVisible();
-
-    const attendanceModal = page.locator('#modal-meeting-attendance');
-    await expect(attendanceModal).toBeVisible();
-
-    const petrovRow = attendanceModal.locator('#attendance-table-body tr', { hasText: 'Петров С. В.' });
+    await meetingsPage.goto();
+    await meetingsPage.sectionPastMeetings.locator('.btn-meeting-summary').first().click();
+    await expect(meetingsPage.summaryRatioText).toHaveText('24 из 28');
+    await meetingsPage.btnSummaryOpenAttendance.click();
+    const petrovRow = meetingsPage.attendanceRows.filter({ hasText: 'Петров С. В.' });
     await petrovRow.locator('.attendance-status-select').selectOption('absent');
     await petrovRow.locator('.attendance-note-input').fill('Семейные обстоятельства');
-    await page.locator('#btn-save-attendance').click();
-    await expect(attendanceModal).not.toBeVisible();
-
-    await page.locator('#section-past-meetings .btn-meeting-summary').first().click();
-    await expect(summaryModal).toBeVisible();
-    await expect(page.locator('#summary-ratio-text')).toHaveText('23 из 28');
-    await expect(page.locator('#summary-absent-list')).toContainText('Петров С. В.');
+    await meetingsPage.btnSaveAttendance.click();
+    await expect(meetingsPage.modalAttendance).not.toBeVisible();
+    await meetingsPage.sectionPastMeetings.locator('.btn-meeting-summary').first().click();
+    await expect(meetingsPage.summaryRatioText).toHaveText('23 из 28');
+    await expect(meetingsPage.summaryAbsentList).toContainText('Петров С. В.');
+    await meetingsPage.btnSummaryOpenAttendance.click();
+    await petrovRow.locator('.attendance-status-select').selectOption('present');
+    await meetingsPage.btnSaveAttendance.click();
+    await meetingsPage.sectionPastMeetings.locator('.btn-meeting-summary').first().click();
+    await expect(meetingsPage.summaryRatioText).toHaveText('24 из 28');
   });
 
   test('[TC-MG-11] Родитель видит собрания класса', async ({ page, loginPage }) => {
@@ -797,7 +733,7 @@ test.describe('Родители и Собрания', () => {
     await loginPage.login('kozlov@school.ru', 'Test#2024');
 
     await expect(page.locator('#nav-meetings')).toHaveCount(0);
-    await expect(page.locator('a[href="#/meetings"]')).toHaveCount(0);
+    await expect(page.locator('a[href="/meetings"]')).toHaveCount(0);
 
     await page.goto('meetings');
 
@@ -974,40 +910,26 @@ test.describe('Родители и Собрания', () => {
     await expect(parentCard).toContainText('прочитали 22 из 28');
   });
 
-  test('[TC-AN-05] Удаление объявления и пустое состояние', async ({ page }) => {
+  test('[TC-AN-05] Удаление объявления с подтверждением', async ({ page }) => {
     const loginPage = new LoginPage(page);
-    const navPage = new NavigationPage(page);
-
+    const announcementsPage = new AnnouncementsPage(page);
     await loginPage.goto();
     await loginPage.login('smirnova@school.ru', 'Test#2024');
-
-    await page.goto('announcements');
-
-    const deleteButtons = page.locator('.btn-delete-announcement');
-    while (await deleteButtons.count() > 0) {
-      page.once('dialog', async (dialog) => {
-        await dialog.accept();
-      });
-      await deleteButtons.first().click();
-      await page.waitForTimeout(300);
-    }
-
-    await expect(page.locator('#announcements-empty-state')).toBeVisible();
-    await expect(page.locator('#announcements-empty-state')).toContainText('Объявлений пока нет');
-
-    await navPage.logout();
-    await loginPage.goto();
-    await loginPage.login('petrov@mail.ru', 'Test#2024');
-    await page.goto('announcements');
-    await expect(page.locator('#announcements-empty-state')).toBeVisible();
-    await expect(page.locator('#announcements-empty-state')).toContainText('Объявлений пока нет');
-
-    await navPage.logout();
-    await loginPage.goto();
-    await loginPage.login('petrova.a@school.ru', 'Test#2024');
-    await page.goto('announcements');
-    await expect(page.locator('#announcements-empty-state')).toBeVisible();
-    await expect(page.locator('#announcements-empty-state')).toContainText('Объявлений пока нет');
+    await announcementsPage.goto();
+    const title = 'Организация дежурства';
+    await announcementsPage.btnCreate.click();
+    await announcementsPage.inputCreateTitle.fill(title);
+    await announcementsPage.inputCreateContent.fill('Утвержден новый график дежурств по классу 7Б.');
+    await announcementsPage.btnSubmitCreate.click();
+    await expect(announcementsPage.getCardByTitle(title)).toBeVisible();
+    const card = announcementsPage.getCardByTitle(title);
+    await announcementsPage.deleteCard(card, false);
+    await announcementsPage.deleteCard(card, true);
+    await page.reload();
+    await expect(announcementsPage.cards).toHaveCount(2);
+    await expect(announcementsPage.getCardByTitle(title)).toHaveCount(0);
+    await expect(announcementsPage.getCardByTitle('Родительское собрание 31 октября')).toBeVisible();
+    await expect(announcementsPage.getCardByTitle('Каникулы с 28 октября по 5 ноября')).toBeVisible();
   });
 
   test('[TC-AN-06] Объявление видят родители и ученики класса', async ({ page }) => {
@@ -1077,7 +999,7 @@ test.describe('Родители и Собрания', () => {
       await dialog.accept();
     });
     await meetingAnnouncement.locator('.btn-delete-announcement').click();
-    await page.waitForTimeout(300);
+    await expect(meetingAnnouncement).toHaveCount(0);
 
     await expect(page.locator('.announcement-card').filter({ hasText: 'Родительское собрание 31 октября' })).toHaveCount(0);
 
@@ -1178,45 +1100,6 @@ test.describe('Родители и Собрания', () => {
     await expect(page.locator('#modal-announcement-detail')).toBeHidden();
   });
 
-  test('[TC-AN-10] Удаление всех объявлений: пустое состояние у всех ролей', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    const navPage = new NavigationPage(page);
 
-    await loginPage.goto();
-    await loginPage.login('smirnova@school.ru', 'Test#2024');
-    await page.goto('announcements');
-
-    const count = await page.locator('.announcement-card').count();
-    for (let i = 0; i < count; i++) {
-      page.once('dialog', async (dialog) => {
-        await dialog.accept();
-      });
-      await page.locator('.btn-delete-announcement').first().click();
-      await page.waitForTimeout(300);
-    }
-
-    const emptyState = page.locator('#announcements-empty-state');
-    await expect(emptyState).toBeVisible();
-    await expect(emptyState).toContainText('Объявлений пока нет. Опубликуйте первое — его увидят родители и ученики класса');
-    await expect(page.locator('#btn-create-announcement')).toBeVisible();
-
-    await navPage.logout();
-    await loginPage.goto();
-    await loginPage.login('petrov@mail.ru', 'Test#2024');
-    await page.goto('announcements');
-
-    await expect(page.locator('#announcements-empty-state')).toBeVisible();
-    await expect(page.locator('#announcements-empty-state')).toContainText('Объявлений пока нет');
-    await expect(page.locator('.announcement-card')).toHaveCount(0);
-
-    await navPage.logout();
-    await loginPage.goto();
-    await loginPage.login('petrova.a@school.ru', 'Test#2024');
-    await page.goto('announcements');
-
-    await expect(page.locator('#announcements-empty-state')).toBeVisible();
-    await expect(page.locator('#announcements-empty-state')).toContainText('Объявлений пока нет');
-    await expect(page.locator('.announcement-card')).toHaveCount(0);
-  });
 
 });

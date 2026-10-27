@@ -40,7 +40,7 @@
     {
       "folder": 5,
       "bug": "BUG-BP-04",
-      "expectFail": ["test_bp_04_unconfirmed_metric"],
+      "expectFail": ["test_bp_04_unconfirmed_metric", "test_bp_05_metrics_recalculated"],
       "patches": [
         {
           "file": "src/mock/calculations.js",

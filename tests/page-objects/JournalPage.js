@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 
 /**
- * Page Object для страницы «Журнал» (#/journal)
+ * Page Object для страницы «Журнал» (/journal)
  */
 export class JournalPage {
   /**

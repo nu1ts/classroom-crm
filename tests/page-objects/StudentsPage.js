@@ -82,7 +82,8 @@ export class StudentsPage {
    */
   async search(text) {
     await this.searchInput.fill(text);
-    await this.page.waitForTimeout(100);
+    await expect(this.searchInput).toHaveValue(text);
+    await expect(this.counterLabel).toBeVisible();
   }
 
   /**
@@ -94,15 +95,21 @@ export class StudentsPage {
     } else {
       await this.searchInput.fill('');
     }
-    await this.page.waitForTimeout(100);
+    await expect(this.searchInput).toHaveValue('');
+    await expect(this.counterLabel).toBeVisible();
   }
 
   /**
    * Переключить фильтр «С пропусками»
    */
   async toggleAbsencesFilter() {
+    const wasActive = await this.btnFilterAbsences.evaluate((button) =>
+      button.classList.contains('bg-brand-500'),
+    );
     await this.btnFilterAbsences.click();
-    await this.page.waitForTimeout(100);
+    await expect(this.btnFilterAbsences).toHaveClass(
+      wasActive ? /bg-white/ : /bg-brand-500/,
+    );
   }
 
   /**
@@ -110,8 +117,9 @@ export class StudentsPage {
    * @param {number|string} pageNum
    */
   async goToPage(pageNum) {
-    await this.page.locator(`.btn-pagination-page[data-page="${pageNum}"]`).click();
-    await this.page.waitForTimeout(100);
+    const target = this.page.locator(`.btn-pagination-page[data-page="${pageNum}"]`);
+    await target.click();
+    await expect(target).toHaveClass(/bg-brand-500/);
   }
 
   /**
@@ -120,6 +128,7 @@ export class StudentsPage {
    */
   async selectPeriod(periodId) {
     await this.periodSelect.selectOption(periodId);
-    await this.page.waitForTimeout(100);
+    await expect(this.periodSelect).toHaveValue(periodId);
+    await expect(this.counterLabel).toBeVisible();
   }
 }

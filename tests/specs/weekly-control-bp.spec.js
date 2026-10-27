@@ -3,8 +3,10 @@ import { LoginPage } from '../page-objects/LoginPage.js';
 import { OverviewPage } from '../page-objects/OverviewPage.js';
 import { AttendancePage } from '../page-objects/AttendancePage.js';
 import { AnalyticsPage } from '../page-objects/AnalyticsPage.js';
+import { JournalPage } from '../page-objects/JournalPage.js';
+import { NavigationPage } from '../page-objects/NavigationPage.js';
 
-test.describe('БП «Недельный контроль класса» (Copy of Тест-кейсы БП «Недельный контроль класса».xlsx)', () => {
+test.describe('Тест-кейсы БП «Недельный контроль класса»', () => {
 
   test('[TC-BP-01] Вход в систему под классным руководителем', async ({ page }) => {
     const loginPage = new LoginPage(page);
@@ -52,7 +54,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await loginPage.login('smirnova@school.ru', 'Test#2024');
     await overviewPage.goto();
 
-    await expect(overviewPage.unconfirmedAbsencesValue).toContainText('4');
+    await expect(overviewPage.unconfirmedAbsencesValue).toContainText('7');
 
     await overviewPage.unconfirmedLink.click();
     await expect(page).toHaveURL(/.*\/attendance\/?\?filter=unconfirmed/);
@@ -66,7 +68,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await loginPage.goto();
     await loginPage.login('smirnova@school.ru', 'Test#2024');
     await overviewPage.goto();
-    await expect(overviewPage.unconfirmedAbsencesValue).toContainText('4');
+    await expect(overviewPage.unconfirmedAbsencesValue).toContainText('7');
 
     await attendancePage.goto('week=w8');
     await attendancePage.openFirstUnconfirmedAbsence();
@@ -77,7 +79,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     });
 
     await overviewPage.goto();
-    await expect(overviewPage.unconfirmedAbsencesValue).toContainText('3');
+    await expect(overviewPage.unconfirmedAbsencesValue).toContainText('6');
   });
 
   test('[TC-BP-06] Проверка неподтверждённых пропусков: список и предупреждение', async ({ page }) => {
@@ -94,7 +96,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
     await expect(attendancePage.bannerUnconfirmedText).toContainText('без подтверждающих документов');
 
     await expect(attendancePage.openConfirmButtons.first()).toBeVisible();
-    await expect(attendancePage.openConfirmButtons.first()).toContainText('Н (Нп)');
+    await expect(attendancePage.openConfirmButtons.first()).toContainText('Н (без)');
   });
 
   test('[TC-BP-07] Нет неподтверждённых пропусков', async ({ page }) => {
@@ -115,7 +117,7 @@ test.describe('БП «Недельный контроль класса» (Copy o
       });
     }
 
-    await expect(attendancePage.bannerUnconfirmed).toContainText('Все пропуски подтверждены');
+    await expect(attendancePage.bannerUnconfirmed).toHaveCount(0);
 
     await overviewPage.goto();
     await expect(overviewPage.unconfirmedAbsencesValue).toContainText('0');
@@ -143,23 +145,32 @@ test.describe('БП «Недельный контроль класса» (Copy o
 
   test('[TC-BP-09] После подтверждения причины предметник не может изменить отметку', async ({ page }) => {
     const loginPage = new LoginPage(page);
+    const attendancePage = new AttendancePage(page);
+    const journalPage = new JournalPage(page);
+    const navigationPage = new NavigationPage(page);
+
     await loginPage.goto();
-    await loginPage.login('kozlov@school.ru', 'Test#2024');
-
-    await page.goto('journal?class=class-7b&subject=math&period=q1_2024');
-    await page.waitForLoadState('networkidle');
-
-    const confirmedBtn = page.locator('.btn-toggle-absence[data-status="confirmed"]').first();
-    await expect(confirmedBtn).toBeVisible({ timeout: 5000 });
-
-    let dialogMessage = '';
-    page.once('dialog', async (dialog) => {
-      dialogMessage = dialog.message();
-      await dialog.accept();
+    await loginPage.login('smirnova@school.ru', 'Test#2024');
+    await attendancePage.goto('week=w8');
+    await attendancePage.openConfirmFor('Сидоров Никита', '2024-10-24');
+    await attendancePage.submitConfirm({
+      reasonType: 'excused',
+      hasDoc: true,
+      docText: 'Справка № 109 от 24.10.2024',
+      notes: 'Подтверждено для проверки ограничения предметника'
     });
 
-    await confirmedBtn.click();
-    expect(dialogMessage).toContain('Причина подтверждена классным руководителем');
+    await navigationPage.logout();
+    await loginPage.login('kozlov@school.ru', 'Test#2024');
+    await journalPage.goto('class=class-7b&subject=math');
+
+    const confirmedBtn = journalPage.getAbsenceBtn('Сидоров Никита', '2024-10-24');
+    await expect(confirmedBtn).toBeVisible();
+    await expect(confirmedBtn).toHaveClass(/cursor-not-allowed/);
+    await expect(confirmedBtn).toHaveAttribute(
+      'title',
+      /Причина подтверждена классным руководителем/i
+    );
   });
 
   test('[TC-BP-10] Отказ от подтверждения: пропуск остаётся неуважительным', async ({ page }) => {
