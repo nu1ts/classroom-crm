@@ -1,42 +1,191 @@
-import { INITIAL_DATASET } from '../mock/dataset.js';
+/**
+ * Ядро мок-хранилища приложения
+ *
+ * Отвечает за физическое хранение данных и состояние сессии:
+ * - Ключи localStorage (БД, сессия, счётчик неудачных попыток входа)
+ * - Чтение и запись БД с сидированием из INITIAL_DATASET при первом обращении
+ *   и лёгкими миграциями устаревших версий датасета
+ * - Сессия пользователя (вход, выход, быстрый вход под ролью для демо)
+ * - Вход с блокировкой учётной записи после серии неудачных попыток
+ * - Смена пароля текущим пользователем
+ * - Общие хелперы (валидация нового пароля, сокращение ФИО)
+ *
+ * Доменные операции (учётные записи, учителя, нагрузка, посещаемость,
+ * родители, учебный год) вынесены в отдельные модули services/ и
+ * реэкспортируются отсюда для совместимости существующих импортов.
+ */
 
+import { INITIAL_DATASET } from "../mock/dataset.js";
+
+/** Ключи localStorage: БД приложения, текущая сессия, счётчик неудачных попыток входа. */
 const STORAGE_KEYS = {
-  DB: 'classroom_crm_db',
-  SESSION: 'classroom_crm_session',
-  FAILED_ATTEMPTS: 'classroom_crm_failed_attempts'
+  DB: "classroom_crm_db",
+  SESSION: "classroom_crm_session",
+  FAILED_ATTEMPTS: "classroom_crm_failed_attempts",
 };
 
+/**
+ * Дефолтное состояние учебных годов (2024/2025 активный с I четвертью).
+ * Используется при миграции датасета, в котором отсутствует массив academicYears.
+ */
+export const DEFAULT_ACADEMIC_YEARS = [
+  {
+    id: "ay-2024-2025",
+    name: "2024/2025",
+    startDate: "2024-09-01",
+    endDate: "2025-05-30",
+    isActive: true,
+    quarters: [
+      {
+        id: "q1_2024",
+        name: "I четверть",
+        startDate: "2024-09-02",
+        endDate: "2024-10-25",
+        isActive: true,
+      },
+      {
+        id: "q2_2024",
+        name: "II четверть",
+        startDate: "2024-11-05",
+        endDate: "2024-12-27",
+        isActive: false,
+      },
+      {
+        id: "q3_2025",
+        name: "III четверть",
+        startDate: "2025-01-09",
+        endDate: "2025-03-21",
+        isActive: false,
+      },
+      {
+        id: "q4_2025",
+        name: "IV четверть",
+        startDate: "2025-03-31",
+        endDate: "2025-05-23",
+        isActive: false,
+      },
+    ],
+    vacations: [
+      {
+        id: "vac-1",
+        name: "Осенние каникулы",
+        startDate: "2024-10-26",
+        endDate: "2024-11-04",
+      },
+      {
+        id: "vac-2",
+        name: "Зимние каникулы",
+        startDate: "2024-12-28",
+        endDate: "2025-01-08",
+      },
+      {
+        id: "vac-3",
+        name: "Весенние каникулы",
+        startDate: "2025-03-22",
+        endDate: "2025-03-30",
+      },
+    ],
+  },
+  {
+    id: "ay-2023-2024",
+    name: "2023/2024",
+    startDate: "2023-09-01",
+    endDate: "2024-05-25",
+    isActive: false,
+    quarters: [
+      {
+        id: "q1_2023",
+        name: "I четверть",
+        startDate: "2023-09-01",
+        endDate: "2023-10-27",
+        isActive: false,
+      },
+      {
+        id: "q2_2023",
+        name: "II четверть",
+        startDate: "2023-11-07",
+        endDate: "2023-12-29",
+        isActive: false,
+      },
+      {
+        id: "q3_2024",
+        name: "III четверть",
+        startDate: "2024-01-09",
+        endDate: "2024-03-22",
+        isActive: false,
+      },
+      {
+        id: "q4_2024",
+        name: "IV четверть",
+        startDate: "2024-04-01",
+        endDate: "2024-05-24",
+        isActive: false,
+      },
+    ],
+    vacations: [
+      {
+        id: "vac-prev-1",
+        name: "Осенние каникулы",
+        startDate: "2023-10-28",
+        endDate: "2023-11-06",
+      },
+      {
+        id: "vac-prev-2",
+        name: "Зимние каникулы",
+        startDate: "2023-12-30",
+        endDate: "2024-01-08",
+      },
+      {
+        id: "vac-prev-3",
+        name: "Весенние каникулы",
+        startDate: "2024-03-23",
+        endDate: "2024-03-31",
+      },
+    ],
+  },
+];
+
+/**
+ * Адаптер хранилища: localStorage в браузере, Map в не-браузерном окружении.
+ * Единая точка доступа к ключам STORAGE_KEYS.
+ */
 const memoryStore = new Map();
 const storage = {
   getItem(key) {
-    if (typeof localStorage !== 'undefined') {
+    if (typeof localStorage !== "undefined") {
       return localStorage.getItem(key);
     }
     return memoryStore.has(key) ? memoryStore.get(key) : null;
   },
   setItem(key, value) {
-    if (typeof localStorage !== 'undefined') {
+    if (typeof localStorage !== "undefined") {
       localStorage.setItem(key, value);
     } else {
       memoryStore.set(key, String(value));
     }
   },
   removeItem(key) {
-    if (typeof localStorage !== 'undefined') {
+    if (typeof localStorage !== "undefined") {
       localStorage.removeItem(key);
     } else {
       memoryStore.delete(key);
     }
   },
   clear() {
-    if (typeof localStorage !== 'undefined') {
+    if (typeof localStorage !== "undefined") {
       localStorage.clear();
     } else {
       memoryStore.clear();
     }
-  }
+  },
 };
 
+/**
+ * Возвращает текущую БД из хранилища. При пустом или повреждённом хранилище
+ * сидирует INITIAL_DATASET и возвращает его копию. Выполняет миграции старых
+ * версий датасета (учебные годы, карточки учителей, имена карточек).
+ * @returns {Object} БД мока (полная копия, изменение безопасно)
+ */
 export function getDB() {
   try {
     const raw = storage.getItem(STORAGE_KEYS.DB);
@@ -46,36 +195,112 @@ export function getDB() {
       return clone;
     }
     const parsed = JSON.parse(raw);
-    const kotova = (parsed.parents || []).find(p => p.id === 'pr-10');
-    if (kotova && kotova.otherChildren && kotova.otherChildren.some(oc => oc.name === 'Котов Денис')) {
+    const kotova = (parsed.parents || []).find((p) => p.id === "pr-10");
+    if (
+      kotova &&
+      kotova.otherChildren &&
+      kotova.otherChildren.some((oc) => oc.name === "Котов Денис")
+    ) {
       kotova.otherChildren = [
-        { name: 'Котова Дарья', class: '9В', role: 'Дочь' }
+        { name: "Котова Дарья", class: "9В", role: "Дочь" },
       ];
+      storage.setItem(STORAGE_KEYS.DB, JSON.stringify(parsed));
+    }
+
+    let migrated = false;
+    if (
+      !Array.isArray(parsed.academicYears) ||
+      parsed.academicYears.length === 0
+    ) {
+      parsed.academicYears = JSON.parse(JSON.stringify(DEFAULT_ACADEMIC_YEARS));
+      migrated = true;
+    }
+
+    if (
+      !Array.isArray(parsed.teachers) &&
+      Array.isArray(INITIAL_DATASET.teachers)
+    ) {
+      parsed.teachers = JSON.parse(JSON.stringify(INITIAL_DATASET.teachers));
+      migrated = true;
+    }
+    (parsed.users || []).forEach((u) => {
+      if (
+        !u.cardName &&
+        (u.role === "teacher" || u.role === "subject_teacher")
+      ) {
+        u.cardName = u.shortName;
+        migrated = true;
+      }
+    });
+
+    if (!Array.isArray(parsed.rooms)) {
+      const roomNames = [
+        ...new Set(
+          (parsed.lessons || [])
+            .map((l) => l.room)
+            .filter((r) => r && String(r).trim()),
+        ),
+      ];
+      parsed.rooms = roomNames.map((name, index) => ({
+        id: `room-${index + 1}`,
+        name,
+        isActive: true,
+      }));
+      migrated = true;
+    }
+    (parsed.subjects || []).forEach((s) => {
+      if (typeof s.isActive !== "boolean") {
+        s.isActive = true;
+        migrated = true;
+      }
+    });
+    (parsed.classes || []).forEach((c) => {
+      if (typeof c.isActive !== "boolean") {
+        c.isActive = true;
+        migrated = true;
+      }
+    });
+    if (migrated) {
       storage.setItem(STORAGE_KEYS.DB, JSON.stringify(parsed));
     }
     return parsed;
   } catch (e) {
-    console.error('Ошибка чтения БД из хранилища, сброс к начальному состоянию', e);
+    console.error(
+      "Ошибка чтения БД из хранилища, сброс к начальному состоянию",
+      e,
+    );
     const clone = JSON.parse(JSON.stringify(INITIAL_DATASET));
     storage.setItem(STORAGE_KEYS.DB, JSON.stringify(clone));
     return clone;
   }
 }
 
+/**
+ * Сохраняет БД в хранилище (полная сериализация).
+ * @param {Object} data БД мока
+ */
 export function saveDB(data) {
   try {
     storage.setItem(STORAGE_KEYS.DB, JSON.stringify(data));
   } catch (e) {
-    console.error('Ошибка сохранения БД в хранилище', e);
+    console.error("Ошибка сохранения БД в хранилище", e);
   }
 }
 
+/**
+ * Полный сброс БД к INITIAL_DATASET (без сессии и счётчика попыток).
+ * @returns {Object} свежая копия начального датасета
+ */
 export function resetDB() {
   const clone = JSON.parse(JSON.stringify(INITIAL_DATASET));
   storage.setItem(STORAGE_KEYS.DB, JSON.stringify(clone));
   return clone;
 }
 
+/**
+ * Возвращает текущую сессию или null, если пользователь не авторизован.
+ * @returns {Object|null} { userId, username, role, loginAt }
+ */
 export function getSession() {
   try {
     const raw = storage.getItem(STORAGE_KEYS.SESSION);
@@ -86,27 +311,61 @@ export function getSession() {
   }
 }
 
+/**
+ * Сохраняет сессию в хранилище.
+ * @param {Object} sessionData { userId, username, role, loginAt }
+ */
 export function setSession(sessionData) {
   storage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sessionData));
 }
 
+/** Удаляет сессию (выход из системы). */
 export function clearSession() {
   storage.removeItem(STORAGE_KEYS.SESSION);
 }
 
+/**
+ * Возвращает объект текущего пользователя по сессии. Очищает сессию,
+ * если пользователь из сессии отсутствует в БД.
+ * @returns {Object|null} пользователь с ролью и подписью роли
+ */
 export function getCurrentUser() {
   const session = getSession();
   if (!session || !session.userId) return null;
 
   const db = getDB();
-  const user = db.users.find(u => u.id === session.userId || u.username === session.username);
+  const user = db.users.find(
+    (u) => u.id === session.userId || u.username === session.username,
+  );
   if (!user) {
     clearSession();
     return null;
   }
+
+  if (session.role && session.role !== user.role) {
+    return {
+      ...user,
+      role: session.role,
+      roleLabel: ROLE_LABELS[session.role] || user.roleLabel,
+    };
+  }
   return user;
 }
 
+/** Подписи ролей для отображения в интерфейсе. */
+export const ROLE_LABELS = {
+  teacher: "Классный руководитель",
+  subject_teacher: "Учитель",
+  parent: "Родитель",
+  student: "Ученик",
+  admin: "Администратор",
+};
+
+/**
+ * Количество неудачных попыток входа для учётной записи.
+ * @param {string} username
+ * @returns {number}
+ */
 function getFailedAttempts(username) {
   try {
     const raw = storage.getItem(STORAGE_KEYS.FAILED_ATTEMPTS);
@@ -117,6 +376,11 @@ function getFailedAttempts(username) {
   }
 }
 
+/**
+ * Увеличивает счётчик неудачных попыток входа и возвращает новое значение.
+ * @param {string} username
+ * @returns {number}
+ */
 function incrementFailedAttempts(username) {
   try {
     const raw = storage.getItem(STORAGE_KEYS.FAILED_ATTEMPTS);
@@ -129,7 +393,11 @@ function incrementFailedAttempts(username) {
   }
 }
 
-function resetFailedAttempts(username) {
+/**
+ * Сбрасывает счётчик неудачных попыток входа (при успешном входе).
+ * @param {string} username
+ */
+export function resetFailedAttempts(username) {
   try {
     const raw = storage.getItem(STORAGE_KEYS.FAILED_ATTEMPTS);
     if (raw) {
@@ -137,69 +405,94 @@ function resetFailedAttempts(username) {
       delete map[username];
       storage.setItem(STORAGE_KEYS.FAILED_ATTEMPTS, JSON.stringify(map));
     }
-  } catch {
-    // noop
-  }
+  } catch {}
 }
 
+/**
+ * Вход в систему: проверка логина и пароля, блокировка учётной записи
+ * после 5 неудачных попыток, создание сессии при успехе.
+ * @param {string} rawUsername Логин (электронная почта)
+ * @param {string} password Пароль
+ * @returns {Object} { success, user?, mustChangePassword?, error? }
+ */
 export function login(rawUsername, password) {
-  const username = (rawUsername || '').trim();
-  const pwd = (password || '').trim();
+  const username = (rawUsername || "").trim();
+  const pwd = (password || "").trim();
 
   if (!username || !pwd) {
-    return { success: false, error: 'Заполните все поля' };
+    return { success: false, error: "Заполните все поля" };
   }
 
   const db = getDB();
-  const user = db.users.find(u => u.username.toLowerCase() === username.toLowerCase());
+  const user = db.users.find(
+    (u) => u.username.toLowerCase() === username.toLowerCase(),
+  );
 
   const failedCount = getFailedAttempts(username);
-  if (failedCount >= 5 || (user && user.status === 'blocked')) {
-    if (user && user.status !== 'blocked') {
-      user.status = 'blocked';
+  if (failedCount >= 5 || (user && user.status === "blocked")) {
+    if (user && user.status !== "blocked") {
+      user.status = "blocked";
       saveDB(db);
     }
     return {
       success: false,
-      error: 'Учётная запись заблокирована из-за 5 неудачных попыток входа. Обратитесь к администратору.'
+      error:
+        "Учётная запись заблокирована из-за 5 неудачных попыток входа. Обратитесь к администратору.",
     };
   }
 
   if (!user || user.password !== pwd) {
     const newCount = incrementFailedAttempts(username);
     if (newCount >= 5 && user) {
-      user.status = 'blocked';
+      user.status = "blocked";
       saveDB(db);
       return {
         success: false,
-        error: 'Учётная запись заблокирована из-за 5 неудачных попыток входа. Обратитесь к администратору.'
+        error:
+          "Учётная запись заблокирована из-за 5 неудачных попыток входа. Обратитесь к администратору.",
       };
     }
     return {
       success: false,
-      error: 'Неверный логин или пароль'
+      error: "Неверный логин или пароль",
     };
   }
 
   resetFailedAttempts(username);
+
+  user.lastLoginAt = new Date().toISOString();
+  saveDB(db);
+
   const session = {
     userId: user.id,
     username: user.username,
     role: user.role,
-    loginAt: new Date().toISOString()
+    loginAt: new Date().toISOString(),
   };
   setSession(session);
 
-  return { success: true, user };
+  return {
+    success: true,
+    user,
+    mustChangePassword: Boolean(user.mustChangePassword),
+  };
 }
 
+/** Выход из системы: удаление сессии. */
 export function logout() {
   clearSession();
 }
 
+/**
+ * Демо-вход под первой активной учётной записью роли (переключатель ролей).
+ * @param {string} roleKey Ключ роли (teacher, subject_teacher, parent, student, admin)
+ * @returns {Object|null} пользователь или null, если активной учётки роли нет
+ */
 export function quickLoginAsRole(roleKey) {
   const db = getDB();
-  const user = db.users.find(u => u.role === roleKey && u.status !== 'blocked');
+  const user = db.users.find(
+    (u) => u.role === roleKey && u.status !== "blocked",
+  );
   if (!user) return null;
 
   resetFailedAttempts(user.username);
@@ -207,29 +500,48 @@ export function quickLoginAsRole(roleKey) {
     userId: user.id,
     username: user.username,
     role: user.role,
-    loginAt: new Date().toISOString()
+    loginAt: new Date().toISOString(),
   };
   setSession(session);
   return user;
 }
 
-export function changePassword(userId, currentPassword, newPassword, confirmPassword) {
+/**
+ * Смена пароля пользователем: проверка текущего пароля и требований к новому
+ * (8+ символов, оба регистра, цифра, совпадение в поле подтверждения).
+ * @param {string} userId ID пользователя
+ * @param {string} currentPassword Текущий пароль
+ * @param {string} newPassword Новый пароль
+ * @param {string} confirmPassword Подтверждение нового пароля
+ * @param {boolean} clearMustChange Сбросить флаг обязательной смены пароля
+ * @returns {Object} { success, message?, error? }
+ */
+export function changePassword(
+  userId,
+  currentPassword,
+  newPassword,
+  confirmPassword,
+  clearMustChange = false,
+) {
   const db = getDB();
-  const user = db.users.find(u => u.id === userId);
+  const user = db.users.find((u) => u.id === userId);
   if (!user) {
-    return { success: false, error: 'Пользователь не найден' };
+    return { success: false, error: "Пользователь не найден" };
   }
 
-  const curPwd = (currentPassword || '').trim();
-  const newPwd = (newPassword || '').trim();
-  const confPwd = (confirmPassword || '').trim();
+  const curPwd = (currentPassword || "").trim();
+  const newPwd = (newPassword || "").trim();
+  const confPwd = (confirmPassword || "").trim();
 
   if (user.password !== curPwd) {
-    return { success: false, error: 'Текущий пароль указан неверно' };
+    return { success: false, error: "Текущий пароль указан неверно" };
   }
 
   if (!newPwd || newPwd.length < 8) {
-    return { success: false, error: 'Новый пароль должен содержать не менее 8 символов' };
+    return {
+      success: false,
+      error: "Новый пароль должен содержать не менее 8 символов",
+    };
   }
 
   const hasLower = /[a-zа-я]/.test(newPwd);
@@ -237,409 +549,154 @@ export function changePassword(userId, currentPassword, newPassword, confirmPass
   const hasDigit = /\d/.test(newPwd);
 
   if (!hasLower || !hasUpper || !hasDigit) {
-    return { success: false, error: 'Пароль должен содержать буквы в обоих регистрах и хотя бы одну цифру' };
+    return {
+      success: false,
+      error:
+        "Пароль должен содержать буквы в обоих регистрах и хотя бы одну цифру",
+    };
   }
 
   if (newPwd !== confPwd) {
-    return { success: false, error: 'Пароли не совпадают' };
+    return { success: false, error: "Пароли не совпадают" };
   }
 
   user.password = newPwd;
+  if (clearMustChange) {
+    user.mustChangePassword = false;
+  }
   saveDB(db);
 
-  return { success: true, message: 'Пароль успешно изменён' };
+  return { success: true, message: "Пароль успешно изменён" };
 }
 
 /**
- * Подтверждение пропуска урока (БП «Посещаемость: подтверждение пропусков»)
- * @param {string} recordId ID записи посещаемости (или поиск по lessonId + studentId)
- * @param {Object} data { status: 'excused' | 'unexcused', reason, document, confirmedBy }
+ * Проверка нового пароля на требования (длина, регистры, цифра).
+ * @param {string} pwd
+ * @returns {Object} { valid, error? }
  */
-export function confirmAbsenceRecord(recordId, data = {}) {
-  const db = getDB();
-  const record = (db.attendance || []).find(a => a.id === recordId);
-  if (!record) {
-    return { success: false, error: 'Запись посещаемости не найдена' };
+export function validateNewPassword(pwd) {
+  if (!pwd || pwd.length < 8) {
+    return {
+      valid: false,
+      error: "Пароль должен содержать не менее 8 символов",
+    };
   }
-
-  const isExcused = data.status === 'excused' || data.isExcused === true;
-  record.status = isExcused ? 'excused' : 'unexcused';
-  record.code = isExcused ? 'УП' : 'Н';
-  record.value = 'absent';
-  record.reason = data.reason || (isExcused ? 'Уважительная причина (справка / заявление)' : 'Неуважительная причина');
-  record.document = data.document || (isExcused ? 'Медицинская справка' : null);
-  record.confirmedBy = data.confirmedBy || 'Смирнова М. В.';
-  record.confirmedAt = new Date().toISOString();
-
-  if (db.meta) {
-    const q1LessonIds = new Set((db.lessons || []).filter(l => l.periodId === 'q1_2024').map(l => l.id));
-    db.meta.unconfirmedAbsencesCount = (db.attendance || []).filter(
-      a => a.status === 'unconfirmed' && a.value === 'absent' && q1LessonIds.has(a.lessonId)
-    ).length;
+  const hasLower = /[a-zа-я]/.test(pwd);
+  const hasUpper = /[A-ZА-Я]/.test(pwd);
+  const hasDigit = /\d/.test(pwd);
+  if (!hasLower || !hasUpper || !hasDigit) {
+    return {
+      valid: false,
+      error:
+        "Пароль должен содержать буквы в обоих регистрах и хотя бы одну цифру",
+    };
   }
-
-  saveDB(db);
-  return { success: true, record };
+  return { valid: true };
 }
 
 /**
- * Массовое подтверждение пропусков (например, за несколько уроков по одной справке)
+ * Сокращение ФИО до формата «Фамилия И. О.».
+ * @param {string} fullName Полное ФИО
+ * @returns {string}
  */
-export function batchConfirmAbsences(recordIds, data = {}) {
-  const db = getDB();
-  const idsSet = new Set(recordIds);
-  let updatedCount = 0;
-
-  const isExcused = data.status === 'excused' || data.isExcused === true;
-  const reason = data.reason || (isExcused ? 'Уважительная причина (справка / заявление)' : 'Неуважительная причина');
-  const document = data.document || (isExcused ? 'Медицинская справка' : null);
-  const confirmedBy = data.confirmedBy || 'Смирнова М. В.';
-  const confirmedAt = new Date().toISOString();
-
-  (db.attendance || []).forEach(record => {
-    if (idsSet.has(record.id)) {
-      record.status = isExcused ? 'excused' : 'unexcused';
-      record.code = isExcused ? 'УП' : 'Н';
-      record.value = 'absent';
-      record.reason = reason;
-      record.document = document;
-      record.confirmedBy = confirmedBy;
-      record.confirmedAt = confirmedAt;
-      updatedCount++;
-    }
-  });
-
-  if (db.meta) {
-    const q1LessonIds = new Set((db.lessons || []).filter(l => l.periodId === 'q1_2024').map(l => l.id));
-    db.meta.unconfirmedAbsencesCount = (db.attendance || []).filter(
-      a => a.status === 'unconfirmed' && a.value === 'absent' && q1LessonIds.has(a.lessonId)
-    ).length;
-  }
-
-  saveDB(db);
-  return { success: true, updatedCount };
+export function shortenName(fullName) {
+  const parts = fullName.split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return fullName;
+  const initials = parts
+    .slice(1)
+    .map((p) => `${p[0]}.`)
+    .join(" ");
+  return `${parts[0]} ${initials}`;
 }
 
-/**
- * Получение комментариев к конкретной записи журнала (уроку и ученику)
- */
-export function getJournalComments(lessonId, studentId) {
-  const db = getDB();
-  if (!db.journalComments) return [];
-  return db.journalComments.filter(c => c.lessonId === lessonId && c.studentId === studentId);
-}
+export {
+  updateAccountRole,
+  getAccountCardRef,
+  setAccountBinding,
+  setAccountStatus,
+  createAccount,
+  resetAccountPassword,
+} from "./accounts.js";
+export {
+  createTeacherCard,
+  updateTeacherCard,
+  deleteTeacherCard,
+} from "./teachers.js";
+export {
+  getKnownClassIds,
+  getClassDirectory,
+  getSubjectDirectory,
+  getRoomDirectory,
+  isSubjectInUse,
+  isClassInUse,
+  isRoomInUse,
+  addSubject,
+  updateSubject,
+  setSubjectActive,
+  addRoom,
+  updateRoom,
+  setRoomActive,
+  addSchoolClass,
+  updateSchoolClass,
+  setClassActive,
+} from "./directories.js";
+export {
+  getWorkloadRows,
+  addWorkloadRow,
+  updateWorkloadRow,
+  removeWorkloadRow,
+} from "./workload.js";
+export {
+  confirmAbsenceRecord,
+  batchConfirmAbsences,
+  getJournalComments,
+  addJournalComment,
+} from "./attendance-ops.js";
+export {
+  addParentContact,
+  addStudentNote,
+  addParent,
+  updateParent,
+  deleteParent,
+  linkParentToStudent,
+  unlinkParentFromStudent,
+} from "./parents-ops.js";
+export {
+  getAcademicYears,
+  getActiveAcademicYear,
+  setActiveAcademicYear,
+  addAcademicYear,
+  updateAcademicYear,
+  deleteAcademicYear,
+  setActiveQuarter,
+  updateQuarter,
+  setDemoToday,
+  resetSchoolYearToP3,
+  updateVacation,
+  addVacation,
+  deleteVacation,
+} from "./school-year.js";
 
-/**
- * Добавление комментария к записи журнала (БП «Журнал класса»)
- * @param {Object} data { lessonId, studentId, text, author, role }
- */
-export function addJournalComment(data = {}) {
-  const text = (data.text || '').trim();
-  if (!text || !data.lessonId || !data.studentId) {
-    return { success: false, error: 'Заполните текст комментария' };
-  }
+export {
+  validateGradeValue,
+  saveGradeRecord,
+  deleteGradeRecord,
+  setLessonAttendance,
+  batchSaveLessonJournal,
+} from './grades-ops.js';
 
-  const db = getDB();
-  if (!db.journalComments) {
-    db.journalComments = [];
-  }
-
-  const newComment = {
-    id: `jc-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-    lessonId: data.lessonId,
-    studentId: data.studentId,
-    text,
-    author: data.author || 'Смирнова М. В.',
-    role: data.role || 'teacher',
-    createdAt: data.createdAt || new Date().toLocaleString('ru-RU', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    })
-  };
-
-  db.journalComments.push(newComment);
-  saveDB(db);
-  return { success: true, comment: newComment };
-}
-
-/**
- * Фиксация контакта с родителем (TC-BP-23..29)
- * @param {Object} data { studentId, parentId, author, date, time, channel, summary, agreementReached, nextContactDate }
- */
-export function addParentContact(data = {}) {
-  const summary = (data.summary || '').trim();
-  const channel = (data.channel || '').trim();
-  const studentId = (data.studentId || '').trim();
-  const parentId = (data.parentId || '').trim();
-
-  if (!summary) {
-    return { success: false, error: 'Поле «Итог» обязательно для заполнения' };
-  }
-  if (!channel) {
-    return { success: false, error: 'Выберите канал связи' };
-  }
-  if (!studentId) {
-    return { success: false, error: 'Ученик не указан' };
-  }
-
-  const db = getDB();
-  if (!db.parentContacts) db.parentContacts = [];
-
-  const channelLabels = {
-    phone: 'Звонок',
-    chat: 'Мессенджер',
-    personal: 'Личная беседа',
-    meeting: 'Личная беседа',
-    letter: 'Письмо'
-  };
-
-  const agreementReached = data.agreementReached !== false;
-  const nextContactDate = (!agreementReached && data.nextContactDate) ? data.nextContactDate : null;
-
-  const newContact = {
-    id: `pc-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-    studentId,
-    parentId: parentId || (db.parentStudentRelations?.find(r => r.studentId === studentId)?.parentId || 'pr-unknown'),
-    author: data.author || 'Смирнова М. В.',
-    date: data.date || new Date().toISOString().slice(0, 10),
-    time: data.time || new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-    channel,
-    channelLabel: channelLabels[channel] || data.channelLabel || 'Звонок',
-    summary,
-    agreementReached,
-    nextContactDate
-  };
-
-  db.parentContacts.unshift(newContact);
-  saveDB(db);
-
-  return { success: true, contact: newContact };
-}
-
-/**
- * Добавление педагогической заметки классного руководителя (TC-BP-27..30)
- * @param {Object} data { studentId, author, text, isPrivate, date }
- */
-export function addStudentNote(data = {}) {
-  const text = (data.text || '').trim();
-  const studentId = (data.studentId || '').trim();
-
-  if (!text) {
-    return { success: false, error: 'Поле «Текст заметки» обязательно для заполнения' };
-  }
-  if (!studentId) {
-    return { success: false, error: 'Ученик не указан' };
-  }
-
-  const db = getDB();
-  if (!db.notes) db.notes = [];
-
-  const newNote = {
-    id: `note-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-    studentId,
-    author: data.author || 'Смирнова М. В.',
-    date: data.date || `${new Date().toISOString().slice(0, 10)} ${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`,
-    text,
-    isPrivate: data.isPrivate !== false
-  };
-
-  db.notes.unshift(newNote);
-  saveDB(db);
-
-  return { success: true, note: newNote };
-}
-
-/**
- * Добавление нового родителя (TC-PR-04..05)
- */
-export function addParent(data = {}) {
-  const fullName = (data.fullName || '').trim();
-  const phone = (data.phone || '').trim();
-  const studentId = data.studentId || null;
-  const relationRole = data.relationRole || 'Родитель';
-  const isPrimary = Boolean(data.isPrimary);
-
-  if (!fullName) {
-    return { success: false, error: 'Укажите ФИО родителя' };
-  }
-  if (!phone) {
-    return { success: false, error: 'Укажите телефон' };
-  }
-
-  const db = getDB();
-  if (!db.parents) db.parents = [];
-  if (!db.parentStudentRelations) db.parentStudentRelations = [];
-
-  const parts = fullName.split(/\s+/);
-  const lastName = parts[0] || 'Родитель';
-  const firstName = parts[1] || '';
-  const middleName = parts.slice(2).join(' ') || '';
-  const shortName = firstName ? `${lastName} ${firstName[0]}.` : lastName;
-
-  const parentId = `pr-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-  const newParent = {
-    id: parentId,
-    lastName,
-    firstName,
-    middleName,
-    fullName,
-    shortName,
-    phone,
-    otherChildren: []
-  };
-
-  db.parents.push(newParent);
-
-  if (studentId) {
-    if (isPrimary) {
-      db.parentStudentRelations.forEach(r => {
-        if (r.studentId === studentId) {
-          r.isPrimary = false;
-        }
-      });
-    }
-
-    db.parentStudentRelations.push({
-      id: `rel-${parentId}-${studentId}`,
-      parentId,
-      studentId,
-      relationRole,
-      isPrimary
-    });
-  }
-
-  saveDB(db);
-  return { success: true, parent: newParent };
-}
-
-/**
- * Обновление данных родителя (TC-PR-06..07)
- */
-export function updateParent(parentId, data = {}) {
-  if (!parentId) return { success: false, error: 'ID родителя не указан' };
-
-  const db = getDB();
-  const parent = (db.parents || []).find(p => p.id === parentId);
-  if (!parent) return { success: false, error: 'Родитель не найден' };
-
-  if (data.fullName) {
-    const fullName = data.fullName.trim();
-    const parts = fullName.split(/\s+/);
-    parent.lastName = parts[0] || parent.lastName;
-    parent.firstName = parts[1] || parent.firstName;
-    parent.middleName = parts.slice(2).join(' ') || parent.middleName;
-    parent.fullName = fullName;
-    parent.shortName = parent.firstName ? `${parent.lastName} ${parent.firstName[0]}.` : parent.lastName;
-  }
-
-  if (data.phone !== undefined) {
-    parent.phone = data.phone.trim();
-  }
-
-  // Обновление связи, если передана
-  if (data.relationRole || data.isPrimary !== undefined) {
-    const rels = (db.parentStudentRelations || []).filter(r => r.parentId === parentId);
-    rels.forEach(rel => {
-      if (data.relationRole) rel.relationRole = data.relationRole;
-      if (data.isPrimary !== undefined) {
-        if (data.isPrimary) {
-          // сбрасываем у других родителей этого ученика
-          (db.parentStudentRelations || []).forEach(otherRel => {
-            if (otherRel.studentId === rel.studentId && otherRel.parentId !== parentId) {
-              otherRel.isPrimary = false;
-            }
-          });
-        }
-        rel.isPrimary = Boolean(data.isPrimary);
-      }
-    });
-  }
-
-  saveDB(db);
-  return { success: true, parent };
-}
-
-/**
- * Удаление родителя (TC-PR-12)
- */
-export function deleteParent(parentId) {
-  if (!parentId) return { success: false, error: 'ID родителя не указан' };
-
-  const db = getDB();
-  const rels = (db.parentStudentRelations || []).filter(r => r.parentId === parentId);
-  if (rels.length > 0) {
-    return { success: false, error: 'Сначала снимите связь с учеником в карточке или сводке' };
-  }
-
-  db.parents = (db.parents || []).filter(p => p.id !== parentId);
-  saveDB(db);
-
-  return { success: true };
-}
-
-/**
- * Связывание родителя с учеником (TC-PR-08..09)
- */
-export function linkParentToStudent(parentId, studentId, options = {}) {
-  if (!parentId || !studentId) {
-    return { success: false, error: 'Не указан родитель или ученик' };
-  }
-
-  const db = getDB();
-  if (!db.parentStudentRelations) db.parentStudentRelations = [];
-
-  const isPrimary = Boolean(options.isPrimary);
-  const relationRole = options.relationRole || 'Родитель';
-
-  if (isPrimary) {
-    db.parentStudentRelations.forEach(r => {
-      if (r.studentId === studentId) {
-        r.isPrimary = false;
-      }
-    });
-  }
-
-  const existing = db.parentStudentRelations.find(r => r.parentId === parentId && r.studentId === studentId);
-  if (existing) {
-    existing.relationRole = relationRole;
-    existing.isPrimary = isPrimary;
-  } else {
-    db.parentStudentRelations.push({
-      id: `rel-${parentId}-${studentId}`,
-      parentId,
-      studentId,
-      relationRole,
-      isPrimary
-    });
-  }
-
-  saveDB(db);
-  return { success: true };
-}
-
-/**
- * Снятие связи родителя с учеником (TC-PR-13)
- */
-export function unlinkParentFromStudent(parentId, studentId) {
-  if (!parentId) return { success: false, error: 'ID родителя не указан' };
-
-  const db = getDB();
-  if (!db.parentStudentRelations) db.parentStudentRelations = [];
-
-  if (studentId) {
-    db.parentStudentRelations = db.parentStudentRelations.filter(
-      r => !(r.parentId === parentId && r.studentId === studentId)
-    );
-  } else {
-    db.parentStudentRelations = db.parentStudentRelations.filter(
-      r => r.parentId !== parentId
-    );
-  }
-
-  saveDB(db);
-  return { success: true };
-}
-
-
-
-
+export {
+  DEMO_TODAY as MEETINGS_DEMO_TODAY,
+  ATTENDANCE_STATUSES as MEETING_ATTENDANCE_STATUSES,
+  ATTENDANCE_LABELS as MEETING_ATTENDANCE_LABELS,
+  getMeetings,
+  getMeetingById,
+  validateMeetingData,
+  createMeeting,
+  updateMeeting,
+  cancelMeeting,
+  canMarkAttendance,
+  getMeetingAttendance,
+  saveMeetingAttendance,
+  getMeetingSummary,
+} from "./meetings-ops.js";

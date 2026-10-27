@@ -1,0 +1,70 @@
+{
+  "task": "task-03-auth-access-policy",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-AUTH-15",
+      "expectFail": ["test_auth_09_switch_user_role_context"],
+      "patches": [
+        {
+          "file": "src/services/storage.js",
+          "find": "export function login(rawUsername, password) {",
+          "replace": "let lastSessionRole = null;\n\nexport function login(rawUsername, password) {"
+        },
+        {
+          "file": "src/services/storage.js",
+          "find": "  user.lastLoginAt = new Date().toISOString();\n  saveDB(db);\n\n  const session = {\n    userId: user.id,\n    username: user.username,\n    role: user.role,\n    loginAt: new Date().toISOString(),\n  };\n  setSession(session);",
+          "replace": "  user.lastLoginAt = new Date().toISOString();\n  saveDB(db);\n\n  const session = {\n    userId: user.id,\n    username: user.username,\n    role: lastSessionRole || user.role,\n    loginAt: new Date().toISOString(),\n  };\n  lastSessionRole = session.role;\n  setSession(session);"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-AUTH-10",
+      "expectFail": ["test_auth_12_new_password_policy"],
+      "patches": [
+        {
+          "file": "src/services/storage.js",
+          "find": "  if (!newPwd || newPwd.length < 8) {\n    return {\n      success: false,\n      error: \"Новый пароль должен содержать не менее 8 символов\",\n    };\n  }\n\n  const hasLower = /[a-zа-я]/.test(newPwd);\n  const hasUpper = /[A-ZА-Я]/.test(newPwd);\n  const hasDigit = /\\d/.test(newPwd);\n\n  if (!hasLower || !hasUpper || !hasDigit) {\n    return {\n      success: false,\n      error:\n        \"Пароль должен содержать буквы в обоих регистрах и хотя бы одну цифру\",\n    };\n  }\n\n",
+          "replace": ""
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-AUTH-11",
+      "expectFail": ["test_auth_12_new_password_policy"],
+      "patches": [
+        {
+          "file": "src/services/storage.js",
+          "find": "  if (newPwd !== confPwd) {\n    return { success: false, error: \"Пароли не совпадают\" };\n  }\n\n",
+          "replace": ""
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-AUTH-07",
+      "expectFail": ["test_auth_14_blocked_account_rejected"],
+      "patches": [
+        {
+          "file": "src/services/storage.js",
+          "find": "  if (failedCount >= 5 || (user && user.status === \"blocked\")) {",
+          "replace": "  if (failedCount >= 5) {"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-AUTH-08",
+      "expectFail": ["test_auth_15_self_reset_unavailable"],
+      "patches": [
+        {
+          "file": "src/views/login/render.js",
+          "find": "        <p class=\"text-xs text-slate-600 leading-relaxed mb-4\">\n          Самостоятельный сброс пароля недоступен из соображений безопасности.\n          Для сброса пароля обратитесь к администратору школы:\n        </p>",
+          "replace": "        <p class=\"text-xs text-slate-600 leading-relaxed mb-4\">\n          Самостоятельный сброс пароля недоступен из соображений безопасности.\n          Для сброса пароля обратитесь к администратору школы:\n        </p>\n        <form id=\"form-self-reset\" class=\"space-y-2.5 mb-4\">\n          <input type=\"email\" id=\"reset-email\" placeholder=\"Укажите e-mail\"\n                 class=\"w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300\" />\n          <button type=\"button\" id=\"btn-send-reset-email\"\n                  class=\"w-full py-2.5 px-4 rounded-xl bg-brand-500 text-white font-medium text-xs\">\n            Отправить письмо\n          </button>\n        </form>"
+        }
+      ]
+    }
+  ]
+}

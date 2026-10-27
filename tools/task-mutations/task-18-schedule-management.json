@@ -1,0 +1,80 @@
+{
+  "task": "task-18-schedule-management",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-SCH-01",
+      "expectFail": [
+        "test_sch_08_add_lesson_and_room_conflict"
+      ],
+      "patches": [
+        {
+          "file": "src/services/schedule-ops.js",
+          "find": "  if (normRoom) {",
+          "replace": "  if (false && normRoom) {"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-SCH-03",
+      "expectFail": [
+        "test_sch_09_reschedule_keeps_journal"
+      ],
+      "patches": [
+        {
+          "file": "src/services/schedule-ops.js",
+          "find": "    room: targetRoom.trim(),",
+          "replace": "    room: \"\","
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-SCH-02",
+      "expectFail": [
+        "test_sch_10_cancel_lesson_keeps_journal"
+      ],
+      "patches": [
+        {
+          "file": "src/services/schedule-ops.js",
+          "find": "  if (db.lessons.length === initialCount) {\n    return { success: false, error: \"Занятие не найдено для отмены\" };\n  }\n\n  saveDB(db);",
+          "replace": "  if (db.lessons.length === initialCount) {\n    return { success: false, error: \"Занятие не найдено для отмены\" };\n  }\n\n  db.grades = (db.grades || []).filter(\n    (g) => g.lessonId !== lessonId\n  );\n  db.attendance = (db.attendance || []).filter(\n    (a) => a.lessonId !== lessonId\n  );\n\n  saveDB(db);"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-SCH-05",
+      "expectFail": [
+        "test_sch_11_vacation_empty_state"
+      ],
+      "patches": [
+        {
+          "file": "src/views/schedule/render.js",
+          "find": "  let scheduleLessons = (db.lessons || []).filter((l) => weekDateSet.has(l.date));\n\n  if (isSubjectTeacher) {",
+          "replace": "  let scheduleLessons = (db.lessons || []).filter((l) => weekDateSet.has(l.date));\n\n  if (selectedWeek.isVacation) {\n    const fallbackDates = new Set(\n      getWeekDays(SCHEDULE_WEEKS[7].from).map((d) => d.date)\n    );\n    scheduleLessons = (db.lessons || []).filter((l) =>\n      fallbackDates.has(l.date)\n    );\n  }\n\n  if (isSubjectTeacher) {"
+        },
+        {
+          "file": "src/views/schedule/render.js",
+          "find": "  const isVacationOrEmpty = selectedWeek.isVacation || totalLessonsCount === 0;",
+          "replace": "  const isVacationOrEmpty = totalLessonsCount === 0;"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-SCH-12",
+      "expectFail": [
+        "test_sch_12_room_conflict_boundary"
+      ],
+      "patches": [
+        {
+          "file": "src/services/schedule-ops.js",
+          "find": "      const lessonRoom = String(l.room || \"\").trim().toLowerCase();\n      return lessonRoom === normRoom;",
+          "replace": "      return true;"
+        }
+      ]
+    }
+  ]
+}

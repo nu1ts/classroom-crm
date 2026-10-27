@@ -21,15 +21,18 @@ export class LoginPage {
     this.switchUserBtn = page.locator('#btn-login-switch-user');
 
     this.forgotPasswordModal = page.locator('#modal-forgot-password');
-    this.closeForgotPasswordModalBtn = page.locator('#modal-forgot-password button[data-action="close-modal"]');
+    this.closeForgotPasswordModalBtn = page.locator('#modal-forgot-password button[data-action="close-modal"]').first();
   }
 
   /**
    * Переход на экран авторизации
    */
   async goto(options = {}) {
-    await this.page.goto('index.html#/login', options);
+    await this.page.goto('login', options);
     await this.page.waitForLoadState('domcontentloaded');
+    if (await this.switchUserBtn.isVisible()) {
+      await this.switchUserBtn.click();
+    }
     await expect(this.submitButton).toBeVisible({ timeout: 10000 });
   }
 
@@ -37,7 +40,7 @@ export class LoginPage {
    * Переход с секретным ключом для активации DEV-режима
    */
   async gotoWithDevKey() {
-    await this.page.goto('index.html#/login?key=tsu_debug');
+    await this.page.goto('login?key=tsu_debug');
     await this.page.waitForLoadState('domcontentloaded');
     await expect(this.submitButton).toBeVisible({ timeout: 10000 });
   }
@@ -114,5 +117,13 @@ export class LoginPage {
   async openForgotPasswordModal() {
     await this.forgotPasswordBtn.click();
     await expect(this.forgotPasswordModal).toBeVisible({ timeout: 5000 });
+  }
+
+  /**
+   * Закрытие модального окна восстановления пароля
+   */
+  async closeForgotPasswordModal() {
+    await this.closeForgotPasswordModalBtn.click();
+    await expect(this.forgotPasswordModal).toHaveClass(/opacity-0\s+pointer-events-none/, { timeout: 5000 });
   }
 }

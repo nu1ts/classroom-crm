@@ -1,0 +1,140 @@
+{
+  "task": "task-05-role-access-control",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-RM-03 — классруку доступна правка оценки",
+      "expectFail": ["test_rm_06_forbidden_actions"],
+      "patches": [
+        {
+          "file": "src/services/grades-ops.js",
+          "find": "  if (currentUser && currentUser.role && currentUser.role !== \"subject_teacher\") {\n    return {\n      success: false,\n      error: \"Действие недоступно для вашей роли. Только учитель-предметник может выставлять или изменять оценки.\",\n    };\n  }",
+          "replace": "  if (\n    currentUser &&\n    currentUser.role &&\n    currentUser.role !== \"subject_teacher\" &&\n    currentUser.role !== \"teacher\"\n  ) {\n    return {\n      success: false,\n      error: \"Действие недоступно для вашей роли. Только учитель-предметник может выставлять или изменять оценки.\",\n    };\n  }"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-RM-01 — разделы администратора открываются классруком по прямому адресу",
+      "expectFail": ["test_rm_07_admin_routes_direct_access"],
+      "patches": [
+        {
+          "file": "src/config/navigation.js",
+          "find": "    allowedRoutes: [\n      \"/overview\",\n      \"/students\",",
+          "replace": "    allowedRoutes: [\n      \"/accounts\",\n      \"/directories\",\n      \"/overview\",\n      \"/students\","
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-RM-14 — родитель открывает журнал и посещаемость класса",
+      "expectFail": ["test_rm_08_class_routes_direct_access"],
+      "patches": [
+        {
+          "file": "src/config/navigation.js",
+          "find": "    allowedRoutes: [\"/child\", \"/schedule\", \"/announcements\", \"/profile\"],",
+          "replace": "    allowedRoutes: [\"/child\", \"/journal\", \"/attendance\", \"/schedule\", \"/announcements\", \"/profile\"],"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-RM-15 — ученик открывает список родителей класса",
+      "expectFail": ["test_rm_08_class_routes_direct_access"],
+      "patches": [
+        {
+          "file": "src/config/navigation.js",
+          "find": "    allowedRoutes: [\"/schedule\", \"/grades\", \"/announcements\", \"/profile\"],",
+          "replace": "    allowedRoutes: [\"/schedule\", \"/grades\", \"/parents\", \"/announcements\", \"/profile\"],"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-RM-04 — классрук открывает аналитику чужого класса по параметру адреса",
+      "expectFail": ["test_rm_09_teacher_foreign_class"],
+      "patches": [
+        {
+          "file": "src/views/analytics/render.js",
+          "find": "    : currentUser?.classId || \"class-7b\";",
+          "replace": "    : resolveClassId(requestedClassId) || currentUser?.classId || \"class-7b\";"
+        },
+        {
+          "file": "src/views/analytics/render.js",
+          "find": "  if (currentUser?.role === \"teacher\") {\n    const allowedClassId = currentUser.classId || \"class-7b\";\n    if (\n      requestedClassId &&\n      resolveClassId(requestedClassId) !== allowedClassId\n    ) {\n      return renderForbiddenView();\n    }\n  }",
+          "replace": "  if (currentUser?.role === \"teacher\") {\n    const allowedClassId =\n      resolveClassId(requestedClassId) || currentUser.classId || \"class-7b\";\n    if (\n      requestedClassId &&\n      resolveClassId(requestedClassId) !== allowedClassId\n    ) {\n      return renderForbiddenView();\n    }\n  }"
+        }
+      ]
+    },
+    {
+      "folder": 7,
+      "bug": "BUG-RM-06 — администратор открывает журнал класса",
+      "expectFail": ["test_rm_10_admin_journal_meetings"],
+      "patches": [
+        {
+          "file": "src/config/navigation.js",
+          "find": "      \"/school-year\",\n      \"/profile\",",
+          "replace": "      \"/school-year\",\n      \"/journal\",\n      \"/profile\","
+        }
+      ]
+    },
+    {
+      "folder": 8,
+      "bug": "BUG-RM-05 — предметник открывает журнал по предмету вне нагрузки",
+      "expectFail": ["test_rm_11_subject_teacher_workload"],
+      "patches": [
+        {
+          "file": "src/config/routes.js",
+          "find": "        if (!isAllowed) {\n          return renderForbiddenView();\n        }",
+          "replace": "        if (false) {\n          return renderForbiddenView();\n        }"
+        }
+      ]
+    },
+    {
+      "folder": 9,
+      "bug": "BUG-RM-07 — родитель открывает сводку чужого ученика",
+      "expectFail": ["test_rm_12_forbidden_no_disclosure"],
+      "patches": [
+        {
+          "file": "src/config/navigation.js",
+          "find": "    allowedRoutes: [\"/child\", \"/schedule\", \"/announcements\", \"/profile\"],",
+          "replace": "    allowedRoutes: [\"/child\", \"/student\", \"/schedule\", \"/announcements\", \"/profile\"],"
+        },
+        {
+          "file": "src/views/student-summary/render.js",
+          "find": "  if ([\"parent\", \"student\"].includes(currentUser?.role)) {\n    return renderForbiddenView();\n  }",
+          "replace": "  if (currentUser?.role === \"student\") {\n    return renderForbiddenView();\n  }"
+        }
+      ]
+    },
+    {
+      "folder": 10,
+      "bug": "BUG-RM-08 — отказ раскрывает существование чужой записи",
+      "expectFail": ["test_rm_12_forbidden_no_disclosure"],
+      "patches": [
+        {
+          "file": "src/views/forbidden.js",
+          "find": "        У вас нет прав для просмотра данного раздела или объекта системы.",
+          "replace": "        Ученик существует, но доступ запрещён."
+        }
+      ]
+    },
+    {
+      "folder": 11,
+      "bug": "BUG-RM-09 — роль и привязка в профиле доступны для правки",
+      "expectFail": ["test_rm_13_profile_read_only"],
+      "patches": [
+        {
+          "file": "src/views/profile/render.js",
+          "find": "              <input type=\"text\" value=\"${user.roleLabel}\" readonly\n                     class=\"w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-800 cursor-not-allowed select-none\" />",
+          "replace": "              <input type=\"text\" value=\"${user.roleLabel}\"\n                     class=\"w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-sm font-medium text-slate-800\" />"
+        },
+        {
+          "file": "src/views/profile/render.js",
+          "find": "              <input type=\"text\" value=\"${bindingText}\" readonly\n                     class=\"w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-800 cursor-not-allowed select-none\" />",
+          "replace": "              <input type=\"text\" value=\"${bindingText}\"\n                     class=\"w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-sm font-medium text-slate-800\" />"
+        }
+      ]
+    }
+  ]
+}

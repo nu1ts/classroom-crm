@@ -1,0 +1,95 @@
+{
+  "task": "task-20-parents-links",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-PR-13",
+      "expectFail": [
+        "test_pr_07_unique_phone"
+      ],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "  saveDB(db);\n  return { success: true, parent };",
+          "replace": "  db.parents.push({ ...parent, id: `${parent.id}-copy` });\n  saveDB(db);\n  return { success: true, parent };",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-PR-14",
+      "expectFail": [
+        "test_pr_08_link_existing_parent"
+      ],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "  } else {\n    db.parentStudentRelations.push({\n      id: `rel-${parentId}-${studentId}`,\n      parentId,\n      studentId,\n      relationRole,\n      isPrimary,\n    });",
+          "replace": "  } else {\n    db.parentStudentRelations.push({\n      id: `rel-${parentId}-${studentId}`,\n      parentId: \"pr-unknown\",\n      studentId,\n      relationRole,\n      isPrimary,\n    });",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-PR-01",
+      "expectFail": [
+        "test_pr_09_single_primary"
+      ],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "  if (isPrimary) {\n    db.parentStudentRelations.forEach((r) => {\n      if (r.studentId === studentId) {\n        r.isPrimary = false;\n      }\n    });\n  }",
+          "replace": "  if (false && isPrimary) {\n    db.parentStudentRelations.forEach((r) => {\n      if (r.studentId === studentId) {\n        r.isPrimary = false;\n      }\n    });\n  }",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-PR-06",
+      "expectFail": [
+        "test_pr_10_unlink_keeps_card"
+      ],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "  } else {\n    db.parentStudentRelations = db.parentStudentRelations.filter(\n      (r) => r.parentId !== parentId,\n    );\n  }\n\n  saveDB(db);\n  return { success: true };\n}",
+          "replace": "  } else {\n    db.parentStudentRelations = db.parentStudentRelations.filter(\n      (r) => r.parentId !== parentId,\n    );\n  }\n\n  db.parents = (db.parents || []).filter((p) => p.id !== parentId);\n  db.parentContacts = (db.parentContacts || []).filter((c) => c.parentId !== parentId);\n  saveDB(db);\n  return { success: true };\n}",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-PR-02",
+      "expectFail": [
+        "test_pr_11_delete_linked_forbidden"
+      ],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "  if (rels.length > 0) {\n    return {\n      success: false,\n      error: \"Сначала снимите связь с учеником в карточке или сводке\",\n    };\n  }",
+          "replace": "  if (false && rels.length > 0) {\n    return {\n      success: false,\n      error: \"Сначала снимите связь с учеником в карточке или сводке\",\n    };\n  }",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 7,
+      "bug": "BUG-PR-15",
+      "expectFail": [
+        "test_pr_12_delete_unlinked"
+      ],
+      "patches": [
+        {
+          "file": "src/views/parents/list.js",
+          "find": "      setTimeout(() => {\n        updateQueryUrl({});\n      }, 150);\n    });\n  });\n}",
+          "replace": "      setTimeout(() => {}, 150);\n    });\n  });\n}",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

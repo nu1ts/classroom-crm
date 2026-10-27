@@ -1,0 +1,162 @@
+{
+  "task": "task-13-journal-grading",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-TCH-11",
+      "expectFail": [
+        "test_tch_01_single_grade_saved"
+      ],
+      "patches": [
+        {
+          "file": "src/views/journal/listeners.js",
+          "find": "      document.querySelectorAll(\".grade-input\").forEach((input) => {\n        const lessonId = input.getAttribute(\"data-lesson-id\");\n        const studentId = input.getAttribute(\"data-student-id\");\n        if (!lessonId || !studentId) return;\n\n        const lesson = (db.lessons || []).find((l) => l.id === lessonId);\n        if (lesson && lesson.status === \"closed\") return; // закрытые не сохраняем",
+          "replace": "      const journalStudentOrder = Array.from(\n        document.querySelectorAll(\"tr.student-row\"),\n      ).map((row) => {\n        const avgCell = row.querySelector(\".student-avg-cell\");\n        return avgCell ? avgCell.getAttribute(\"data-student-id\") : null;\n      });\n\n      document.querySelectorAll(\".grade-input\").forEach((input) => {\n        const lessonId = input.getAttribute(\"data-lesson-id\");\n        const ownStudentId = input.getAttribute(\"data-student-id\");\n        const ownRowIndex = journalStudentOrder.indexOf(ownStudentId);\n        const studentId =\n          ownRowIndex >= 0 && journalStudentOrder[ownRowIndex + 1]\n            ? journalStudentOrder[ownRowIndex + 1]\n            : ownStudentId;\n        if (!lessonId || !studentId) return;"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-TCH-12",
+      "expectFail": [
+        "test_tch_02_bulk_grades_saved"
+      ],
+      "patches": [
+        {
+          "file": "src/services/grades-ops.js",
+          "find": "  const errors = [];\n  entries.forEach((item) => {",
+          "replace": "  const errors = [];\n  const lastEntry = entries[entries.length - 1];\n  [lastEntry].filter(Boolean).forEach((item) => {"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-TCH-01",
+      "expectFail": [
+        "test_tch_03_grade_value_validation"
+      ],
+      "patches": [
+        {
+          "file": "src/services/grades-ops.js",
+          "find": "  if (num >= 2 && num <= 5) return num;",
+          "replace": "  if (num >= 1 && num <= 6) return num;"
+        },
+        {
+          "file": "src/views/journal/listeners.js",
+          "find": "        if (\n          Number.isInteger(val) &&\n          val >= 2 &&\n          val <= 5 &&\n          rawVal.length === 1\n        ) {",
+          "replace": "        if (\n          Number.isInteger(val) &&\n          val >= 1 &&\n          val <= 6 &&\n          rawVal.length === 1\n        ) {"
+        },
+        {
+          "file": "src/views/journal/listeners.js",
+          "find": "        if (!Number.isInteger(val) || val < 2 || val > 5) {",
+          "replace": "        if (!Number.isInteger(val) || val < 1 || val > 6) {"
+        },
+        {
+          "file": "src/views/journal/listeners.js",
+          "find": "              num < 2 ||\n              num > 5 ||",
+          "replace": "              num < 1 ||\n              num > 6 ||"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-TCH-05",
+      "expectFail": [
+        "test_tch_04_grade_edit_overwrites"
+      ],
+      "patches": [
+        {
+          "file": "src/services/grades-ops.js",
+          "find": "  if (existingGradeIndex >= 0) {",
+          "replace": "  if (false && existingGradeIndex >= 0) {"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-TCH-13",
+      "expectFail": [
+        "test_tch_05_deleted_grade_leaves_average"
+      ],
+      "patches": [
+        {
+          "file": "src/services/grades-ops.js",
+          "find": "  const initialCount = db.grades.length;\n  db.grades = db.grades.filter(\n    (g) => !(g.lessonId === lessonId && g.studentId === studentId),\n  );\n\n  if (db.grades.length !== initialCount) {\n    saveDB(db);\n  }",
+          "replace": "  const hiddenGrades = db.grades.filter(\n    (g) => g.lessonId === lessonId && g.studentId === studentId,\n  );\n  hiddenGrades.forEach((grade) => {\n    grade.hidden = true;\n  });\n\n  if (hiddenGrades.length > 0) {\n    saveDB(db);\n  }"
+        },
+        {
+          "file": "src/views/journal/render.js",
+          "find": "  const gradesMap = new Map();\n  allGrades.forEach((g) => gradesMap.set(`${g.lessonId}_${g.studentId}`, g));",
+          "replace": "  const gradesMap = new Map();\n  allGrades.forEach((g) => {\n    if (g.hidden) return;\n    gradesMap.set(`${g.lessonId}_${g.studentId}`, g);\n  });"
+        }
+      ]
+    },
+    {
+      "folder": 7,
+      "bug": "BUG-TCH-02",
+      "expectFail": [
+        "test_tch_06_closed_lesson_is_read_only"
+      ],
+      "patches": [
+        {
+          "file": "src/views/journal/render.js",
+          "find": "                         class=\"grade-input w-7 h-7 text-center text-xs font-bold rounded-lg border border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed select-none pointer-events-none\"\n                         value=\"${grade ? grade.value : ''}\"\n                         disabled",
+          "replace": "                         class=\"grade-input w-7 h-7 text-center text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-900 transition-colors cursor-pointer select-none\"\n                         value=\"${grade ? grade.value : ''}\""
+        },
+        {
+          "file": "src/views/journal/listeners.js",
+          "find": "        if (lesson && lesson.status === \"closed\") return; // закрытые не сохраняем\n",
+          "replace": ""
+        },
+        {
+          "file": "src/services/grades-ops.js",
+          "find": "  if (lesson.status === \"closed\") {\n    return {\n      success: false,\n      error: \"Урок закрыт. Изменение и удаление оценок недоступно.\",\n      isClosed: true,\n    };\n  }\n",
+          "replace": ""
+        },
+        {
+          "file": "src/services/grades-ops.js",
+          "find": "  if (lesson && lesson.status === \"closed\") {\n    return {\n      success: false,\n      error: \"Урок закрыт. Удаление оценки недоступно.\",\n      isClosed: true,\n    };\n  }\n",
+          "replace": ""
+        }
+      ]
+    },
+    {
+      "folder": 8,
+      "bug": "BUG-TCH-08",
+      "expectFail": [
+        "test_tch_06_closed_lesson_is_read_only"
+      ],
+      "patches": [
+        {
+          "file": "src/services/attendance-ops.js",
+          "find": "  const db = getDB();\n  if (!db.journalComments) {\n    db.journalComments = [];\n  }",
+          "replace": "  const db = getDB();\n  const lesson = (db.lessons || []).find((l) => l.id === data.lessonId);\n  if (lesson && lesson.status === \"closed\") {\n    return {\n      success: false,\n      error: \"Урок закрыт. Комментарии недоступны.\",\n      isClosed: true,\n    };\n  }\n  if (!db.journalComments) {\n    db.journalComments = [];\n  }"
+        }
+      ]
+    },
+    {
+      "folder": 9,
+      "bug": "BUG-TCH-03",
+      "expectFail": [
+        "test_tch_09_grade_blocked_for_absent"
+      ],
+      "patches": [
+        {
+          "file": "src/views/journal/render.js",
+          "find": "                           class=\"grade-input w-7 h-7 text-center text-xs font-bold rounded-lg border border-slate-200 bg-slate-100 text-slate-500 hover:bg-slate-200/70 hover:border-slate-300 transition-colors cursor-pointer select-none\"\n                           value=\"\"\n                           disabled",
+          "replace": "                           class=\"grade-input w-7 h-7 text-center text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-900 hover:border-slate-300 transition-colors cursor-pointer select-none\"\n                           value=\"\""
+        },
+        {
+          "file": "src/services/grades-ops.js",
+          "find": "  const att = (db.attendance || []).find(\n    (a) => a.lessonId === lessonId && a.studentId === studentId,\n  );\n  if (att && att.value === \"absent\") {\n    return {\n      success: false,\n      error: \"Ученик отсутствовал\",\n      isAbsent: true,\n    };\n  }",
+          "replace": "  const att = (db.attendance || []).find(\n    (a) => a.lessonId === lessonId && a.studentId === studentId,\n  );"
+        },
+        {
+          "file": "src/services/grades-ops.js",
+          "find": "    if (!item.isAbsent) {",
+          "replace": "    if (true) {"
+        }
+      ]
+    }
+  ]
+}

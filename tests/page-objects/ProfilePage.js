@@ -27,7 +27,7 @@ export class ProfilePage {
    * Переход в профиль
    */
   async goto() {
-    await this.page.goto('index.html#/profile');
+    await this.page.goto('profile');
     await this.page.waitForLoadState('domcontentloaded');
   }
 
@@ -69,6 +69,6 @@ export class ProfilePage {
       await dialog.accept();
     });
     await this.logoutBtn.click();
-    await this.page.waitForURL(/#\/login/, { timeout: 5000 });
+    await this.page.waitForURL(/\/login\/?/, { timeout: 5000 });
   }
 }

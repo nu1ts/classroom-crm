@@ -1,0 +1,83 @@
+{
+  "task": "task-31-parent-contacts",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-BP-28",
+      "expectFail": ["test_bp_25_contact_linked_to_parent"],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "    studentId,\n    parentId,\n    author: data.author || \"Смирнова М. В.\",",
+          "replace": "    studentId,\n    author: data.author || \"Смирнова М. В.\",",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-BP-08",
+      "expectFail": ["test_bp_26_contact_summary_required"],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "  if (!summary) {\n    return { success: false, error: \"Поле «Итог» обязательно для заполнения\" };\n  }",
+          "replace": "  if (false && !summary) {\n    return { success: false, error: \"Поле «Итог» обязательно для заполнения\" };\n  }",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-BP-29",
+      "expectFail": ["test_bp_27_note_not_contact"],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "  db.notes.unshift(newNote);\n  saveDB(db);",
+          "replace": "  db.notes.unshift(newNote);\n  if (!db.parentContacts) db.parentContacts = [];\n  db.parentContacts.unshift({ ...newNote, channel: null, summary: newNote.text });\n  saveDB(db);",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-BP-30",
+      "expectFail": ["test_bp_28_agreement_reached"],
+      "patches": [
+        {
+          "file": "src/views/overview/render.js",
+          "find": ".filter((c) => (c.agreementReached === false || c.agreement === false) && c.nextContactDate && c.nextContactDate <= demoDate)",
+          "replace": ".filter((c) => c.nextContactDate && c.nextContactDate <= demoDate)",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-BP-31",
+      "expectFail": ["test_bp_29_repeat_contact_reminder"],
+      "patches": [
+        {
+          "file": "src/services/parents-ops.js",
+          "find": "    agreementReached,\n    nextContactDate,",
+          "replace": "    agreementReached,\n    nextContactDate: null,",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 7,
+      "bug": "BUG-BP-06",
+      "expectFail": ["test_bp_30_notes_private"],
+      "patches": [
+        {
+          "file": "src/views/grades/render.js",
+          "find": "  if (!user || user.role !== \"student\") {",
+          "replace": "  if (!user || user.role === \"student\") {",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

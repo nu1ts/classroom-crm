@@ -1,0 +1,89 @@
+{
+  "task": "task-01-auth-login",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-AUTH-13",
+      "expectFail": ["test_auth_01_successful_login"],
+      "patches": [
+        {
+          "file": "src/components/sidebar.js",
+          "find": "            <div class=\"overflow-hidden\">\n              <div class=\"text-xs font-semibold text-white truncate group-hover:text-brand-300 transition-colors\">\n                ${currentUser.shortName || currentUser.personName}\n              </div>\n              <div class=\"text-[11px] text-slate-400 truncate\">\n                ${currentUser.roleLabel || \"Профиль\"}\n              </div>\n            </div>",
+          "replace": "            <div class=\"overflow-hidden\"></div>"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-AUTH-12",
+      "expectFail": ["test_auth_02_password_toggle_preserves_value"],
+      "patches": [
+        {
+          "file": "src/views/login/listeners.js",
+          "find": "      const currentType = passwordInput.getAttribute(\"type\");\n      if (currentType === \"password\") {",
+          "replace": "      const currentType = passwordInput.getAttribute(\"type\");\n      passwordInput.value = \"\";\n      if (currentType === \"password\") {"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-AUTH-14",
+      "expectFail": ["test_auth_03_all_roles_default_screens"],
+      "patches": [
+        {
+          "file": "src/config/navigation.js",
+          "find": "export function getDefaultRouteForRole(role) {\n  const config = ROLE_NAVIGATION[role];\n  return config ? config.defaultRoute : \"/login\";\n}",
+          "replace": "export function getDefaultRouteForRole(role) {\n  if (role === \"student\") return \"/child\";\n  const config = ROLE_NAVIGATION[role];\n  return config ? config.defaultRoute : \"/login\";\n}"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-AUTH-01",
+      "expectFail": ["test_auth_04_wrong_password_rejected"],
+      "patches": [
+        {
+          "file": "src/services/storage.js",
+          "find": "  if (!user || user.password !== pwd) {",
+          "replace": "  if (!user) {"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-AUTH-02",
+      "expectFail": ["test_auth_05_unknown_login_generic_error"],
+      "patches": [
+        {
+          "file": "src/services/storage.js",
+          "find": "    return {\n      success: false,\n      error: \"Неверный логин или пароль\",\n    };",
+          "replace": "    return {\n      success: false,\n      error: user ? \"Неверный пароль\" : \"Пользователь не найден\",\n    };"
+        }
+      ]
+    },
+    {
+      "folder": 7,
+      "bug": "BUG-AUTH-03",
+      "expectFail": ["test_auth_06_empty_fields_and_whitespace"],
+      "patches": [
+        {
+          "file": "src/services/storage.js",
+          "find": "  if (!username || !pwd) {\n    return { success: false, error: \"Заполните все поля\" };\n  }\n\n",
+          "replace": ""
+        }
+      ]
+    },
+    {
+      "folder": 8,
+      "bug": "BUG-AUTH-05",
+      "expectFail": ["test_auth_08_logout_clears_session"],
+      "patches": [
+        {
+          "file": "src/services/storage.js",
+          "find": "/** Выход из системы: удаление сессии. */\nexport function logout() {\n  clearSession();\n}",
+          "replace": "/** Выход из системы. */\nexport function logout() {\n  return;\n}"
+        }
+      ]
+    }
+  ]
+}

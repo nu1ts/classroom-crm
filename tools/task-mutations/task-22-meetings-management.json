@@ -1,0 +1,113 @@
+{
+  "task": "task-22-meetings-management",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-MG-08",
+      "expectFail": [
+        "test_mg_01_meetings_order"
+      ],
+      "patches": [
+        {
+          "file": "src/services/meetings-ops.js",
+          "find": "    if (m.status === \"completed\" || m.date < DEMO_TODAY) {",
+          "replace": "    if (m.status === \"completed\" || m.date > DEMO_TODAY) {"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-MG-09",
+      "expectFail": [
+        "test_mg_02_create_meeting_room"
+      ],
+      "patches": [
+        {
+          "file": "src/services/meetings-ops.js",
+          "find": "    room: String(data.room || \"Каб. 302\").trim(),",
+          "replace": "    room: \"\","
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-MG-10",
+      "expectFail": [
+        "test_mg_03_required_fields"
+      ],
+      "patches": [
+        {
+          "file": "src/services/meetings-ops.js",
+          "find": "  if (!data.time || !String(data.time).trim()) {\n    errors.time = \"Время проведения обязательно для заполнения\";\n  }",
+          "replace": "  if (!data.time || !String(data.time).trim()) {\n    errors.time = \"Время проведения обязательно для заполнения\";\n  }\n  if (!Array.isArray(data.agendaItems) || data.agendaItems.length === 0) {\n    errors.agenda = \"Добавьте хотя бы один пункт повестки\";\n  }"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-MG-11",
+      "expectFail": [
+        "test_mg_04_agenda_edit"
+      ],
+      "patches": [
+        {
+          "file": "src/services/meetings-ops.js",
+          "find": "  if (Array.isArray(data.agendaItems)) {\n    agendaItems = data.agendaItems.map((item) => String(item).trim()).filter(Boolean);\n  }",
+          "replace": "  if (false && Array.isArray(data.agendaItems)) {\n    agendaItems = data.agendaItems.map((item) => String(item).trim()).filter(Boolean);\n  }"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-MG-07",
+      "expectFail": [
+        "test_mg_05_reschedule"
+      ],
+      "patches": [
+        {
+          "file": "src/services/meetings-ops.js",
+          "find": "  db.meetings[index] = updated;\n  saveDB(db);\n\n  return { success: true, meeting: updated };",
+          "replace": "  db.meetings.push({\n    ...updated,\n    id: `mtg-${Date.now()}`,\n  });\n  saveDB(db);\n\n  return { success: true, meeting: updated };"
+        }
+      ]
+    },
+    {
+      "folder": 7,
+      "bug": "BUG-MG-05",
+      "expectFail": [
+        "test_mg_06_cancel_keeps_announcement"
+      ],
+      "patches": [
+        {
+          "file": "src/services/meetings-ops.js",
+          "find": "  meeting.status = \"cancelled\";\n  meeting.cancelledAt = new Date().toISOString();\n  saveDB(db);",
+          "replace": "  meeting.status = \"cancelled\";\n  meeting.cancelledAt = new Date().toISOString();\n  db.announcements = (db.announcements || []).filter(\n    (announcement) => announcement.title !== \"Родительское собрание 31 октября\",\n  );\n  saveDB(db);"
+        }
+      ]
+    },
+    {
+      "folder": 8,
+      "bug": "BUG-MG-13",
+      "expectFail": [
+        "test_mg_12_subject_teacher_forbidden"
+      ],
+      "patches": [
+        {
+          "file": "src/config/navigation.js",
+          "find": "      {\n        id: \"nav-schedule\",\n        title: \"Расписание\",\n        path: \"/schedule\",\n        icon: \"calendar\",\n      },\n      {\n        id: \"nav-analytics\",",
+          "replace": "      {\n        id: \"nav-schedule\",\n        title: \"Расписание\",\n        path: \"/schedule\",\n        icon: \"calendar\",\n      },\n      {\n        id: \"nav-meetings\",\n        title: \"Собрания\",\n        path: \"/meetings\",\n        icon: \"users-group\",\n      },\n      {\n        id: \"nav-analytics\","
+        },
+        {
+          "file": "src/config/navigation.js",
+          "find": "      \"/schedule\",\n      \"/attendance\",\n      \"/analytics\",",
+          "replace": "      \"/schedule\",\n      \"/attendance\",\n      \"/meetings\",\n      \"/analytics\","
+        },
+        {
+          "file": "src/config/routes.js",
+          "find": "      if (user && user.role !== \"teacher\" && user.role !== \"admin\") {",
+          "replace": "      if (user && user.role !== \"teacher\" && user.role !== \"admin\" && user.role !== \"subject_teacher\") {"
+        }
+      ]
+    }
+  ]
+}

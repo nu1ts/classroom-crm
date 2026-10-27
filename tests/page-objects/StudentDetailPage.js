@@ -36,7 +36,7 @@ export class StudentDetailPage {
    * @param {string} [period='q1_2024']
    */
   async goto(studentId, period = 'q1_2024') {
-    await this.page.goto(`index.html#/student?id=${studentId}&period=${period}`);
+    await this.page.goto(`student?id=${studentId}&period=${period}`);
     await expect(this.studentFullName).toBeVisible({ timeout: 10000 });
   }
 }

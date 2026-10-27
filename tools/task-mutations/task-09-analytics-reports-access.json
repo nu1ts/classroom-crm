@@ -1,0 +1,100 @@
+{
+  "task": "task-09-analytics-reports-access",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-ANL-18",
+      "expectFail": [
+        "test_anl_14_unconfirmed_counter"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  let records = (attendance || []).filter(\n    (a) => a.status === \"unconfirmed\" && a.value === \"absent\",\n  );",
+          "replace": "  let records = (attendance || []).filter(\n    (a) => !a.reason && a.value === \"absent\",\n  );"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-ANL-09",
+      "expectFail": [
+        "test_anl_15_report_not_cached"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "/**\n * Строгое математическое округление до одного десятичного знака (0.1)",
+          "replace": "import { saveDB } from \"../services/storage.js\";\n\n/**\n * Строгое математическое округление до одного десятичного знака (0.1)"
+        },
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  const periodId = options.periodId || \"q1_2024\";\n  const periodOptions = {\n    periodId,\n    classId: options.classId || \"class-7b\",\n    ...options,\n  };",
+          "replace": "  const periodId = options.periodId || \"q1_2024\";\n  const periodOptions = {\n    periodId,\n    classId: options.classId || \"class-7b\",\n    ...options,\n  };\n  const cacheKey = `${periodId}|${periodOptions.dateFrom || \"\"}|${periodOptions.dateTo || \"\"}`;\n  if (dataset.classReports && dataset.classReports[cacheKey]) {\n    return dataset.classReports[cacheKey];\n  }"
+        },
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  return {\n    periodId,\n    periodTitle:\n      periodId === \"q1_2024\" ? \"I четверть (02.09–25.10.2024)\" : periodId,\n    generatedAt: new Date().toISOString(),",
+          "replace": "  const report = {\n    periodId,\n    periodTitle:\n      periodId === \"q1_2024\" ? \"I четверть (02.09–25.10.2024)\" : periodId,\n    generatedAt: new Date().toISOString(),"
+        },
+        {
+          "file": "src/mock/calculations.js",
+          "find": "    subjectAverages,\n    riskZone,\n    unconfirmedAbsences: unconfirmed,\n  };\n}",
+          "replace": "    subjectAverages,\n    riskZone,\n    unconfirmedAbsences: unconfirmed,\n  };\n  dataset.classReports = dataset.classReports || {};\n  dataset.classReports[cacheKey] = report;\n  saveDB(dataset);\n  return report;\n}"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-ANL-19",
+      "expectFail": [
+        "test_anl_16_teacher_own_class_only"
+      ],
+      "patches": [
+        {
+          "file": "src/views/analytics/render.js",
+          "find": "  if (currentUser?.role === \"teacher\") {\n    const allowedClassId = currentUser.classId || \"class-7b\";\n    if (\n      requestedClassId &&\n      resolveClassId(requestedClassId) !== allowedClassId\n    ) {\n      return renderForbiddenView();\n    }\n  }",
+          "replace": "  if (currentUser?.role === \"teacher\") {\n    const allowedClassId = resolveClassId(requestedClassId) || currentUser.classId || \"class-7b\";\n    if (requestedClassId && resolveClassId(requestedClassId) !== allowedClassId) {\n      return renderForbiddenView();\n    }\n  }"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-ANL-20",
+      "expectFail": [
+        "test_anl_17_subject_teacher_subjects"
+      ],
+      "patches": [
+        {
+          "file": "src/views/analytics/render.js",
+          "find": "  const allowedSubjectIds = new Set(classWorkload.map((item) => item.subjectId));\n  const selectedSubjectId = isSubjectTeacher && allowedSubjectIds.has(requestedSubjectId)\n    ? requestedSubjectId\n    : isSubjectTeacher\n      ? null\n      : requestedSubjectId || null;\n  const scopedSubjects = isSubjectTeacher\n    ? (db.subjects || []).filter((subject) =>\n        selectedSubjectId\n          ? subject.id === selectedSubjectId\n          : allowedSubjectIds.has(subject.id),\n      )\n    : db.subjects || [];\n  const isForeignSubjectRequested = isSubjectTeacher && Boolean(requestedSubjectId) && !selectedSubjectId;",
+          "replace": "  const allowedSubjectIds = new Set(classWorkload.map((item) => item.subjectId));\n  const selectedSubjectId = requestedSubjectId || null;\n  const scopedSubjects = db.subjects || [];\n  const isForeignSubjectRequested = false;"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-ANL-10",
+      "expectFail": [
+        "test_anl_18_parent_child_metrics"
+      ],
+      "patches": [
+        {
+          "file": "src/views/child/render.js",
+          "find": "import {\n  calculateStudentAverage,\n  calculateStudentAttendance,\n} from \"../../mock/calculations.js\";",
+          "replace": "import {\n  calculateClassAverage,\n  calculateStudentAverage,\n  calculateStudentAttendance,\n} from \"../../mock/calculations.js\";"
+        },
+        {
+          "file": "src/views/child/render.js",
+          "find": "  const overallAvg = calculateStudentAverage(db.grades, student.id, { periodId });",
+          "replace": "  const overallAvg = calculateClassAverage(db.grades, { periodId });"
+        },
+        {
+          "file": "src/views/child/render.js",
+          "find": "    const avg = calculateStudentAverage(db.grades, student.id, { periodId, subjectId: sub.id });",
+          "replace": "    const avg = calculateClassAverage(db.grades, { periodId, subjectId: sub.id });"
+        }
+      ]
+    }
+  ]
+}

@@ -27,6 +27,16 @@ export class AnalyticsPage {
 
     this.absencesSection = page.locator('h3:has-text("Сводный список пропусков")').locator('..').locator('..');
     this.absencesTable = page.locator('#report-container table');
+    this.riskSection = page.locator('#report-container').locator('h3:has-text("Ученики в зоне риска")').locator('..');
+    this.riskEmptyState = page.locator('#report-container').locator('text=Учеников в зоне риска за данный период нет');
+  }
+
+  /**
+   * Получить карточку предмета в отчёте
+   * @param {string} name
+   */
+  getSubjectCard(name) {
+    return this.reportContainer.locator('.p-3\\.5.rounded-2xl', { hasText: name });
   }
 
   /**
@@ -34,8 +44,8 @@ export class AnalyticsPage {
    * @param {string} [queryString='']
    */
   async goto(queryString = '') {
-    const hash = queryString ? `#/analytics?${queryString}` : '#/analytics';
-    await this.page.goto(`index.html${hash}`);
+    const route = queryString ? `analytics/?${queryString}` : 'analytics/';
+    await this.page.goto(route);
     await expect(this.title).toBeVisible({ timeout: 10000 });
   }
 

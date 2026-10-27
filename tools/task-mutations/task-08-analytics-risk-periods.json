@@ -1,0 +1,95 @@
+{
+  "task": "task-08-analytics-risk-periods",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-ANL-08",
+      "expectFail": [
+        "test_anl_08_no_grades_no_average"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  if (stGrades.length === 0) {\n    return null;\n  }",
+          "replace": "  if (stGrades.length === 0) {\n    return 0;\n  }"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-ANL-17",
+      "expectFail": [
+        "test_anl_09_period_switch"
+      ],
+      "patches": [
+        {
+          "file": "src/views/analytics/render.js",
+          "find": "  const periodOptions = {\n    classId: selectedClassId,\n    students: db.students.filter(\n      (student) => (student.classId || \"class-7b\") === selectedClassId,\n    ),\n    subjectId: selectedSubjectId,\n    periodId: isHolidayOrEmpty ? periodId : \"q1_2024\",\n    dateFrom: currentPeriod.dateFrom,\n    dateTo: currentPeriod.dateTo,\n  };",
+          "replace": "  const periodOptions = {\n    classId: selectedClassId,\n    students: db.students.filter(\n      (student) => (student.classId || \"class-7b\") === selectedClassId,\n    ),\n    subjectId: selectedSubjectId,\n  };"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-ANL-12",
+      "expectFail": [
+        "test_anl_11_subject_averages_threshold"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  if (options.classId) {\n    const classStudentIds = new Set(\n      (options.students || [])\n        .filter((student) => (student.classId || \"class-7b\") === options.classId)\n        .map((student) => student.id),\n    );\n    filtered = filtered.filter(\n      (grade) =>\n        grade.classId === options.classId ||\n        (classStudentIds.size > 0 && classStudentIds.has(grade.studentId)),\n    );\n  }",
+          "replace": ""
+        },
+        {
+          "file": "src/mock/dataset.js",
+          "find": "  grades: [\n    {\n      id: \"grd-0001\",",
+          "replace": "  \"grades\": [\n    {\n      \"id\": \"grd-8a-01\",\n      \"lessonId\": \"lsn-8a-w8-01\",\n      \"studentId\": \"st-8a-01\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-22\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-02\",\n      \"lessonId\": \"lsn-8a-w8-02\",\n      \"studentId\": \"st-8a-02\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-23\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-03\",\n      \"lessonId\": \"lsn-8a-w8-03\",\n      \"studentId\": \"st-8a-03\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-25\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-04\",\n      \"lessonId\": \"lsn-8a-w8-01\",\n      \"studentId\": \"st-8a-01\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-22\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-05\",\n      \"lessonId\": \"lsn-8a-w8-02\",\n      \"studentId\": \"st-8a-02\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-23\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-06\",\n      \"lessonId\": \"lsn-8a-w8-03\",\n      \"studentId\": \"st-8a-03\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-25\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-07\",\n      \"lessonId\": \"lsn-8a-w8-01\",\n      \"studentId\": \"st-8a-01\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-22\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-08\",\n      \"lessonId\": \"lsn-8a-w8-02\",\n      \"studentId\": \"st-8a-02\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-23\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-09\",\n      \"lessonId\": \"lsn-8a-w8-03\",\n      \"studentId\": \"st-8a-03\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-25\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-10\",\n      \"lessonId\": \"lsn-8a-w8-01\",\n      \"studentId\": \"st-8a-01\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-22\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-11\",\n      \"lessonId\": \"lsn-8a-w8-02\",\n      \"studentId\": \"st-8a-02\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-23\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-12\",\n      \"lessonId\": \"lsn-8a-w8-03\",\n      \"studentId\": \"st-8a-03\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-25\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-13\",\n      \"lessonId\": \"lsn-8a-w8-01\",\n      \"studentId\": \"st-8a-01\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-22\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-14\",\n      \"lessonId\": \"lsn-8a-w8-02\",\n      \"studentId\": \"st-8a-02\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-23\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-15\",\n      \"lessonId\": \"lsn-8a-w8-03\",\n      \"studentId\": \"st-8a-03\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-25\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-16\",\n      \"lessonId\": \"lsn-8a-w8-01\",\n      \"studentId\": \"st-8a-01\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-22\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-17\",\n      \"lessonId\": \"lsn-8a-w8-02\",\n      \"studentId\": \"st-8a-02\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-23\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-18\",\n      \"lessonId\": \"lsn-8a-w8-03\",\n      \"studentId\": \"st-8a-03\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-25\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-19\",\n      \"lessonId\": \"lsn-8a-w8-01\",\n      \"studentId\": \"st-8a-01\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-22\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-8a-20\",\n      \"lessonId\": \"lsn-8a-w8-02\",\n      \"studentId\": \"st-8a-02\",\n      \"subjectId\": \"math\",\n      \"date\": \"2024-10-23\",\n      \"teacher\": \"Козлов А. П.\",\n      \"value\": 5,\n      \"periodId\": \"q1_2024\"\n    },\n    {\n      \"id\": \"grd-0001\","
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-ANL-07",
+      "expectFail": [
+        "test_anl_13_risk_zone_recalculated"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  const absenceThreshold = options.absenceThreshold ?? 20.0;",
+          "replace": "  if (Array.isArray(options.savedRiskZone) && options.savedRiskZone.length > 0) {\n    return options.savedRiskZone;\n  }\n  const absenceThreshold = options.absenceThreshold ?? 20.0;"
+        },
+        {
+          "file": "src/views/analytics/render.js",
+          "find": "  const riskStudents = getRiskZoneStudents(\n    periodOptions.students,\n    db.lessons,\n    db.attendance,\n    db.grades,\n    analyticsSubjects,\n    periodOptions,\n  );",
+          "replace": "  const riskStudents = getRiskZoneStudents(\n    periodOptions.students,\n    db.lessons,\n    db.attendance,\n    db.grades,\n    analyticsSubjects,\n    { ...periodOptions, savedRiskZone: db.riskZone },\n  );"
+        },
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  const riskZone = getRiskZoneStudents(\n    dataset.students,\n    dataset.lessons,\n    dataset.attendance,\n    dataset.grades,\n    dataset.subjects,\n    reportOptions,\n  );",
+          "replace": "  const riskZone = getRiskZoneStudents(\n    dataset.students,\n    dataset.lessons,\n    dataset.attendance,\n    dataset.grades,\n    dataset.subjects,\n    { ...reportOptions, savedRiskZone: dataset.riskZone },\n  );"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-ANL-22",
+      "expectFail": [
+        "test_anl_22_empty_period"
+      ],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "      classAverageGrade: classAvg,",
+          "replace": "      classAverageGrade: classAvg !== null ? classAvg : 0.0,"
+        },
+        {
+          "file": "src/mock/calculations.js",
+          "find": "      attendanceRate: classAtt.attendanceRate,\n      absenceRate: classAtt.absenceRate,",
+          "replace": "      attendanceRate:\n        classAtt.attendanceRate !== null ? classAtt.attendanceRate : 96.4,\n      absenceRate: classAtt.absenceRate !== null ? classAtt.absenceRate : 3.6,"
+        }
+      ]
+    }
+  ]
+}

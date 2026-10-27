@@ -1,7 +1,11 @@
-import { renderSidebar, setupSidebarListeners, updateSidebarActiveItem } from './sidebar.js?v=5';
+import {
+  renderSidebar,
+  setupSidebarListeners,
+  updateSidebarActiveItem,
+} from "./sidebar.js";
 
 export function renderLayout(currentUser, currentPath, contentHtml) {
-  if (currentPath === '#/login' || !currentUser) {
+  if (currentPath === "/login" || !currentUser) {
     return `
       <div id="auth-layout" class="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         ${contentHtml}

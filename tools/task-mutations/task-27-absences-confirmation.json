@@ -1,0 +1,83 @@
+{
+  "task": "task-27-absences-confirmation",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-BP-12: overviewV — ссылка на список посещаемости без studentId.",
+      "expectFail": ["test_bp_06_unconfirmed_list_link"],
+      "patches": [
+        {
+          "file": "src/views/overview/render.js",
+          "find": "<a href=\"/attendance?filter=unconfirmed${unconfirmedStudentId ? `&studentId=${encodeURIComponent(unconfirmedStudentId)}` : \"\"}\" class=\"font-semibold text-brand-600 hover:text-brand-700 hover:underline\">\n              К журналу →\n            </a>",
+          "replace": "<a href=\"/attendance?filter=unconfirmed\" class=\"font-semibold text-brand-600 hover:text-brand-700 hover:underline\">\n              К журналу →\n            </a>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-BP-13: overviewV — предупреждение показывается при любых пропусках.",
+      "expectFail": ["test_bp_07_no_warning_without_unconfirmed"],
+      "patches": [
+        {
+          "file": "src/views/attendance/render.js",
+          "find": "        !isSubjectTeacher && unconfirmedCount > 0",
+          "replace": "        !isSubjectTeacher && true",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-BP-14: attend.confirmAbsenceRecord — confirmedBy по умолчанию = автор отметки.",
+      "expectFail": ["test_bp_08_confirm_author"],
+      "patches": [
+        {
+          "file": "src/services/attendance-ops.js",
+          "find": "    ? data.confirmedBy ||",
+          "replace": "    ? \"Козлов А. П.\" ||",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-BP-15: удаление отметки не проверяет confirmed.",
+      "expectFail": ["test_bp_09_confirmed_not_editable"],
+      "patches": [
+        {
+          "file": "src/services/grades-ops.js",
+          "find": "    (existing.status === \"confirmed\" || existing.status === \"excused\" || existing.code === \"УП\" || existing.code === \"Б\")",
+          "replace": "    false",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-BP-16: выборка неуважительных исключает status === 'unexcused'.",
+      "expectFail": ["test_bp_10_refusal_keeps_absence"],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  const absentCount = stAttendance.filter((a) => a.value === \"absent\").length;",
+          "replace": "  const absentCount = stAttendance.filter((a) => a.value === \"absent\" && a.status !== \"unexcused\").length;",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "folder": 7,
+      "bug": "BUG-BP-34: attend.confirmAbsenceRecord — серверная проверка роли удалена (прямой вызов crmApi).",
+      "expectFail": ["test_bp_34_subject_teacher_api_denied"],
+      "patches": [
+        {
+          "file": "src/services/attendance-ops.js",
+          "find": "  const currentUser = getCurrentUser();\n  if (!currentUser || currentUser.role !== \"teacher\") {\n    return {\n      success: false,\n      error:\n        \"Действие недоступно для вашей роли. Подтвердить причину пропуска может только классный руководитель.\",\n    };\n  }\n\n",
+          "replace": "  const currentUser = getCurrentUser();\n",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

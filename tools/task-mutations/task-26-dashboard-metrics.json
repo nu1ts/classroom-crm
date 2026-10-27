@@ -1,0 +1,82 @@
+{
+  "task": "task-26-dashboard-metrics",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-BP-09",
+      "expectFail": ["test_bp_01_teacher_default_screen"],
+      "patches": [
+        {
+          "file": "src/config/navigation.js",
+          "find": "    defaultRoute: \"/overview\",",
+          "replace": "    defaultRoute: \"/attendance\","
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-BP-10",
+      "expectFail": ["test_bp_02_dashboard_attendance"],
+      "patches": [
+        {
+          "file": "src/views/overview/render.js",
+          "find": "    { onlyFirstLesson: false, classId },",
+          "replace": "    { onlyFirstLesson: true, classId },"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-BP-11",
+      "expectFail": ["test_bp_03_dashboard_average_delta"],
+      "patches": [
+        {
+          "file": "src/views/overview/render.js",
+          "find": "                ↑ +0.1",
+          "replace": "                ↑ +0.3"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-BP-04",
+      "expectFail": ["test_bp_04_unconfirmed_metric", "test_bp_05_metrics_recalculated"],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  let records = (attendance || []).filter(\n    (a) => a.status === \"unconfirmed\" && a.value === \"absent\",\n  );",
+          "replace": "  let records = (attendance || []).filter(\n    (a) => !a.reason && a.value === \"absent\",\n  );"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-BP-03",
+      "expectFail": ["test_bp_05_metrics_recalculated"],
+      "patches": [
+        {
+          "file": "src/views/overview/render.js",
+          "find": "  const unconfirmedCount = unconfirmedAbsences.length;",
+          "replace": "  const unconfirmedCount = 0;"
+        }
+      ]
+    },
+    {
+      "folder": 7,
+      "bug": "BUG-BP-36",
+      "expectFail": ["test_bp_36_attendance_boundaries"],
+      "patches": [
+        {
+          "file": "src/mock/calculations.js",
+          "find": "  if (totalMarks === 0) {\n    return {\n      date: targetDate,\n      totalMarks: 0,\n      presentCount: 0,\n      absentCount: 0,\n      attendanceRate: null,\n      absenceRate: null,\n      lessonIds: Array.from(lessonIds),\n    };\n  }",
+          "replace": "  if (totalMarks === 0) {\n    return {\n      date: targetDate,\n      totalMarks: 0,\n      presentCount: 0,\n      absentCount: 0,\n      attendanceRate: (0 / totalMarks) * 100,\n      absenceRate: (0 / totalMarks) * 100,\n      lessonIds: Array.from(lessonIds),\n    };\n  }"
+        },
+        {
+          "file": "src/views/overview/render.js",
+          "find": "  const todayAttendanceRate =\n    todayAtt.totalMarks > 0 && todayAtt.attendanceRate !== null\n      ? todayAtt.attendanceRate\n      : 0;",
+          "replace": "  const todayAttendanceRate = todayAtt.attendanceRate;"
+        }
+      ]
+    }
+  ]
+}

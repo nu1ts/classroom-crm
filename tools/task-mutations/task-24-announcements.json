@@ -1,0 +1,94 @@
+{
+  "task": "task-24-announcements",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-AN-07",
+      "expectFail": [
+        "test_an_01_list_audience"
+      ],
+      "patches": [
+        {
+          "file": "src/views/announcements/render.js",
+          "find": "            Читают родители и ученики класса",
+          "replace": "            Читают родители класса"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-AN-08",
+      "expectFail": [
+        "test_an_02_publish_keeps_read_counts"
+      ],
+      "patches": [
+        {
+          "file": "src/services/announcements-ops.js",
+          "find": "  db.announcements.unshift(newAnnouncement);\n  saveDB(db);",
+          "replace": "  db.announcements.forEach((item) => {\n    item.readBy = [];\n    item.readCount = 0;\n  });\n  db.announcements.unshift(newAnnouncement);\n  saveDB(db);"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-AN-05",
+      "expectFail": [
+        "test_an_03_required_fields"
+      ],
+      "patches": [
+        {
+          "file": "src/services/announcements-ops.js",
+          "find": "  if (!trimmedTitle) {\n    errors.title = \"Заголовок объявления обязателен для заполнения\";\n  } else if (trimmedTitle.length < 3) {",
+          "replace": "  if (trimmedTitle && trimmedTitle.length < 3) {"
+        },
+        {
+          "file": "src/views/announcements/listeners.js",
+          "find": "      let hasError = false;\n      if (!titleVal) {\n        hasError = true;\n        if (titleCreateInput) {",
+          "replace": "      let hasError = false;\n      if (false && !titleVal) {\n        hasError = true;\n        if (titleCreateInput) {"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-AN-04",
+      "expectFail": [
+        "test_an_04_edit_keeps_date"
+      ],
+      "patches": [
+        {
+          "file": "src/services/announcements-ops.js",
+          "find": "  item.title = title.trim();\n  item.content = content.trim();\n  item.updatedAt = new Date().toISOString();",
+          "replace": "  item.title = title.trim();\n  item.content = content.trim();\n  item.date = DEMO_ANNOUNCEMENT_DATE;\n  item.updatedAt = new Date().toISOString();"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-AN-06",
+      "expectFail": [
+        "test_an_05_delete_confirmation"
+      ],
+      "patches": [
+        {
+          "file": "src/views/announcements/listeners.js",
+          "find": "      const id = btn.getAttribute(\"data-id\");\n      if (window.confirm(\"Удалить объявление?\")) {\n        deleteAnnouncement(id);",
+          "replace": "      const id = btn.getAttribute(\"data-id\");\n      deleteAnnouncement(id);\n      if (window.confirm(\"Удалить объявление?\")) {"
+        }
+      ]
+    },
+    {
+      "folder": 7,
+      "bug": "BUG-AN-01",
+      "expectFail": [
+        "test_an_07_delete_keeps_meeting"
+      ],
+      "patches": [
+        {
+          "file": "src/services/announcements-ops.js",
+          "find": "  db.announcements = (db.announcements || []).filter((a) => a.id !== id);\n  saveDB(db);",
+          "replace": "  db.announcements = (db.announcements || []).filter((a) => a.id !== id);\n  db.meetings = (db.meetings || []).filter((meeting) => meeting.id !== \"mtg-01\");\n  saveDB(db);"
+        }
+      ]
+    }
+  ]
+}

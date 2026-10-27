@@ -1,0 +1,80 @@
+{
+  "task": "task-16-medical-certificates",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-MED-05",
+      "expectFail": [
+        "test_med_01_confirm_certificate"
+      ],
+      "patches": [
+        {
+          "file": "src/services/attendance-ops.js",
+          "find": "  record.document = data.document || (isExcused ? \"Медицинская справка\" : null);\n  record.confirmedBy = isExcused\n    ? data.confirmedBy ||\n      currentUser.shortName ||\n      currentUser.personName ||\n      \"Смирнова М. В.\"\n    : null;\n  record.confirmedAt = isExcused ? new Date().toISOString() : null;",
+          "replace": "  record.document = null;\n  record.confirmedBy = null;\n  record.confirmedAt = isExcused ? new Date().toISOString() : null;"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-MED-04",
+      "expectFail": [
+        "test_med_02_certificate_multiple_days"
+      ],
+      "patches": [
+        {
+          "file": "src/views/journal/listeners.js",
+          "find": "      const confirmation = confirmAbsenceRecord(attId, confirmationData);",
+          "replace": "      const confirmation = confirmAbsenceRecord(attId, confirmationData);\n      const relatedRecord = (getDB().attendance || []).find((record) => record.id !== attId && record.studentId === activeAttendanceRecord.studentId && record.value === \"absent\" && record.status === \"unconfirmed\");\n      if (relatedRecord) confirmAbsenceRecord(relatedRecord.id, confirmationData);"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-MED-03",
+      "expectFail": [
+        "test_med_03_refuse_confirmation"
+      ],
+      "patches": [
+        {
+          "file": "src/services/attendance-ops.js",
+          "find": "  const isExcused = data.status === \"excused\" || data.isExcused === true;\n  record.status = isExcused ? \"excused\" : \"unexcused\";\n  record.code = isExcused ? \"УП\" : \"Н\";",
+          "replace": "  const isExcused = data.status !== \"excused\" && data.isExcused !== true;\n  record.status = isExcused ? \"excused\" : \"unexcused\";\n  record.code = isExcused ? \"УП\" : \"Н\";"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-MED-02",
+      "expectFail": [
+        "test_med_04_subject_teacher_forbidden"
+      ],
+      "patches": [
+        {
+          "file": "src/services/attendance-ops.js",
+          "find": "  const currentUser = getCurrentUser();\n  if (!currentUser || currentUser.role !== \"teacher\") {\n    return {\n      success: false,\n      error:\n        \"Действие недоступно для вашей роли. Подтвердить причину пропуска может только классный руководитель.\",\n    };\n  }\n\n",
+          "replace": ""
+        },
+        {
+          "file": "src/views/journal/render.js",
+          "find": "            !isSubjectTeacher\n              ? `<div id=\"block-confirm-from-journal\" class=\"hidden\">",
+          "replace": "            true\n              ? `<div id=\"block-confirm-from-journal\" class=\"hidden\">"
+        }
+      ]
+    },
+    {
+      "folder": 6,
+      "bug": "BUG-MED-01",
+      "expectFail": [
+        "test_med_05_journal_entry_preserved"
+      ],
+      "patches": [
+        {
+          "file": "src/services/attendance-ops.js",
+          "find": "  saveDB(db);\n  return { success: true, record };",
+          "replace": "  db.attendance = (db.attendance || []).filter((a) => a.id !== recordId);\n  saveDB(db);\n  return { success: true, record };"
+        }
+      ]
+    }
+  ]
+}

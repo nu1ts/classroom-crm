@@ -45,7 +45,7 @@ export class ParentDetailPage {
   }
 
   async goto(parentId) {
-    await this.page.goto(`index.html#/parent?id=${parentId}`);
+    await this.page.goto(`parent?id=${parentId}`);
     await expect(this.parentNameHeading).toBeVisible({ timeout: 10000 });
   }
 

@@ -1,0 +1,71 @@
+{
+  "task": "task-15-journal-comments-access",
+  "mutations": [
+    {
+      "folder": 2,
+      "bug": "BUG-TCH-09 — комментарий сохраняется без автора и времени",
+      "expectFail": [
+        "test_tch_11_comment_keeps_author_and_time"
+      ],
+      "patches": [
+        {
+          "file": "src/services/attendance-ops.js",
+          "find": "  const newComment = {\n    id: `jc-${Date.now()}-${Math.floor(Math.random() * 1000)}`,\n    lessonId: data.lessonId,\n    studentId: data.studentId,\n    text,\n    author: data.author || \"Смирнова М. В.\",\n    role: data.role || \"teacher\",\n    createdAt:\n      data.createdAt ||\n      new Date().toLocaleString(\"ru-RU\", {\n        day: \"2-digit\",\n        month: \"2-digit\",\n        year: \"numeric\",\n        hour: \"2-digit\",\n        minute: \"2-digit\",\n      }),\n  };",
+          "replace": "  const newComment = {\n    id: `jc-${Date.now()}-${Math.floor(Math.random() * 1000)}`,\n    lessonId: data.lessonId,\n    studentId: data.studentId,\n    text,\n    author: \"\",\n    role: data.role || \"teacher\",\n    createdAt: \"\",\n  };"
+        }
+      ]
+    },
+    {
+      "folder": 3,
+      "bug": "BUG-TCH-15 — право на удаление комментария проверяется по роли, а не по автору",
+      "expectFail": [
+        "test_tch_12_foreign_comment_cannot_be_deleted"
+      ],
+      "patches": [
+        {
+          "file": "src/views/journal/listeners.js",
+          "find": "        const isHomeroom = c.role === \"teacher\";\n        const roleLabel = isHomeroom ? \"Классрук\" : \"Предметник\";",
+          "replace": "        const isHomeroom = c.role === \"teacher\";\n        const roleLabel = isHomeroom ? \"Классрук\" : \"Предметник\";\n        const canDelete =\n          currentUser && currentUser.role === \"subject_teacher\";"
+        },
+        {
+          "file": "src/views/journal/listeners.js",
+          "find": "            <p class=\"text-xs text-slate-700 font-normal leading-relaxed\">${c.text}</p>",
+          "replace": "            <p class=\"text-xs text-slate-700 font-normal leading-relaxed\">${c.text}</p>\n            ${canDelete\n              ? `<button type=\"button\"\n                        class=\"btn-delete-comment text-[10px] font-semibold text-rose-600\"\n                        data-delete-journal-comment=\"${c.id}\">Удалить</button>`\n              : \"\"}"
+        },
+        {
+          "file": "src/views/journal/listeners.js",
+          "find": "  function renderModalComments(lessonId, studentId) {",
+          "replace": "  document.addEventListener(\"click\", (e) => {\n    const btn = e.target.closest(\"[data-delete-journal-comment]\");\n    if (!btn) return;\n    const commentId = btn.getAttribute(\"data-delete-journal-comment\");\n    const raw = window.localStorage.getItem(\"classroom_crm_db\");\n    const db = raw ? JSON.parse(raw) : null;\n    if (db) {\n      db.journalComments = (db.journalComments || []).filter(\n        (c) => c.id !== commentId,\n      );\n      window.localStorage.setItem(\"classroom_crm_db\", JSON.stringify(db));\n    }\n    if (activeLessonId && activeStudentId) {\n      renderModalComments(activeLessonId, activeStudentId);\n    }\n  });\n\n  function renderModalComments(lessonId, studentId) {"
+        }
+      ]
+    },
+    {
+      "folder": 4,
+      "bug": "BUG-TCH-07 — список классов не фильтруется по нагрузке учителя",
+      "expectFail": [
+        "test_tch_13_subject_teacher_sees_own_classes"
+      ],
+      "patches": [
+        {
+          "file": "src/views/journal/render.js",
+          "find": "  const fullTeacherWorkload =\n    teacherObj && Array.isArray(teacherObj.workload) ? teacherObj.workload : [];",
+          "replace": "  const fullTeacherWorkload =\n    teacherObj && Array.isArray(teacherObj.workload)\n      ? teacherObj.workload.concat(\n          (db.classes || []).map((c) => ({\n            classId: c.id,\n            className: c.name,\n            subjectId: \"math\",\n            subjectLabel: \"Математика (Алгебра)\",\n            hours: 1,\n            id: `wl-all-${c.id}`,\n          })),\n        )\n      : [];"
+        }
+      ]
+    },
+    {
+      "folder": 5,
+      "bug": "BUG-TCH-17 — значение «Все предметы (сводный журнал)» передаётся в выборку как имя предмета",
+      "expectFail": [
+        "test_tch_15_summary_journal_shows_all_subjects"
+      ],
+      "patches": [
+        {
+          "file": "src/views/journal/render.js",
+          "find": "                  <option value=\"all\" ${selectedSubjectId === \"all\" ? \"selected\" : \"\"}>Все предметы (сводный журнал)</option>",
+          "replace": "                  <option value=\"Все предметы (сводный журнал)\" ${selectedSubjectId === \"all\" ? \"selected\" : \"\"}>Все предметы (сводный журнал)</option>"
+        }
+      ]
+    }
+  ]
+}
