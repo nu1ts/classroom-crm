@@ -175,22 +175,34 @@ def refuse_absence_confirmation(driver):
     )
 
 
+def read_absence_count(driver):
+    modal = driver.find_element(By.ID, "modal-student-summary")
+    classes = modal.get_attribute("class") or ""
+    if "opacity-100" not in classes or "pointer-events-none" in classes:
+        return False
+    values = driver.find_elements(
+        By.XPATH,
+        "//*[@id='student-summary-content']//span[normalize-space()='Пропущено']/following-sibling::div[1]",
+    )
+    if not values:
+        return False
+    first = normalized(values[0].text).split()
+    if not first or not first[0].isdigit():
+        return False
+    return int(first[0])
+
+
 def absence_count_in_risk_summary(driver):
     open_view(driver, "overview/", (By.CSS_SELECTOR, ".risk-card"))
     driver.find_element(
         By.CSS_SELECTOR,
         f"button[data-action='open-summary'][data-student-id='{PETROVA_ID}']",
     ).click()
-    wait_until(
+    return wait_until(
         driver,
-        lambda d: d.find_elements(By.ID, "modal-student-summary"),
-        "Не открылась сводка ученика из зоны риска",
+        read_absence_count,
+        "Не отобразилось число пропусков в сводке ученика из зоны риска",
     )
-    value = driver.find_element(
-        By.XPATH,
-        "//*[@id='student-summary-content']//span[normalize-space()='Пропущено']/following-sibling::div[1]",
-    )
-    return int(normalized(value.text).split()[0])
 
 
 def test_bp_06_unconfirmed_list_link(driver):

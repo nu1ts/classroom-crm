@@ -142,6 +142,13 @@ def open_entry_modal(driver):
         lambda d: modal_is_open(d, "modal-journal-entry"),
         "Не открылась карточка записи журнала",
     )
+    wait_until(
+        driver,
+        lambda d: normalized(
+            d.find_element(By.ID, "entry-modal-attendance-badge").text
+        ),
+        "Карточка записи журнала не заполнилась",
+    )
 
 
 def close_entry_modal(driver):

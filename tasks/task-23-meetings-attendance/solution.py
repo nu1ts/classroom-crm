@@ -307,7 +307,15 @@ def test_mg_11_parent_meetings(driver):
     section_text = text_of(section)
     assert "Итоги первой четверти 7Б" in section_text
     assert "31 октября 2024 г." in section_text and "Каб. 302" in section_text
-    assert "Повестка:" in section_text
+    upcoming_card = driver.find_element(
+        By.XPATH,
+        "//*[@id='child-meetings-section']"
+        "//h4[normalize-space()='Итоги первой четверти 7Б']/../../..",
+    )
+    agenda_parts = text_of(upcoming_card).split("Повестка:", 1)
+    assert len(agenda_parts) == 2 and agenda_parts[1].strip(), (
+        "У ближайшего собрания не показана повестка"
+    )
     assert "Организационное собрание начала года" in section_text
     assert "Явка:" not in section_text
     assert not driver.find_elements(By.CSS_SELECTOR, ".btn-mark-attendance")
